@@ -35,7 +35,7 @@ from core.route2_xeditflow_value_rollouts_v3 import (
     terminal_rollout_row_v3,
     value_rollout_seed_v3,
 )
-from core.route2_xeditflow_value_training_v3 import CRITIC_SEEDS_V3
+from core.route2_xeditflow_value_training_v3 import BASE_FLOW_SEEDS_V3, CRITIC_SEEDS_V3
 from core.route2_xeditsetflow_sampling_v3 import sample_many_setflow_v3
 from core.route2_xeditsetflow_training_v3 import (
     setflow_records_from_projection_rows,
@@ -90,7 +90,7 @@ def validate_value_rollout_config_v3(config: Mapping[str, Any]) -> None:
         == "route_a_v3_route2_xeditflow_value_rollout_config.v1",
         "unexpected value rollout config schema",
     )
-    _require(int(config.get("base_flow_training_seed", -1)) == 20260904, "value rollout base-flow seed changed")
+    _require(int(config.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V3, "value rollout base-flow seed changed")
     _require(int(config.get("rollouts_per_state", -1)) == 8, "value rollout K changed")
     _require(int(config.get("states_per_record", -1)) == 2, "value state multiplicity changed")
     _require(int(config.get("state_pass_index", -1)) == 0, "value state pass changed")
@@ -222,6 +222,59 @@ def _load_critic_member_v3(
 
 
 @torch.no_grad()
+def _score_loaded_critic_member_rows_v3(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    model: XEditCriticV3,
+    encoder: TrainableMRNABERTEditSiteEncoderV3,
+    vocabs: Mapping[str, Mapping[str, int]],
+    selected_arm: str,
+    device: torch.device,
+    microbatch_size: int,
+) -> list[float]:
+    """Score one in-memory candidate batch without reloading frozen weights."""
+
+    _require(bool(rows) and microbatch_size > 0, "loaded Critic score batch differs")
+    unique_rows = []
+    identity_to_index: dict[tuple[Any, ...], int] = {}
+    inverse = []
+    for row in rows:
+        identity = _critic_candidate_identity_v3(row)
+        if identity not in identity_to_index:
+            identity_to_index[identity] = len(unique_rows)
+            unique_rows.append(row)
+        inverse.append(identity_to_index[identity])
+    raw_batch = XEditCriticCollatorV3(pretrained_width=768)(
+        _critic_examples_v3(unique_rows, vocabs)
+    )
+    unique_predictions: list[float] = []
+    for start in range(0, len(unique_rows), microbatch_size):
+        end = min(len(unique_rows), start + microbatch_size)
+        indices = list(range(start, end))
+        sliced = {
+            key: (
+                value[indices]
+                if isinstance(value, torch.Tensor)
+                else [value[index] for index in indices]
+                if isinstance(value, list)
+                else value
+            )
+            for key, value in raw_batch.items()
+        }
+        batch = _move(sliced, device)
+        context = disabled_lora_residuals_v3(encoder.model) if selected_arm == "C2" else nullcontext()
+        with context, torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+            feature_batch = encoder.forward(batch)
+            predictions = model(feature_batch)["mean"].float().cpu().tolist()
+        _require(len(predictions) == len(indices), "loaded Critic member prediction count differs")
+        unique_predictions.extend(float(value) for value in predictions)
+    _require(len(unique_predictions) == len(unique_rows), "loaded Critic unique prediction count differs")
+    result = [unique_predictions[index] for index in inverse]
+    _require(len(result) == len(rows), "loaded Critic restored prediction count differs")
+    return result
+
+
+@torch.no_grad()
 def _score_critic_member_v3(
     terminal_path: Path,
     output_path: Path,
@@ -242,50 +295,26 @@ def _score_critic_member_v3(
         model_path=model_path,
         device=device,
     )
-    collator = XEditCriticCollatorV3(pretrained_width=768)
     count = 0
     with output_path.open("w", encoding="utf-8") as output:
         for rows in _jsonl_batches(terminal_path, batch_size):
-            unique_rows = []
-            identity_to_index: dict[tuple[Any, ...], int] = {}
-            inverse = []
-            for row in rows:
-                identity = _critic_candidate_identity_v3(row)
-                if identity not in identity_to_index:
-                    identity_to_index[identity] = len(unique_rows)
-                    unique_rows.append(row)
-                inverse.append(identity_to_index[identity])
-            raw_batch = collator(_critic_examples_v3(unique_rows, vocabs))
-            unique_predictions: list[float] = []
-            for start in range(0, len(unique_rows), microbatch_size):
-                end = min(len(unique_rows), start + microbatch_size)
-                indices = list(range(start, end))
-                sliced = {
-                    key: (
-                        value[indices]
-                        if isinstance(value, torch.Tensor)
-                        else [value[index] for index in indices]
-                        if isinstance(value, list)
-                        else value
-                    )
-                    for key, value in raw_batch.items()
-                }
-                batch = _move(sliced, device)
-                context = disabled_lora_residuals_v3(encoder.model) if selected_arm == "C2" else nullcontext()
-                with context, torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                    feature_batch = encoder.forward(batch)
-                    predictions = model(feature_batch)["mean"].float().cpu().tolist()
-                _require(len(predictions) == len(indices), "Critic member prediction count differs")
-                unique_predictions.extend(float(value) for value in predictions)
-            _require(len(unique_predictions) == len(unique_rows), "unique Critic prediction count differs")
-            for row, unique_index in zip(rows, inverse):
+            predictions = _score_loaded_critic_member_rows_v3(
+                rows,
+                model=model,
+                encoder=encoder,
+                vocabs=vocabs,
+                selected_arm=selected_arm,
+                device=device,
+                microbatch_size=microbatch_size,
+            )
+            for row, prediction in zip(rows, predictions):
                 output.write(
                     json.dumps(
                         {
                             "state_id": str(row["state_id"]),
                             "rollout_index": int(row["rollout_index"]),
                             "critic_seed": seed,
-                            "standardized_prediction": unique_predictions[unique_index],
+                            "standardized_prediction": prediction,
                             "study_neutral": True,
                             "unknown_study_scale": 1.0,
                             "development_test_outcomes_accessed": False,
@@ -358,7 +387,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     setflow, setflow_checkpoint = load_setflow_checkpoint_v3(
         Path(config["setflow_checkpoint_path"]), str(config["setflow_arm"]), device
     )
-    _require(int(setflow_checkpoint["training_provenance"]["seed"]) == 20260904, "guidance screen SetFlow seed differs")
+    base_flow_seed = int(config["base_flow_training_seed"])
+    _require(int(setflow_checkpoint["training_provenance"]["seed"]) == base_flow_seed, "value rollout SetFlow seed differs")
     train_rows = load_projection_rows(
         [Path(config["train_projection_path"])], allowed_splits=("TRAIN",)
     )
@@ -369,7 +399,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     states = build_value_train_state_rows_v3(
         records,
         vocabs,
-        base_flow_training_seed=20260904,
+        base_flow_training_seed=base_flow_seed,
         state_pass_index=0,
         states_per_record=2,
     )
@@ -403,7 +433,13 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
                 for rollout_index in range(8):
                     roots.append(flow_state_from_value_row_v3(row))
                     metadata.append(generation_metadata_from_value_row_v3(row))
-                    seeds.append(value_rollout_seed_v3(state_index, rollout_index))
+                    seeds.append(
+                        value_rollout_seed_v3(
+                            state_index,
+                            rollout_index,
+                            base_flow_training_seed=base_flow_seed,
+                        )
+                    )
                     identities.append((row, state_index, rollout_index))
             sampled, forward_batches = sample_many_setflow_v3(
                 setflow,
@@ -456,7 +492,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     summary = {
         "schema_version": "route_a_v3_route2_xeditflow_value_rollout_run.v3",
         "status": "XEDITFLOW_V3_VALUE_ROLLOUTS_COMPLETE",
-        "base_flow_training_seed": 20260904,
+        "base_flow_training_seed": base_flow_seed,
         "setflow_arm": str(config["setflow_arm"]),
         "critic_arm": selected_arm,
         "critic_seeds": list(CRITIC_SEEDS_V3),

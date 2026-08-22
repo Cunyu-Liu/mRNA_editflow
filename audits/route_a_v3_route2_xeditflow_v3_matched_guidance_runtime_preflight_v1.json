@@ -1,0 +1,97 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_matched_guidance_runtime_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_EXECUTION_BLOCKED_BY_FROZEN_READINESS",
+  "observed_date": "2026-08-23",
+  "method_semantics": {
+    "unguided_setflow": "ZERO_POTENTIAL_FULL_LEGAL_BASE_PROPOSAL",
+    "first_order_guidance": "LAZY_SOURCE_ANCHORED_SUM_OF_SINGLE_EDIT_CRITIC_EFFECTS",
+    "simple_rate_guidance": "EXACT_CURRENT_STATE_CRITIC_REWARD_AS_SHORT_SIGHTED_POTENTIAL",
+    "generate_then_rerank": "UNGUIDED_TERMINAL_SUPPORT_THEN_FROZEN_CRITIC_ORDER_ONLY",
+    "full_soft_value_smc": "LEARNED_K8_SOFT_VALUE_TO_GO_SCALAR_POTENTIAL",
+    "direct_r_next_vs_difference_used_as_distinct_controls": false,
+    "reason": "STATE_WISE_CONSTANT_CANCELLATION_AFTER_ACTION_NORMALIZATION"
+  },
+  "proposal_and_compute": {
+    "proposal": "FULL_HARD_LEGAL_XEDITSETFLOW_RATE_DISTRIBUTION",
+    "importance_sampler": "32_PARTICLE_SMC",
+    "ess_threshold": 16,
+    "resampling": "STRATIFIED",
+    "candidate_cap": 32,
+    "forward_equivalent_ceiling_per_source": 320,
+    "critic_members_counted_separately": true,
+    "reserved_terminal_critic_forwards": 3,
+    "all_legal_children_enumerated_by_critic": false,
+    "maximum_development_sequence_length": 837,
+    "maximum_approximate_substitution_children_per_state": 2511,
+    "reason_not_enumerated": "WOULD_VIOLATE_MATCHED_COMPUTE_AND_HIDE_BATCH_COST",
+    "hard_legal_mask_applied_before_guidance": true,
+    "free_action_ratio_head_present": false
+  },
+  "critic_runtime": {
+    "ensemble_seeds": [20260831, 20260901, 20260902],
+    "members_resident_and_frozen": true,
+    "reward": "MEAN_MINUS_KAPPA_TIMES_POPULATION_SD",
+    "study_neutral": true,
+    "unknown_study_scale": 1,
+    "source_local_reward_cache": true,
+    "critic_updates_from_generator": false,
+    "critic_self_score_used_for_selection_by_method": {
+      "unguided_setflow": false,
+      "first_order_guidance": false,
+      "simple_rate_guidance": false,
+      "generate_then_rerank": true
+    },
+    "independent_evaluator_used_for_gradient": false
+  },
+  "per_seed_value_policy": {
+    "guidance_hpo_seed": 20260904,
+    "guidance_hpo_repeated": false,
+    "selected_kappa_temperature_beta_reused": true,
+    "base_flow_training_seeds": [20260904, 20260905, 20260906],
+    "new_value_rollout_jobs_after_screen": [20260905, 20260906],
+    "states_per_train_record": 2,
+    "rollouts_per_state": 8,
+    "value_architecture": "6_HYBRID_BLOCKS_WIDTH_384_SCALAR_ONLY",
+    "value_training_passes": 8,
+    "checkpoint_selection": "FINAL_PASS_NO_EPOCH_RESELECTION",
+    "additional_training_seed_authorized": false
+  },
+  "interfaces": {
+    "design": "docs/plans/2026-08-23-xeditflow-v3-matched-guidance-design.md",
+    "matched_method_core": "core/route2_xeditflow_matched_methods_v3.py",
+    "matched_control_runner": "scripts/route_a_v3/run_route2_xeditflow_matched_controls_v3.py",
+    "final_generation_preparer": "scripts/route_a_v3/prepare_route2_xeditflow_final_generation_configs_v3.py"
+  },
+  "tests": {
+    "local_xeditflow_v3_focused_passed": 66,
+    "local_xeditflow_v3_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "screen_monitoring": {
+    "latest_scheduled_check": {
+      "critic_c1": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER",
+      "setflow_f1": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER",
+      "setflow_f2": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER"
+    },
+    "gpu_0_to_5_free_memory_mb": [2569, 5217, 3235, 5169, 4265, 4963],
+    "gpu_0_to_5_utilization_percent": [100, 100, 100, 100, 100, 100],
+    "f3_started": false,
+    "critic_c2_c3_started": false,
+    "capacity_reduced": false,
+    "cpu_fallback_used": false,
+    "next_check_minimum_interval_minutes": 30
+  },
+  "authorization": {
+    "matched_control_generation_executed": false,
+    "final_value_rollouts_executed": false,
+    "final_generation_executed": false,
+    "development_test_authorized": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}

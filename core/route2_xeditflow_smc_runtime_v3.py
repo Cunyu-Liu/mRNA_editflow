@@ -275,15 +275,14 @@ def merge_smc_rounds_v3(
     }
 
 
-class SetFlowValueProvidersV3:
-    """CUDA/BF16 batched providers used by the formal SMC runner."""
+class SetFlowRateProviderV3:
+    """CUDA/BF16 hard-legal base-rate provider shared by matched methods."""
 
     def __init__(
         self,
         *,
         setflow_model: nn.Module,
         setflow_arm: str,
-        value_model: nn.Module,
         metadata: SetFlowGenerationMetadataV3,
         source_cache: SourceTokenCacheIndexV3,
         device: torch.device,
@@ -291,7 +290,6 @@ class SetFlowValueProvidersV3:
         _require(device.type == "cuda", "formal SMC providers require CUDA")
         self.setflow_model = setflow_model
         self.setflow_arm = setflow_arm
-        self.value_model = value_model
         self.metadata = metadata
         self.source_cache = source_cache
         self.device = device
@@ -323,6 +321,29 @@ class SetFlowValueProvidersV3:
                 values.append(value)
             result.append(BatchedRateRowV3(actions=actions, rates=tuple(values)))
         return result
+
+
+class SetFlowValueProvidersV3(SetFlowRateProviderV3):
+    """CUDA/BF16 base-rate plus learned scalar-value providers."""
+
+    def __init__(
+        self,
+        *,
+        setflow_model: nn.Module,
+        setflow_arm: str,
+        value_model: nn.Module,
+        metadata: SetFlowGenerationMetadataV3,
+        source_cache: SourceTokenCacheIndexV3,
+        device: torch.device,
+    ) -> None:
+        super().__init__(
+            setflow_model=setflow_model,
+            setflow_arm=setflow_arm,
+            metadata=metadata,
+            source_cache=source_cache,
+            device=device,
+        )
+        self.value_model = value_model
 
     @torch.no_grad()
     def values(self, states: Sequence[FlowState]) -> list[float]:

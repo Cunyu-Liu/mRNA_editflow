@@ -2017,3 +2017,39 @@ Critic frozen TEST/refit/LOSO readiness 与 SetFlow confirmation 未同时 PASS 
 长度断言，修复不改变算法或正式 A100 Python 3.10 行为。A100 focused/V3.3.2 tests 与 current-HEAD sync
 继续等待 active screen jobs terminal，以免污染它们的 commit provenance。当前 guidance authorization、
 replacement Evaluation authorization 与 submission-ready 均为 false。
+
+## XEditFlow V3 matched guidance controls 与 per-seed value runtime（2026-08-23）
+
+已把最终 three-seed comparison 的四个 learned controls 从 gate 名称补成可执行 CUDA/BF16 runtime，并
+前瞻冻结其可区分含义。`first_order_guidance` 使用 source-anchored discrete first-order potential：每个
+实际提议的单编辑系数为 `R(source+edit)-R(source)`，多编辑状态只求系数和，因此不能表达 edit
+interaction。`simple_rate_guidance` 使用当前 frozen critic reward `R(state)`，importance increment 为真实
+一步 `R(next)-R(current)`，能看到当前 interaction 但没有 rollout value-to-go。完整方法仍只使用 learned
+soft value `V(next)-V(current)`；`generate_then_rerank` 的 critic 只能重排 unguided terminal support，不能
+改变轨迹；`unguided_setflow` 的 potential 严格为零。
+
+没有把 `R(next)` 与 `R(next)-R(current)` 当成两个对照，因为逐 state action normalization 后二者只差
+共同常数并产生同一跳转分布。也没有为每个状态枚举全部约 `3×length` 个 child 做 Critic scoring；在
+837-nt source 上约为 2,500 child/state，会违反 320-forward ceiling 并隐藏大量 batch compute。四个对照
+改用与完整方法相同的 full-legal SetFlow base proposal、32 particles、ESS<16 stratified resampling，再按各自
+scalar potential difference 做 importance weighting。hard legal support 在 guidance 前建立，三个 Critic
+member 的 batch forwards 分列计费，terminal diagnostic 预留三次，candidate cap=32、ceiling=320。
+
+新增正式 runner 可在 readiness 后常驻载入三个 all-Development refit Critic member；reward study-neutral、
+unknown-study scale=1、按 source 缓存。固定 seed trajectory replay、terminal dedup、wall time/VRAM、各成员
+forward 与 failure counters 都写入统一 artifact。terminal critic score 只有 rerank 可以用于 selection；其他
+方法只作 mechanism diagnostic。independent evaluator 不进入该 runtime 或梯度。
+
+soft value 的定义依赖各自 base-flow distribution。因此 seed20260904 仍是唯一 guidance HPO/screen seed；
+κ/τ/β 冻结后，seed20260905 与 20260906 各自使用同样的 TRAIN state policy、K=8 rollouts、三 Critic reward、
+6×384 value architecture 和 final-pass checkpoint rule 蒸馏自己的 value network，不进行第二次 HPO、epoch
+selection 或 seed 增补。final-generation preparer 精确生成 3 个 full SMC、12 个 matched control job，以及
+仅后两 seed 的 2 套 rollout/target/value-training job；三 seed 共用 decoder seed base 20261001。
+
+本批完整 XEditFlow V3 focused cohort=66/66、本地精确 V3.3.2=96/96、compile/diff-check PASS。测试发现并
+修复了最终三 seed gate 残留的本机 Python 3.9 `zip(strict=True)` 中止点，以显式 3/3 等长断言替代；gate
+阈值与结果逻辑不变。最近一次低频检查 C1/F1/F2 均存活、无 terminal summary、无 traceback/CUDA error；
+GPU0–5 free memory 约为 2.6/5.2/3.2/5.2/4.3/5.0GB 且 utilization 均为 100%，F3 与 C2/C3 不降配、
+不 CPU fallback、继续等待。A100 仍保持 `22317ed` provenance，本批 A100 tests/sync 等 active jobs
+terminal 后执行。所有新 runtime 当前均未执行，Development TEST/Evaluation authorization 与
+submission-ready 均保持 false。

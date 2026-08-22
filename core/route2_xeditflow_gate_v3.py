@@ -275,6 +275,12 @@ def adjudicate_guided_three_seed_v3(
             "checks": checks,
             "passed": all(checks.values()),
         }
+    _require(
+        len(improvements_over_unguided)
+        == len(improvements_over_baseline)
+        == 3,
+        "guided median improvement seed counts differ",
+    )
     median_min_ndcg_improvement = float(
         np.median(
             [
@@ -282,7 +288,6 @@ def adjudicate_guided_three_seed_v3(
                 for left, right in zip(
                     improvements_over_unguided,
                     improvements_over_baseline,
-                    strict=True,
                 )
             ]
         )

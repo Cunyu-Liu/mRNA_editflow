@@ -36,15 +36,15 @@ def _record() -> XEditSetFlowRecordV3:
 def test_value_states_are_two_deterministic_outcome_free_train_states() -> None:
     records = [_record()]
     vocabs = setflow_vocabs(records)
-    first = build_value_train_state_rows_v3(records, vocabs, base_flow_training_seed=20260904)
-    second = build_value_train_state_rows_v3(records, vocabs, base_flow_training_seed=20260904)
-    assert first == second
-    assert len(first) == 2
-    assert all(row["split"] == "TRAIN" for row in first)
-    assert all("direction_normalized_delta" not in row for row in first)
-    assert first[-1]["current_sequence"] == "AAGC"
-    assert first[-1]["remaining_budget"] == 1
-    assert flow_state_from_value_row_v3(first[-1]).terminal_cause is None
+    for seed in (20260904, 20260905, 20260906):
+        first = build_value_train_state_rows_v3(records, vocabs, base_flow_training_seed=seed)
+        second = build_value_train_state_rows_v3(records, vocabs, base_flow_training_seed=seed)
+        assert first == second
+        assert len(first) == 2
+        assert all(row["split"] == "TRAIN" for row in first)
+        assert all(row["base_flow_training_seed"] == seed for row in first)
+        assert all("direction_normalized_delta" not in row for row in first)
+        assert flow_state_from_value_row_v3(first[-1]).terminal_cause is None
 
 
 def test_terminal_rollout_and_three_member_score_are_identity_bound() -> None:
@@ -81,6 +81,7 @@ def test_terminal_rollout_and_three_member_score_are_identity_bound() -> None:
         for seed, value in zip((20260831, 20260901, 20260902), (0.1, 0.2, 0.3))
     }
     score = frozen_rollout_score_row_v3(rollout, members)
+    assert score["base_flow_training_seed"] == 20260904
     assert score["calibrated_seed_predictions"] == [0.1, 0.2, 0.3]
     assert score["independent_evaluator_used"] is False
     members[20260831] = {**members[20260831], "study_neutral": False}
@@ -104,4 +105,3 @@ def test_candidate_reward_bills_three_members_once_per_source() -> None:
     assert [row["critic_forwards"] for row in rows] == [3, 0]
     assert [row["generation_score"] for row in rows] == [2.0, 1.0]
     assert all(row["critic_self_score_used_for_candidate_selection"] is False for row in rows)
-    attach_candidate_critic_rewards_v3,

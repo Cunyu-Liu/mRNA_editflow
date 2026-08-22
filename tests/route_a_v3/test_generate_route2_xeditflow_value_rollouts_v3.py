@@ -30,7 +30,8 @@ def _config() -> dict:
 
 
 def test_value_rollout_config_freezes_k_seed_and_gpu_scope() -> None:
-    validate_value_rollout_config_v3(_config())
+    for seed in (20260904, 20260905, 20260906):
+        validate_value_rollout_config_v3({**_config(), "base_flow_training_seed": seed})
     changed = {**_config(), "rollouts_per_state": 9}
     with pytest.raises(XEditFlowValueRolloutRunnerV3Error):
         validate_value_rollout_config_v3(changed)

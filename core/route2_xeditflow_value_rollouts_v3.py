@@ -6,7 +6,7 @@ import math
 from typing import Any, Mapping, Sequence
 
 from core.route2_legal_xeditflow import FlowState, validate_state
-from core.route2_xeditflow_value_training_v3 import CRITIC_SEEDS_V3
+from core.route2_xeditflow_value_training_v3 import BASE_FLOW_SEEDS_V3, CRITIC_SEEDS_V3
 from core.route2_xeditsetflow_sampling_v3 import SetFlowGenerationMetadataV3
 from core.route2_xeditsetflow_training_v3 import (
     SetMarginalStateDatasetV3,
@@ -33,7 +33,7 @@ def build_value_train_state_rows_v3(
 ) -> list[dict[str, Any]]:
     """Freeze two deterministic, outcome-free TRAIN states per measured record."""
 
-    _require(base_flow_training_seed == 20260904, "guidance screen base-flow seed changed")
+    _require(base_flow_training_seed in BASE_FLOW_SEEDS_V3, "undeclared value base-flow seed")
     _require(state_pass_index == 0, "value state pass changed")
     _require(states_per_record == 2, "value state multiplicity changed")
     _require(bool(records) and all(record.split == "TRAIN" for record in records), "non-TRAIN record entered value states")
@@ -106,7 +106,7 @@ def build_value_train_state_rows_v3(
 
 def flow_state_from_value_row_v3(row: Mapping[str, Any]) -> FlowState:
     _require(row.get("split") == "TRAIN", "non-TRAIN value state entered rollout")
-    _require(int(row.get("base_flow_training_seed", -1)) == 20260904, "value rollout seed differs")
+    _require(int(row.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V3, "value rollout seed differs")
     edits = tuple(
         (int(edit["position"]), str(edit["candidate_base"]))
         for edit in row["source_relative_edits"]
@@ -145,10 +145,16 @@ def generation_metadata_from_value_row_v3(
     )
 
 
-def value_rollout_seed_v3(state_index: int, rollout_index: int) -> int:
+def value_rollout_seed_v3(
+    state_index: int,
+    rollout_index: int,
+    *,
+    base_flow_training_seed: int,
+) -> int:
+    _require(base_flow_training_seed in BASE_FLOW_SEEDS_V3, "undeclared rollout base-flow seed")
     _require(state_index >= 0, "value rollout state index is negative")
     _require(0 <= rollout_index < 8, "value rollout index is outside 0..7")
-    return 20260904 + state_index * 1_000_003 + rollout_index
+    return base_flow_training_seed + state_index * 1_000_003 + rollout_index
 
 
 def terminal_rollout_row_v3(
@@ -163,13 +169,19 @@ def terminal_rollout_row_v3(
     _require(terminal_state.terminal_cause is not None, "value rollout did not terminate")
     _require(terminal_state.source_sequence == state_row["source_sequence"], "value rollout source changed")
     _require(terminal_state.edit_count <= int(state_row["assigned_budget"]), "value rollout exceeded edit budget")
+    base_flow_seed = int(state_row["base_flow_training_seed"])
+    _require(base_flow_seed in BASE_FLOW_SEEDS_V3, "terminal rollout base-flow seed differs")
     return {
         "schema_version": "route_a_v3_route2_xeditflow_terminal_rollout.v3",
         "state_id": str(state_row["state_id"]),
         "state_index": int(state_index),
         "rollout_index": int(rollout_index),
-        "rollout_seed": value_rollout_seed_v3(state_index, rollout_index),
-        "base_flow_training_seed": 20260904,
+        "rollout_seed": value_rollout_seed_v3(
+            state_index,
+            rollout_index,
+            base_flow_training_seed=base_flow_seed,
+        ),
+        "base_flow_training_seed": base_flow_seed,
         "source_sequence": terminal_state.source_sequence,
         "candidate_sequence": terminal_state.current_sequence,
         "source_relative_edits": [
@@ -201,6 +213,8 @@ def frozen_rollout_score_row_v3(
     member_rows: Mapping[int, Mapping[str, Any]],
 ) -> dict[str, Any]:
     _require(tuple(sorted(member_rows)) == CRITIC_SEEDS_V3, "critic rollout member seeds changed")
+    base_flow_seed = int(terminal_row.get("base_flow_training_seed", -1))
+    _require(base_flow_seed in BASE_FLOW_SEEDS_V3, "critic rollout base-flow seed differs")
     predictions = []
     for seed in CRITIC_SEEDS_V3:
         member = member_rows[seed]
@@ -215,7 +229,7 @@ def frozen_rollout_score_row_v3(
         "schema_version": "route_a_v3_route2_xeditflow_frozen_rollout_score.v3",
         "state_id": str(terminal_row["state_id"]),
         "rollout_index": int(terminal_row["rollout_index"]),
-        "base_flow_training_seed": 20260904,
+        "base_flow_training_seed": base_flow_seed,
         "critic_seeds": list(CRITIC_SEEDS_V3),
         "calibrated_seed_predictions": predictions,
         "study_neutral": True,
