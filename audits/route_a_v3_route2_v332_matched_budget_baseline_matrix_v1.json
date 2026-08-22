@@ -1,0 +1,53 @@
+{
+  "compute_reporting": {
+    "fully_contract_matched_headline_comparison_row_count": 0,
+    "peak_vram_recorded_row_count": 12,
+    "reason": "Prediction hurdle is not update-budget matched; generation training/HPO is algorithm-specific, six search wall times are not recorded, and both guided methods are closed by Critic V2 NO-GO.",
+    "wall_time_recorded_row_count": 6
+  },
+  "cross_track_numeric_ranking_allowed": false,
+  "generation": {
+    "all_terminal_hard_legality_rate": 1.0,
+    "full_candidate_cap_method_count": 6,
+    "guided_dependency_no_go_rows": 2,
+    "local_search_candidate_count": 21027,
+    "search_method_wall_time_not_recorded_rows": 6,
+    "terminal_generation_wall_time_recorded_rows": 1,
+    "terminal_matched_method_rows": 7
+  },
+  "matched_budget_benchmark_execution_complete": false,
+  "new_training_attempt_created": false,
+  "numeric_result_row_count": 12,
+  "prediction": {
+    "critic_v2_exact_within_screen_budget_rows": 4,
+    "critic_v2_optimizer_steps": 559900,
+    "full_minus_hurdle_task_macro_spearman": -0.015343731738697977,
+    "strongest_hurdle_optimizer_steps": 22120,
+    "strongest_hurdle_update_budget_matched": false,
+    "strongest_same_information_hurdle_rows": 1
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "reporting_matrix_complete": true,
+  "row_count": 14,
+  "schema_version": "route_a_v3_route2_v332_matched_budget_baseline_matrix.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "source_data": {
+    "base_flow_config": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/configs/route_a_v3_route2_base_flow_g0_position_progress_gpu_v2.json",
+    "baseline_inventory_matrix": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_baseline_matrix_v1.csv",
+    "critic_protocol": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+    "critic_terminal_audit": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/audits/route_a_v3_route2_critic_v2_control_terminal_no_go_v1.json",
+    "generation_geometry_audit": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/audits/route_a_v3_route2_generation_action_space_geometry_v1.json",
+    "generation_table": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_generation_baseline_table_v1.csv",
+    "terminal_snapshot": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json"
+  },
+  "status": "MATCHED_BUDGET_REPORTING_MATRIX_RENDERED_CONTRACT_COMPLETE_MATCH_NOT_ESTABLISHED",
+  "table_path": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
+  "track_counts": {
+    "GENERATION": 9,
+    "PREDICTION": 5
+  }
+}

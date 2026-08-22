@@ -1,0 +1,110 @@
+{
+  "schema_version": "route_a_v3_route2_v332_matched_budget_terminal_input_snapshot.v1",
+  "status": "FROZEN_TERMINAL_COMPUTE_FIELDS_CAPTURED_FOR_MATCHED_BUDGET_MATRIX",
+  "observed_at": "2026-08-22T16:08:41+08:00",
+  "capture_method": "READ_ONLY_FIELD_EXTRACTION_FROM_CENTRAL_TERMINAL_LEDGER_AND_EXPLICIT_FROZEN_SUMMARY",
+  "source_paths": {
+    "central_training_attempts": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
+    "strongest_same_information_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_scaled_seed20260821_gpu0_v1/training_summary.json"
+  },
+  "critic_v2_screen": {
+    "screen_seed": 20260825,
+    "shared_train_record_count": 89580,
+    "shared_validation_record_count": 18293,
+    "shared_withheld_test_record_count": 18292,
+    "shared_evaluation_record_count": 0,
+    "shared_batch_size": 16,
+    "shared_epochs": 100,
+    "shared_optimizer_steps": 559900,
+    "shared_learning_rate": 0.0001,
+    "shared_weight_decay": 0.0001,
+    "shared_training_precision": "BF16",
+    "shared_trainable_parameter_count": 9342914,
+    "shared_frozen_parameter_count": 113389056,
+    "shared_total_effective_parameter_count": 122731970,
+    "budget_match_status": "EXACT_MATCH_WITHIN_CRITIC_V2_SCREEN",
+    "arms": {
+      "full": {
+        "attempt_id": "mrnabert_critic_v2_full_seed20260825::full",
+        "status": "COMPLETED",
+        "scientific_role": "CRITIC_V2_FULL_SOURCE_CANDIDATE_EDIT",
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "physical_gpu_index": 2,
+        "selected_epoch": 98,
+        "task_macro_spearman": 0.11637066318689378,
+        "task_macro_standardized_mae": 2.222825851326906,
+        "peak_vram_mb": 967.45703125,
+        "wall_time_seconds": 140326.820738554,
+        "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/full"
+      },
+      "candidate_permutation": {
+        "attempt_id": "mrnabert_critic_v2_candidate_permutation_seed20260825::candidate_permutation",
+        "status": "COMPLETED",
+        "scientific_role": "CRITIC_V2_MATCHED_CANDIDATE_PERMUTATION_CONTROL",
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "physical_gpu_index": 4,
+        "selected_epoch": 12,
+        "task_macro_spearman": 0.08018546242383856,
+        "task_macro_standardized_mae": 2.3963102262002614,
+        "peak_vram_mb": 967.45703125,
+        "wall_time_seconds": 122424.6802546978,
+        "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/candidate_permutation"
+      },
+      "source_only": {
+        "attempt_id": "mrnabert_critic_v2_source_only_seed20260825::source_only",
+        "status": "COMPLETED",
+        "scientific_role": "CRITIC_V2_PARAMETER_MATCHED_SOURCE_ONLY_CONTROL",
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_source_only_control",
+        "physical_gpu_index": 3,
+        "selected_epoch": 1,
+        "task_macro_spearman": 0.017976235482461158,
+        "task_macro_standardized_mae": 2.0924846890488147,
+        "peak_vram_mb": 564.80078125,
+        "wall_time_seconds": 102260.38430857658,
+        "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/source_only"
+      },
+      "source_edit_metadata": {
+        "attempt_id": "mrnabert_critic_v2_source_edit_metadata_seed20260825::source_edit_metadata",
+        "status": "COMPLETED",
+        "scientific_role": "CRITIC_V2_PARAMETER_MATCHED_SOURCE_EDIT_METADATA_NO_CANDIDATE_GLOBAL_CONTROL",
+        "model_kind": "delta_pretrained_mrnabert_source_edit_metadata_control",
+        "physical_gpu_index": 5,
+        "selected_epoch": 2,
+        "task_macro_spearman": 0.08655782657012488,
+        "task_macro_standardized_mae": 2.1263093305687955,
+        "peak_vram_mb": 967.45703125,
+        "wall_time_seconds": 125947.43760418892,
+        "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/source_edit_metadata"
+      }
+    }
+  },
+  "strongest_same_information_hurdle": {
+    "baseline_id": "method_repair_global_scaled_seed20260821",
+    "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+    "model_kind": "delta_anchored_position_aware_antisymmetric",
+    "seed": 20260821,
+    "physical_gpu_index": 0,
+    "validation_record_count": 18293,
+    "optimizer_steps": 22120,
+    "selected_epoch": 3,
+    "task_macro_spearman": 0.13171439492559175,
+    "task_macro_standardized_mae": 1.806657840788394,
+    "peak_vram_mb": 592.63427734375,
+    "wall_time_seconds": 1838.011361837387,
+    "trainable_parameter_count": null,
+    "frozen_parameter_count": null,
+    "total_effective_parameter_count": null,
+    "training_epochs": null,
+    "information_match_status": "STRONGEST_SAME_INFORMATION_BASELINE",
+    "budget_match_status": "SAME_INFORMATION_HURDLE_NOT_UPDATE_BUDGET_MATCHED_TO_CRITIC_V2",
+    "development_test_read": false,
+    "new_final_evaluation_read": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
