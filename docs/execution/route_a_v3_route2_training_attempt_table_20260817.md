@@ -1286,3 +1286,8 @@ cache-online v1 raw comparison 是零参数工程验证，不新增 training att
 max/mean gate 终态 FAIL（0.0678864/0.00028031）并保留；阈值未改。C3 runner 随后改为 cache-anchored
 LoRA delta，且 frozen encoder dropout 保持关闭；修复不改变 LoRA rank、可训练 block、head、seed、
 训练预算或科学 gate。v2 同阈值 A100 revalidation 尚未执行，Critic screen 仍未启动。
+
+repair commit `f1b6131` 的 A100 v2 同阈值 revalidation PASS，三几何 max/mean difference=0/0；真实
+anchored backward smoke 仍有 983,040 LoRA gradients、0 frozen-encoder gradients，且无 optimizer step。
+因此本项仍不新增 training attempt。修复 focused/V3.3.2 A100=15/15、96/96，SetFlow 实现全 focused/
+V3.3.2 A100=36/36、96/96；formal screen 尚未启动，中央 100-row 计数不变。

@@ -1900,3 +1900,9 @@ Development TEST、新 final Evaluation、critic/generator success、guided auth
 覆盖重建。工程修复把 C3 表示定义为 `cached base + (online adapted - online zero-LoRA)`，并让 frozen
 encoder 始终 eval、只启用 LoRA dropout；零 LoRA 时应精确返回 cache，非零时保留可微 LoRA delta。
 原 FAIL 不删除；同一阈值的 v2 repair validation 需在新 current HEAD 上一次性执行。
+
+repair commit `f1b6131` 推送并同步 A100 后，v2 在完全相同的三条记录和 0.02/0.005 阈值下 PASS，
+observed max/mean difference 均为精确 0。独立真实 164-nt/7-edit backward smoke 无 optimizer step：
+983,040 LoRA 参数的 32 个 tensor 均收到 gradient，non-LoRA encoder gradient count=0，loss finite，峰值
+显存 684,938,752 bytes；因此 cache anchoring 没有把适配分支常数化。A100 修复 focused=15/15、
+V3.3.2=96/96；SetFlow 全 focused=36/36、V3.3.2=96/96。Critic/SetFlow formal training 仍未启动。

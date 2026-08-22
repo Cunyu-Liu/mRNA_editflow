@@ -57,7 +57,7 @@
     "development_test_record_count": 0,
     "evaluation_record_count": 0,
     "full_load_validation_passed": true,
-    "cache_online_alignment": "V1_RAW_ONLINE_TERMINAL_FAIL_RETAINED_V2_CACHE_ANCHORED_REPAIR_PENDING"
+    "cache_online_alignment": "V1_RAW_ONLINE_TERMINAL_FAIL_RETAINED_V2_CACHE_ANCHORED_PASS"
   },
   "cache_online_alignment_v1_terminal_failure": {
     "status": "XEDITCRITIC_V3_CACHE_ONLINE_ALIGNMENT_FAIL",
@@ -71,7 +71,27 @@
     "diagnosis": "RAW_ONLINE_BF16_BATCH_PADDING_GEOMETRY_HAS_SPARSE_LOCAL_EXTREMA_DESPITE_SMALL_AGGREGATE_MEAN",
     "repair": "CACHE_BASE_PLUS_DIFFERENTIABLE_ONLINE_ADAPTED_MINUS_ONLINE_ZERO_LORA_DELTA",
     "repair_changes_model_capacity_or_gate": false,
-    "repair_revalidation": "PENDING"
+    "repair_revalidation": "PASS_SAME_THRESHOLDS_MAX_AND_MEAN_DIFFERENCE_ZERO"
+  },
+  "cache_online_alignment_v2": {
+    "status": "XEDITCRITIC_V3_CACHE_ONLINE_ALIGNMENT_PASS",
+    "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/cache_online_alignment_v2.json",
+    "alignment_mode": "CACHE_ANCHORED_ZERO_LORA_DELTA",
+    "maximum_absolute_tolerance": 0.02,
+    "mean_absolute_tolerance": 0.005,
+    "observed_maximum_absolute_difference": 0.0,
+    "observed_mean_absolute_difference": 0.0,
+    "preset_record_geometry": [[133, 1], [164, 7], [837, 1]],
+    "parameter_update_count": 0,
+    "lora_backward_smoke": {
+      "lora_trainable_parameter_count": 983040,
+      "lora_parameter_tensor_count": 32,
+      "all_lora_gradients_present": true,
+      "non_lora_encoder_gradient_count": 0,
+      "finite_loss": true,
+      "optimizer_step_executed": false,
+      "peak_vram_bytes": 684938752
+    }
   },
   "tests": {
     "local_focused_passed": 8,
