@@ -2053,3 +2053,22 @@ GPU0–5 free memory 约为 2.6/5.2/3.2/5.2/4.3/5.0GB 且 utilization 均为 100
 不 CPU fallback、继续等待。A100 仍保持 `22317ed` provenance，本批 A100 tests/sync 等 active jobs
 terminal 后执行。所有新 runtime 当前均未执行，Development TEST/Evaluation authorization 与
 submission-ready 均保持 false。
+
+## XEditFlow V3 final per-source evidence assembly（2026-08-23）
+
+最终 gate 之前的统计 assembly 已补齐。每个 base-flow seed 必须精确提供 full soft-value SMC、unguided、
+first-order、simple-rate、generate-then-rerank 和 frozen strongest baseline 六种方法的 closed/open/generation
+evidence。assembler 统一产出 gate 所需的 method metrics，并从 per-source evidence 独立构造 full-vs-unguided
+和 full-vs-strongest 的 10,000 次 source-paired NDCG bootstrap，以及 full-vs-strongest independent-evaluator
+paired margin bootstrap。
+
+closed source 只有双方均为 `DEFINED` 时才进入对应 paired difference；少于两个 measured candidates 或
+zero measured gain 的 source 保持 undefined，不填 0。critic self-score mechanism diagnostic 用 full 与
+unguided 每个 source 的 maximum critic reward 比较；其提高只写 boolean，不影响 measured/evaluator metric。
+六方法任一个 compute ceiling 超过 320 会把 `all_methods_matched_compute_ceiling_met` 置 false。三个冻结 seed
+row 之后只能组成精确 3×6 final manifest，再交给既有 strict adjudicator；不能追加 seed 或遗漏 control。
+
+顺带修复 closed-neighborhood source/candidate 等长已经显式验证后仍使用本机不支持的
+`zip(strict=True)`；不改变 edit 定义或最大 5 edits/120 paths 规则。本批完整 XEditFlow V3 focused=68/68、
+V3.3.2=96/96、compile/diff-check PASS；未读取 Development TEST/Evaluation，未运行 generation 或统计结果。
+A100 tests/sync 仍受 active screen commit provenance 约束。

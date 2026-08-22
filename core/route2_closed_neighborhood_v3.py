@@ -37,7 +37,7 @@ def source_relative_substitutions_v3(
     _require(set(source) <= set("ACGU") and set(candidate) <= set("ACGU"), "closed candidate alphabet differs")
     edits = tuple(
         (index, candidate_base)
-        for index, (source_base, candidate_base) in enumerate(zip(source, candidate, strict=True))
+        for index, (source_base, candidate_base) in enumerate(zip(source, candidate))
         if source_base != candidate_base
     )
     _require(len(edits) <= 5, "closed candidate exceeds the five-edit enumeration ceiling")

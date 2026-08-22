@@ -1,0 +1,56 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_final_statistical_assembly_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_NOT_EXECUTED",
+  "observed_date": "2026-08-23",
+  "required_methods": [
+    "full_soft_value_smc",
+    "unguided_setflow",
+    "first_order_guidance",
+    "simple_rate_guidance",
+    "generate_then_rerank",
+    "strongest_matched_baseline"
+  ],
+  "required_base_flow_training_seeds": [20260904, 20260905, 20260906],
+  "bootstrap": {
+    "analysis_unit": "SOURCE",
+    "iterations": 10000,
+    "ndcg_pairs": ["FULL_VS_UNGUIDED", "FULL_VS_STRONGEST_BASELINE"],
+    "undefined_closed_source_policy": "PAIRWISE_INTERSECTION_EXCLUDE_NOT_ZERO_FILL",
+    "independent_evaluator_pair": "FULL_VS_STRONGEST_BASELINE",
+    "independent_evaluator_source_margins_required": true
+  },
+  "reward_exploitation_diagnostic": {
+    "comparison": "FULL_VS_UNGUIDED_SOURCE_MAXIMUM_CRITIC_REWARD",
+    "can_trigger_pass": false,
+    "measured_and_independent_evaluator_evidence_remain_required": true
+  },
+  "compute": {
+    "all_six_methods_must_meet_ceiling": true,
+    "forward_equivalent_ceiling_per_source": 320
+  },
+  "interfaces": {
+    "seed_assembler": "scripts/route_a_v3/assemble_route2_xeditflow_final_seed_evidence_v3.py",
+    "three_seed_manifest_composer": "scripts/route_a_v3/compose_route2_xeditflow_final_comparison_manifest_v3.py",
+    "terminal_adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditflow_final_v3.py"
+  },
+  "tests": {
+    "local_xeditflow_v3_focused_passed": 68,
+    "local_xeditflow_v3_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "authorization": {
+    "statistical_assembly_executed": false,
+    "final_adjudication_executed": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}
