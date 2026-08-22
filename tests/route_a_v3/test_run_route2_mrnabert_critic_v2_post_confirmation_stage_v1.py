@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -131,6 +133,10 @@ def test_source_orders_gate_test_refit_loso_readiness_and_generation() -> None:
 def test_watcher_is_900_second_pass_only_and_shell_valid() -> None:
     source = WATCHER.read_text(encoding="utf-8")
     assert 'POLL_SECONDS="${POLL_SECONDS:-900}"' in source
+    assert "CONTROL_ADJUDICATION=" in source
+    control_gate = source.index('if [[ -f "${CONTROL_ADJUDICATION}" ]]')
+    three_seed_wait = source.index("waiting_for_critic_v2_three_seed_adjudication")
+    assert source.index("while [[ ! -f") < control_gate < three_seed_wait
     assert source.index("while [[ ! -f") < source.index("supports_test=")
     assert source.index("supports_test=") < source.index('if [[ "${supports_test}" != "true" ]]')
     assert source.index('exit 0') < source.index(
@@ -140,6 +146,50 @@ def test_watcher_is_900_second_pass_only_and_shell_valid() -> None:
         ["bash", "-n", str(WATCHER)], check=False, capture_output=True, text=True
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_watcher_exits_immediately_when_control_gate_is_terminal_no_go(
+    tmp_path: Path,
+) -> None:
+    comparisons = tmp_path / "comparisons"
+    comparisons.mkdir()
+    control = comparisons / (
+        "mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json"
+    )
+    control.write_text(
+        json.dumps(
+            {
+                "status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+                "supports_three_frozen_seeds": False,
+                "development_test_opened": False,
+                "evaluation_opened": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    environment = dict(os.environ)
+    environment.update(
+        {
+            "ROUTE2_ROOT": str(tmp_path),
+            "PYTHON": sys.executable,
+            "POLL_SECONDS": "1",
+        }
+    )
+    result = subprocess.run(
+        ["bash", str(WATCHER)],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=5,
+        env=environment,
+    )
+    assert result.returncode == 0, result.stderr
+    assert (
+        "critic_v2_control_gate_terminal_no_go_post_confirmation_not_started"
+        in result.stdout
+    )
+    assert "waiting_for_critic_v2_three_seed_adjudication" not in result.stdout
+    assert not any(path.is_file() for path in tmp_path.rglob("*") if path != control)
 
 
 def test_historical_v1_scheduler_refuses_before_any_work() -> None:
