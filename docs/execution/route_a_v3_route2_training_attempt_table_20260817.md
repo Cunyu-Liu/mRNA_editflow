@@ -593,6 +593,25 @@ dataset-table + paper-packet + figure-builder 联合 focused suite 均为 17/17�
 终态不变：92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
 
+## Minimum benchmark package itemwise closure（2026-08-22）
+
+本项为非训练 paper-adjudication task，不新增中央 CSV attempt，不读取 Development TEST、
+新 final Evaluation、generated candidates 或 guided outcome，也不重跑任何 terminal 方法。
+对既有 18-row minimum benchmark package table 作终态语义闭合：18/18 requirements 均有
+status、evidence/basis、remaining gap 与 authorized disposition，未裁决行=0，未完成行没有
+被写成 PASS，因此 `itemwise_adjudication_complete=true`。
+
+该状态不等于 package success。14 项为 COMPLETE 或 COMPLETE_WITH_DECLARED_LIMITS，3 项
+PARTIAL，1 项 NOT_AVAILABLE；MBP-10/13/14/15 继续分别受 Critic V2 dependency NO-GO、
+replacement external study unavailable、相应 zero-shot/adaptation 不可执行和 terminal timing
+不可追溯限制。故 `minimum_package_complete=false`、`submission_ready=false`，当前 cohort 的
+授权动作仍是 `NO_RERUN_NO_GUIDED_NO_PROTECTED_OUTCOME_READ`。
+
+GitHub commit `e6607f6` 已推送并在 A100 一次 fast-forward；本机与 A100 paper-evidence
+focused suite 均为 18/18。evidence sources=48（34 local/contract + 14 `/mnt`）、claims=22、
+figures/builders=7/6、中央 100-row 92/3/3/1/1 与
+`scientific_claim_status=NOT_ESTABLISHED` 均不变。
+
 ## Canonical conversion flow figure（2026-08-22）
 
 本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；

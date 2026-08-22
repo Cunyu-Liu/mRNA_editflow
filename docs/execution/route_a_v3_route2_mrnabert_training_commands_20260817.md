@@ -1435,3 +1435,21 @@ GitHub commit `39ce66d` 已推送；A100 自 `e7af043` 一次 fast-forward 到 `
 A100 十四组联合 focused suite 均为 44/44。paper evidence sources=48（34 local/contract、
 14 A100 `/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、
 blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 92/3/3/1/1 均不变。
+
+## 54. V3.3.2 Minimum benchmark package itemwise closure（2026-08-22）
+
+按 Goal 7 顺序核对 18-row minimum benchmark package table 与现有 audit。任务不新增训练、
+不轮询 GPU/训练进度、不读取 Development TEST/new final Evaluation/guided outcome。新增明确
+状态分离：`itemwise_adjudication_complete=true` 表示 18/18 requirement IDs 完整唯一、
+unadjudicated=0、unfinished-as-PASS=false；`minimum_package_complete=false` 则继续保留
+14 complete / 3 partial / 1 unavailable 的真实包状态。
+
+四个 blockers 不变：MBP-10 是 Critic V2 NO-GO 依赖，MBP-13/14 是 replacement study 与
+其 zero-shot/adaptation 缺失，MBP-15 是不能重建且不能为补 timing 重跑 terminal suite 的
+instrumentation gap。当前授权动作为 `NO_RERUN_NO_GUIDED_NO_PROTECTED_OUTCOME_READ`；这使
+“最低包逐项闭合”任务诚实终结，但不解锁 submission-ready 或 final paper outcome。
+
+GitHub commit `e6607f6` 已推送；A100 自 `39ce66d` 一次 fast-forward 到 `e6607f6`，本机/
+A100 paper-evidence focused suite 均为 18/18。evidence sources=48、claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 与
+中央 100-row 92/3/3/1/1 均不变。
