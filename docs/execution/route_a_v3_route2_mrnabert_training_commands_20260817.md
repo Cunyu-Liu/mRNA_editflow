@@ -1295,8 +1295,9 @@ GitHub commits `f28d04f` 与 `9659da7` 已推送；A100 两次 builder focused t
 终态 PNG/PDF/SVG、manifest 与 alt text 保存于
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/`。视觉与格式审计确认
 PNG `2400×2520`、约 300 dpi、全不透明，PDF 字体嵌入且无 raster image，SVG 无 raster
-image；`publisher_compliance_claimed=false`。paper evidence sources=36
-（local/contract 23、A100 `/mnt` 13），claim markers=22、figures/builders=6/5；本机九组
-联合 focused suite 为 29/29，最低包 14/3/1、blockers=MBP-10/13/14/15 与
+image；`publisher_compliance_claimed=false`。paper integration commit `f94372b` 后，
+evidence sources=36（local/contract 23、A100 `/mnt` 13），claim markers=22、
+figures/builders=6/5；本机与 A100 九组联合 focused suite 均为 29/29，最低包 14/3/1、
+blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。此非训练任务不新增中央 attempt，100-row 的 92/3/3/1/1
 终态分布不变；Development TEST、new final Evaluation 与 guided XEditFlow 未打开。

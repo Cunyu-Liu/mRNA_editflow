@@ -683,6 +683,7 @@ evaluator 只保留 Development method-selection qualification；Base Flow 30-ep
 
 GitHub commits `f28d04f`/`9659da7` 已推送，A100 builder focused test 2/2 passed；正式
 PNG/PDF/SVG、manifest 与 alt text 已保存到 `/mnt/.../figures/route2_v332_v1/`，视觉和
-矢量/字体/不透明审计通过。paper evidence sources=36（23 local/contract + 13 `/mnt`）、
-claim markers=22、figures/builders=6/5；本机九组联合 focused suite 为 29/29。MBP 14/3/1、
+矢量/字体/不透明审计通过。paper integration commit `f94372b` 后，evidence sources=36
+（23 local/contract + 13 `/mnt`）、claim markers=22、figures/builders=6/5；本机与 A100
+九组联合 focused suite 均为 29/29。MBP 14/3/1、
 四个 blockers、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1 终态均不变。
