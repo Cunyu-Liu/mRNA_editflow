@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_v332_study_rights_provider_evidence_table.v1",
+  "status": "OFFICIAL_PROVIDER_POLICIES_BOUND_ANALYSIS_AND_CITATION_ROUTE_SUPPORTED_PROJECT_REDISTRIBUTION_NOT_AUTHORIZED_HUMAN_REVIEW_PENDING",
+  "authority": {
+    "rights_table": "docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv",
+    "official_source_snapshot": "audits/route_a_v3_route2_v332_rights_provider_official_source_snapshot_v1.json",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md"
+  },
+  "row_count": 14,
+  "provider_counts": {
+    "NCBI_GEO": 12,
+    "ENCODE": 1,
+    "EMBL_EBI_BIOSTUDIES_ARRAYEXPRESS": 1
+  },
+  "access_route_counts": {
+    "REUSED_PUBLIC_SOURCE_PROVIDER_IP_EXCEPTION": 12,
+    "REUSED_PUBLIC_SOURCE_PROVIDER_USE_POLICY_LICENSE_REVIEW_PENDING": 1,
+    "REUSED_PUBLIC_SOURCE_MIGRATED_RECORD_LICENSE_UNKNOWN": 1
+  },
+  "official_provider_policy_bound_count": 14,
+  "repository_accession_resolution_count": 14,
+  "analysis_and_publication_use_route_supported_count": 14,
+  "dataset_citation_action_declared_count": 14,
+  "study_specific_license_record_present_count": 0,
+  "project_payload_redistribution_authorized_count": 0,
+  "accountable_human_review_pending_count": 14,
+  "prior_converter_declaration_counts": {
+    "true": 1,
+    "false": 8,
+    "not_declared_as_boolean": 5
+  },
+  "fair_evidence_counts": {
+    "findable": 14,
+    "accessible_metadata": 14,
+    "interoperable_metadata_assessed": 0,
+    "reusable_license_complete": 0
+  },
+  "target_journal_status": "TARGET_JOURNAL_PENDING_SPRINGER_NATURE_POLICY_BASELINE_ONLY",
+  "provider_policy_is_study_specific_license": false,
+  "public_release_authorized": false,
+  "human_content_and_rights_verification_complete": false,
+  "minimum_package_complete": false,
+  "submission_ready": false,
+  "table_path": "docs/paper/route2_v332_study_rights_provider_evidence_table_v1.csv",
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}

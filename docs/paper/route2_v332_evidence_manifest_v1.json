@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:24:33+08:00",
+    "observed_at": "2026-08-22T18:39:39+08:00",
     "status": "PASS",
-    "source_locations_checked": 59,
-    "local_or_contract_locations_checked": 45,
+    "source_locations_checked": 62,
+    "local_or_contract_locations_checked": 48,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -420,6 +420,30 @@
       "external_evidence": false
     },
     {
+      "evidence_id": "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
+      "kind": "official_provider_policy_and_accession_resolution_snapshot",
+      "location": "audits/route_a_v3_route2_v332_rights_provider_official_source_snapshot_v1.json",
+      "locator": "outcome-free official policy and selected accession-resolution fields for 12 GEO, one ENCODE and one migrated BioStudies ArrayExpress study; provider exceptions and target-journal baseline retained without treating a general policy as a study-specific license",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-RIGHTS-PROVIDER-BUILDER",
+      "kind": "reproducible_study_rights_provider_evidence_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_study_rights_provider_evidence_table_v1.py",
+      "locator": "deterministic binding of the 14-study rights inventory to the frozen official-provider snapshot; explicit access, analysis/publication, citation, redistribution, human-review and FAIR fields; protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-RIGHTS-PROVIDER-AUDIT",
+      "kind": "derived_study_rights_provider_evidence_table_audit",
+      "location": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
+      "locator": "14 official provider and accession routes; 14 analysis/publication and citation routes, zero study-specific license records, zero project redistribution authorizations, 14 pending human reviews and FAIR evidence counts 14/14/0/0; table at docs/paper/route2_v332_study_rights_provider_evidence_table_v1.csv",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
       "evidence_id": "E-R2-METHODS-COMPLETION-AUDIT",
       "kind": "derived_methods_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_methods_completion_v1.json",
@@ -447,7 +471,7 @@
       "evidence_id": "E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT",
       "kind": "derived_data_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
-      "locator": "internal Data Availability statement separating third-party source locators, small version-controlled aggregate evidence and non-public large project artifacts; zero human-verified study-bound licenses, zero of 14 study-payload release authorizations, no availability-on-request promise, no permanent archive and no public payload/weight/generated-candidate release",
+      "locator": "internal Data Availability statement binding 14 official provider and accession routes while separating analysis/citation support from redistribution authority; zero study-specific license records, zero of 14 project payload-release authorizations, FAIR evidence 14/14/0/0, no availability-on-request promise, no permanent archive and no public payload/weight/generated-candidate release",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },

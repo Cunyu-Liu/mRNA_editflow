@@ -26,7 +26,11 @@
     "data_availability": {
       "status": "COMPLETE_INTERNAL_RIGHTS_REVIEW_PENDING",
       "completion_audit": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
+      "provider_evidence_audit": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
       "accountable_human_rights_review_complete": false,
+      "provider_evidence_human_verification_complete": false,
+      "fair_interoperability_assessment_complete": false,
+      "fair_reusable_license_evidence_complete": false,
       "public_release_ready": false,
       "submission_ready": false
     },
@@ -348,6 +352,49 @@
         "E-R2-DATA-TABLE",
         "E-R2-DATA-RIGHTS-EXPOSURE-BUILDER",
         "E-R2-DATA-RIGHTS-EXPOSURE-AUDIT"
+      ]
+    },
+    {
+      "method_id": "M-R2-STUDY-RIGHTS-PROVIDER-EVIDENCE",
+      "label": "Official provider policy and accession-resolution evidence binding",
+      "analysis_intent": "DATA_AVAILABILITY_PROVIDER_EVIDENCE_AND_REDISTRIBUTION_BOUNDARY_REPORTING",
+      "status": "OFFICIAL_PROVIDER_ROUTES_BOUND_PROJECT_REDISTRIBUTION_NOT_AUTHORIZED_HUMAN_REVIEW_PENDING",
+      "row_count": 14,
+      "study_count": 14,
+      "provider_counts": {
+        "NCBI_GEO": 12,
+        "ENCODE": 1,
+        "EMBL_EBI_BIOSTUDIES_ARRAYEXPRESS": 1
+      },
+      "official_provider_policy_bound_count": 14,
+      "repository_accession_resolution_count": 14,
+      "analysis_and_publication_use_route_supported_count": 14,
+      "dataset_citation_action_declared_count": 14,
+      "study_specific_license_record_present_count": 0,
+      "project_payload_redistribution_authorized_count": 0,
+      "accountable_human_review_pending_count": 14,
+      "fair_evidence_counts": {
+        "findable": 14,
+        "accessible_metadata": 14,
+        "interoperable_metadata_assessed": 0,
+        "reusable_license_complete": 0
+      },
+      "target_journal_status": "TARGET_JOURNAL_PENDING_SPRINGER_NATURE_POLICY_BASELINE_ONLY",
+      "official_source_snapshot": "audits/route_a_v3_route2_v332_rights_provider_official_source_snapshot_v1.json",
+      "builder": "scripts/route_a_v3/build_route2_v332_study_rights_provider_evidence_table_v1.py",
+      "table": "docs/paper/route2_v332_study_rights_provider_evidence_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
+      "focused_test": "tests/route_a_v3/test_build_route2_v332_study_rights_provider_evidence_table_v1.py",
+      "human_content_and_rights_verification_complete": false,
+      "minimum_package_complete": false,
+      "submission_ready": false,
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
+        "E-R2-RIGHTS-PROVIDER-BUILDER",
+        "E-R2-RIGHTS-PROVIDER-AUDIT"
       ]
     },
     {

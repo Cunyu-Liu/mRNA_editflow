@@ -6,14 +6,18 @@
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
     "manuscript": "docs/paper/route2_v332_methods_results_draft_v1.md",
     "data_rights_audit": "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json",
+    "provider_rights_evidence_audit": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
     "consistency_manifest": "docs/paper/route2_v332_consistency_manifest_v1.json",
     "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json"
   },
   "data_availability_heading": "Data Availability",
-  "data_availability_paragraph_count": 3,
+  "data_availability_paragraph_count": 5,
   "coverage": {
     "third_party_accession_and_locator_role_reported": true,
     "locator_separated_from_access_and_reuse_authority": true,
+    "official_provider_policy_and_accession_resolution_bound": true,
+    "provider_policy_exception_and_study_license_boundary_reported": true,
+    "fair_findability_accessibility_and_license_gaps_reported": true,
     "upstream_payload_redistribution_not_claimed": true,
     "small_aggregate_evidence_separated_from_data_release": true,
     "large_project_artifact_storage_boundary_reported": true,
@@ -25,9 +29,27 @@
   },
   "availability_facts": {
     "study_count": 14,
+    "provider_evidence_row_count": 14,
+    "provider_counts": {
+      "NCBI_GEO": 12,
+      "ENCODE": 1,
+      "EMBL_EBI_BIOSTUDIES_ARRAYEXPRESS": 1
+    },
+    "official_accession_resolution_count": 14,
+    "analysis_and_publication_use_route_supported_count": 14,
+    "study_specific_license_record_present_count": 0,
     "study_bound_human_verified_license_registry_present": false,
     "license_human_review_pending_count": 14,
     "public_study_payload_release_authorized_count": 0,
+    "fair_evidence_counts": {
+      "findable": 14,
+      "accessible_metadata": 14,
+      "interoperable_metadata_assessed": 0,
+      "reusable_license_complete": 0
+    },
+    "target_journal_status": "TARGET_JOURNAL_PENDING_SPRINGER_NATURE_POLICY_BASELINE_ONLY",
+    "official_provider_policy_is_study_specific_license": false,
+    "official_provider_evidence_human_verified": false,
     "third_party_current_access_verified_for_all_studies": false,
     "third_party_reuse_terms_verified_for_all_studies": false,
     "aggregate_tables_and_source_locators_version_controlled": true,

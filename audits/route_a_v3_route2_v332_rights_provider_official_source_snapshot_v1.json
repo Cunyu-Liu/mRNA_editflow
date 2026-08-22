@@ -1,0 +1,88 @@
+{
+  "schema_version": "route_a_v3_route2_v332_rights_provider_official_source_snapshot.v1",
+  "observed_at": "2026-08-22T18:39:39+08:00",
+  "collection_scope": "OFFICIAL_PROVIDER_POLICY_AND_ACCESSION_RESOLUTION_ONLY_NO_STUDY_OUTCOME_CONTENT_RETAINED",
+  "target_journal_status": "TARGET_JOURNAL_PENDING_SPRINGER_NATURE_POLICY_BASELINE_ONLY",
+  "springer_nature_policy": {
+    "url": "https://www.springernature.com/gp/authors/research-data-policy",
+    "observed_scope": "Data Availability must cover original and reused supporting data, state where data can be found and give applicable access terms even when data cannot be shared publicly.",
+    "target_journal_specific_check_complete": false
+  },
+  "providers": {
+    "NCBI_GEO": {
+      "repository_name": "NCBI Gene Expression Omnibus (GEO)",
+      "policy_url": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+      "policy_version_or_date": "LAST_MODIFIED_2026-07-08",
+      "access_policy": "NCBI encourages scientific-community access to GEO.",
+      "use_policy": "NCBI itself places no restrictions on GEO data use or distribution.",
+      "distribution_exception": "Submitters may retain patent, copyright or other intellectual-property rights; NCBI cannot grant unrestricted permission for every submitted item.",
+      "project_repackaging_authorized_by_provider_policy_alone": false,
+      "accession_resolution_method": "NCBI_EUTILS_GDS_BATCH_QUERY_SELECTED_ACCESSION_FIELD_ONLY",
+      "target_accessions_returned": [
+        "GSE114002",
+        "GSE145046",
+        "GSE149487",
+        "GSE186455",
+        "GSE200304",
+        "GSE207584",
+        "GSE217518",
+        "GSE232572",
+        "GSE246381",
+        "GSE256185",
+        "GSE261709",
+        "GSE269595"
+      ],
+      "study_content_fields_retained": [
+        "accession"
+      ]
+    },
+    "ENCODE": {
+      "repository_name": "ENCODE Data Coordination Center",
+      "policy_url": "https://www.encodeproject.org/about/data-use-policy/",
+      "portal_terms_url": "https://www.encodeproject.org/help/rest-api/",
+      "policy_version_or_date": "UPDATED_2019-01-09",
+      "access_policy": "Released ENCODE data are intended for rapid dissemination and unrestricted scientific use.",
+      "use_policy": "The ENCODE portal permits download, analysis and publication of released data without general use restrictions.",
+      "distribution_exception": "The reviewed provider policy does not separately adjudicate this project's repackaging or redistribution of the exact downloaded asset bundle.",
+      "project_repackaging_authorized_by_provider_policy_alone": false,
+      "accession": "ENCSR854RUF",
+      "accession_resolution_method": "OFFICIAL_LANDING_HTTP_STATUS_BODY_DISCARDED",
+      "http_status": 200,
+      "effective_url": "https://www.encodeproject.org/publication-data/ENCSR854RUF/",
+      "study_content_fields_retained": [
+        "accession",
+        "http_status",
+        "effective_url"
+      ]
+    },
+    "EMBL_EBI_BIOSTUDIES_ARRAYEXPRESS": {
+      "repository_name": "EMBL-EBI BioStudies ArrayExpress collection",
+      "collection_url": "https://www.ebi.ac.uk/biostudies/arrayexpress/",
+      "submission_and_license_policy_url": "https://www.ebi.ac.uk/biostudies/submit",
+      "migration_notice_url": "https://www.ebi.ac.uk/about/news/updates-from-data-resources/arrayexpress-retired/",
+      "policy_version_or_date": "ARRAYEXPRESS_MIGRATED_2022-09-30_POLICY_OBSERVED_2026-08-22",
+      "access_policy": "ArrayExpress functional-genomics records are served through the BioStudies ArrayExpress collection.",
+      "use_policy": "The collection provides functional-genomics data and metadata for community reuse.",
+      "distribution_exception": "BioStudies states that new datasets use CC0, but that scope was not proven to apply retrospectively to this migrated E-MTAB record.",
+      "project_repackaging_authorized_by_provider_policy_alone": false,
+      "accession": "E-MTAB-10902",
+      "accession_resolution_method": "OFFICIAL_BIOSTUDIES_API_SELECTED_RIGHTS_FIELDS_ONLY",
+      "api_accession_returned": true,
+      "accession_specific_license_field_count": 0,
+      "accession_specific_release_field_count": 0,
+      "study_content_fields_retained": [
+        "accno",
+        "license_field_count",
+        "release_field_count"
+      ]
+    }
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "claim_boundary": "Official provider access and analysis policies support accession citation and reused-source reporting, but do not by themselves authorize this project to redistribute study payloads. Study-specific accountable-human rights review remains required."
+}

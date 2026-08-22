@@ -873,6 +873,29 @@ reuse terms. This project therefore does not redistribute the upstream study
 payloads, and users must consult the original providers and applicable terms for
 source-data access.
 
+For the 12 GEO studies, every target accession resolved through the official
+NCBI accession service. NCBI states that it does not itself restrict GEO data
+use or distribution, while also warning that submitters may retain patent,
+copyright or other intellectual-property rights and that NCBI cannot grant
+unrestricted permission for every submitted item. We therefore treat the GEO
+policy as support for source access, analysis and accession citation, not as
+study-specific authority for this project to redistribute the corresponding
+payloads.
+[evidence:E-R2-RIGHTS-PROVIDER-SNAPSHOT,E-R2-RIGHTS-PROVIDER-AUDIT]
+
+The ENCODE accession resolved to an official released-data landing page, and
+the provider policy supports download, analysis and publication; project-level
+repackaging of the exact asset bundle remains unverified. The migrated
+E-MTAB-10902 record resolved in BioStudies, but the selected rights fields did
+not provide a record-specific license or release field, so the current CC0
+policy for new BioStudies submissions was not applied retrospectively. Across
+all 14 studies, official provider metadata support findability, metadata access,
+analysis and dataset citation, but zero study-specific license records and zero
+project payload-release authorizations are recorded. The corresponding FAIR
+evidence counts are 14 findable, 14 metadata-accessible, zero with assessed
+interoperable metadata and zero with a complete reusable-license record.
+[evidence:E-R2-RIGHTS-PROVIDER-SNAPSHOT,E-R2-RIGHTS-PROVIDER-BUILDER,E-R2-RIGHTS-PROVIDER-AUDIT]
+
 The current working branch contains small derived aggregate tables, manifests,
 audits and figure-source material needed to trace the reported benchmark. It is
 an internal version-controlled evidence packet, not a permanent archive or an
