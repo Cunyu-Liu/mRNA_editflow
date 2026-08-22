@@ -531,6 +531,6 @@ outcome。
 审计同时记录两个 2026-08-17 inventory 的陈旧字段：旧 GSE232572 `EVALUATION` role、
 `LOCAL_BRANCH_NOT_PUSHED`、mRNABERT HPO running 与 historical summary 的 provisional
 paper label 均由 V3.3.2 合同和 terminal evidence 覆盖，但不篡改冻结 snapshot。
-本机 focused suite 30/30 passed。没有读取 Development TEST/new final Evaluation，
-没有运行 guided 或 E-MTAB-10902 outcome evaluation，也没有参数更新；中央训练 CSV
-不新增 attempt，100-row 终态分布不变。
+本机与 A100 focused suite 均为 30/30 passed。没有读取 Development TEST/new final
+Evaluation，没有运行 guided 或 E-MTAB-10902 outcome evaluation，也没有参数更新；
+中央训练 CSV 不新增 attempt，100-row 终态分布不变。

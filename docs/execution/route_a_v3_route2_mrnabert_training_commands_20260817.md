@@ -1115,6 +1115,6 @@ conditional target route，不能由旧 GSE summary 的 provisional label 自动
 
 paper packet 已同步为 22 个唯一 claim markers、19 个 evidence sources，并显式记录
 GSE232572 historical role 与旧 inventory role/delivery/running-state 字段由 V3.3.2
-authority 覆盖。本机 inventory/split/baseline/E-MTAB/paper focused suite 为 30/30
-passed。本任务不运行训练、guided、E-MTAB outcome 或新 final Evaluation，不新增中央
-attempt，100-row 终态不变。
+authority 覆盖。本机与 A100 inventory/split/baseline/E-MTAB/paper focused suite 均为
+30/30 passed。本任务不运行训练、guided、E-MTAB outcome 或新 final Evaluation，
+不新增中央 attempt，100-row 终态不变。
