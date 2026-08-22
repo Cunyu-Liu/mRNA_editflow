@@ -77,6 +77,41 @@
       "setflow_source_cache": 2332
     },
     "scheduled_combined_check_result": "ALL_THREE_ALIVE_NO_TERMINAL_SUMMARY",
+    "second_scheduled_check": {
+      "critic_c0": {
+        "status": "TERMINAL_SCREEN_ARM_COMPLETE",
+        "task_macro_spearman": 0.11081805900233642,
+        "task_macro_standardized_mae": 1.992429761108114,
+        "positive_task_count": 8,
+        "prediction_std": 52.321353260048454,
+        "optimizer_updates": 22416,
+        "ledger_status": "COMPLETED"
+      },
+      "critic_c1": {
+        "status": "RUNNING",
+        "elapsed_seconds": 4415,
+        "ledger_status": "RUNNING"
+      },
+      "setflow_source_cache": {
+        "status": "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE",
+        "artifact_size_bytes": 4332870924,
+        "eligible_record_count": 84218,
+        "unique_source_count": 19303,
+        "total_token_count": 2817781,
+        "embedding_width": 768,
+        "dtype": "torch.float16",
+        "raw_sequence_payload_written": false,
+        "development_test_record_count": 0,
+        "evaluation_record_count": 0
+      }
+    },
+    "gpu_wait": {
+      "status": "WAITING_FOR_SUFFICIENT_GPU_MEMORY",
+      "gpu_0_to_5_free_memory_mb": [2569, 9939, 3215, 7889, 4287, 7027],
+      "c2_c3_started": false,
+      "unknown_or_other_project_processes_terminated": false,
+      "cpu_fallback_used": false
+    },
     "next_check_minimum_interval_minutes": 30,
     "full_training_logs_scanned": false
   }

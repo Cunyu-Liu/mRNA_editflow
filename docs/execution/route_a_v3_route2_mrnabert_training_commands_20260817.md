@@ -1970,3 +1970,13 @@ V3.3.2=96/96。当前状态仍是 `CRITIC_NOT_READY_FOR_GUIDANCE`，未运行 co
 
 最终 three-seed XEditFlow adjudicator 也已实现：每 seed 必须有六 method metrics 和 source-paired bootstrap，
 严格 gate PASS 才打开 replacement Evaluation，且不会直接标记投稿 ready。focused=4/4、V3.3.2=96/96。
+
+## C0/cache terminal 与 GPU wait（2026-08-23）
+
+C0 terminal：seed20260830、8 passes、22,416 updates、task-macro Spearman=0.1108180590、8/9 task positive、
+standardized MAE=1.9924297611、prediction std=52.32135326，ledger=COMPLETED，TEST/Evaluation read=0。
+C1 elapsed=4,415 秒仍 RUNNING；下次至少 30 分钟后查。
+
+SetFlow source-token cache 全量载入 PASS：4,332,870,924 bytes、84,218 records、19,303 sources、
+2,817,781×768 float16 tokens，raw sequence=false、TEST/Evaluation=0。GPU0–5 仅余约
+2.6/9.9/3.2/7.9/4.3/7.0GB，均有其他合法任务；C2/C3 未启动，不终止他人任务、不降容量、不 CPU fallback。

@@ -1358,3 +1358,22 @@ V3.3.2=96/96。该 composer 不读取 record/outcome，且始终保持 new final
 NDCG/evaluator bootstrap、matched compute 与 protected-read evidence，随后调用严格 three-seed gate。
 只有完整 PASS 才授权一次 replacement Evaluation；即使 PASS，`submission_ready` 仍保持 false，必须等待
 external measured outcome 复现。focused=4/4、V3.3.2=96/96；当前没有 final comparison artifacts，未运行。
+
+## XEditCritic V3 C0 terminal 与 SetFlow source-cache terminal（2026-08-23）
+
+第二次合同节奏检查时，C0 已 terminal，C1 仍运行。C0 使用 seed20260830、8 passes、22,416 updates，
+parameter_changed=true；Development Validation task-macro Spearman=`0.1108180590`、positive tasks=8/9、
+task-macro standardized MAE=`1.9924297611`、prediction std=`52.32135326`。C0 是 matched same-information
+baseline，不单独触发 selectable gate；该结果原样保留，不重训。Development TEST/new Evaluation read=0，
+central ledger 行为 `COMPLETED`。C1 在 elapsed=4,415 秒仍为 `RUNNING`，无 terminal artifact，下一次至少
+30 分钟后检查。
+
+SetFlow source-token cache 已 terminal 并完成一次全量 loader validation：artifact=4,332,870,924 bytes，
+eligible records=84,218、unique sources=19,303、source tokens=2,817,781、tensor shape=`[2817781,768]`、
+float16；raw sequence payload=false、TEST/Evaluation records=0。构建任务不更新参数，不新增 training attempt。
+
+GPU0–5 当时 free memory 仅约 2.6/9.9/3.2/7.9/4.3/7.0GB，主要由 tokenizer benchmark、
+ToeholdDesignBench 与其他用户任务占用；没有本项目可安全终止的遗留进程。C2/C3 因显存不足未启动，
+没有写虚假 RUNNING ledger，也没有改变 batch/容量或 CPU fallback。中央表现为原 100 rows + C0/C1 两行：
+总计102，completed93，另有 C1 running1；旧 3 failed/3 incomplete/1 stopped-throughput/1 stopped-priority
+保持。A100 HEAD 仍为 `22317ed`，未同步后续代码。
