@@ -47,6 +47,8 @@ def test_code_availability_is_complete_but_release_and_submission_are_false() ->
     assert current["accountable_human_license_review_complete"] is False
     assert current["route2_current_readme_notice_complete"] is True
     assert current["route2_clean_environment_reproduction_complete"] is False
+    assert current["formal_release_payload_boundary_compliant"] is False
+    assert current["legacy_tracked_payload_policy_resolved"] is False
     assert current["immutable_release_assigned"] is False
     assert current["submission_ready"] is False
     unresolved = draft.split("## Unresolved items before manuscript integration", 1)[1]
@@ -76,11 +78,24 @@ def test_code_availability_retains_repository_environment_and_license_boundaries
     assert not any(ROOT.glob("LICENSE*"))
     assert facts["code_availability_on_request_promise_made"] is False
     assert facts["large_artifact_storage_root"] in section
+    assert facts["declared_route2_runtime_artifacts_in_git_code_release"] is False
+    assert facts["legacy_data_payloads_tracked_in_git"] is True
+    assert facts["legacy_tracked_payload_file_count"] == 5
+    assert facts["legacy_tracked_payload_total_size_bytes"] == 34786075
+    assert facts["legacy_b0_direct_reader_entrypoint_count"] == 4
+    assert facts["legacy_b0_active_loader_negative_test_evidence_present"] is False
+    assert facts["formal_release_payload_boundary_compliant"] is False
+    assert facts["legacy_payload_migration_authorized"] is False
+    assert facts["legacy_payload_content_opened_for_release_audit"] is False
     assert "does not assert unauthenticated public access" in section
     assert "not yet been independently reproduced" in section
     assert "README now begins with a Route A V3.3.2 branch notice" in section
     assert "no standalone `LICENSE` file is tracked" in section
     assert "No code-availability-on-request promise is made" in section
+    assert "five files total 34,786,075 bytes" in section
+    assert "four callable legacy entrypoints" in section
+    assert "no corresponding negative-loader test was found" in section
+    assert "branch is not eligible for a formal release" in section
 
 
 def test_code_availability_evidence_is_registered_without_new_claim_markers() -> None:
@@ -93,4 +108,6 @@ def test_code_availability_evidence_is_registered_without_new_claim_markers() ->
 
     assert cited <= evidence_ids
     assert "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT" in evidence_ids
+    assert "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT" in evidence_ids
+    assert "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT" in cited
     assert len(re.findall(r"\[claim:C-R2-\d{3}\]", draft)) == 22

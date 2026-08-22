@@ -58,8 +58,8 @@ def test_internal_branch_candidate_is_complete_but_formal_release_is_blocked() -
     assert packet["claim_marker_count"] == 22
     assert packet["supported_claim_row_count"] == 22
     assert packet["unsupported_claim_row_count"] == 13
-    assert packet["evidence_source_count"] == 64
-    assert packet["evidence_local_or_contract_count"] == 50
+    assert packet["evidence_source_count"] == 65
+    assert packet["evidence_local_or_contract_count"] == 51
     assert packet["evidence_a100_mnt_count"] == 14
     assert packet["provider_rights_evidence_row_count"] == 14
     assert packet["study_specific_license_record_present_count"] == 0
@@ -106,13 +106,21 @@ def test_candidate_registers_tracked_payload_policy_without_opening_or_removing_
         row["size_bytes"] for row in policy["tracked_legacy_b0_jsonl_files"]
     )
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 64
+    assert len(evidence_ids) == len(set(evidence_ids)) == 65
     assert {
         "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
         "E-R2-RIGHTS-PROVIDER-BUILDER",
         "E-R2-RIGHTS-PROVIDER-AUDIT",
         "E-R2-RIGHTS-HUMAN-REVIEW-BUILDER",
         "E-R2-RIGHTS-HUMAN-REVIEW-AUDIT",
+        "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT",
     } <= set(evidence_ids)
+    assert policy["tracked_payload_total_size_bytes"] == 34786075
+    assert policy["legacy_b0_direct_reader_entrypoint_count"] == 4
+    assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is False
+    assert policy["recommended_disposition"] == (
+        "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_"
+        "MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD"
+    )
     assert "E-R2-GITHUB-RC-AUDIT" in evidence_ids
     assert len(re.findall(r"\[claim:C-R2-\d{3}\]", draft)) == 22

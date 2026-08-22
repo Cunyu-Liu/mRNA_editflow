@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:58:10+08:00",
+    "observed_at": "2026-08-22T19:08:46+08:00",
     "status": "PASS",
-    "source_locations_checked": 64,
-    "local_or_contract_locations_checked": 50,
+    "source_locations_checked": 65,
+    "local_or_contract_locations_checked": 51,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -460,6 +460,14 @@
       "external_evidence": false
     },
     {
+      "evidence_id": "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT",
+      "kind": "derived_legacy_tracked_payload_release_disposition_audit",
+      "location": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
+      "locator": "path/tracking/size/text-reference-only audit of one legacy Parquet and four superseded B0 JSONL files: five tracked files, 34786075 total bytes, four direct legacy B0 reader entrypoints, no negative-loader test evidence, no payload content opened or mutation performed, and an ordered fail-close-then-migrate recommendation requiring explicit user authorization",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
       "evidence_id": "E-R2-METHODS-COMPLETION-AUDIT",
       "kind": "derived_methods_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_methods_completion_v1.json",
@@ -495,7 +503,7 @@
       "evidence_id": "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT",
       "kind": "derived_code_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
-      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; Route A branch notice present, repository-wide v2 body explicitly non-authoritative for this branch, Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
+      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; five legacy payloads and four direct readers keep the formal-release payload boundary non-compliant; Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },

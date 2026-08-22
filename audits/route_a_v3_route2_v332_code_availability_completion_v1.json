@@ -5,6 +5,7 @@
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
     "manuscript": "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "legacy_tracked_payload_disposition_audit": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
     "consistency_manifest": "docs/paper/route2_v332_consistency_manifest_v1.json",
     "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json"
   },
@@ -18,6 +19,7 @@
     "route2_readme_notice_and_legacy_body_boundary_reported": true,
     "package_metadata_and_standalone_license_state_reported": true,
     "large_artifacts_excluded_from_code_release": true,
+    "legacy_tracked_payload_conflict_and_direct_reader_gap_reported": true,
     "code_availability_on_request_not_promised": true,
     "release_requirements_reported": true
   },
@@ -48,7 +50,15 @@
     "accountable_human_code_license_review_complete": false,
     "code_availability_on_request_promise_made": false,
     "large_artifact_storage_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
-    "large_artifacts_in_git_code_release": false
+    "declared_route2_runtime_artifacts_in_git_code_release": false,
+    "legacy_data_payloads_tracked_in_git": true,
+    "legacy_tracked_payload_file_count": 5,
+    "legacy_tracked_payload_total_size_bytes": 34786075,
+    "legacy_b0_direct_reader_entrypoint_count": 4,
+    "legacy_b0_active_loader_negative_test_evidence_present": false,
+    "formal_release_payload_boundary_compliant": false,
+    "legacy_payload_migration_authorized": false,
+    "legacy_payload_content_opened_for_release_audit": false
   },
   "completion_boundary": {
     "code_availability_section_complete": true,
@@ -57,6 +67,7 @@
     "route2_clean_environment_reproduction_complete": false,
     "immutable_release_assigned": false,
     "public_code_release_claimed": false,
+    "legacy_tracked_payload_policy_resolved": false,
     "minimum_package_complete": false,
     "outcome_trigger_fully_satisfied": false,
     "submission_ready": false

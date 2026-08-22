@@ -940,11 +940,18 @@ file is tracked. Repository access therefore must not be interpreted as an
 independent grant of reuse rights. Large data, checkpoints, model weights,
 generated candidates and run products under
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/` are not part of the Git code
-tree or a declared code release. No code-availability-on-request promise is
-made. A release claim requires an accountable license review, a Route 2-current
-README, an exact clean-environment reproduction check and an immutable tagged or
+tree or a declared code release. Separately, the current working tree still
+tracks one legacy discovery Parquet and four superseded B0 JSONL payloads. The
+five files total 34,786,075 bytes and conflict with the V3.3.2 formal-release
+payload boundary; four callable legacy entrypoints still read the old B0 split
+directory, and no corresponding negative-loader test was found. No payload was
+opened, moved or deleted for this audit, and the branch is not eligible for a
+formal release until the legacy readers and payload disposition are resolved.
+No code-availability-on-request promise is made. A release claim requires an
+accountable license review, a Route 2-current README, an exact clean-environment
+reproduction check, a compliant payload boundary and an immutable tagged or
 archived version.
-[evidence:E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT,E-R2-CONTRACT,E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT]
+[evidence:E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT,E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT,E-R2-CONTRACT,E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT]
 
 ## Unresolved items before manuscript integration
 

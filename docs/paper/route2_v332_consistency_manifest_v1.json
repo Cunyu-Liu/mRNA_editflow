@@ -40,9 +40,12 @@
     "code_availability": {
       "status": "COMPLETE_INTERNAL_RELEASE_REVIEW_PENDING",
       "completion_audit": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
+      "legacy_tracked_payload_disposition_audit": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
       "accountable_human_license_review_complete": false,
       "route2_current_readme_notice_complete": true,
       "route2_clean_environment_reproduction_complete": false,
+      "formal_release_payload_boundary_compliant": false,
+      "legacy_tracked_payload_policy_resolved": false,
       "immutable_release_assigned": false,
       "submission_ready": false
     }

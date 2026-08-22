@@ -1,0 +1,117 @@
+{
+  "schema_version": "route_a_v3_route2_v332_legacy_tracked_payload_release_disposition.v1",
+  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_REMAIN_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
+  "observed_at": "2026-08-22T19:08:46+08:00",
+  "scope": "PATH_TRACKING_SIZE_AND_TEXT_REFERENCE_AUDIT_ONLY_NO_PAYLOAD_CONTENT_OPENED",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "legacy_contract": "docs/contracts/utr_editflow_goal_v3_1.md",
+    "release_candidate_audit": "audits/route_a_v3_route2_v332_github_release_candidate_v1.json"
+  },
+  "contract_boundary": {
+    "current_v332_git_allows_raw_canonical_jsonl_or_parquet_payloads": false,
+    "legacy_v31_requires_old_b0_files_unmodified": true,
+    "legacy_v31_requires_active_loaders_to_reject_old_b0_files": true,
+    "current_and_legacy_requirements_need_deliberate_migration_order": true
+  },
+  "tracked_payloads": [
+    {
+      "path": "data_registry/excel_inventory.parquet",
+      "size_bytes": 46498,
+      "kind": "LEGACY_DISCOVERY_PARQUET",
+      "current_route2_v332_runtime_dependency": false,
+      "text_producer": "scripts/data/import_excel_inventory.py",
+      "current_disposition": "TRACKED_CONFLICTS_WITH_FORMAL_RELEASE_BOUNDARY"
+    },
+    {
+      "path": "data/b0_splits/split_study_disjoint.jsonl",
+      "size_bytes": 11462850,
+      "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
+      "current_route2_v332_runtime_dependency": false,
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+    },
+    {
+      "path": "data/b0_splits/split_cross_region_transfer.jsonl",
+      "size_bytes": 11299013,
+      "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
+      "current_route2_v332_runtime_dependency": false,
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+    },
+    {
+      "path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+      "size_bytes": 7638905,
+      "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
+      "current_route2_v332_runtime_dependency": false,
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+    },
+    {
+      "path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+      "size_bytes": 4338809,
+      "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
+      "current_route2_v332_runtime_dependency": false,
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+    }
+  ],
+  "tracked_payload_file_count": 5,
+  "tracked_payload_total_size_bytes": 34786075,
+  "legacy_b0_jsonl_file_count": 4,
+  "legacy_b0_jsonl_total_size_bytes": 34739577,
+  "text_reference_inventory": {
+    "excel_inventory_parquet_producer_files": [
+      "scripts/data/import_excel_inventory.py"
+    ],
+    "excel_inventory_parquet_current_route2_consumer_files": [],
+    "legacy_b0_direct_reader_entrypoints": [
+      "d1_staging/scripts/b0/audit_split_manifests.py",
+      "d1_staging/scripts/b0/eval_tracks.py",
+      "d1_staging/scripts/b0/leakage_audit.py",
+      "d1_staging/scripts/fm0/fm0_exposure_audit.py"
+    ],
+    "legacy_b0_writer_entrypoints": [
+      "d1_staging/scripts/b0/build_split_manifests.py"
+    ],
+    "legacy_b0_invalidation_declaration_files": [
+      "d1_staging/scripts/b0/b0_v3_1_freezer.py",
+      "docs/contracts/utr_editflow_goal_v3_1.md"
+    ],
+    "legacy_b0_active_loader_negative_test_files": []
+  },
+  "legacy_b0_direct_reader_entrypoint_count": 4,
+  "legacy_b0_active_loader_negative_test_evidence_present": false,
+  "current_head_formal_release_payload_boundary_compliant": false,
+  "code_availability_statement_requires_legacy_payload_qualification": true,
+  "recommended_disposition": {
+    "decision": "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
+    "reason": "Stopping tracking before fail-closing the four direct legacy readers would leave callable entrypoints with missing default inputs; preserving the five payloads in the formal release would violate the current V3.3.2 Git boundary.",
+    "ordered_actions_not_yet_executed": [
+      "Add focused fail-closed guards and negative tests for the four legacy B0 readers while keeping the four JSONL files unmodified.",
+      "Copy the five payloads to /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/ with a small provenance note; do not add project-generated checksums.",
+      "Change the Excel inventory producer default away from the Git tree and retain only its small audit summary in Git.",
+      "After explicit deletion/migration authorization, stop tracking the five payloads in the current HEAD and add narrow ignore rules for the same generated paths.",
+      "Re-run focused and full V3.3.2 tests, then re-adjudicate the formal release candidate."
+    ],
+    "shared_git_history_rewrite_recommended_in_this_task": false,
+    "shared_git_history_rewrite_requires_separate_explicit_authorization": true,
+    "formal_release_or_tag_before_resolution_authorized": false
+  },
+  "actions_performed": {
+    "payload_content_opened": false,
+    "payload_copied": false,
+    "payload_deleted": false,
+    "payload_moved": false,
+    "git_history_rewritten": false,
+    "legacy_reader_behavior_changed": false,
+    "formal_release_or_tag_created": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false,
+  "minimum_package_complete": false,
+  "submission_ready": false
+}

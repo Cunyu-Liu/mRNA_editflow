@@ -30,8 +30,8 @@
     "claim_marker_count": 22,
     "supported_claim_row_count": 22,
     "unsupported_claim_row_count": 13,
-    "evidence_source_count": 64,
-    "evidence_local_or_contract_count": 50,
+    "evidence_source_count": 65,
+    "evidence_local_or_contract_count": 51,
     "evidence_a100_mnt_count": 14,
     "provider_rights_evidence_row_count": 14,
     "study_specific_license_record_present_count": 0,
@@ -78,6 +78,8 @@
     "docs/paper/route2_v332_study_rights_accountable_human_review_packet_v1.csv",
     "docs/paper/route2_v332_study_rights_accountable_human_review_instructions_v1.md",
     "audits/route_a_v3_route2_v332_study_rights_accountable_human_review_packet_v1.json",
+    "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
+    "docs/paper/route2_v332_legacy_tracked_payload_release_disposition_memo_v1.md",
     "audits/route_a_v3_route2_v332_methods_completion_v1.json",
     "audits/route_a_v3_route2_v332_results_completion_v1.json",
     "audits/route_a_v3_route2_v332_discussion_completion_v1.json",
@@ -87,6 +89,8 @@
   "tracked_data_policy": {
     "contract_compliant_for_formal_release": false,
     "automatic_removal_performed": false,
+    "disposition_audit": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
+    "disposition_memo": "docs/paper/route2_v332_legacy_tracked_payload_release_disposition_memo_v1.md",
     "tracked_weight_or_checkpoint_file_count": 0,
     "tracked_parquet_files": [
       {
@@ -114,14 +118,24 @@
       }
     ],
     "legacy_b0_jsonl_total_size_bytes": 34739577,
-    "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and rejects active loading; removing or migrating them requires a separate deliberate repository-policy decision."
+    "tracked_payload_total_size_bytes": 34786075,
+    "legacy_b0_direct_reader_entrypoint_count": 4,
+    "legacy_b0_direct_reader_entrypoints": [
+      "d1_staging/scripts/b0/audit_split_manifests.py",
+      "d1_staging/scripts/b0/eval_tracks.py",
+      "d1_staging/scripts/b0/leakage_audit.py",
+      "d1_staging/scripts/fm0/fm0_exposure_audit.py"
+    ],
+    "legacy_b0_active_loader_negative_test_evidence_present": false,
+    "recommended_disposition": "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
+    "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and requires active loaders to reject them, but four direct legacy readers remain and no negative-loader test was found. Fail-closing those readers must precede any explicitly authorized migration out of the current HEAD."
   },
   "formal_release_blockers": [
     "The minimum benchmark package remains incomplete at 14 complete-or-limited, 3 partial and 1 unavailable, with blockers MBP-10, MBP-13, MBP-14 and MBP-15.",
     "Official provider evidence and a 14-study accountable-human decision register are prepared, but zero rows have accountable sign-off or target-journal policy verification; study-specific rights, evidence-content and code-license verification remains incomplete, and zero project payload redistributions are authorized.",
     "The Route 2 V3.3.2 workflow has not passed an exact clean-environment reproduction from the declared environment descriptors.",
     "No immutable release tag, archived container or persistent archive identifier has been assigned.",
-    "Five tracked legacy JSONL/Parquet payload files conflict with the current contract's formal Git release boundary and cannot be automatically removed without resolving their legacy preservation and reference requirements.",
+    "Five tracked legacy JSONL/Parquet payload files conflict with the current contract's formal Git release boundary; four direct legacy B0 readers and absent negative-loader tests require a fail-close step before any explicitly authorized migration.",
     "Target venue, authorship, contributions, declarations, funding, ethics applicability and AI-use disclosure remain pending."
   ],
   "release_boundary": {
