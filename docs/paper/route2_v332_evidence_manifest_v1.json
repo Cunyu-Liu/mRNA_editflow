@@ -8,11 +8,11 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T14:15:00+08:00",
+    "observed_at": "2026-08-22T14:30:42+08:00",
     "status": "PASS",
-    "source_locations_checked": 25,
-    "local_or_contract_locations_checked": 15,
-    "a100_mnt_locations_checked": 10,
+    "source_locations_checked": 27,
+    "local_or_contract_locations_checked": 16,
+    "a100_mnt_locations_checked": 11,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
     "human_content_verification_completed": false,
@@ -198,6 +198,22 @@
       "kind": "terminal_canonical_conversion_flow_figure_manifest",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_canonical_conversion_flow_figure_v1_manifest.json",
       "locator": "14/8/1/5 study-role counts, 126165/8068/0 record separation, qualification strata, 89580/18293/18292 split, PNG/PDF/SVG outputs and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
+      "kind": "reproducible_development_evaluation_architecture_figure_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_development_evaluation_architecture_figure_v1.py",
+      "locator": "Development TRAIN/VALIDATION/TEST firewall, current Critic V2 NO-GO, registered external-study roles, permanently ordered replacement Evaluation zero-shot-to-adaptation chain, constant-width arrows, alt text and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
+      "kind": "terminal_development_evaluation_architecture_figure_manifest",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_development_evaluation_architecture_figure_v1_manifest.json",
+      "locator": "126165 and 89580/18293/18292 Development boundaries, TEST report-only conditional, Critic V2 current NO-GO, GSE232572/E-MTAB-10902/GSE246381 role separation, replacement Evaluation absent with zero unexposed records, PNG/PDF/SVG outputs and protected-outcome closure",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "publisher_compliance_claimed": false
     }

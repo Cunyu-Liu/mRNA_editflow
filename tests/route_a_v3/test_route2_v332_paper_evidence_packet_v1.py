@@ -61,7 +61,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 25
+    assert len(evidence_ids) == len(set(evidence_ids)) == 27
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -81,15 +81,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 25
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 27
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 15
-    assert preflight["a100_mnt_locations_checked"] == 10
+    assert preflight["local_or_contract_locations_checked"] == 16
+    assert preflight["a100_mnt_locations_checked"] == 11
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
     assert preflight["submission_readiness_changed"] is False
@@ -111,6 +111,9 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-CONVERSION-FIGURE-MANIFEST"]["location"].endswith(
         "/route2_v332_canonical_conversion_flow_figure_v1_manifest.json"
+    )
+    assert by_id["E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"]["location"].endswith(
+        "/route2_v332_development_evaluation_architecture_figure_v1_manifest.json"
     )
 
 
@@ -168,7 +171,7 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     )
 
     assert method["status"] == "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
-    assert method["figure_count"] == 3
+    assert method["figure_count"] == 4
     assert method["formats"] == ["png", "pdf", "svg"]
     assert method["raster_dpi"] == 300
     assert method["target_journal"] == "PENDING_SELECTION"
@@ -186,6 +189,8 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",
         "E-R2-CONVERSION-FIGURE-MANIFEST",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
     ]
 
     result = next(
@@ -203,6 +208,31 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     }
     assert result["workflow_arrow_widths_encode_magnitude"] is False
     assert result["new_final_evaluation_unexposed_records"] == 0
+
+    architecture = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-DEVELOPMENT-EVALUATION-ARCHITECTURE"
+    )
+    assert architecture["development_canonical_records"] == 126165
+    assert architecture["split_record_counts"] == {
+        "TRAIN": 89580,
+        "VALIDATION": 18293,
+        "TEST_WITHHELD": 18292,
+    }
+    assert architecture["critic_ready_for_guidance"] is False
+    assert architecture["historical_gse232572_final_confirmation_eligible"] is False
+    assert architecture["emtab10902_outcome_read"] is False
+    assert architecture["gse246381_outcome_read"] is False
+    assert architecture["replacement_evaluation_registered"] is False
+    assert architecture["replacement_evaluation_unexposed_records"] == 0
+    assert architecture["replacement_evaluation_opened"] is False
+    assert architecture["final_evaluation_order"] == [
+        "FREEZE_PREDICTOR_GENERATOR_BASELINES_METRICS_AND_ADAPTATION_POLICY",
+        "RUN_AND_PERMANENTLY_RECORD_ONE_NEW_STUDY_ZERO_SHOT",
+        "ONLY_THEN_ALLOW_CALIBRATION_OR_FEW_SHOT_ADAPTATION",
+        "ZERO_SHOT_REMAINS_HEADLINE",
+    ]
 
 
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
@@ -552,6 +582,9 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert audit["manuscript_figures"]["status"] == (
         "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
     )
+    assert audit["manuscript_figures"]["figure_count"] == 4
+    assert len(audit["manuscript_figures"]["builders"]) == 3
+    assert len(audit["manuscript_figures"]["focused_tests"]) == 3
     assert audit["manuscript_figures"]["publisher_compliance_claimed"] is False
     assert audit["manuscript_figures"]["new_final_evaluation_read"] is False
     assert audit["external_evaluation"]["replacement_study_registered"] is False

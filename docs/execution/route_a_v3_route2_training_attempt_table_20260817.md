@@ -584,3 +584,24 @@ PNG/PDF/SVG conversion-flow figure、manifest 和 alt text，未覆盖原两图�
 claim markers，evidence sources 增至 25；本机与 A100 四组联合 focused suite 均为 19/19。
 MBP-17 继续是 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`，但最低包仍不完整且
 `submission_ready=false`。中央 100 个 attempts 的 terminal 分布不变。
+
+## Development/Evaluation architecture figure（2026-08-22）
+
+本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；
+只读取已冻结的 dataset qualification table、method-repair/readiness protocols 与 minimum
+package audit，不读取 canonical rows、Development TEST、E-MTAB outcome、sealed GSE246381
+或 new final Evaluation outcome。A100 builder test 2/2 passed，并在既有
+`/mnt/.../figures/route2_v332_v1/` 追加一张 PNG/PDF/SVG architecture figure、manifest
+和 alt text，未覆盖已有图件。
+
+图中保留 Development `126,165` 与 split `89,580/18,293/18,292`，明确 TRAIN 用于拟合、
+VALIDATION 用于选择、Critic V2 当前 NO-GO、TEST 仅在 gate 通过后单次 report-only。
+GSE232572 保持 historical outcome-exposed diagnostic，E-MTAB-10902 保持 conversion-
+failure-only/outcome-unread，GSE246381 保持 sealed/unread；未来 replacement Evaluation
+当前 absent、unexposed records=0，且顺序固定为 full freeze → one zero-shot permanently
+recorded → only then adaptation，zero-shot headline 不得覆盖。
+
+paper packet 仍有 22 个 claim markers，evidence sources 增至 27；manuscript figures
+现为 4 张、3 个 builders，MBP-17 和最低包 14/3/1 汇总不变。中央 100 个 attempts 的
+terminal 分布继续是 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、
+1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。

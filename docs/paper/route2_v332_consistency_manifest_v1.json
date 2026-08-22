@@ -106,7 +106,7 @@
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
       "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
-      "figure_count": 3,
+      "figure_count": 4,
       "formats": ["png", "pdf", "svg"],
       "raster_dpi": 300,
       "target_journal": "PENDING_SELECTION",
@@ -117,7 +117,9 @@
         "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv",
         "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json",
         "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
-        "configs/route_a_v3_route2_method_repair_protocol_v2.json"
+        "configs/route_a_v3_route2_method_repair_protocol_v2.json",
+        "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json",
+        "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json"
       ],
       "protected_outcomes": {
         "development_test_read": false,
@@ -131,7 +133,9 @@
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",
-        "E-R2-CONVERSION-FIGURE-MANIFEST"
+        "E-R2-CONVERSION-FIGURE-MANIFEST",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -357,6 +361,45 @@
       ]
     },
     {
+      "result_id": "R-R2-DEVELOPMENT-EVALUATION-ARCHITECTURE",
+      "status": "PROVISIONAL_DEVELOPMENT_EVALUATION_ARCHITECTURE_FIGURE_RENDERED",
+      "development_canonical_records": 126165,
+      "split_record_counts": {
+        "TRAIN": 89580,
+        "VALIDATION": 18293,
+        "TEST_WITHHELD": 18292
+      },
+      "development_test_role": "WITHHELD_SINGLE_REPORT_ONLY_IF_GATE_PASSES",
+      "critic_v2_gate_status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+      "critic_ready_for_guidance": false,
+      "guided_xeditflow_run": false,
+      "historical_gse232572_records": 8068,
+      "historical_gse232572_final_confirmation_eligible": false,
+      "emtab10902_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+      "emtab10902_outcome_read": false,
+      "gse246381_status": "SEALED_EXCLUDED",
+      "gse246381_outcome_read": false,
+      "replacement_evaluation_registered": false,
+      "replacement_evaluation_unexposed_records": 0,
+      "replacement_evaluation_opened": false,
+      "final_evaluation_order": [
+        "FREEZE_PREDICTOR_GENERATOR_BASELINES_METRICS_AND_ADAPTATION_POLICY",
+        "RUN_AND_PERMANENTLY_RECORD_ONE_NEW_STUDY_ZERO_SHOT",
+        "ONLY_THEN_ALLOW_CALIBRATION_OR_FEW_SHOT_ADAPTATION",
+        "ZERO_SHOT_REMAINS_HEADLINE"
+      ],
+      "workflow_arrow_widths_encode_magnitude": false,
+      "publisher_compliance_claimed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-DATA-TABLE",
+        "E-R2-CRITIC-V2-READINESS",
+        "E-R2-PACKAGE-AUDIT",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -381,7 +424,9 @@
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",
-        "E-R2-CONVERSION-FIGURE-MANIFEST"
+        "E-R2-CONVERSION-FIGURE-MANIFEST",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -419,7 +464,7 @@
     },
     {
       "gap_id": "GAP-R2-FIGURE-TARGET-RULES",
-      "description": "Two reproducible provisional figures exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
+      "description": "Four reproducible provisional figures from three builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
       "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
       "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
     }

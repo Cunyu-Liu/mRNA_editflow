@@ -1186,3 +1186,24 @@ paper packet 仍为 22 个 claim markers，evidence sources 从 23 增至 25；�
 四组联合 focused suite 均为 19/19。manuscript figures 现为 3 张、2 个 builders；MBP-17 status 和
 最低包 14/3/1 汇总不变，四个 blocker 仍为 MBP-10/13/14/15。本任务不训练或更新参数，
 不新增中央 attempt；100-row terminal 分布和 protected-outcome closure 不变。
+
+## 44. Development/Evaluation architecture figure（2026-08-22）
+
+新增独立 Development/Evaluation architecture builder 与 focused tests，仅消费冻结的
+14-row dataset qualification table、method-repair/readiness protocols 和 minimum package
+audit。Panel A 固定 Development 126,165 与 TRAIN/VALIDATION/TEST-withheld=
+`89,580/18,293/18,292`，区分 fitting、selection、Critic V2 current NO-GO 与 conditional
+single report-only TEST；Panel B 区分 historical GSE232572、conversion-failure-only
+E-MTAB-10902、sealed GSE246381 和尚不存在的 replacement Evaluation。
+
+A100 已从 GitHub commit `3ccccef` 快进同步，builder focused test 2/2 passed，并在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 追加 PNG/PDF/SVG、
+manifest 与 alt text，未覆盖已有产物。视觉复核修正条件标签位置和底部说明裁切；PNG
+为 2160×2040、300 dpi、全像素不透明，PDF 单页且 DejaVu 字体嵌入，SVG 无 raster
+image，主轮廓色对白底均超过 3:1。target journal/article type/submission phase 待定，
+继续明确 `publisher_compliance_claimed=false`。
+
+paper packet evidence sources 从 25 增至 27，figure count 为 4、builder count 为 3；
+22 个 claim markers、MBP-17、最低包 14/3/1 与四个 blockers 均不变。本任务不训练或
+更新参数，不新增中央 attempt；Development TEST、new final Evaluation、E-MTAB outcome、
+sealed GSE246381 和 guided XEditFlow 均未打开。
