@@ -1,0 +1,71 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f1_training_terminal.v1",
+  "status": "F1_TRAINING_TERMINAL_DIAGNOSTIC_VALIDATION_RUNNING",
+  "observed_at": "2026-08-23T07:50:27+08:00",
+  "training_terminal": {
+    "arm": "f1",
+    "selectable": false,
+    "seed": 20260903,
+    "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE",
+    "completed_at": "2026-08-23T07:30:35+08:00",
+    "completed_passes": 3,
+    "stopped_early": true,
+    "selected_pass": 1,
+    "optimizer_steps": 12807,
+    "trainable_parameter_count": 817957,
+    "best_validation_common_set_marginal_nll": 5.47242674446921,
+    "frozen_f0_common_set_marginal_nll": 5.397907635224613,
+    "relative_common_nll_improvement_over_f0": -0.013805184208472678,
+    "nll_10pct_screen_check_passed": false,
+    "parameter_changed": true,
+    "training_precision": "BF16",
+    "physical_gpu_index": 1,
+    "wall_time_seconds": 13360.74066233635,
+    "peak_vram_mb": 204.3828125,
+    "terminal_attempt_status": "COMPLETED",
+    "central_ledger_row_present": true,
+    "central_ledger_line_number": 104,
+    "code_commit": "22317ed3b62944098160fd69ea034110158faa2f",
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "critic_score_used": false,
+    "independent_evaluator_used": false
+  },
+  "interpretation": {
+    "objective_only_diagnostic_improved_frozen_f0_common_nll": false,
+    "f1_can_enter_final_selection": false,
+    "f1_retraining_authorized": false,
+    "f2_or_f3_result_inferred_from_f1": false
+  },
+  "unguided_validation": {
+    "launcher_pid": 3153414,
+    "python_pid": 3153416,
+    "status": "RUNNING",
+    "elapsed_seconds_at_first_health_check": 403,
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "trajectory_forward_batch_size": 64,
+    "candidate_cap_per_source": 32,
+    "physical_gpu_index": 1,
+    "next_check_not_before": "2026-08-23T08:20:27+08:00"
+  },
+  "other_jobs": {
+    "f2_status": "RUNNING",
+    "f2_next_check_not_before": "2026-08-23T08:12:54+08:00",
+    "c1_status": "RUNNING",
+    "c1_next_check_not_before": "2026-08-23T08:42:39+08:00",
+    "f3_started": false,
+    "c2_started": false,
+    "c3_started": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "42fcb38"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

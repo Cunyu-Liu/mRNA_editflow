@@ -2341,3 +2341,21 @@ GPU0–5 free memory=2,569/8,853/3,175/4,595/4,285/8,223 MiB，utilization 均�
 F3/C2/C3；不降容量、不 CPU fallback、不使用 GPU6/7、不终止其他进程。F1/F2 下一次检查不早于
 07:42:37；C1 保持自己的下一检查时间 07:40:07。A100 launch HEAD=`22317ed`，current-HEAD sync 继续等待
 该 HEAD 的 active jobs terminal；Development TEST/new Evaluation 状态不变。
+
+## F1 training terminal 与 unguided validation 启动（2026-08-23）
+
+07:42:54 的 F-only 检查确认 F1 已 terminal、无 failure/error，F2 仍 RUNNING。F1 固定事实为 seed20260903、
+3 passes 后 patience-2 早停、selected pass1、12,807 updates、817,957 trainable parameters、CUDA/BF16，best
+common Validation set-marginal NLL=`5.47242674446921`。相对冻结 F0 NLL=`5.397907635224613` 的改善为
+`-0.013805184208472678`，即恶化约 1.38%，所以 F1 objective-only diagnostic 不满足 10% NLL 改善；F1
+本来不可 final，不据此推断 F2/F3，也不重训。
+
+F1 terminal attempt sidecar 与 `/mnt` 中央 ledger 第104行均为 `COMPLETED`，TEST/Evaluation read=0，critic/
+independent evaluator均未使用。随后按冻结顺序启动唯一一次 unguided validation；launcher PID3153414、实际
+Python PID3153416、GPU1、trajectory batch64。首次 5 分钟检查时 elapsed403秒、仍运行，terminal/failure/
+error 均不存在，GPU1 free约6.9GiB；下一次 validation check不早于08:20:27。
+
+同期 C1 elapsed5:25:18仍运行，下一次不早于08:42:39；F2仍运行，下一次不早于08:12:54。GPU0–5 无
+足够安全显存启动F3/C2/C3；不降容量、不CPU fallback、不使用GPU6/7。A100 launch HEAD继续为`22317ed`，
+current-HEAD sync等待所有该HEAD jobs terminal。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`。

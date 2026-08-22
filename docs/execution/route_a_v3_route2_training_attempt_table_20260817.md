@@ -1567,3 +1567,14 @@ F1/F2 仍为同两个 RUNNING attempts，elapsed=3:25:07/3:10:09；均存活，�
 memory=2,569/8,853/3,175/4,595/4,285/8,223 MiB，仍不足以启动 F3/C2/C3。下一次 F-only 检查不早于
 07:42:37，C1 仍不早于 07:40:07；A100 HEAD=`22317ed`，protected outcome 与 downstream authorization
 不变。
+
+## XEditSetFlow V3 F1 screen training terminal（2026-08-23）
+
+F1 seed20260903 已 terminal `COMPLETED`，中央 CSV 第104行已更新；3 passes early-stop、selected pass1、
+12,807 updates、best common Validation set-NLL=5.47242674446921。相对冻结 F0 5.397907635224613 的
+relative improvement=-0.013805184208472678，F1 的 10% NLL diagnostic check明确失败。F1不可 final，
+不重训、不改变 F2/F3 gate。
+
+唯一一次 F1 unguided validation 已在 GPU1 启动，Python PID3153416；首次5分钟检查仍运行且无 terminal/
+failure/error，下一次不早于08:20:27。F2/C1仍RUNNING，F3/C2/C3未启动。Development TEST/new Evaluation
+read=0，A100 HEAD保持`22317ed`。
