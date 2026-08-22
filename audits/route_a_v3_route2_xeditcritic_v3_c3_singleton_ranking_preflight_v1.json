@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_singleton_ranking_preflight.v1",
+  "status": "C3_SINGLETON_RANKING_ENCODER_PATH_IMPLEMENTED_NOT_EXECUTED",
+  "date": "2026-08-23",
+  "scientific_role": "PRESERVE_FROZEN_C3_PHYSICAL_MICROBATCH_ONE_DURING_FINAL_PASS_RANKING",
+  "affected_arm": "C3",
+  "affected_stage": "EIGHTH_AND_FINAL_DEVELOPMENT_PASS_PAIRWISE_RANKING",
+  "preflight_finding": {
+    "previous_regression_encoder_batch_size": 1,
+    "previous_ranking_encoder_batch_size": 2,
+    "declared_physical_microbatch_records": 1,
+    "risk": "LATE_PASS_VRAM_SPIKE_AND_INCORRECT_MICROBATCH_PROVENANCE",
+    "formal_c3_started_before_repair": false
+  },
+  "repair": {
+    "ranking_pair_member_forwards": [1, 1],
+    "pairwise_logistic_loss_changed": false,
+    "ranking_pair_inventory_changed": false,
+    "effective_batch_size_changed": false,
+    "optimizer_update_count_changed": false,
+    "model_capacity_changed": false,
+    "lora_geometry_changed": false,
+    "seed_changed": false,
+    "gate_changed": false
+  },
+  "verification": {
+    "targeted_and_adjacent_tests": "20/20",
+    "critic_v3_focused_tests": "67/67",
+    "local_v332_tests": "96/96",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_focused_tests": "PENDING_ACTIVE_LAUNCH_HEAD_JOBS_TERMINAL",
+    "a100_v332_tests": "PENDING_ACTIVE_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_boundary": {
+    "a100_launch_head": "22317ed",
+    "local_parent_head": "02b651c",
+    "a100_sync_deferred": true,
+    "active_jobs_modified": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false,
+    "optimizer_attempt_added": false
+  }
+}

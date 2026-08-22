@@ -1535,3 +1535,14 @@ utilization 均为 100%，仍不足以启动 C2/C3/F3；GPU6/7 未获授权且�
 C1 已超过 4 小时，后续按合同改为 60 分钟间隔，下一次 C1 检查不早于 07:40:07；F1/F2 仍预计少于
 4 小时，下一次只检查 F1/F2，不早于 07:10:07。未降容量、未 CPU fallback，A100 HEAD 继续固定
 `22317ed`；Development TEST/new Evaluation 与 downstream authorization 状态不变。
+
+## XEditCritic V3 C3 ranking singleton-microbatch preflight（2026-08-23）
+
+本项为 C3 尚未启动前的运行时一致性修复，不新增中央 optimizer attempt，也不改变 C1/F1/F2 的 RUNNING
+状态。此前 C3 Huber 路径使用 physical microbatch1，但 final-pass ranking pair 会以 batch2 进入在线
+mRNABERT，与声明 provenance 不符且形成 late-pass OOM 风险；现左右 pair member 分别 batch1 前向，再按
+原目标计算同一 logistic difference。pair、loss weight、effective batch32、updates、seed、容量与 gate 均不变。
+
+定向/相邻=20/20、Critic V3 focused=67/67、本地精确 V3.3.2=96/96、compile/diff-check PASS；A100 tests/
+current-HEAD sync 在 `22317ed` active jobs terminal 后执行。Development TEST/new Evaluation read=0，C3
+formal attempt 仍为未启动。

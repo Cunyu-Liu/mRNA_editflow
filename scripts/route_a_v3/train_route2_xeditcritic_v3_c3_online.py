@@ -77,6 +77,40 @@ def microbatch_indices(batch_size: int, physical_microbatch_size: int) -> list[l
     ]
 
 
+def singleton_online_pair_loss_sum_v3(
+    model: XEditCriticV3,
+    encoder: TrainableMRNABERTEditSiteEncoderV3,
+    raw_batch: Mapping[str, Any],
+    pairs: Sequence[tuple[int, int]],
+    device: torch.device,
+) -> torch.Tensor:
+    """Evaluate ranking pairs without exceeding the frozen C3 batch-one encoder path."""
+
+    _require(bool(pairs), "C3 ranking pair microbatch is empty")
+    losses = []
+    for left, right in pairs:
+        predictions = []
+        for index in (left, right):
+            singleton = _move(select_batch_rows(raw_batch, [index]), device)
+            _require(
+                len(singleton["record_ids"]) == 1,
+                "C3 ranking encoder input exceeds one record",
+            )
+            prediction = model(encoder.forward_cache_anchored(singleton))["mean"]
+            _require(
+                prediction.shape == (1,),
+                "C3 singleton ranking prediction geometry differs",
+            )
+            predictions.append(prediction[0])
+        target_delta = (
+            raw_batch["scaled_target"][left] - raw_batch["scaled_target"][right]
+        ).to(device)
+        losses.append(
+            F.softplus(-target_delta.sign() * (predictions[0] - predictions[1]))
+        )
+    return torch.stack(losses).sum()
+
+
 def online_evaluate(
     model: XEditCriticV3,
     encoder: TrainableMRNABERTEditSiteEncoderV3,
@@ -365,21 +399,15 @@ def run(
                     )
                     if pairs:
                         pair_losses = []
-                        pairs_per_microbatch = max(1, physical_microbatch_size // 2)
-                        for start in range(0, len(pairs), pairs_per_microbatch):
-                            selected_pairs = pairs[start : start + pairs_per_microbatch]
-                            indices = [index for pair in selected_pairs for index in pair]
-                            pair_batch = _move(select_batch_rows(raw_batch, indices), device)
+                        for pair in pairs:
                             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                                pair_output = model(
-                                    encoder.forward_cache_anchored(pair_batch)
-                                )["mean"]
-                                pair_target = pair_batch["scaled_target"]
-                                target_delta = pair_target[0::2] - pair_target[1::2]
-                                prediction_delta = pair_output[0::2] - pair_output[1::2]
-                                pair_sum = F.softplus(
-                                    -target_delta.sign() * prediction_delta
-                                ).sum()
+                                pair_sum = singleton_online_pair_loss_sum_v3(
+                                    model,
+                                    encoder,
+                                    raw_batch,
+                                    [pair],
+                                    device,
+                                )
                                 weighted_pair_loss = (
                                     float(config["ranking_loss_weight"])
                                     * pair_sum

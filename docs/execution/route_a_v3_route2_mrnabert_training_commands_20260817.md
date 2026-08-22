@@ -2294,3 +2294,18 @@ curve 或 Validation outcome。GPU0–5 free memory=2,569/6,581/3,177/4,489/4,30
 C1 从本次起进入超过 4 小时的 60 分钟监控节奏，next C1 check≥07:40:07；F1/F2 仍采用 30 分钟，
 next F-only check≥07:10:07。A100 launch HEAD 继续为 `22317ed`，中央 ledger 与 protected-outcome
 状态不变。
+
+## XEditCritic V3 C3 ranking singleton-microbatch repair（2026-08-23）
+
+等待 screen 的静态核查发现，C3 回归分支按冻结配置每次只将 1 条 record 送入在线 mRNABERT，但第 8 pass
+ranking 分支此前会把一对 record 同时送入 encoder。这样实际 ranking physical batch=2，与 summary 声明的
+`physical_microbatch_records=1` 不一致，并可能在最后一 pass 才触发 LoRA arm 的显存峰值/OOM。C3 尚未
+启动，因此在任何 C3 outcome 前修复为：pair 的左右成员分别做 batch-one online forward，再以两个 scalar
+prediction 构造完全相同的 pairwise logistic loss。
+
+修复不改变 pair inventory、ranking weight、effective batch32、optimizer update、seed、LoRA geometry、参数量、
+checkpoint 选择或 gate。定向/相邻测试=20/20，完整 Critic V3 focused=67/67，本地精确 V3.3.2=96/96，
+compile/diff-check PASS；新增测试实际记录 encoder batch sizes 为 `[1,1]` 并验证梯度回传。审计为
+`audits/route_a_v3_route2_xeditcritic_v3_c3_singleton_ranking_preflight_v1.json`。本项不新增 optimizer attempt，
+不读取 Development TEST/new Evaluation；A100 sync/focused/V3.3.2 继续等待 launch-head `22317ed` 的 active
+jobs terminal，运行中的 C1/F1/F2 未被修改。
