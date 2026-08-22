@@ -1616,3 +1616,23 @@ GitHub core commit `ceeae40` 已推送，A100 自 `2faff4a` 快进；本机/A100
 blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、release/license/environment/
 submission readiness=false 或 pending，`minimum_package_complete=false` 与
 `outcome_trigger_fully_satisfied=false` 均不变。
+
+## 63. V3.3.2 internal GitHub branch release candidate（2026-08-22）
+
+本项无训练命令、GPU 轮询或新 attempt。合同没有在 minimum package incomplete 时要求 formal
+GitHub Release/tag；因此组装并推送的是 version-controlled internal branch candidate，而非软件
+release 或 submission package。新增 RC audit 与 3 项 focused tests，更新 README branch notice、
+manuscript title/header、Code Availability 和 evidence/consistency manifests。
+
+candidate 固定 Methods/Results/Discussion=14/15/5 subsections、Data/Code Availability internal
+complete、claims=22 supported markers + 13 unsupported rows、figures/builders=7/6、evidence=59
+（45 local/contract、14 `/mnt`）、MBP=14/3/1 与 blockers=MBP-10/13/14/15。README notice 明确
+Route A V3.3.2 高于后续 legacy/general v2 body；formal GitHub Release、tag、persistent archive、
+unauthenticated public access 与 submission authorization 均未声称。
+
+Git tracked-policy preflight 只查路径、size、history 和 references，不读取 payload 内容：1 个 46,498-
+byte Parquet 与 4 个总计 34,739,577-byte legacy B0 JSONL 仍 tracked。它们与当前 Git release rule
+冲突，但历史 v3.1 rule 要求 B0 JSONL 原样保留且 active loader fail；没有自动删除或迁移，作为
+formal-release blocker。GitHub core commit `52a41cb` 已推送，A100 自 `ceeae40` 快进；本机/A100
+V3.3.2 suite 均为 69/69。中央 100-row 92/3/3/1/1、model/biological/external/guided success、
+`minimum_package_complete`、`outcome_trigger_fully_satisfied` 与 `submission_ready` 均为 false。

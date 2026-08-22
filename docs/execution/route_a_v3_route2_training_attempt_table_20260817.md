@@ -998,3 +998,25 @@ V3.3.2 suite 均为 66/66。evidence sources=58（44 local/contract、14 `/mnt`�
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row 92/3/3/1/1、
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false`、public code release 与
 `submission_ready=false` 均不变。
+
+## V3.3.2 internal GitHub branch release candidate（2026-08-22）
+
+按当前 Git/论文顺序形成内部 GitHub 分支候选。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome；合同只要求 logical-task focused tests/commit/push，并未在 package incomplete 时授权 formal
+GitHub Release/tag，因此状态固定为
+`INTERNAL_GITHUB_BRANCH_CANDIDATE_ASSEMBLED_FORMAL_RELEASE_NOT_AUTHORIZED`。
+
+README 顶部新增 Route A V3.3.2 branch notice，明确后续 repository-wide v2 内容只作背景；论文
+标题更新为 Benchmark+limits evidence manuscript，Data/Code Availability 的 internal review-pending
+状态进入 header。RC audit 绑定 Methods 14、Results 15、Discussion 5、claims 22 supported markers /
+13 unsupported rows、figures/builders 7/6、evidence 59 与 MBP 14/3/1 四 blockers；formal release、
+tag、archive、public access、submission authorization 均 false。
+
+tracked-file 审计发现既有 `data_registry/excel_inventory.parquet`（46,498 bytes）和 4 个 legacy B0
+JSONL（合计 34,739,577 bytes）。它们违反当前 formal Git release boundary，但又被历史脚本/审计
+引用，旧 v3.1 preservation rule 要求四个 B0 files 原样保留且禁止 active load；本项不打开内容、
+不删除、不迁移，作为 formal-release blocker 登记。GitHub core commit `52a41cb` 已推送，A100 自
+`ceeae40` 一次 fast-forward；本机/A100 V3.3.2 suite 均为 69/69。中央 100-row 92/3/3/1/1、
+MBP blockers=MBP-10/13/14/15、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
