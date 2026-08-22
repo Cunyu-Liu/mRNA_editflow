@@ -935,3 +935,26 @@ V3.3.2 suite 均为 57/57。evidence sources=55（41 local/contract、14 `/mnt`�
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false`、
 `submission_ready=false` 与中央 100-row 92/3/3/1/1 终态不变。
+
+## V3.3.2 Discussion section completion（2026-08-22）
+
+按 Goal 7 顺序完成 Discussion 内部证据稿闭包。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome。Discussion 从单一 next-data 草稿扩展为 5 个 subsection，并闭合为
+`COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING`。
+
+五节严格分开：（1）Benchmark+limits 的证据贡献与未达到的 outcome/package 边界；（2）局部
+candidate-specific rank signal 与 strongest same-information baseline 门槛；（3）genetic 的独立
+evaluator point lead 与 unguided Base Flow 的 sparse measured-recovery point lead；（4）task/study/
+assay/region/context 异质性和 outcome-exposed GSE232572 的非因果、非 final-confirmation 边界；
+（5）下一批 confirmatory cohort 的 source/candidate、closed measured pool、replicate/SE、context
+和 outcome-unexposed Evaluation 要求。没有新增 claim marker，也没有重解释 terminal 数值。
+
+Discussion completion audit 保持 causal mechanism、model/biological/external-transfer/guided success、
+minimum package、outcome trigger 与 submission readiness 全部 false。GitHub core commit `e6e807a`
+已推送，A100 自 `86e63bf` 一次 fast-forward；本机与 A100 精确 V3.3.2 suite 均为 60/60。
+A100 首次测试选择命令因远端无 `rg` 而误收集旧全测试树，该次运行无效且未作回归结论；改用
+可用的精确文件选择后通过 60/60。evidence sources=56（42 local/contract、14 `/mnt`），
+claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row
+92/3/3/1/1、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。

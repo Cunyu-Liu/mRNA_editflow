@@ -1554,3 +1554,26 @@ GitHub core commit `86e63bf` 已推送，A100 自 `7ae4e57` 快进；本机/A100
 均为 57/57。evidence=55（41 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、
 中央 100-row 92/3/3/1/1、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## 60. V3.3.2 Discussion section completion（2026-08-22）
+
+本项无训练命令、GPU 轮询或新 attempt。Discussion 从单一 next-data 草稿闭合为
+`COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING`，共 5 个 subsection；只读取既有合同、paper
+tables 和 terminal audits 的已登记字段，不打开 protected outcomes。
+
+新增解释层明确：当前贡献是 comparison-boundary benchmark，而非 predictor/generator success；
+Critic V2 的 localized candidate-specific rank signal 不等于 task-wide baseline/calibration
+superiority；genetic 的独立 evaluator point lead 与 Base Flow 的 sparse measured-recovery point
+lead 属于不同、非 biological 的开放支持端点；task/region summaries 被 study、assay、context、
+endpoint 和 task size 混杂；GSE232572 仍为 historically outcome-exposed negative transfer
+diagnostic。confirmatory cohort 需要 dense closed measured pool、replicate-level uncertainty、明确
+context/region 和新的 outcome-unexposed Evaluation。
+
+新增 completion audit 与 3 项 Discussion focused tests，并同步 Results section boundary、
+consistency/evidence manifests；claim markers 保持 22。GitHub core commit `e6e807a` 已推送，A100
+自 `86e63bf` 快进。A100 第一次文件选择使用了远端不存在的 `rg`，空选择使 pytest 误收集旧全
+测试树并产生 39 个无关 collection errors；该次运行无效，不代表 V3.3.2 回归。改用远端已有的
+精确文件查找后，本机/A100 V3.3.2 suite 均为 60/60。evidence=56（42 local/contract、14
+`/mnt`），MBP=14/3/1、blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、model/
+biological/external/guided success=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
