@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:05:40+08:00",
+    "observed_at": "2026-08-22T18:12:40+08:00",
     "status": "PASS",
-    "source_locations_checked": 56,
-    "local_or_contract_locations_checked": 42,
+    "source_locations_checked": 57,
+    "local_or_contract_locations_checked": 43,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -440,6 +440,14 @@
       "kind": "derived_discussion_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_discussion_completion_v1.json",
       "locator": "five required Discussion subsections covering the Benchmark+limits contribution boundary, localized candidate-specific signal versus the same-information hurdle, endpoint-dependent generation rankings, non-causal heterogeneity and outcome-exposed historical transfer, and requirements for a confirmatory cohort; human verification, external confirmation, guided success, package completeness and submission readiness remain false",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT",
+      "kind": "derived_data_availability_section_completion_audit",
+      "location": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
+      "locator": "internal Data Availability statement separating third-party source locators, small version-controlled aggregate evidence and non-public large project artifacts; zero human-verified study-bound licenses, zero of 14 study-payload release authorizations, no availability-on-request promise, no permanent archive and no public payload/weight/generated-candidate release",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

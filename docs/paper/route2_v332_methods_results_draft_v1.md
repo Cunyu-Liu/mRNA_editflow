@@ -863,6 +863,36 @@ Prohibited until later gates pass:
 - “Public repository access makes every Route 2 study payload freely
   redistributable” or “the current converter policy is a verified data license.”
 
+## Data Availability
+
+The analyses use third-party studies enumerated in the 14-study qualification
+and data-rights tables. Those tables record study accessions or source locators,
+analysis roles and outcome-exposure boundaries. A locator documents provenance;
+it does not independently establish current access, redistribution permission or
+reuse terms. This project therefore does not redistribute the upstream study
+payloads, and users must consult the original providers and applicable terms for
+source-data access.
+
+The current working branch contains small derived aggregate tables, manifests,
+audits and figure-source material needed to trace the reported benchmark. It is
+an internal version-controlled evidence packet, not a permanent archive or an
+open-data release. Large canonical data, run products, checkpoints, model
+weights, generated candidates and rendered run artifacts remain in project-
+controlled storage under
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/`. No project-specific study
+payload, model weight or generated-candidate collection is declared publicly
+available in this draft.
+
+The current inventory contains zero accountable-human-verified study-bound
+licenses and authorizes zero of 14 study payloads for public release. All 14
+license rows remain pending human review. No availability-on-request promise is
+made. A final availability statement requires study-specific rights review,
+selection of a stable repository and version, and human verification of every
+released file and locator. Development TEST, new final Evaluation, sealed
+GSE246381 and unread E-MTAB-10902 outcomes were not opened for this packet and
+are not presented as available result data.
+[evidence:E-R2-DATA-TABLE,E-R2-DATA-RIGHTS-EXPOSURE-AUDIT,E-R2-CONTRACT,E-R2-PACKAGE-AUDIT]
+
 ## Unresolved items before manuscript integration
 
 - Accountable human verification of every evidence locator and numeric claim.
@@ -878,4 +908,4 @@ Prohibited until later gates pass:
   official publisher-rule check and any required format-only regeneration from
   the same frozen evidence.
 - Reporting guideline, author list, contributions, declarations, funding,
-  ethics applicability, data/code availability and AI-use disclosure.
+  ethics applicability, code availability and AI-use disclosure.

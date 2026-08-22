@@ -24,7 +24,11 @@
       "submission_ready": false
     },
     "data_availability": {
-      "status": "NOT_DRAFTED"
+      "status": "COMPLETE_INTERNAL_RIGHTS_REVIEW_PENDING",
+      "completion_audit": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
+      "accountable_human_rights_review_complete": false,
+      "public_release_ready": false,
+      "submission_ready": false
     },
     "code_availability": {
       "status": "NOT_DRAFTED"

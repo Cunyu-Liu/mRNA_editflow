@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_v332_data_availability_completion.v1",
+  "status": "DATA_AVAILABILITY_SECTION_COMPLETE_INTERNAL_RIGHTS_REVIEW_PENDING",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "manuscript": "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "data_rights_audit": "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json",
+    "consistency_manifest": "docs/paper/route2_v332_consistency_manifest_v1.json",
+    "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json"
+  },
+  "data_availability_heading": "Data Availability",
+  "data_availability_paragraph_count": 3,
+  "coverage": {
+    "third_party_accession_and_locator_role_reported": true,
+    "locator_separated_from_access_and_reuse_authority": true,
+    "upstream_payload_redistribution_not_claimed": true,
+    "small_aggregate_evidence_separated_from_data_release": true,
+    "large_project_artifact_storage_boundary_reported": true,
+    "public_payload_weight_and_candidate_release_not_claimed": true,
+    "permanent_archive_not_claimed": true,
+    "availability_on_request_not_promised": true,
+    "human_rights_and_content_review_requirements_reported": true,
+    "protected_outcomes_excluded_from_available_results": true
+  },
+  "availability_facts": {
+    "study_count": 14,
+    "study_bound_human_verified_license_registry_present": false,
+    "license_human_review_pending_count": 14,
+    "public_study_payload_release_authorized_count": 0,
+    "third_party_current_access_verified_for_all_studies": false,
+    "third_party_reuse_terms_verified_for_all_studies": false,
+    "aggregate_tables_and_source_locators_version_controlled": true,
+    "project_specific_study_payload_public_release_declared": false,
+    "model_weight_public_release_declared": false,
+    "generated_candidate_collection_public_release_declared": false,
+    "permanent_public_archive_assigned": false,
+    "persistent_repository_identifier_assigned": false,
+    "availability_on_request_promise_made": false,
+    "large_artifact_storage_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+  },
+  "completion_boundary": {
+    "data_availability_section_complete": true,
+    "accountable_human_rights_review_complete": false,
+    "human_evidence_content_verification_complete": false,
+    "public_data_release_ready": false,
+    "stable_repository_version_assigned": false,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "submission_ready": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}
