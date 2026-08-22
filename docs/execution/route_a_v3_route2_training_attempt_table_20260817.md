@@ -1438,3 +1438,15 @@ assembly 现要求六方法共享完全相同的 measured/defined source support
 =183/183，精确 V3.3.2=96/96，compile/diff-check PASS；A100 tests/current-HEAD sync 继续等待 launch head
 `22317ed` 的 active C1/F1/F2 terminal。本项没有重复 C0、Critic V2、Base Flow V2 或其他 terminal 实验，
 Development TEST/new Evaluation read=0，guidance/replacement Evaluation/submission-ready 仍为 false。
+
+## XEditFlow V3 closed frozen search baseline coverage（2026-08-23）
+
+本项不新增 optimizer attempt。final benchmark config 现为 `random_legal/greedy/beam/genetic/local_search`
+五个历史 frozen search baseline 补齐 common closed metric jobs；五者的原 runner 使用同一 matched guiding
+checkpoint 排序 terminal candidates，因此只复用一次 strongest score table，避免重复五次相同 scorer
+forward。每个 metric config 显式记录其报告 method 与 score-table method；closed evaluator 对该映射硬校验。
+
+历史 open-support 结果保持原样，未被重命名为 closed；五方法在 common fixed candidate set 上预期同排名，
+open support 的算法差异继续由 recovery/diversity/cost 表达。合并 focused=184/184、V3.3.2=96/96、
+compile/diff-check PASS；readiness 前未执行 metric，Development TEST/new Evaluation read=0。A100 sync/test
+仍等待 launch-head `22317ed` active screen jobs terminal。

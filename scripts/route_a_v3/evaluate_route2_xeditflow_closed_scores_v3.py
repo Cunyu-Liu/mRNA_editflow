@@ -45,8 +45,13 @@ def evaluate_closed_method_scores_v3(
     _require(config.get("undefined_source_policy") == "EXCLUDE_NOT_ZERO_FILL", "closed-score undefined policy differs")
     _require(config.get("score_transform") == "SOURCEWISE_EXP_SHIFTED_MAX", "closed-score transform differs")
     method_id = str(config["method_id"])
+    score_table_method_id = str(config["score_table_method_id"])
     scores = {}
     for row in score_rows:
+        _require(
+            str(row.get("method_id")) == score_table_method_id,
+            "closed score-table method identity differs",
+        )
         key = (str(row["source_key"]), str(row["candidate_sequence"]))
         _require(key not in scores, f"closed method score is duplicated: {key}")
         value = float(row["frozen_method_score"])
@@ -84,6 +89,7 @@ def evaluate_closed_method_scores_v3(
         "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood.v3",
         "status": "XEDITFLOW_V3_CLOSED_NEIGHBORHOOD_COMPLETE",
         "method_id": method_id,
+        "score_table_method_id": score_table_method_id,
         "base_flow_training_seed": int(config["base_flow_training_seed"]),
         **metrics,
         "measured_candidate_count": len(normalized_rows),

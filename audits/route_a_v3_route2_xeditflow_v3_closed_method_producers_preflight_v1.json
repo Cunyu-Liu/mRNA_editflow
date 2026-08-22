@@ -18,6 +18,15 @@
     "generate_then_rerank": "FROZEN_XEDITCRITIC_V3_ENSEMBLE_TERMINAL_REWARD",
     "strongest_matched_baseline": "FROZEN_GENETIC_GUIDING_CHECKPOINT_SCORE"
   },
+  "closed_frozen_search_baseline_suite": {
+    "methods": ["random_legal", "greedy", "beam", "genetic", "local_search"],
+    "common_score_provider": "MATCHED_SEARCH_GUIDING_CHECKPOINT",
+    "common_score_table_method_id": "strongest_matched_baseline",
+    "shared_score_table_computed_once": true,
+    "closed_rankings_expected_identical": true,
+    "open_support_remains_method_specific": true,
+    "historical_open_support_metric_relabelled_as_closed": false
+  },
   "separation": {
     "full_and_unguided_use_their_frozen_transition_distribution": true,
     "rerank_and_search_methods_use_their_frozen_terminal_score": true,
@@ -43,7 +52,7 @@
     "final_job_preparer": "scripts/route_a_v3/prepare_route2_xeditflow_final_generation_configs_v3.py"
   },
   "tests": {
-    "local_xeditflow_v3_focused_passed": 83,
+    "local_xeditflow_v3_focused_passed": 184,
     "local_xeditflow_v3_focused_failed": 0,
     "local_exact_v332_passed": 96,
     "local_exact_v332_failed": 0,

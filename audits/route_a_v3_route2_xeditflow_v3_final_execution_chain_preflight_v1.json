@@ -10,6 +10,8 @@
     "closed_frozen_score_jobs_per_seed": 4,
     "independent_evaluator_comparisons_per_seed": 1,
     "source_paired_bootstrap_iterations": 10000,
+    "closed_frozen_search_baseline_metric_jobs": 5,
+    "closed_frozen_search_baseline_score_tables": 1,
     "three_seed_manifest_required": true,
     "fourth_training_seed_authorized": false
   },
@@ -44,7 +46,7 @@
     "submission_ready_after_internal_pass": false
   },
   "tests": {
-    "local_xeditflow_v3_focused_passed": 83,
+    "local_xeditflow_v3_focused_passed": 184,
     "local_xeditflow_v3_focused_failed": 0,
     "local_independent_evaluator_focused_passed": 4,
     "local_independent_evaluator_focused_failed": 0,

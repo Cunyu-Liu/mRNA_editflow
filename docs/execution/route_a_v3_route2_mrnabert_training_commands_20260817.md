@@ -2170,3 +2170,22 @@ closed source-support 错配。合并 XEdit V3 focused cohort 本机为 183/183�
 Python compile 与 `git diff --check` 均通过。A100 测试与 current-HEAD sync 继续等待 head `22317ed` 启动的
 C1/F1/F2 全部 terminal，以保持训练 provenance；本项不新增 optimizer attempt，不读取 Development TEST/
 new Evaluation，不改变 guidance、replacement Evaluation 或 submission-ready 状态。
+
+## XEditFlow V3 common-closed frozen search baseline coverage（2026-08-23）
+
+继续核对“模型 + benchmark”双优势所需的 matched-search 覆盖时，确认历史 open-support 结果表已有
+`random_legal`、`greedy`、`beam`、`genetic` 与 `local_search`，但新 common closed job inventory 只显式
+配置了 strongest genetic。历史五种方法的真实 runner 都使用同一个冻结 guiding checkpoint 给各自 terminal
+support 排序；它们的算法差异在于怎样找到 open support，不在 terminal scorer。因此 common measured
+candidate set 上五种方法应共享同一 score table，并预期产生相同 closed 排名，这不是五次独立模型结果。
+
+final preparer 现新增一个 benchmark-only 五方法 closed suite：复用 seed20260904 的 frozen strongest guiding
+score table 一次，分别生成五个带显式 `score_table_method_id=strongest_matched_baseline` 的 metric config。
+closed evaluator 会硬校验 score-table 方法身份，既允许这一前瞻声明的共享 scorer，也拒绝未声明的错配。
+旧 open NDCG/independent-evaluator 指标不被改名为 closed；open support 的 recovery/diversity/cost 仍按各方法
+历史 terminal artifact 报告。最终 strict gate 仍按冻结方案只要求 full 超过 strongest baseline，benchmark
+报告则覆盖全部五个 search baseline，不增加 gate、seed 或 HPO。
+
+合并 XEdit V3 focused cohort=184/184，精确 V3.3.2=96/96，compile/diff-check PASS。本项只准备
+readiness 后的配置，没有运行 closed outcome metric、没有新增 optimizer attempt，也没有读取 Development
+TEST/new Evaluation。A100 tests/current-HEAD sync 继续等待 head `22317ed` 的 active jobs terminal。

@@ -19,6 +19,13 @@ from scripts.route_a_v3.run_route2_xeditflow_matched_controls_v3 import METHODS
 
 
 SEEDS = (20260904, 20260905, 20260906)
+FROZEN_SEARCH_BASELINES = (
+    "random_legal",
+    "greedy",
+    "beam",
+    "genetic",
+    "local_search",
+)
 
 
 class XEditFlowFinalGenerationPrepareV3Error(RuntimeError):
@@ -304,6 +311,7 @@ def build_final_generation_configs_v3(
             closed_score_metric_configs[method] = {
                 "schema_version": "route_a_v3_route2_xeditflow_closed_score_config.v1",
                 "method_id": method,
+                "score_table_method_id": method,
                 "base_flow_training_seed": seed,
                 "pool_assignment": "DEVELOPMENT",
                 "split": "VALIDATION",
@@ -471,6 +479,52 @@ def build_final_generation_configs_v3(
             }
         )
     _require(len(seed_jobs) == 3 and sum(job["value_rollout_config"] is not None for job in seed_jobs) == 2, "final generation job inventory differs")
+    shared_search_score_path = (
+        output_root
+        / "seed20260904"
+        / "closed_scores"
+        / "strongest_matched_baseline"
+        / "frozen_method_scores.private.jsonl"
+    )
+    closed_search_baseline_benchmark = {
+        "schema_version": "route_a_v3_route2_xeditflow_closed_search_baseline_benchmark.v1",
+        "status": "CONFIGURED_NOT_STARTED",
+        "benchmark_reference_seed": 20260904,
+        "common_frozen_score_provider": "MATCHED_SEARCH_GUIDING_CHECKPOINT",
+        "common_score_table_method_id": "strongest_matched_baseline",
+        "common_score_table_path": str(shared_search_score_path),
+        "methods": {
+            method: {
+                "schema_version": "route_a_v3_route2_xeditflow_closed_score_config.v1",
+                "method_id": method,
+                "score_table_method_id": "strongest_matched_baseline",
+                "base_flow_training_seed": 20260904,
+                "pool_assignment": "DEVELOPMENT",
+                "split": "VALIDATION",
+                "analysis_unit": "SOURCE",
+                "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+                "score_transform": "SOURCEWISE_EXP_SHIFTED_MAX",
+                "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+                "score_table_path": str(shared_search_score_path),
+            }
+            for method in FROZEN_SEARCH_BASELINES
+        },
+        "output_paths": {
+            method: str(
+                output_root
+                / "benchmark_closed_search_baselines"
+                / f"{method}.json"
+            )
+            for method in FROZEN_SEARCH_BASELINES
+        },
+        "shared_score_reason": (
+            "ALL_FIVE_FROZEN_SEARCH_METHODS_USE_THE_SAME_MATCHED_GUIDING_"
+            "CHECKPOINT_TO_RANK_TERMINAL_CANDIDATES;_OPEN_SUPPORT_DIFFERS_BY_SEARCH"
+        ),
+        "historical_open_support_results_reused_as_closed": False,
+        "development_test_outcomes_accessed": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
     final_comparison_path = output_root / "final_comparison" / "manifest.json"
     final_adjudication_path = output_root / "final_comparison" / "adjudication.json"
     return {
@@ -482,6 +536,7 @@ def build_final_generation_configs_v3(
         "selected_setflow_arm": selected_arm,
         "required_base_flow_training_seeds": list(SEEDS),
         "seed_jobs": seed_jobs,
+        "closed_search_baseline_benchmark": closed_search_baseline_benchmark,
         "three_seed_finalization": {
             "guidance_screen_gate_path": str(config["guidance_screen_gate_path"]),
             "seed_manifest_row_paths": [
@@ -523,6 +578,16 @@ def write_manifest_v3(payload: Mapping[str, Any], output_dir: Path) -> None:
         (output_dir / f"independent_evaluator_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"independent_evaluator_comparison_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_comparison_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"final_seed_evidence_seed{seed}.json").write_text(json.dumps(job["final_seed_evidence_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    benchmark = payload["closed_search_baseline_benchmark"]
+    for method, config in benchmark["methods"].items():
+        (output_dir / f"closed_search_baseline_{method}.json").write_text(
+            json.dumps(config, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    (output_dir / "closed_search_baseline_benchmark.json").write_text(
+        json.dumps(benchmark, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     (output_dir / "manifest.json").write_text(json.dumps(dict(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (output_dir / "three_seed_finalization.json").write_text(
         json.dumps(payload["three_seed_finalization"], indent=2, sort_keys=True) + "\n",

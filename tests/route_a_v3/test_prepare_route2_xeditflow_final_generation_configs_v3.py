@@ -84,6 +84,7 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
         "first_order_guidance", "simple_rate_guidance", "generate_then_rerank", "strongest_matched_baseline"
     } for job in manifest["seed_jobs"])
     assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_transform"] == "SOURCEWISE_EXP_SHIFTED_MAX"
+    assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_table_method_id"] == "strongest_matched_baseline"
     assert manifest["seed_jobs"][0]["strongest_adapter_job"]["base_flow_training_seed"] == 20260904
     assert all(len(job["open_metric_configs"]) == 5 for job in manifest["seed_jobs"])
     assert manifest["seed_jobs"][0]["independent_evaluator_config"]["guiding_checkpoint_paths"] == [
@@ -92,6 +93,15 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
     assert all(len(job["final_seed_evidence_config"]["methods"]) == 6 for job in manifest["seed_jobs"])
     assert manifest["seed_jobs"][0]["final_seed_evidence_config"]["methods"]["strongest_matched_baseline"]["closed_summary_path"].endswith("closed_strongest_matched_baseline.json")
     assert len(manifest["three_seed_finalization"]["seed_manifest_row_paths"]) == 3
+    benchmark = manifest["closed_search_baseline_benchmark"]
+    assert set(benchmark["methods"]) == {
+        "random_legal", "greedy", "beam", "genetic", "local_search"
+    }
+    assert len({row["score_table_path"] for row in benchmark["methods"].values()}) == 1
+    assert all(
+        row["score_table_method_id"] == "strongest_matched_baseline"
+        for row in benchmark["methods"].values()
+    )
     assert manifest["three_seed_finalization"]["replacement_evaluation_authorized_only_by_final_adjudication"] is True
     assert manifest["additional_seed_authorized"] is False
     drifted = dict(strongest)
