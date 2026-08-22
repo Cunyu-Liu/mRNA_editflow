@@ -16,6 +16,15 @@ ACTION_SPACE_GEOMETRY_TABLE = (
 ACTION_SPACE_GEOMETRY_AUDIT = (
     ROOT / "audits/route_a_v3_route2_generation_action_space_geometry_v1.json"
 )
+MINIMUM_PACKAGE_TABLE = (
+    ROOT / "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv"
+)
+MINIMUM_PACKAGE_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json"
+)
+GSE232572_HISTORICAL = (
+    ROOT / "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json"
+)
 EVALUATOR_TASK_TABLE = (
     ROOT / "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv"
 )
@@ -46,10 +55,10 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 17
+    assert len(evidence_ids) == len(set(evidence_ids)) == 19
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 20
+    assert len(claims) == len(set(claims)) == 22
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -66,7 +75,7 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 17
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 19
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
@@ -78,6 +87,11 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     assert preflight["submission_readiness_changed"] is False
     assert evidence["human_verification_required"] is True
     assert evidence["submission_ready"] is False
+    assert evidence["external_transfer_performed"] is True
+    assert evidence["external_transfer_role"] == (
+        "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION"
+    )
+    assert evidence["independent_final_evaluation_performed"] is False
 
 
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
@@ -103,6 +117,8 @@ def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
         "development_test_opened": False,
         "new_final_evaluation_opened": False,
         "guided_xeditflow_authorized": False,
+        "historical_outcome_exposed_gse232572_included": True,
+        "historical_outcome_exposed_gse232572_final_confirmation_eligible": False,
     }
 
 
@@ -341,6 +357,101 @@ def test_generation_action_space_geometry_is_conserved_and_claim_bounded() -> No
     assert stop_gap["status"] == (
         "NOT_RETAINED_IN_TERMINAL_SELECTION_INPUT_NO_TERMINAL_RERUN"
     )
+
+
+def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    historical = _load(GSE232572_HISTORICAL)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-GSE232-HISTORICAL-TRANSFER"
+    )
+
+    assert historical["evaluation_record_count"] == result["record_count"] == 8068
+    assert historical["strongest_baseline_id"] == result[
+        "strongest_baseline_id"
+    ] == "neural_medium_siamese_cnn"
+    paired = historical["paired_results"]
+    assert [
+        row["task_macro_spearman_improvement"] for row in paired
+    ] == result["model_minus_baseline_task_macro_spearman"]
+    assert [
+        row["task_macro_spearman_improvement_ci_95"][0] for row in paired
+    ] == result["spearman_improvement_ci_95_lower"]
+    assert [row["baseline_mae_minus_model_mae"] for row in paired] == result[
+        "baseline_mae_minus_model_mae"
+    ]
+    assert sum(
+        row["task_macro_spearman_improvement_ci_95"][0] > 0.0 for row in paired
+    ) == 2
+    assert all(row["baseline_mae_minus_model_mae"] < 0.0 for row in paired)
+    assert historical["preregistered_pass"] is result["preregistered_pass"] is False
+    assert result["role"] == (
+        "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION"
+    )
+    assert "negative historical transfer evidence and not as final Evaluation" in draft
+    assert "GSE232572 provides an independent final confirmation" in draft
+
+
+def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(MINIMUM_PACKAGE_AUDIT)
+    with MINIMUM_PACKAGE_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-MINIMUM-BENCHMARK-PACKAGE"
+    )
+
+    assert [row["requirement_id"] for row in rows] == [
+        f"MBP-{index:02d}" for index in range(1, 19)
+    ]
+    assert sum(row["status"].startswith("COMPLETE") for row in rows) == 13
+    assert sum(row["status"].startswith("PARTIAL") for row in rows) == 4
+    assert sum(row["status"].startswith("NOT_AVAILABLE") for row in rows) == 1
+    assert audit["summary"]["requirement_count"] == result["requirement_count"] == 18
+    assert audit["summary"]["complete_or_complete_with_declared_limits_count"] == (
+        result["complete_or_complete_with_declared_limits_count"]
+    ) == 13
+    assert audit["summary"]["partial_count"] == result["partial_count"] == 4
+    assert audit["summary"]["not_available_count"] == result[
+        "not_available_count"
+    ] == 1
+    expected_blockers = ["MBP-10", "MBP-13", "MBP-14", "MBP-15", "MBP-17"]
+    assert audit["blocking_requirement_ids"] == result[
+        "blocking_requirement_ids"
+    ] == expected_blockers
+    assert audit["summary"]["minimum_package_complete"] is False
+    assert result["minimum_package_complete"] is False
+    assert audit["summary"]["submission_ready"] is result["submission_ready"] is False
+    assert audit["summary"]["current_final_paper_outcome_frozen"] is False
+    assert result["final_paper_outcome_frozen"] is False
+
+    by_id = {row["requirement_id"]: row for row in rows}
+    assert by_id["MBP-10"]["status"] == "PARTIAL_GUIDED_NOT_AUTHORIZED"
+    assert by_id["MBP-11"]["status"] == "COMPLETE_HISTORICAL_NEGATIVE"
+    assert by_id["MBP-13"]["status"] == "NOT_AVAILABLE_DOWNGRADE_REQUIRED"
+    assert by_id["MBP-17"]["status"] == "PARTIAL_NO_FIGURE_BUILDERS"
+    assert audit["external_evaluation"]["replacement_study_registered"] is False
+    assert audit["external_evaluation"]["new_final_evaluation_opened"] is False
+    assert audit["guided_generation"]["frozen_critic_xeditflow_run"] is False
+    assert audit["guided_generation"]["authorized_action"] == (
+        "DO_NOT_RUN_GUIDED_WITH_CURRENT_COHORT"
+    )
+    assert len(audit["stale_snapshot_findings"]) == 4
+    assert "conditional target route, not a frozen submission-ready outcome" in draft
+    assert "minimum benchmark package or submission-ready paper is complete" in draft
+
+    gap = next(
+        row
+        for row in consistency["known_reporting_gaps"]
+        if row["gap_id"] == "GAP-R2-MINIMUM-BENCHMARK-PACKAGE"
+    )
+    assert gap["status"] == "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE"
 
 
 def test_independent_evaluator_task_reporting_preserves_heterogeneity() -> None:

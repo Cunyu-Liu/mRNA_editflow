@@ -1094,3 +1094,27 @@ claim markers、17 个 evidence sources。本机 focused suite 为 39 passed、5
 0 failed；A100 完整环境同组为 44/44 passed。本任务不新增中央训练 attempt，100-row
 终态分布不变；forward claim 保持 Benchmark+limits+negative result+data/action-space
 geometry。
+
+## 40. Historical transfer 与 18-item minimum benchmark package（2026-08-22）
+
+按主合同的降级路线，仅复核既有、已 outcome-exposed 的 GSE232572 historical
+zero-shot summary；未读取 Development TEST 或新的 final Evaluation。8,068 records、
+三 frozen seeds 相对 neural-medium Siamese strongest baseline 的 task-macro Spearman
+点差均为正，但 seed 20260816 的 paired CI 跨零；三 seed 的 MAE 全部显著劣于 baseline。
+终态 `preregistered_pass=false`，只能报告 historical negative/null transfer，不能写成
+independent final confirmation。
+
+新增 `route2_v332_minimum_benchmark_package_table_v1.csv` 与
+`route_a_v3_route2_v332_minimum_benchmark_package_v1.json`，逐项映射合同的 18 个最低包
+要求：13 complete/complete-with-declared-limits、4 partial、1 unavailable。五个当前
+blockers 为 MBP-10 guided/first-order comparison NO-GO、MBP-13 replacement Evaluation
+缺失、MBP-14 final zero-shot/adaptation 未发生、MBP-15 terminal timing 字段缺失、
+MBP-17 figure builders 未建立。因此状态固定为
+`MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE`、`submission_ready=false`；Outcome C 只是
+conditional target route，不能由旧 GSE summary 的 provisional label 自动冻结。
+
+paper packet 已同步为 22 个唯一 claim markers、19 个 evidence sources，并显式记录
+GSE232572 historical role 与旧 inventory role/delivery/running-state 字段由 V3.3.2
+authority 覆盖。本机 inventory/split/baseline/E-MTAB/paper focused suite 为 30/30
+passed。本任务不运行训练、guided、E-MTAB outcome 或新 final Evaluation，不新增中央
+attempt，100-row 终态不变。

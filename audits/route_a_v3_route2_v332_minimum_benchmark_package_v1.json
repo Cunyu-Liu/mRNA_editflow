@@ -1,0 +1,120 @@
+{
+  "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
+  "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
+  "observed_at": "2026-08-22T12:16:32+08:00",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "authority_rule": "The V3.3.2 contract overrides stale role, delivery and running-state labels in frozen 2026-08-17 inventories."
+  },
+  "summary": {
+    "requirement_count": 18,
+    "complete_or_complete_with_declared_limits_count": 13,
+    "partial_count": 4,
+    "not_available_count": 1,
+    "minimum_package_complete": false,
+    "submission_ready": false,
+    "current_honest_packet": "INTERNAL_DEVELOPMENT_BENCHMARK_PLUS_HISTORICAL_TRANSFER_AND_GENERATION_LIMITS_EVIDENCE_PACKET",
+    "current_final_paper_outcome_frozen": false,
+    "target_conditional_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+  },
+  "blocking_requirement_ids": [
+    "MBP-10",
+    "MBP-13",
+    "MBP-14",
+    "MBP-15",
+    "MBP-17"
+  ],
+  "blocker_classes": {
+    "dependency_no_go": [
+      "MBP-10"
+    ],
+    "external_study_unavailable": [
+      "MBP-13",
+      "MBP-14"
+    ],
+    "terminal_instrumentation_gap_no_rerun": [
+      "MBP-15"
+    ],
+    "manuscript_asset_not_built": [
+      "MBP-17"
+    ]
+  },
+  "historical_transfer": {
+    "study_unit_id": "GSE232572",
+    "current_role": "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+    "record_count": 8068,
+    "strongest_baseline_id": "neural_medium_siamese_cnn",
+    "seed_count": 3,
+    "model_minus_baseline_task_macro_spearman": [
+      0.020302446832280538,
+      0.04853075021317742,
+      0.03709351939595837
+    ],
+    "spearman_improvement_ci_95_lower": [
+      -0.011728708071697243,
+      0.017174099568648585,
+      0.00370956395205847
+    ],
+    "baseline_mae_minus_model_mae": [
+      -0.18983225690001593,
+      -0.16465689517502083,
+      -0.14065073428818486
+    ],
+    "all_three_mae_favor_model": false,
+    "all_three_rank_ci_lower_positive": false,
+    "preregistered_pass": false,
+    "interpretation": "Rank point estimates are positive for all seeds, but one paired interval crosses zero and MAE is significantly worse for every seed; stable historical transfer is not established."
+  },
+  "external_evaluation": {
+    "evaluation_unexposed_canonical_records": 0,
+    "replacement_study_registered": false,
+    "new_final_evaluation_opened": false,
+    "gse232572_final_confirmation_eligible": false,
+    "emtab10902_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+    "emtab10902_outcome_read": false
+  },
+  "guided_generation": {
+    "flow_g0_ready": true,
+    "critic_ready_for_guidance": false,
+    "critic_v2_control_status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+    "first_order_guidance_run": false,
+    "frozen_critic_xeditflow_run": false,
+    "authorized_action": "DO_NOT_RUN_GUIDED_WITH_CURRENT_COHORT"
+  },
+  "stale_snapshot_findings": [
+    {
+      "artifact": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",
+      "stale_field": "goal1_adjudication.delivery_status=LOCAL_BRANCH_NOT_PUSHED",
+      "current_authority": "Current branch is pushed and synchronized; retain the frozen inventory for study facts only."
+    },
+    {
+      "artifact": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",
+      "stale_field": "GSE232572.use_role=EVALUATION",
+      "current_authority": "V3.3.2 contract assigns HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION."
+    },
+    {
+      "artifact": "configs/route_a_v3_route2_baseline_inventory_v1.json",
+      "stale_field": "status says primary mRNABERT HPO running",
+      "current_authority": "Critic V2 is terminal NO-GO and the seven-method matched generation suite is terminal."
+    },
+    {
+      "artifact": "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json",
+      "stale_field": "paper_outcome=BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+      "current_authority": "The historical result supports the limits route, but the current paper outcome cannot freeze until the minimum package audit is complete and accountable human review occurs."
+    }
+  ],
+  "protected_outcomes": {
+    "development_test_opened_by_this_audit": false,
+    "new_final_evaluation_opened_by_this_audit": false,
+    "guided_xeditflow_opened_by_this_audit": false,
+    "emtab10902_outcome_read_by_this_audit": false
+  },
+  "table_path": "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv",
+  "new_training_attempt_created": false,
+  "next_authorized_work": [
+    "Build submission figures from frozen evidence tables without changing scientific gates.",
+    "Complete accountable human evidence verification and manuscript metadata.",
+    "Register a new convertible outcome-unexposed replacement Evaluation study before any final zero-shot/adaptation execution."
+  ]
+}

@@ -14,7 +14,9 @@ frozen potential for legal, budget-controlled Edit Flow generation. The present
 evidence does not yet establish that full claim: the first mRNABERT critic failed
 three-seed readiness, Critic V2 failed its prospectively frozen control gate,
 guided XEditFlow remains unauthorized, and a new unexposed, convertible external
-Evaluation study is still required. [claim:C-R2-001]
+Evaluation study is still required. The 18-item minimum benchmark package is
+also not yet complete, so this remains an internal evidence packet rather than a
+submission-ready benchmark paper. [claim:C-R2-001]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-ADJ]
 
 ## Methods draft
@@ -56,6 +58,18 @@ as the prespecified tiebreak. Measured-neighborhood candidate and top-k recovery
 were reported as separate Development diagnostics because generated candidates
 outside measured support have unknown outcomes. [claim:C-R2-005]
 [evidence:E-R2-GEN-SELECT,E-R2-GEN-INPUT]
+
+### Historical transfer and minimum-package adjudication
+
+GSE232572 was evaluated previously on 8,068 records after its outcomes had
+already become exposed to the project. V3.3.2 therefore treats this study only
+as a historical zero-shot transfer/diagnostic and never as final independent
+confirmation. Its three frozen model seeds were compared with the same neural
+Siamese baseline using paired source-level intervals. A separate 18-item audit
+maps the contract's minimum benchmark package to terminal evidence, legal
+dependency closures and reporting gaps; it cannot turn an unauthorized guided
+run or absent replacement Evaluation study into a completed item.
+[evidence:E-R2-CONTRACT,E-R2-GSE232-HIST,E-R2-PACKAGE-AUDIT]
 
 ### Prospectively frozen Critic V2 repair
 
@@ -197,6 +211,20 @@ assigned zero gain or canonical intervention credit. Per-candidate algorithmic
 STOP time is not present in the terminal selection input and is reported as
 `NOT_RETAINED`, not reconstructed.
 
+### Historical GSE232572 transfer did not meet its preregistered pass rule
+
+The model-minus-baseline task-macro Spearman point differences across the three
+historical seeds were +0.0203024, +0.0485308 and +0.0370935. Their paired 95%
+interval lower bounds were -0.0117287, +0.0171741 and +0.0037096, respectively,
+so one seed did not exclude zero. More importantly, baseline-MAE minus model-MAE
+was negative for all three seeds (-0.1898323, -0.1646569 and -0.1406507), with
+all three intervals also negative. The prospectively recorded historical result
+was therefore `preregistered_pass=false`: positive rank point estimates did not
+establish stable transfer because rank uncertainty remained for one seed and
+calibration error favored the baseline for every seed. This outcome is retained
+as negative historical transfer evidence and not as final Evaluation.
+[claim:C-R2-021] [evidence:E-R2-GSE232-HIST,E-R2-CONTRACT]
+
 ### Predictor readiness remains unresolved
 
 The first mRNABERT cohort produced three task-macro Spearman values of 0.116129,
@@ -245,6 +273,21 @@ is therefore localized candidate-specific rank signal without stable
 task-macro or calibration superiority over the strongest same-information
 baseline.
 
+### The minimum benchmark package remains incomplete
+
+Of the contract's 18 minimum-package items, 13 are complete or complete with an
+explicit limitation, four are partial and one is unavailable. The five items
+that prevent a complete package are the matched guided/first-order comparison
+closed by Critic V2 NO-GO, the absence of a new outcome-unexposed replacement
+Evaluation study, the consequently unrun final zero-shot-to-adaptation sequence,
+missing terminal generation/STOP timing fields, and the absence of manuscript
+figure builders. The exact item-level statuses are retained in
+`route2_v332_minimum_benchmark_package_table_v1.csv`. Accordingly, the current
+deliverable is an internal Development benchmark plus historical-transfer and
+generation-limits evidence packet. `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`
+is the conditional target route, not a frozen submission-ready outcome.
+[claim:C-R2-022] [evidence:E-R2-CONTRACT,E-R2-PACKAGE-AUDIT]
+
 ## Concrete limitations and reporting gaps
 
 1. The independent evaluator cleared its threshold by only 0.0013180, and its
@@ -281,6 +324,14 @@ baseline.
 6. The Critic V2 task-size and selected-epoch analyses are post hoc failure
    diagnostics. They describe where the frozen margin arose but do not replace
    the nine-task gate, prove a causal mechanism or authorize another seed.
+7. GSE232572 is outcome-exposed historical transfer evidence. One rank interval
+   crossed zero and all three MAE comparisons favored the baseline; neither the
+   study nor its provisional historical paper label can supply an unbiased final
+   confirmation.
+8. The minimum package is not complete. Guided comparison and new-study
+   Evaluation remain legally unavailable, terminal timing fields cannot be
+   retroactively reconstructed, no manuscript figure builder is present, and
+   accountable human evidence verification remains pending.
 
 ## Allowed and prohibited wording at this stage
 
@@ -297,6 +348,10 @@ Allowed:
   its frozen control gate before confirmation seeds.”
 - “Critic V2 showed localized candidate-specific rank signal but did not achieve
   task-wide or calibration superiority over the strongest baseline.”
+- “The outcome-exposed GSE232572 historical diagnostic did not establish stable
+  transfer under its preregistered rank-and-MAE rule.”
+- “The current internal packet defines a conditional Benchmark+limits route but
+  does not yet satisfy the complete minimum benchmark package.”
 
 Prohibited until later gates pass:
 
@@ -307,6 +362,8 @@ Prohibited until later gates pass:
 - “Every method produced exactly 32 candidates per source.”
 - “The first-stage benchmark supports or validates INS/DEL.”
 - “A generated candidate outside measured support has zero measured gain.”
+- “GSE232572 provides an independent final confirmation.”
+- “The minimum benchmark package or submission-ready paper is complete.”
 - “GSE232572 is an unbiased final confirmation” or “E-MTAB-10902 was evaluated.”
 
 ## Unresolved items before manuscript integration
@@ -317,5 +374,8 @@ Prohibited until later gates pass:
   frozen protocol rather than a post hoc seed, threshold or control change.
 - Registration and use of a new, convertible, outcome-unexposed external
   Evaluation study.
+- Matched guided/first-order generation remains closed for the terminal cohort;
+  figure builders have not been created, and missing terminal timing fields must
+  remain explicitly missing rather than reconstructed.
 - Target venue, reporting guideline, author list, contributions, declarations,
   funding, ethics applicability, data/code availability and AI-use disclosure.

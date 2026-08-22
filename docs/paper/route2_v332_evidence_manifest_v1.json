@@ -3,13 +3,15 @@
   "document_id": "route2-v332-methods-results-draft-v1",
   "draft_status": "INTERNAL_EVIDENCE_BOUND_NOT_SUBMISSION_READY",
   "confidentiality": "LOCAL_UNPUBLISHED_PROJECT_MATERIAL",
-  "external_transfer_performed": false,
+  "external_transfer_performed": true,
+  "external_transfer_role": "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+  "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T12:04:00+08:00",
+    "observed_at": "2026-08-22T12:16:32+08:00",
     "status": "PASS",
-    "source_locations_checked": 17,
-    "local_or_contract_locations_checked": 9,
+    "source_locations_checked": 19,
+    "local_or_contract_locations_checked": 11,
     "a100_mnt_locations_checked": 8,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -135,6 +137,22 @@
       "location": "configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json",
       "locator": "exact 21+21 fold pairing, three seeds, seven studies, zero-record study and aggregate input/output boundaries",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-GSE232-HIST",
+      "kind": "historical_outcome_exposed_transfer_summary",
+      "location": "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json",
+      "locator": "8068-record historical zero-shot role; three paired seed rank/MAE margins and intervals; preregistered_pass=false",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "final_confirmation_eligible": false
+    },
+    {
+      "evidence_id": "E-R2-PACKAGE-AUDIT",
+      "kind": "derived_minimum_benchmark_package_audit",
+      "location": "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
+      "locator": "18 contract requirements, item-level statuses, five incomplete-package blockers, stale-snapshot authority overrides and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
     }
   ],
   "submission_ready": false

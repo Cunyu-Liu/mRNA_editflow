@@ -66,6 +66,22 @@
         "E-R2-CRITIC-V2-READINESS",
         "E-R2-CRITIC-V2-LOSO-AGG"
       ]
+    },
+    {
+      "method_id": "M-R2-HISTORICAL-TRANSFER-PACKAGE",
+      "label": "Outcome-exposed historical transfer and minimum-package audit",
+      "analysis_intent": "HISTORICAL_TRANSFER_DIAGNOSTIC_AND_REPORTING_COMPLETENESS",
+      "historical_study_id": "GSE232572",
+      "historical_study_role": "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+      "historical_record_count": 8068,
+      "minimum_package_requirement_count": 18,
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "evidence_ids": [
+        "E-R2-CONTRACT",
+        "E-R2-GSE232-HIST",
+        "E-R2-PACKAGE-AUDIT"
+      ]
     }
   ],
   "results": [
@@ -207,12 +223,62 @@
         "E-R2-CRITIC-V2-ADJ",
         "E-R2-CRITIC-V2-DIAG"
       ]
+    },
+    {
+      "result_id": "R-R2-GSE232-HISTORICAL-TRANSFER",
+      "role": "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+      "record_count": 8068,
+      "strongest_baseline_id": "neural_medium_siamese_cnn",
+      "seed_count": 3,
+      "model_minus_baseline_task_macro_spearman": [
+        0.020302446832280538,
+        0.04853075021317742,
+        0.03709351939595837
+      ],
+      "spearman_improvement_ci_95_lower": [
+        -0.011728708071697243,
+        0.017174099568648585,
+        0.00370956395205847
+      ],
+      "baseline_mae_minus_model_mae": [
+        -0.18983225690001593,
+        -0.16465689517502083,
+        -0.14065073428818486
+      ],
+      "rank_ci_all_positive": false,
+      "mae_all_favors_model": false,
+      "preregistered_pass": false,
+      "evidence_ids": ["E-R2-GSE232-HIST", "E-R2-CONTRACT"]
+    },
+    {
+      "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
+      "requirement_count": 18,
+      "complete_or_complete_with_declared_limits_count": 13,
+      "partial_count": 4,
+      "not_available_count": 1,
+      "blocking_requirement_ids": [
+        "MBP-10",
+        "MBP-13",
+        "MBP-14",
+        "MBP-15",
+        "MBP-17"
+      ],
+      "minimum_package_complete": false,
+      "submission_ready": false,
+      "current_honest_packet": "INTERNAL_DEVELOPMENT_BENCHMARK_PLUS_HISTORICAL_TRANSFER_AND_GENERATION_LIMITS_EVIDENCE_PACKET",
+      "target_conditional_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+      "final_paper_outcome_frozen": false,
+      "table": "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
+      "evidence_ids": ["E-R2-CONTRACT", "E-R2-PACKAGE-AUDIT"]
     }
   ],
   "protected_outcomes": {
     "development_test_opened": false,
     "new_final_evaluation_opened": false,
-    "guided_xeditflow_authorized": false
+    "guided_xeditflow_authorized": false,
+    "historical_outcome_exposed_gse232572_included": true,
+    "historical_outcome_exposed_gse232572_final_confirmation_eligible": false
   },
   "known_reporting_gaps": [
     {
@@ -232,6 +298,12 @@
       "description": "The terminal selection input retains terminal-cause counts and edit-distance distributions but not per-candidate algorithmic STOP time.",
       "action": "Report exact STOP counts and fractions, keep algorithmic STOP time as NOT_RETAINED, and do not reconstruct it from edit count or wall-clock timestamps.",
       "status": "NOT_RETAINED_IN_TERMINAL_SELECTION_INPUT_NO_TERMINAL_RERUN"
+    },
+    {
+      "gap_id": "GAP-R2-MINIMUM-BENCHMARK-PACKAGE",
+      "description": "Five requirements prevent the 18-item minimum benchmark package from being complete: authorized guided comparison, a new outcome-unexposed Evaluation study, its zero-shot/adaptation sequence, complete terminal timing fields and manuscript figure builders.",
+      "action": "Keep the packet internal and submission_ready=false; do not bypass the Critic V2 NO-GO, reconstruct terminal timing, or relabel historical GSE232572 as final confirmation.",
+      "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE"
     }
   ],
   "submission_ready": false

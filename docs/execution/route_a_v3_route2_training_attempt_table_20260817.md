@@ -508,3 +508,29 @@ draft/evidence/consistency manifests。per-candidate algorithmic STOP time 与�
 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。Development
 TEST、guided XEditFlow 与 new final Evaluation outcome 均未打开。
+
+## Historical transfer 与 minimum benchmark package 裁决（2026-08-22）
+
+按 V3.3.2 允许的 historical diagnostic 边界读取既有 GSE232572 8,068-record
+zero-shot summary；该 study 已 outcome-exposed，当前角色固定为
+`HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION`。三 seed
+model-minus-baseline task-macro Spearman 点差为 `+0.020302446832280538 /`
+`+0.04853075021317742 / +0.03709351939595837`，但第一 seed 的 paired 95% CI lower
+为 `-0.011728708071697243`；三 seed 的 baseline-MAE minus model-MAE 均为负。因此
+`preregistered_pass=false`，只支持历史负 transfer/limits 结论，不提供 final confirmation。
+
+新增 18-item minimum package 表与审计。13 项为 complete 或 complete-with-declared-
+limits，4 项 partial，1 项 unavailable；阻止“minimum package complete”的五项为：
+当前 cohort 不授权 guided/first-order comparison、新 outcome-unexposed replacement
+Evaluation 不存在、其 zero-shot→adaptation 未执行、terminal timing 字段不完整、Route 2
+manuscript figure builders 尚未建立。当前状态为
+`MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE`，conditional target 才是
+`BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`，不是已冻结的 submission-ready
+outcome。
+
+审计同时记录两个 2026-08-17 inventory 的陈旧字段：旧 GSE232572 `EVALUATION` role、
+`LOCAL_BRANCH_NOT_PUSHED`、mRNABERT HPO running 与 historical summary 的 provisional
+paper label 均由 V3.3.2 合同和 terminal evidence 覆盖，但不篡改冻结 snapshot。
+本机 focused suite 30/30 passed。没有读取 Development TEST/new final Evaluation，
+没有运行 guided 或 E-MTAB-10902 outcome evaluation，也没有参数更新；中央训练 CSV
+不新增 attempt，100-row 终态分布不变。
