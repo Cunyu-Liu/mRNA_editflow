@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T17:37:55+08:00",
+    "observed_at": "2026-08-22T17:52:27+08:00",
     "status": "PASS",
-    "source_locations_checked": 53,
-    "local_or_contract_locations_checked": 39,
+    "source_locations_checked": 54,
+    "local_or_contract_locations_checked": 40,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -416,6 +416,14 @@
       "kind": "derived_data_rights_exposure_limitations_table_audit",
       "location": "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json",
       "locator": "14-row limitation table: one converter-level true declaration, eight false declarations and five without a boolean declaration, but zero human-verified study-bound licenses and zero public-release authorizations; table at docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-METHODS-COMPLETION-AUDIT",
+      "kind": "derived_methods_section_completion_audit",
+      "location": "audits/route_a_v3_route2_v332_methods_completion_v1.json",
+      "locator": "14 required Methods subsections; frozen data-role, estimand, baseline, matched-budget, evaluator, generation, statistical, Critic V2 and conditional-readiness coverage; 7 figures from 6 builders; 509905 configured-expected versus 509845 terminal-actual evaluator parameter count retained; human verification and availability/submission states remain incomplete",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

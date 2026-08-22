@@ -1,6 +1,27 @@
 {
   "schema_version": "route2_v332_consistency_manifest.v1",
   "document_id": "route2-v332-methods-results-draft-v1",
+  "manuscript_sections": {
+    "methods": {
+      "status": "COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING",
+      "subsection_count": 14,
+      "completion_audit": "audits/route_a_v3_route2_v332_methods_completion_v1.json",
+      "human_verification_complete": false,
+      "submission_ready": false
+    },
+    "results": {
+      "status": "EVIDENCE_DRAFT_NOT_YET_SECTION_ADJUDICATED"
+    },
+    "discussion": {
+      "status": "PARTIAL_NEXT_DATA_DRAFT_NOT_YET_SECTION_ADJUDICATED"
+    },
+    "data_availability": {
+      "status": "NOT_DRAFTED"
+    },
+    "code_availability": {
+      "status": "NOT_DRAFTED"
+    }
+  },
   "methods": [
     {
       "method_id": "M-R2-DATA",

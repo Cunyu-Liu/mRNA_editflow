@@ -67,6 +67,13 @@ def test_builder_closes_all_draft_claims_and_lists_unsupported_claims(tmp_path: 
     with pytest.raises(FileExistsError):
         build_table(output_table_path=table_path, output_audit_path=audit_path)
 
+    overwritten = build_table(
+        output_table_path=table_path,
+        output_audit_path=audit_path,
+        overwrite=True,
+    )
+    assert overwritten == audit
+
 
 def test_builder_rejects_an_unmapped_draft_claim_marker(tmp_path: Path) -> None:
     bad_draft = tmp_path / "draft.md"

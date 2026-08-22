@@ -22,7 +22,16 @@ the route's complete publication trigger and submission eligibility remain
 false. [claim:C-R2-001]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-ADJ,E-R2-PAPER-OUTCOME-ADJUDICATION]
 
-## Methods draft
+## Methods
+
+Route 2 was analyzed as a frozen two-track Development benchmark. The Prediction
+track asks whether a source-relative Delta model improves on the strongest
+same-information baseline under grouped data separation and matched visible
+inputs. The Generation track compares legal source-anchored candidate producers
+under a shared `SUB + STOP` action space and explicit candidate and forward-
+equivalent caps. Model selection, historical transfer and final Evaluation are
+separate evidence roles; no Development statistic is relabelled as independent
+external confirmation. [evidence:E-R2-CONTRACT,E-R2-DATA-TABLE]
 
 ### Development data and protected-outcome boundary
 
@@ -116,8 +125,16 @@ executed, and publisher rules remain pending.
 Generation methods were compared with a frozen Siamese CNN evaluator trained
 independently of the guiding checkpoint on Development TRAIN/VALIDATION. The
 evaluator contained 509,845 trainable parameters and completed 8 epochs and
-22,400 optimizer steps on GPU. Its role was restricted to Development method
-selection; it was not an external biological assay or final Evaluation model.
+22,400 optimizer steps on GPU. It used a seven-layer, hidden-width-103 Siamese
+CNN with maximum sequence length 2,048 and full-context metadata. Training used
+Huber loss with delta 1.0, task-then-source/context/endpoint-group weighting,
+TRAIN-task robust target scaling, AdamW (learning rate 3e-4, weight decay 1e-4),
+batch size 32, BF16 and seed 20260816; the frozen policy used the final epoch.
+The configuration's expected parameter count was 509,905, whereas the terminal
+trained model contained 509,845 parameters. The terminal actual count is
+reported and the historical frozen configuration is retained unchanged. The
+evaluator's role was restricted to Development method selection; it was not an
+external biological assay or final Evaluation model.
 [claim:C-R2-003] [evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-ADJ]
 
 ### Matched generation/search comparison
@@ -127,6 +144,12 @@ STOP` action space: random legal search, greedy search, beam search, a genetic
 algorithm, local search, generate-then-rerank and unguided learned Base Flow.
 The protocol imposed a maximum of 32 candidates per source, 256 critic forwards
 per source for critic-using methods and 320 total forward-equivalents per source.
+The frozen search settings included beam width 16, genetic population size 32
+and an oversampling factor of eight, with no new HPO. The unguided Base Flow used
+next-legal-action cross-entropy with normalized absolute/edit-gated position and
+consumed-edit-budget progress features; it had hidden width 256 and was trained
+for 30 epochs with batch size 64, AdamW (learning rate 3e-4, weight decay 1e-4),
+BF16 and seed 20260816 over edit budgets 1, 3 and 5.
 The independent evaluator was frozen before candidate generation, its checkpoint
 was distinct from the guiding checkpoint, and all method selection used
 Development evidence. [claim:C-R2-004] [evidence:E-R2-GEN-SUITE,E-R2-GEN-INPUT,E-R2-GEN-SELECT]
@@ -140,6 +163,29 @@ as the prespecified tiebreak. Measured-neighborhood candidate and top-k recovery
 were reported as separate Development diagnostics because generated candidates
 outside measured support have unknown outcomes. [claim:C-R2-005]
 [evidence:E-R2-GEN-SELECT,E-R2-GEN-INPUT]
+
+### Statistical analysis and model-selection hierarchy
+
+Prediction model selection used Development task-macro Spearman as the primary
+rank statistic and task-macro standardized MAE as the calibration/error
+companion; Critic V2 additionally retained prediction spread, positive-task
+breadth and margins over the frozen strongest same-information baseline and
+matched controls. These deterministic frozen gates were not replaced by post
+hoc region, task-size or selected-epoch analyses. Because the Critic V2 control
+screen failed, the confirmation-seed, Development TEST, refit and LOSO sequence
+was not run.
+
+Generation aggregation used the source as the analysis unit and reported
+source-macro statistics. Leader uncertainty was estimated with the frozen
+10,000-iteration paired source bootstrap described above; the interval measures
+Development independent-evaluator separation, not biological uncertainty.
+Measured-neighborhood recovery, critic self-score and independent-evaluator
+uplift remained separate evidence layers. Closed measured NDCG/regret and
+per-method uncertainty were left blank when undefined or unavailable, and
+unknown generated outcomes were never assigned zero gain. Historical GSE232572
+intervals were also paired at source level but remain outcome-exposed and
+nonconfirmatory.
+[evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ,E-R2-GEN-SELECT,E-R2-GEN-THREE-LAYER-AUDIT,E-R2-GSE232-HIST]
 
 ### Historical transfer and minimum-package adjudication
 
@@ -155,7 +201,7 @@ run or absent replacement Evaluation study into a completed item.
 
 ### Provisional figure assembly
 
-Five reproducible builders render six general-manuscript figures. Two result
+Six reproducible builders render seven general-manuscript figures. Two result
 figures use the frozen generation/action-space table, the complete nine-task
 Critic V2 diagnostic and the explicitly outcome-exposed GSE232572 historical
 summary. A third canonical conversion-flow figure uses the 14-study
@@ -177,8 +223,10 @@ terminal Development histories for six selected predictor profiles, all four
 Critic V2 control arms, the independent evaluator and Base Flow G0. Predictor
 per-epoch curves use pooled Validation Spearman and keep their separately
 calculated task-macro architecture-selection values in the legend; the figure
-does not permit ranking across panel-specific metrics. Each figure is exported
-as 300-dpi PNG, PDF and SVG with an
+does not permit ranking across panel-specific metrics. A seventh four-panel
+figure reports the quality-cost, Hamming-diversity, duplicate and candidate-cap-
+shortfall geometry described above without converting point estimates into
+formal superiority. Each figure is exported as 300-dpi PNG, PDF and SVG with an
 evidence manifest and alt text. Development TEST, new final Evaluation and guided
 XEditFlow remain unopened. The target journal, article type and submission phase
 are still pending, so no publisher-specific compliance is claimed.
@@ -193,7 +241,10 @@ per-task Huber aggregation within each batch. Its prospective screen comprises
 the full model, within-source/task candidate permutation, a parameter-matched
 source-only control and a source-plus-edit-metadata control without candidate
 global mRNABERT representation. The four arms share seed 20260825, 100 epochs,
-batch size 16 and the same TRAIN/VALIDATION budget. [claim:C-R2-006]
+batch size 16 and the same TRAIN/VALIDATION budget. The full-model training
+policy used Huber delta 1.0, TRAIN-task robust scaling, AdamW (learning rate
+1e-4, weight decay 1e-4), BF16 and best-Validation checkpoint selection by
+task-macro Spearman followed by standardized MAE. [claim:C-R2-006]
 [evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ]
 
 ### Prospective Critic V2 selection and readiness sequence

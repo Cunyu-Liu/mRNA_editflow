@@ -232,8 +232,9 @@ def build_table(
     outcome_audit_path: Path = DEFAULT_OUTCOME_AUDIT,
     output_table_path: Path = DEFAULT_OUTPUT_TABLE,
     output_audit_path: Path = DEFAULT_OUTPUT_AUDIT,
+    overwrite: bool = False,
 ) -> dict[str, Any]:
-    if output_table_path.exists() or output_audit_path.exists():
+    if (output_table_path.exists() or output_audit_path.exists()) and not overwrite:
         raise FileExistsError("refusing to overwrite an existing claim/evidence artifact")
     rows, audit = derive_rows_and_audit(
         draft=draft_path.read_text(encoding="utf-8"),
@@ -263,6 +264,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--outcome-audit", type=Path, default=DEFAULT_OUTCOME_AUDIT)
     parser.add_argument("--output-table", type=Path, default=DEFAULT_OUTPUT_TABLE)
     parser.add_argument("--output-audit", type=Path, default=DEFAULT_OUTPUT_AUDIT)
+    parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
 
@@ -274,6 +276,7 @@ def main() -> None:
         outcome_audit_path=args.outcome_audit,
         output_table_path=args.output_table,
         output_audit_path=args.output_audit,
+        overwrite=args.overwrite,
     ), indent=2, sort_keys=True))
 
 
