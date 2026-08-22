@@ -2251,3 +2251,13 @@ read=0、generated candidate 不获 canonical credit、biological optimization=f
 该修复不改 set-marginal objective、checkpoint selection、threshold 或运行中的 F1/F2。SetFlow focused
 cohort=28/28、V3.3.2=96/96、compile/diff-check PASS。一次误写的不存在测试路径在 collection 前停止，随后
 使用实际 cohort 通过；不构成训练或科学 attempt。A100 sync/test 继续等待 `22317ed` jobs terminal。
+
+## 06:07 scheduled screen status（2026-08-23）
+
+按不早于 06:04:56 的合同节奏，于 06:07:38 完成一次合并检查。C1/F1/F2 仍为原三个 RUNNING jobs，
+elapsed=3:50:17/2:20:08/2:05:10，进程均存活，terminal summary、failure artifact 与 error marker 均不存在；
+没有读取活跃曲线或性能值，因此中央 ledger 状态不改。
+
+GPU0–5 free memory=2,569/9,095/3,153/5,209/4,267/5,919 MiB，utilization 均为 100%，仍不具备 C2/C3/F3
+所需安全余量；GPU6/7 不在授权范围，未使用。未降容量、未 CPU fallback、未新建或重复 attempt。A100
+HEAD 保持 `22317ed`；下一次检查不早于 `2026-08-23T06:37:38+08:00`，protected outcome 状态不变。

@@ -1,0 +1,57 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_screen_health.v1",
+  "status": "ACTIVE_SCREEN_JOBS_HEALTHY_NO_NEW_LAUNCH",
+  "observed_at": "2026-08-23T06:07:38+08:00",
+  "monitoring_policy": {
+    "previous_check_at": "2026-08-23T05:34:56+08:00",
+    "minimum_interval_minutes": 30,
+    "interval_satisfied": true,
+    "active_curves_or_performance_metrics_read": false,
+    "next_check_not_before": "2026-08-23T06:37:38+08:00"
+  },
+  "jobs": {
+    "c1": {
+      "pid": 1083151,
+      "elapsed": "03:50:17",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false
+    },
+    "f1": {
+      "pid": 1716291,
+      "elapsed": "02:20:08",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false
+    },
+    "f2": {
+      "pid": 1822702,
+      "elapsed": "02:05:10",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false
+    }
+  },
+  "gpu_0_to_5_free_memory_mib": [2569, 9095, 3153, 5209, 4267, 5919],
+  "gpu_0_to_5_utilization_percent": [100, 100, 100, 100, 100, 100],
+  "launch_decision": {
+    "c2_started": false,
+    "c3_started": false,
+    "f3_started": false,
+    "reason": "No authorized GPU 0-5 has sufficient safe free memory for another frozen-capacity arm",
+    "capacity_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

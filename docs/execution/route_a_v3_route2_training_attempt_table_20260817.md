@@ -1488,3 +1488,10 @@ Development TEST/new Evaluation read=0；A100 sync/test 继续等待 launch-head
 small-graph exactness、零 validation update/critic/evaluator/protected read，以及无 canonical/biological overclaim。
 数值 gate、seed、训练和 F0/V2 terminal 历史不变。focused=28/28、V3.3.2=96/96、compile/diff-check PASS；
 A100 current-HEAD sync/test 等 `22317ed` active jobs terminal。
+
+## 06:07 scheduled screen status（2026-08-23）
+
+C1/F1/F2 仍为既有三个 RUNNING attempts，elapsed=3:50:17/2:20:08/2:05:10；均存活且没有 terminal、
+failure 或 error marker，因此中央 CSV 不改状态、不新增行。GPU0–5 free memory=2,569/9,095/3,153/5,209/
+4,267/5,919 MiB，仍不足以启动 C2/C3/F3；GPU6/7 未获授权，未使用。下一次检查不早于 06:37:38，
+A100 HEAD=`22317ed`，protected outcome 和 downstream authorization 均不改变。
