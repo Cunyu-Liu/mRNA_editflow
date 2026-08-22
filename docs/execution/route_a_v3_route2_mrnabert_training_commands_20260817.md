@@ -1224,5 +1224,6 @@ A100 从 GitHub commit `6798b6c` 快进，builder focused test 2/2 passed，在
 对白底超过 3:1。`publisher_compliance_claimed=false`。
 
 paper evidence sources 从 27 增至 29，figure count=5、builder count=4；22 个 claims、
-MBP-17、最低包 14/3/1、四个 blockers 和 `submission_ready=false` 不变。Development TEST、
-new final Evaluation、E-MTAB outcome、sealed GSE246381 与 guided XEditFlow 均未打开。
+MBP-17、最低包 14/3/1、四个 blockers 和 `submission_ready=false` 不变。本机与 A100
+六组联合 focused suite 均为 23/23。Development TEST、new final Evaluation、E-MTAB
+outcome、sealed GSE246381 与 guided XEditFlow 均未打开。

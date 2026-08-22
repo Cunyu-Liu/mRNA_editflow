@@ -624,4 +624,5 @@ canonical credit。
 
 A100 builder test 2/2 passed，并在 `/mnt/.../figures/route2_v332_v1/` 追加 PNG/PDF/SVG、
 manifest 与 alt text。paper packet 仍有 22 个 claim markers，evidence sources 增至 29；
-manuscript figures 现为 5 张、4 个 builders，最低包与 100-row terminal 分布不变。
+manuscript figures 现为 5 张、4 个 builders；本机与 A100 六组联合 focused suite 均为
+23/23，最低包与 100-row terminal 分布不变。
