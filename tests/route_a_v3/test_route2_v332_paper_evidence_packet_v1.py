@@ -1162,6 +1162,25 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert sum(row["status"].startswith("PARTIAL") for row in rows) == 3
     assert sum(row["status"].startswith("NOT_AVAILABLE") for row in rows) == 1
     assert audit["summary"]["requirement_count"] == result["requirement_count"] == 18
+    assert audit["summary"]["itemwise_adjudication_complete"] is result[
+        "itemwise_adjudication_complete"
+    ] is True
+    assert audit["itemwise_closure"] == {
+        "status": "ITEMWISE_ADJUDICATION_COMPLETE_PACKAGE_INCOMPLETE",
+        "adjudicated_requirement_count": 18,
+        "unadjudicated_requirement_count": 0,
+        "requirement_ids_complete_and_unique": True,
+        "unfinished_requirements_written_as_pass": False,
+        "blocking_requirement_ids": ["MBP-10", "MBP-13", "MBP-14", "MBP-15"],
+        "authorized_current_cohort_action": "NO_RERUN_NO_GUIDED_NO_PROTECTED_OUTCOME_READ",
+        "minimum_package_complete": False,
+        "submission_ready": False,
+    }
+    assert result["unadjudicated_requirement_count"] == 0
+    assert result["unfinished_requirements_written_as_pass"] is False
+    assert result["itemwise_closure_status"] == (
+        "ITEMWISE_ADJUDICATION_COMPLETE_PACKAGE_INCOMPLETE"
+    )
     assert audit["summary"]["complete_or_complete_with_declared_limits_count"] == (
         result["complete_or_complete_with_declared_limits_count"]
     ) == 14
@@ -1355,6 +1374,7 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     )
     assert len(audit["stale_snapshot_findings"]) == 4
     assert "conditional target route, not a frozen submission-ready outcome" in draft
+    assert "itemwise closure is complete even though the package itself is not" in draft
     assert "minimum benchmark package or submission-ready paper is complete" in draft
 
     gap = next(

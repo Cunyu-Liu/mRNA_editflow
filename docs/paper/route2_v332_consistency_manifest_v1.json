@@ -914,6 +914,10 @@
     {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
+      "itemwise_adjudication_complete": true,
+      "unadjudicated_requirement_count": 0,
+      "unfinished_requirements_written_as_pass": false,
+      "itemwise_closure_status": "ITEMWISE_ADJUDICATION_COMPLETE_PACKAGE_INCOMPLETE",
       "complete_or_complete_with_declared_limits_count": 14,
       "partial_count": 3,
       "not_available_count": 1,

@@ -543,7 +543,10 @@ Evaluation study, the consequently unrun final zero-shot-to-adaptation sequence,
 and missing terminal generation/STOP timing fields. Reproducible provisional
 figure builders now satisfy MBP-17, with target-journal export rules retained as
 an explicit limitation. The exact item-level statuses are retained in
-`route2_v332_minimum_benchmark_package_table_v1.csv`. Accordingly, the current
+`route2_v332_minimum_benchmark_package_table_v1.csv`. All 18 requirements have
+therefore been adjudicated, with no unadjudicated row and no unfinished row
+written as PASS; itemwise closure is complete even though the package itself is
+not. Accordingly, the current
 deliverable is an internal Development benchmark plus historical-transfer and
 generation-limits evidence packet. `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`
 is the conditional target route, not a frozen submission-ready outcome.
