@@ -1,0 +1,120 @@
+{
+  "schema_version": "route_a_v3_route2_critic_v2_control_terminal_no_go.v1",
+  "observed_at": "2026-08-22T11:50:16+08:00",
+  "authority": {
+    "protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+    "terminal_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json",
+    "central_training_attempts": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv"
+  },
+  "control_screen": {
+    "status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+    "supports_three_frozen_seeds": false,
+    "screen_seed": 20260825,
+    "arms": {
+      "full": {
+        "ledger_status": "COMPLETED",
+        "completed_at": "2026-08-22T10:56:35+08:00",
+        "physical_gpu_index": 2,
+        "final_training_epoch": 100,
+        "optimizer_steps": 559900,
+        "selected_epoch": 98,
+        "task_macro_spearman": 0.11637066318689378,
+        "task_macro_standardized_mae": 2.222825851326906,
+        "task_median_spearman": 0.016417356743091572,
+        "positive_task_count": 7
+      },
+      "candidate_permutation": {
+        "ledger_status": "COMPLETED",
+        "completed_at": "2026-08-22T05:58:14+08:00",
+        "physical_gpu_index": 4,
+        "final_training_epoch": 100,
+        "optimizer_steps": 559900,
+        "selected_epoch": 12,
+        "task_macro_spearman": 0.08018546242383856,
+        "task_macro_standardized_mae": 2.3963102262002614,
+        "positive_task_count": 7
+      },
+      "source_only": {
+        "ledger_status": "COMPLETED",
+        "completed_at": "2026-08-22T00:22:09+08:00",
+        "physical_gpu_index": 3,
+        "final_training_epoch": 100,
+        "optimizer_steps": 559900,
+        "selected_epoch": 1,
+        "task_macro_spearman": 0.017976235482461158,
+        "task_macro_standardized_mae": 2.0924846890488147,
+        "positive_task_count": 5
+      },
+      "source_edit_metadata": {
+        "ledger_status": "COMPLETED",
+        "completed_at": "2026-08-22T06:56:55+08:00",
+        "physical_gpu_index": 5,
+        "final_training_epoch": 100,
+        "optimizer_steps": 559900,
+        "selected_epoch": 2,
+        "task_macro_spearman": 0.08655782657012488,
+        "task_macro_standardized_mae": 2.1263093305687955,
+        "positive_task_count": 5
+      }
+    },
+    "checks": {
+      "full_beats_permutation_on_supported_tasks": true,
+      "full_beats_source_edit_metadata_macro": true,
+      "full_beats_source_edit_metadata_task_breadth": true,
+      "full_beats_source_only_macro": true,
+      "full_beats_source_only_task_breadth": true,
+      "full_beats_strongest_same_information_baseline": false,
+      "full_permutation_supported_task_mean_margin_positive": true,
+      "full_task_median_positive": true
+    },
+    "strongest_same_information_baseline": {
+      "baseline_id": "method_repair_global_scaled_seed20260821",
+      "task_macro_spearman": 0.13171439492559175,
+      "task_macro_standardized_mae": 1.806657840788394
+    },
+    "full_over_strongest_baseline_task_macro_spearman": -0.015343731738697977,
+    "failed_frozen_requirement": "full_beats_strongest_same_information_baseline"
+  },
+  "central_training_attempts": {
+    "unique_attempts": 100,
+    "status_counts": {
+      "COMPLETED": 92,
+      "FAILED": 3,
+      "INCOMPLETE_NO_TERMINAL_RECORD": 3,
+      "STOPPED_FOR_THROUGHPUT_REPAIR": 1,
+      "STOPPED_PRIORITY_REALLOCATION": 1
+    },
+    "critic_v2_completed_attempts": 4
+  },
+  "conditional_downstream": {
+    "confirmation_seed_runtime_configs_created": 0,
+    "three_seed_adjudication_exists": false,
+    "frozen_future_targets_checked": 19,
+    "frozen_future_targets_existing": 0,
+    "development_test_opened": false,
+    "all_development_refit_started": false,
+    "test_preserving_loso_started": false,
+    "readiness_started": false,
+    "guided_generation_started": false,
+    "evaluation_opened": false
+  },
+  "post_confirmation_watcher": {
+    "issue": "WATCHER_WAITED_ONLY_FOR_THREE_SEED_ADJUDICATION_AFTER_CONTROL_NO_GO",
+    "remediation_commit": "990f941",
+    "local_focused_tests_passed": 8,
+    "a100_focused_tests_passed": 8,
+    "old_waiter_pid": 380389,
+    "old_waiter_terminated": true,
+    "terminal_replay_exit_code": 0,
+    "terminal_log_event": "critic_v2_control_gate_terminal_no_go_post_confirmation_not_started",
+    "downstream_artifacts_created_by_remediation": false
+  },
+  "protected_outcomes": {
+    "development_test_record_count_withheld": 18292,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "guided_generation_authorized": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "next_action": "PRESERVE_TERMINAL_NEGATIVE_RESULT_AND_CLOSE_UNAUTHORIZED_DOWNSTREAM_PATH"
+}

@@ -36,7 +36,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 15
+    assert len(evidence_ids) == len(set(evidence_ids)) == 16
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 18
@@ -56,7 +56,7 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 15
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 16
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
@@ -80,7 +80,8 @@ def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
         if row["method_id"] == "M-R2-CRITIC-V2-GATES"
     )
 
-    assert method["status"] == readiness["status"]
+    assert method["protocol_status"] == readiness["status"]
+    assert method["status"] == "NOT_STARTED_CONTROL_GATE_NO_GO"
     assert method["required_seeds"] == readiness["required_seeds"]
     assert method["single_frozen_test_seed"] == readiness["single_frozen_test_seed"]
     assert method["single_test_metric_policy"] == readiness["single_test_metric_policy"]
@@ -93,6 +94,44 @@ def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
         "new_final_evaluation_opened": False,
         "guided_xeditflow_authorized": False,
     }
+
+
+def test_paper_packet_reports_terminal_critic_v2_control_no_go_exactly() -> None:
+    draft = DRAFT.read_text(encoding="utf-8")
+    normalized_draft = " ".join(draft.split())
+    consistency = _load(CONSISTENCY)
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-CRITIC-V2"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-CRITIC-V2"
+    )
+
+    assert method["status"] == result["status"] == (
+        "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS"
+    )
+    assert result["all_arms_completed"] is True
+    assert result["arm_count"] == 4
+    assert result["epochs_per_arm"] == 100
+    assert result["optimizer_steps_per_arm"] == 559900
+    assert result["full_task_macro_spearman"] == 0.11637066318689378
+    assert result["strongest_same_information_baseline_task_macro_spearman"] == (
+        0.13171439492559175
+    )
+    assert result["full_over_strongest_baseline_task_macro_spearman"] == (
+        result["full_task_macro_spearman"]
+        - result["strongest_same_information_baseline_task_macro_spearman"]
+    )
+    assert result["control_checks_passed"] == 7
+    assert result["control_checks_total"] == 8
+    assert result["supports_three_frozen_seeds"] is False
+    assert result["scientific_claim_status"] == "NOT_ESTABLISHED"
+    assert "No confirmation seed" in normalized_draft
+    assert "failed its frozen control gate" in normalized_draft
 
 
 def test_generation_bootstrap_reporting_is_exact_and_source_paired() -> None:

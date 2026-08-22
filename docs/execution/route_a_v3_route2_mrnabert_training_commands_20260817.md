@@ -1009,3 +1009,33 @@ evidence manifest 新增 `source_path_preflight`，明确该 PASS 只表示 loca
 `human_verification_required=true` 与 `submission_ready=false` 均保留。paper focused
 tests 现为 7/7。本任务没有参数更新，中央训练 CSV 不新增伪 attempt，Critic V2
 运行状态不因本任务改变。
+
+## 37. Critic V2 control terminal NO-GO 与后继链关闭（2026-08-22）
+
+Critic V2 四臂 screen 已全部完成，每臂均为 100 epochs、559,900 optimizer updates，
+中央训练表四行都由训练器原位更新为 `COMPLETED`。full 的 task-macro Spearman 为
+`0.11637066318689378`，虽高于 candidate permutation `0.08018546242383856`、
+parameter-matched source-only `0.017976235482461158` 和 source+edit-metadata
+`0.08655782657012488`，也通过两个 permutation-supported tasks 与 task-breadth
+要求，但未超过冻结 strongest same-information baseline `0.13171439492559175`；
+margin 为 `-0.015343731738697977`。唯一前瞻裁决因此为
+`CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS`，
+`supports_three_frozen_seeds=false`，scientific claim 继续为 `NOT_ESTABLISHED`。
+
+按冻结 gate，seed `20260822/20260823/20260824` 均未启动，three-seed runtime config
+数为 0、three-seed adjudication 不存在。生产 runner 列出的 19 个 TEST→generation
+future targets 在 terminal 后逐项检查均不存在；Development TEST、all-Development
+refit、TEST-preserving LOSO、readiness、guided generation 与新的 final Evaluation
+全部保持关闭。不得补第四个 seed、改阈值、回退旧 TEST→guided 顺序或重复运行已
+terminal 的四臂 screen。
+
+终态同时暴露一个真实工程缺口：post-confirmation watcher 原先只等待 three-seed
+adjudication，在 control NO-GO 后会永久空等。提交 `990f941` 让 watcher 在每轮先读
+control adjudication，NO-GO 时以 0 退出且不创建 downstream artifact。focused tests
+在本机和 A100 均为 8/8；旧 waiter PID `380389` 已精确终止，修复后脚本写入
+`critic_v2_control_gate_terminal_no_go_post_confirmation_not_started` 并正常退出。
+
+中央训练表当前为 100 个唯一 attempts：92 completed、3 failed、3 incomplete、
+1 stopped for throughput repair、1 stopped for priority reallocation。完整终态证据保存于
+`audits/route_a_v3_route2_critic_v2_control_terminal_no_go_v1.json`；没有读取
+Development TEST 或 final Evaluation outcome。

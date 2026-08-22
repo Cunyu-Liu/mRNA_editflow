@@ -12,9 +12,10 @@ Route 2 asks whether a source-relative Delta critic trained on heterogeneous
 public mRNA intervention records can transfer across studies and then serve as a
 frozen potential for legal, budget-controlled Edit Flow generation. The present
 evidence does not yet establish that full claim: the first mRNABERT critic failed
-three-seed readiness, Critic V2 is running, guided XEditFlow remains unauthorized,
-and a new unexposed, convertible external Evaluation study is still required.
-[claim:C-R2-001] [evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-LAUNCH]
+three-seed readiness, Critic V2 failed its prospectively frozen control gate,
+guided XEditFlow remains unauthorized, and a new unexposed, convertible external
+Evaluation study is still required. [claim:C-R2-001]
+[evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-ADJ]
 
 ## Methods draft
 
@@ -56,9 +57,9 @@ were reported as separate Development diagnostics because generated candidates
 outside measured support have unknown outcomes. [claim:C-R2-005]
 [evidence:E-R2-GEN-SELECT,E-R2-GEN-INPUT]
 
-### Prospective Critic V2 repair
+### Prospectively frozen Critic V2 repair
 
-Critic V2 keeps the frozen mRNABERT encoder and 9,342,914-parameter edit-centered
+Critic V2 kept the frozen mRNABERT encoder and 9,342,914-parameter edit-centered
 critic but aligns optimization with task-macro selection through fixed
 `task -> study -> source-context-endpoint group -> record` draws and equal
 per-task Huber aggregation within each batch. Its prospective screen comprises
@@ -66,7 +67,7 @@ the full model, within-source/task candidate permutation, a parameter-matched
 source-only control and a source-plus-edit-metadata control without candidate
 global mRNABERT representation. The four arms share seed 20260825, 100 epochs,
 batch size 16 and the same TRAIN/VALIDATION budget. [claim:C-R2-006]
-[evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-LAUNCH]
+[evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ]
 
 ### Prospective Critic V2 selection and readiness sequence
 
@@ -178,11 +179,17 @@ The frozen gate therefore stopped before Development TEST and did not authorize
 refit, LOSO or guided XEditFlow. [claim:C-R2-011]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V1]
 
-Critic V2 is currently a running prospective Development control screen, not a
-terminal result. The four arms are registered as RUNNING on GPUs 2, 4, 3 and 5;
-no Critic V2 Validation metric, control adjudication or three-seed outcome is
-reported in this draft. [claim:C-R2-012]
-[evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-LAUNCH]
+Critic V2 completed all four matched-budget arms. The full model obtained
+task-macro Spearman 0.1163707 and standardized MAE 2.2228259. It outperformed
+candidate permutation (Spearman 0.0801855), source-only (0.0179762) and
+source-plus-edit-metadata (0.0865578), and passed the frozen candidate-specific
+and task-breadth controls. However, it did not exceed the strongest
+same-information baseline Spearman of 0.1317144; the frozen margin was
+-0.0153437. The resulting status was
+`CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS`. No confirmation seed,
+Development TEST, refit, LOSO, readiness or guided generation stage was opened.
+[claim:C-R2-012]
+[evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ]
 
 ## Concrete limitations and reporting gaps
 
@@ -208,9 +215,10 @@ reported in this draft. [claim:C-R2-012]
    but this instrumentation does not retroactively fill the terminal suite.
    [claim:C-R2-013]
    [evidence:E-R2-GEN-SUITE,E-R2-GEN-INPUT,E-R2-FLOW-MATCHED]
-5. Development TEST, TEST-preserving predictor/baseline LOSO, guided XEditFlow
-   and a new outcome-unexposed convertible external Evaluation study remain
-   incomplete. No final biological or cross-study generation claim is unlocked.
+5. The Critic V2 control NO-GO prospectively closed Development TEST,
+   TEST-preserving predictor/baseline LOSO and guided XEditFlow for this cohort.
+   A new outcome-unexposed convertible external Evaluation study also remains
+   unavailable. No final biological or cross-study generation claim is unlocked.
 
 ## Allowed and prohibited wording at this stage
 
@@ -221,7 +229,8 @@ Allowed:
   independent-evaluator criterion.”
 - “Unguided Base Flow recovered more of the Development measured neighborhood.”
 - “All seven methods produced legal candidates within the declared caps.”
-- “The original mRNABERT critic failed three-seed readiness; Critic V2 is running.”
+- “The original mRNABERT critic failed three-seed readiness, and Critic V2 failed
+  its frozen control gate before confirmation seeds.”
 
 Prohibited until later gates pass:
 
@@ -235,11 +244,9 @@ Prohibited until later gates pass:
 ## Unresolved items before manuscript integration
 
 - Accountable human verification of every evidence locator and numeric claim.
-- Critic V2 control and, conditionally, exact three-seed terminal adjudication.
-- The contract-ordered single TEST, all-record refit, predictor/baseline LOSO and
-  dual critic/Flow readiness stages if and only if every preceding frozen gate
-  passes.
-- Guided comparison only after critic and Flow readiness both hold.
+- No additional Critic V2 seed or downstream stage is authorized for the
+  terminal cohort; a future critic attempt would require a new prospectively
+  frozen protocol rather than a post hoc seed, threshold or control change.
 - Registration and use of a new, convertible, outcome-unexposed external
   Evaluation study.
 - Target venue, reporting guideline, author list, contributions, declarations,

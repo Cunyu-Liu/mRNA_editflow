@@ -444,3 +444,25 @@ paper evidence manifest 的 15 个 source locator 已完成一次文件存在性
 manifest 明确保留 `human_verification_required=true` 与 `submission_ready=false`，
 locator PASS 不冒充人工内容验证。paper focused tests 7/7 通过。本任务没有参数更新，
 中央训练 CSV 不增加伪 attempt；现有 Critic V2 运行状态不因本任务改变。
+
+## Critic V2 control terminal NO-GO（2026-08-22）
+
+中央 CSV 中四个 Critic V2 control attempts 已全部原位更新为 `COMPLETED`，没有重复行：
+
+| arm | GPU | epochs | optimizer steps | selected epoch | task-macro Spearman | task-macro standardized MAE |
+|---|---:|---:|---:|---:|---:|---:|
+| full | 2 | 100 | 559,900 | 98 | 0.1163706632 | 2.2228258513 |
+| candidate permutation | 4 | 100 | 559,900 | 12 | 0.0801854624 | 2.3963102262 |
+| parameter-matched source-only | 3 | 100 | 559,900 | 1 | 0.0179762355 | 2.0924846890 |
+| source+edit metadata、无 candidate global representation | 5 | 100 | 559,900 | 2 | 0.0865578266 | 2.1263093306 |
+
+full 通过相对三个 controls 的冻结信息检查，但未超过 strongest same-information
+baseline task-macro Spearman `0.1317143949`，margin `-0.0153437317`。裁决为
+`CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS`，所以 three-seed、TEST、
+refit、LOSO、readiness 与 guided generation 均未开始。19 个冻结 downstream targets
+检查为 0 个存在；Development TEST 与 final Evaluation outcome 仍未读取。
+
+中央表终态汇总为 100 个唯一 attempts：92 `COMPLETED`、3 `FAILED`、3
+`INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
+`STOPPED_PRIORITY_REALLOCATION`。watcher NO-GO 空等修复提交 `990f941` 不发生参数
+更新，因此不新增训练 attempt；本机与 A100 focused tests 均为 8/8。

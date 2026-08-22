@@ -40,14 +40,15 @@
       "label": "Task/study-balanced Critic V2 control screen",
       "analysis_intent": "PROSPECTIVE_DEVELOPMENT_CONTROL_SCREEN",
       "screen_seed": 20260825,
-      "status": "RUNNING",
-      "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-LAUNCH"]
+      "status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+      "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-ADJ"]
     },
     {
       "method_id": "M-R2-CRITIC-V2-GATES",
       "label": "Critic V2 frozen TEST/refit/LOSO/readiness sequence",
       "analysis_intent": "PROSPECTIVE_DEVELOPMENT_SELECTION_AND_READINESS",
-      "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+      "protocol_status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+      "status": "NOT_STARTED_CONTROL_GATE_NO_GO",
       "required_seeds": [20260822, 20260823, 20260824],
       "single_frozen_test_seed": 20260823,
       "single_test_metric_policy": "REPORT_ONLY_NO_STRUCTURE_LOSS_SEED_EPOCH_THRESHOLD_OR_POLICY_SELECTION",
@@ -56,6 +57,7 @@
       "guided_generation_requires": ["CRITIC_READY_FOR_GUIDANCE", "FLOW_G0_READY"],
       "evidence_ids": [
         "E-R2-CONTRACT",
+        "E-R2-CRITIC-V2-ADJ",
         "E-R2-CRITIC-V2-READINESS",
         "E-R2-CRITIC-V2-LOSO-AGG"
       ]
@@ -129,6 +131,30 @@
       "seed_count": 3,
       "status": "THREE_FINAL_SEEDS_DO_NOT_SUPPORT_FROZEN_DEVELOPMENT_TEST",
       "evidence_ids": ["E-R2-CONTRACT", "E-R2-CRITIC-V1"]
+    },
+    {
+      "result_id": "R-R2-CRITIC-V2",
+      "screen_seed": 20260825,
+      "arm_count": 4,
+      "all_arms_completed": true,
+      "epochs_per_arm": 100,
+      "optimizer_steps_per_arm": 559900,
+      "full_task_macro_spearman": 0.11637066318689378,
+      "full_task_macro_standardized_mae": 2.222825851326906,
+      "full_task_median_spearman": 0.016417356743091572,
+      "full_positive_task_count": 7,
+      "candidate_permutation_task_macro_spearman": 0.08018546242383856,
+      "source_only_task_macro_spearman": 0.017976235482461158,
+      "source_edit_metadata_task_macro_spearman": 0.08655782657012488,
+      "strongest_same_information_baseline_task_macro_spearman": 0.13171439492559175,
+      "full_over_strongest_baseline_task_macro_spearman": -0.015343731738697977,
+      "control_checks_passed": 7,
+      "control_checks_total": 8,
+      "failed_frozen_check": "full_beats_strongest_same_information_baseline",
+      "supports_three_frozen_seeds": false,
+      "status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-ADJ"]
     }
   ],
   "protected_outcomes": {
