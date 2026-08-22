@@ -634,6 +634,26 @@ focused suite 均为 19/19。evidence sources=49（35 local/contract + 14 `/mnt`
 figures/builders=7/6、MBP=14/3/1、中央 100-row 92/3/3/1/1 均不变；model、guided-generation
 与 biological success 仍未建立。
 
+## Selected-outcome claim/evidence and unsupported-claim closure（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增中央 CSV attempt，不读取 Development TEST、新
+final Evaluation、generated candidates 或 guided outcome。新增可复现 builder，从 manuscript
+draft 自动提取全部 22 个 `C-R2-*` marker、claim text 与邻接 evidence IDs，再绑定显式
+scientific boundary；任何 marker 漏配、重复或 unknown evidence ID 均会失败。
+
+正式 35-row × 17-column table 含 22 个
+`SUPPORTED_WITH_DECLARED_BOUNDARY` 行和 13 个 `UNSUPPORTED` 行。unsupported 集合覆盖
+Outcome A/B headline、biological/guided success、external generation validation、所有方法固定
+32 candidates/source、INS/DEL、unknown-as-zero、GSE232572 final confirmation、package/
+submission completeness、E-MTAB outcome 和 causal region/context mechanism。13 行全部
+`allowed_in_selected_outcome_manuscript=false`。
+
+Spreadsheet 验证确认 35×17、blank evidence=0、unsupported-as-allowed=0、protected 与
+completion boundary fields 全部 false。GitHub commit `799e156` 已推送并在 A100 一次
+fast-forward；本机/A100 两组 claim/paper focused suite 均为 22/22。evidence sources=51
+（37 local/contract + 14 `/mnt`）、draft claim markers=22、figures/builders=7/6、MBP=14/3/1、
+中央 100-row 92/3/3/1/1 均不变。
+
 ## Canonical conversion flow figure（2026-08-22）
 
 本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；

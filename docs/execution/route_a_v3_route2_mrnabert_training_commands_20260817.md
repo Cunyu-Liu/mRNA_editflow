@@ -1454,6 +1454,26 @@ A100 paper-evidence focused suite 均为 18/18。evidence sources=48、claims=22
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 与
 中央 100-row 92/3/3/1/1 均不变。
 
+## 56. V3.3.2 Selected-outcome claim/evidence closure（2026-08-22）
+
+按 Goal 7 顺序新增 selected Benchmark+limits claim-evidence 交付。任务不训练、不轮询 GPU/
+训练进度、不读取 Development TEST/new final Evaluation/guided outcome。builder 自动解析
+manuscript 中 22 个唯一 `C-R2-*` markers、对应段落与 evidence IDs，并用固定科学边界映射
+生成表格；unmapped marker、duplicate ID 或 unregistered evidence 均为 hard failure。
+
+正式 CSV 为 35 rows × 17 columns：22 rows supported-with-declared-boundary，13 rows
+unsupported。后者显式冻结 A/B headlines、biological/guided success、external generation
+validation、equal realized candidate count、INS/DEL、missing-as-zero、historical final
+confirmation、package/submission completeness、unread E-MTAB outcome 与 causal region/context
+mechanism 为不允许表述。所有 unsupported rows 的 allowed=false，minimum package/outcome
+trigger/submission-ready 及 protected-outcome fields 也全部 false。
+
+Spreadsheet artifact check 为 35×17，blank evidence=0、unsupported allowed=0。GitHub commit
+`799e156` 已推送；A100 自 `e211212` 一次 fast-forward 到 `799e156`，本机/A100 claim+
+paper focused suite 均为 22/22。evidence sources=51（37 local/contract、14 `/mnt`）、
+claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、中央 100-row
+92/3/3/1/1 均不变。
+
 ## 55. V3.3.2 Final manuscript-route outcome adjudication（2026-08-22）
 
 按 Goal 7 顺序逐条核对合同三种 outcome。任务不训练、不轮询 GPU/训练进度、不读取
