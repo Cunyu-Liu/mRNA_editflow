@@ -2095,19 +2095,21 @@ Evaluation read、guidance authorization、model/generation success 与 submissi
 
 ## XEditFlow V3 六方法 common closed producers（2026-08-23）
 
-六种最终方法现已全部拥有与其冻结方法语义一致的 common closed producer。full soft-value SMC、unguided
-SetFlow、source-anchored first-order guidance 与 exact-current-Critic simple-rate guidance 都在每个最多五
-edit 的 measured candidate 上枚举全部路径，并对各自 transition distribution 的 terminal probability 精确
-求和。simple-rate 因而没有被错误降格为 terminal rerank；first-order 也继续使用 source-anchored 单编辑
-系数和，不能表达 interaction。
+六种最终方法现已全部拥有与其冻结方法语义一致的 common closed producer。full soft-value SMC 与 unguided
+SetFlow 在每个最多五 edit 的 measured candidate 上枚举全部路径，并对各自 transition distribution 的
+terminal probability 精确求和。source-anchored first-order 使用其冻结的单编辑系数和作为 closed ranking
+score；simple-rate 与 generate-then-rerank 使用三 seed frozen XEditCritic V3 ensemble terminal reward；
+strongest matched baseline 使用已经冻结的 genetic guiding checkpoint score。
 
-generate-then-rerank 使用三 seed frozen XEditCritic V3 ensemble 的 terminal reward 对同一 candidate set
-排序；strongest matched baseline 使用已经冻结的 genetic guiding checkpoint 评分。两类 score table 不写入
-measured outcome，随后由统一 closed-score metric adapter 与 Development Validation outcome 合并。历史
-open-support NDCG 不参与该过程。final preparer 对三个 base-flow seed 各生成 4 个 exact-trajectory closed
-jobs、2 个 frozen-score jobs、2 个 score-metric jobs 与 1 个只读 strongest adapter job；不新增 HPO 或 seed。
+这是在正式执行前完成的成本边界修正：若对 first-order/simple-rate 也精确归一化每一步 transition，每个
+路径状态都必须给约 `3×length` 个合法 child 运行三名 Critic，尤其 simple-rate 会随 measured-path states
+爆炸，并把 closed benchmark 变成生成预算之外的巨额 Critic search。冻结计划允许各方法使用其 frozen score
+或 terminal probability；open generation 仍按各自真实采样分布比较，故不会把 simple-rate 的生成过程替换
+成 rerank。所有 score table 均不写 measured outcome，再由统一 adapter 合并 Validation outcome。final
+preparer 现对每 seed 生成 2 个 exact-trajectory jobs、4 个 frozen-score jobs、4 个 score-metric jobs 与 1 个
+只读 strongest adapter job；不新增 HPO 或 seed。
 
-本批完整 XEditFlow V3 focused=81/81、本地精确 V3.3.2=96/96、Python compile 与 diff-check PASS。
+本批完整 XEditFlow V3 focused=83/83、本地精确 V3.3.2=96/96、Python compile 与 diff-check PASS。
 所有 runner 均受 Critic readiness + SetFlow confirmation 双 gate 阻塞，当前没有执行 closed benchmark、没有
 读取 Development TEST/new Evaluation outcome，也没有产生新的模型优势结果。本项不新增中央 optimizer
 attempt；A100 tests/sync 仍等 active screen jobs terminal 后执行，远端 HEAD 保持 `22317ed`。
@@ -2127,6 +2129,15 @@ forward；现在同时报告 generation subtotal，并把 `+3` 纳入 assembler 
 
 independent evaluator 现在必须同时区别于三个 frozen Critic refit checkpoints，而不是只比较一个路径；
 preparer 还核对 evaluator 路径、genetic strongest identity、320 ceiling 和三个 Critic seed inventory 与冻结
-artifacts 一致。本批 XEditFlow V3 focused=82/82，independent-evaluator focused=4/4，本地精确
+artifacts 一致。本批 XEditFlow V3 focused=83/83，independent-evaluator focused=4/4，本地精确
 V3.3.2=96/96，compile/diff-check PASS。没有执行 final pipeline，没有读取 Development TEST/new
 Evaluation，也不改变 readiness/submission 状态；本项不新增中央 optimizer attempt。
+
+## 05:01 low-frequency combined screen check（2026-08-23）
+
+按合同间隔进行的一次合并检查显示：C1 elapsed=2:44:38、F1 elapsed=1:14:29、F2 elapsed=0:59:32，
+三者均为 `Rl`，没有 terminal summary、Traceback、CUDA OOM 或 error marker。GPU0–5 free memory 为
+2,569/7,983/3,175/5,471/4,267/6,743 MiB，utilization 均为 100%。现有正式 arm 已显示其运行时需要
+约 32GB 以上设备占用，当前没有一张卡为 F3 或 C2/C3 留出足够安全余量，因此不降 batch/capacity、不
+CPU fallback，也不与高显存占用任务强行叠加。A100 HEAD 保持 `22317ed`；下一次状态检查至少间隔
+30 分钟，等待期继续本地无 outcome 的实现、测试与审计。

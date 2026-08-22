@@ -46,25 +46,12 @@ def test_closed_runner_rejects_benchmark_drift(field, value, message) -> None:
         validate_closed_run_config_v3(config)
 
 
-@pytest.mark.parametrize(
-    ("potential_kind", "method_id"),
-    [
-        ("ZERO", "unguided_setflow"),
-        ("SOURCE_ANCHORED_FIRST_ORDER", "first_order_guidance"),
-        ("EXACT_CRITIC_REWARD", "simple_rate_guidance"),
-    ],
-)
-def test_closed_runner_accepts_frozen_matched_potential_semantics(
-    potential_kind: str, method_id: str
-) -> None:
+def test_closed_runner_accepts_unguided_zero_potential() -> None:
     config = _config()
     config.update(
         {
-            "potential_kind": potential_kind,
-            "method_id": method_id,
-            "kappa": 0.5,
-            "critic_online_microbatch_size": 4,
-            "critic_refit_manifest_path": "/mnt/refit.json",
+            "potential_kind": "ZERO",
+            "method_id": "unguided_setflow",
         }
     )
     validate_closed_run_config_v3(config)

@@ -6,8 +6,8 @@
     "base_flow_training_seeds": [20260904, 20260905, 20260906],
     "methods_per_seed": 6,
     "open_metric_jobs_per_seed": 5,
-    "closed_trajectory_jobs_per_seed": 4,
-    "closed_frozen_score_jobs_per_seed": 2,
+    "closed_trajectory_jobs_per_seed": 2,
+    "closed_frozen_score_jobs_per_seed": 4,
     "independent_evaluator_comparisons_per_seed": 1,
     "source_paired_bootstrap_iterations": 10000,
     "three_seed_manifest_required": true,
@@ -28,6 +28,14 @@
     "headline_ceiling_per_source": 320,
     "previous_underreporting_path_fixed_before_execution": true
   },
+  "closed_ranking_compute_boundary": {
+    "exact_terminal_probability_methods": ["full_soft_value_smc", "unguided_setflow"],
+    "frozen_scalar_score_methods": ["first_order_guidance", "simple_rate_guidance", "generate_then_rerank", "strongest_matched_baseline"],
+    "first_order_score": "SOURCE_ANCHORED_ADDITIVE_POTENTIAL",
+    "simple_rate_and_rerank_score": "XEDITCRITIC_V3_ENSEMBLE_TERMINAL_REWARD",
+    "all_legal_critic_children_per_path_state_scored_outside_generation_budget": false,
+    "open_generation_distributions_unchanged": true
+  },
   "finalization": {
     "per_seed_evidence_assembler": "scripts/route_a_v3/assemble_route2_xeditflow_final_seed_evidence_v3.py",
     "three_seed_manifest_composer": "scripts/route_a_v3/compose_route2_xeditflow_final_comparison_manifest_v3.py",
@@ -36,7 +44,7 @@
     "submission_ready_after_internal_pass": false
   },
   "tests": {
-    "local_xeditflow_v3_focused_passed": 82,
+    "local_xeditflow_v3_focused_passed": 83,
     "local_xeditflow_v3_focused_failed": 0,
     "local_independent_evaluator_focused_passed": 4,
     "local_independent_evaluator_focused_failed": 0,

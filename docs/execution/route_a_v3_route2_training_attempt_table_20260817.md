@@ -1375,12 +1375,14 @@ guidance 与 replacement Evaluation 均未授权，submission-ready=false。
 ## XEditFlow V3 common closed producer preflight（2026-08-23）
 
 本项不训练，中央 optimizer attempt 表不新增行。三个 frozen base-flow seed 现在各自具备六方法 closed
-job inventory：full/unguided/first-order/simple-rate 用各自 scalar-potential transition distribution 的 exact
-all-permutation terminal probability；rerank 使用 frozen 三 Critic ensemble reward；strongest baseline 使用
-只读 genetic guiding checkpoint score。所有方法严格共享 Development Validation measured candidate cohort，
-undefined source 不填零，旧 open NDCG 不复用；simple-rate 不被替换成 terminal rerank。
+job inventory：full/unguided 使用各自 transition distribution 的 exact all-permutation terminal probability；
+first-order 使用 source-anchored additive potential；simple-rate/rerank 使用 frozen 三 Critic ensemble terminal
+reward；strongest baseline 使用只读 genetic guiding checkpoint score。所有方法严格共享 Development
+Validation measured candidate cohort，undefined source 不填零，旧 open NDCG 不复用。first-order/simple-rate
+不做每个 path state × 全合法 child 的额外 Critic normalization，避免 closed evaluation 在 320/source 的生成
+预算之外引入爆炸计算；它们的 open generation 仍保持各自真实采样分布，并未被替换成 rerank。
 
-完整 XEditFlow V3 focused=81/81、本机精确 V3.3.2=96/96、compile/diff-check PASS。双 readiness gate 未
+完整 XEditFlow V3 focused=83/83、本机精确 V3.3.2=96/96、compile/diff-check PASS。双 readiness gate 未
 通过，故本项只完成实现与 preflight，没有执行 closed outcome benchmark、没有访问 Development TEST 或
 new Evaluation；guidance、replacement Evaluation 和 submission-ready 仍为 false。
 
@@ -1393,9 +1395,16 @@ bootstrap/final-evidence job chain 已完整 materialize；每 seed 精确六方
 forwards 加入 generation subtotal，若总数超过 320/source 即失败。independent evaluator 也必须与三个
 Critic refit checkpoint 全部分离，并与 frozen genetic strongest artifact 中的 evaluator 路径一致。
 
-XEditFlow V3 focused=82/82、independent-evaluator focused=4/4、本机精确 V3.3.2=96/96、compile/
+XEditFlow V3 focused=83/83、independent-evaluator focused=4/4、本机精确 V3.3.2=96/96、compile/
 diff-check PASS。当前所有 final jobs 仍被 readiness 双 gate 阻塞，未执行 final comparison，未访问
 Development TEST/new Evaluation；replacement Evaluation authorization=false，submission-ready=false。
+
+## 05:01 scheduled screen status（2026-08-23）
+
+中央 active attempts 未终态：C1/F1/F2 分别已运行 2:44:38、1:14:29、0:59:32，进程均存活且没有
+terminal/error marker，所以不更改 ledger status。GPU0–5 free memory 为 2,569/7,983/3,175/5,471/
+4,267/6,743 MiB；结合当前正式 arms 的实际设备占用，没有足够余量启动 F3/C2/C3。没有降容量、没有
+CPU fallback、没有新增或重复 attempt。下一次检查至少 30 分钟后；Development TEST/Evaluation 状态不变。
 
 ## XEditCritic V3 C0 terminal 与 SetFlow source-cache terminal（2026-08-23）
 

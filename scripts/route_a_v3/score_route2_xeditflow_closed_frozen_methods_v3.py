@@ -23,6 +23,7 @@ from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 from core.route2_legal_xeditflow import FlowState, initial_state, validate_state
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
+from core.route2_xeditflow_matched_methods_v3 import SourceAnchoredFirstOrderPotentialV3
 from core.route2_xeditflow_value_training_v3 import CRITIC_SEEDS_V3
 from scripts.route_a_v3.adapt_route2_xeditflow_strongest_baseline_v3 import (
     adapt_strongest_baseline_v3,
@@ -35,7 +36,12 @@ from scripts.route_a_v3.run_route2_xeditflow_matched_controls_v3 import (
 from scripts.route_a_v3.score_route2_xeditflow_critic_ensemble_v3 import _representatives_v3
 
 
-METHODS_V3 = {"generate_then_rerank", "strongest_matched_baseline"}
+METHODS_V3 = {
+    "first_order_guidance",
+    "simple_rate_guidance",
+    "generate_then_rerank",
+    "strongest_matched_baseline",
+}
 
 
 class XEditFlowClosedFrozenScoreV3Error(RuntimeError):
@@ -68,7 +74,7 @@ def validate_closed_frozen_score_config_v3(config: Mapping[str, Any]) -> None:
     _require(int(config.get("expected_source_count", -1)) == 891, "closed frozen-score source count differs")
     gpu = int(config.get("physical_gpu_index", -1))
     _require(gpu in set(range(6)) and config.get("device") == f"cuda:{gpu}", "closed frozen-score GPU provenance differs")
-    if method == "generate_then_rerank":
+    if method != "strongest_matched_baseline":
         _require(float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}, "closed rerank kappa differs")
         _require(int(config.get("critic_online_microbatch_size", -1)) == 4, "closed rerank Critic microbatch differs")
         _require(bool(config.get("critic_refit_manifest_path")), "closed rerank refit manifest is absent")
@@ -97,6 +103,23 @@ def _terminal_state_v3(root: FlowState, candidate_sequence: str) -> FlowState:
     )
     validate_state(state)
     return state
+
+
+def score_critic_states_for_method_v3(
+    method: str,
+    root: FlowState,
+    states: list[FlowState],
+    reward_provider,
+):
+    _require(
+        method in {"first_order_guidance", "simple_rate_guidance", "generate_then_rerank"},
+        "closed Critic-score method differs",
+    )
+    return (
+        SourceAnchoredFirstOrderPotentialV3(root, reward_provider)(states)
+        if method == "first_order_guidance"
+        else reward_provider(states)
+    )
 
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
@@ -134,7 +157,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     critic = None
     representatives = None
     strongest_scorer = None
-    if method == "generate_then_rerank":
+    if method != "strongest_matched_baseline":
         refit = _json(Path(config["critic_refit_manifest_path"]))
         _require(refit.get("status") == "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE", "closed rerank Critic refit is incomplete")
         selected_arm = str(refit.get("selected_arm"))
@@ -169,7 +192,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         for source_key in sorted(source_by_key):
             source = source_by_key[source_key]
             rows = by_source[source_key]
-            if method == "generate_then_rerank":
+            if method != "strongest_matched_baseline":
                 assert critic is not None and representatives is not None
                 root = initial_state(
                     str(source["source_sequence"]),
@@ -178,7 +201,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
                     context_id=str(source["biological_context_id"]),
                 )
                 states = [_terminal_state_v3(root, str(row["candidate_sequence"])) for row in rows]
-                scored = critic.bind_source(source, representatives[source_key])(states)
+                reward = critic.bind_source(source, representatives[source_key])
+                scored = score_critic_states_for_method_v3(method, root, states, reward)
                 values = scored.values
                 for member, count in enumerate(scored.forward_batches_by_member):
                     forward_calls_by_member[member] += int(count)
@@ -213,7 +237,13 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "source_count": len(sources),
         "measured_candidate_count": score_count,
         "score_path": str(score_path),
-        "score_provider": "XEDITCRITIC_V3_ENSEMBLE_REWARD" if method == "generate_then_rerank" else "FROZEN_GENETIC_GUIDING_CHECKPOINT",
+        "score_provider": (
+            "SOURCE_ANCHORED_FIRST_ORDER_ADDITIVE_POTENTIAL"
+            if method == "first_order_guidance"
+            else "XEDITCRITIC_V3_ENSEMBLE_TERMINAL_REWARD"
+            if method in {"simple_rate_guidance", "generate_then_rerank"}
+            else "FROZEN_GENETIC_GUIDING_CHECKPOINT"
+        ),
         "critic_forward_calls_by_member": forward_calls_by_member,
         "strongest_guiding_forward_calls": strongest_forward_calls,
         "frozen_baseline_reselected": False,

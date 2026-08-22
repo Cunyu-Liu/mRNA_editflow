@@ -77,12 +77,11 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
     assert all(len(job["matched_control_configs"]) == 4 for job in manifest["seed_jobs"])
     assert all(job["full_smc_config"]["decoder_seed_base"] == 20261001 for job in manifest["seed_jobs"])
     assert all(set(job["closed_trajectory_configs"]) == {
-        "full_soft_value_smc", "unguided_setflow", "first_order_guidance", "simple_rate_guidance"
+        "full_soft_value_smc", "unguided_setflow"
     } for job in manifest["seed_jobs"])
     assert all(job["closed_trajectory_configs"]["unguided_setflow"]["potential_kind"] == "ZERO" for job in manifest["seed_jobs"])
-    assert all(job["closed_trajectory_configs"]["first_order_guidance"]["potential_kind"] == "SOURCE_ANCHORED_FIRST_ORDER" for job in manifest["seed_jobs"])
     assert all(set(job["closed_frozen_score_configs"]) == {
-        "generate_then_rerank", "strongest_matched_baseline"
+        "first_order_guidance", "simple_rate_guidance", "generate_then_rerank", "strongest_matched_baseline"
     } for job in manifest["seed_jobs"])
     assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_transform"] == "SOURCEWISE_EXP_SHIFTED_MAX"
     assert manifest["seed_jobs"][0]["strongest_adapter_job"]["base_flow_training_seed"] == 20260904

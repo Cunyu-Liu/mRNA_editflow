@@ -258,30 +258,15 @@ def build_final_generation_configs_v3(
                 "potential_kind": "ZERO",
                 "output_dir": str(seed_root / "closed" / "unguided_setflow"),
             },
-            "first_order_guidance": {
-                **closed_common,
-                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
-                "method_id": "first_order_guidance",
-                "potential_kind": "SOURCE_ANCHORED_FIRST_ORDER",
-                "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
-                "mrnabert_model_path": str(config["mrnabert_model_path"]),
-                "critic_online_microbatch_size": 4,
-                "output_dir": str(seed_root / "closed" / "first_order_guidance"),
-            },
-            "simple_rate_guidance": {
-                **closed_common,
-                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
-                "method_id": "simple_rate_guidance",
-                "potential_kind": "EXACT_CRITIC_REWARD",
-                "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
-                "mrnabert_model_path": str(config["mrnabert_model_path"]),
-                "critic_online_microbatch_size": 4,
-                "output_dir": str(seed_root / "closed" / "simple_rate_guidance"),
-            },
         }
         closed_frozen_score_configs = {}
         closed_score_metric_configs = {}
-        for method in ("generate_then_rerank", "strongest_matched_baseline"):
+        for method in (
+            "first_order_guidance",
+            "simple_rate_guidance",
+            "generate_then_rerank",
+            "strongest_matched_baseline",
+        ):
             score_root = seed_root / "closed_scores" / method
             score_config = {
                 "schema_version": "route_a_v3_route2_xeditflow_closed_frozen_score_config.v1",
@@ -298,7 +283,7 @@ def build_final_generation_configs_v3(
                 "device": f"cuda:{gpu}",
                 "output_dir": str(score_root),
             }
-            if method == "generate_then_rerank":
+            if method != "strongest_matched_baseline":
                 score_config.update(
                     {
                         "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),

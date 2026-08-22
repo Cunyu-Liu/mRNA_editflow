@@ -25,14 +25,10 @@ from core.route2_closed_neighborhood_v3 import (
 )
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
-from core.route2_legal_xeditflow import FlowState, LegalAction, initial_state
+from core.route2_legal_xeditflow import FlowState, LegalAction
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
-from core.route2_xeditflow_matched_methods_v3 import (
-    ExactCriticRewardPotentialV3,
-    SourceAnchoredFirstOrderPotentialV3,
-    ZeroPotentialV3,
-)
+from core.route2_xeditflow_matched_methods_v3 import ZeroPotentialV3
 from core.route2_xeditflow_smc_runtime_v3 import (
     SetFlowRateProviderV3,
     SetFlowValueProvidersV3,
@@ -41,18 +37,12 @@ from core.route2_xeditflow_smc_runtime_v3 import (
 from core.route2_xeditsetflow_sampling_v3 import build_generation_metadata_v3
 from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources
 from scripts.route_a_v3.run_route2_xeditflow_smc_v3 import load_value_checkpoint_v3
-from scripts.route_a_v3.run_route2_xeditflow_matched_controls_v3 import (
-    FrozenCriticEnsembleRewardV3,
-)
-from scripts.route_a_v3.score_route2_xeditflow_critic_ensemble_v3 import _representatives_v3
 from scripts.route_a_v3.validate_route2_xeditsetflow_v3 import load_setflow_checkpoint_v3
 
 
 POTENTIAL_KINDS_V3 = {
     "SOFT_VALUE",
     "ZERO",
-    "SOURCE_ANCHORED_FIRST_ORDER",
-    "EXACT_CRITIC_REWARD",
 }
 
 
@@ -97,17 +87,11 @@ def validate_closed_run_config_v3(config: Mapping[str, Any]) -> None:
     _require(potential_kind in POTENTIAL_KINDS_V3, "closed potential kind differs")
     expected_method = {
         "ZERO": "unguided_setflow",
-        "SOURCE_ANCHORED_FIRST_ORDER": "first_order_guidance",
-        "EXACT_CRITIC_REWARD": "simple_rate_guidance",
     }.get(potential_kind)
     if expected_method is not None:
         _require(config.get("method_id") == expected_method, "closed method and potential differ")
     if potential_kind == "SOFT_VALUE":
         _require(bool(config.get("value_checkpoint_path")), "closed soft-value checkpoint is absent")
-    if potential_kind in {"SOURCE_ANCHORED_FIRST_ORDER", "EXACT_CRITIC_REWARD"}:
-        _require(float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}, "closed Critic kappa differs")
-        _require(int(config.get("critic_online_microbatch_size", -1)) == 4, "closed Critic microbatch differs")
-        _require(bool(config.get("critic_refit_manifest_path")), "closed Critic refit manifest is absent")
 
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
@@ -146,22 +130,6 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         str(source["source_key"]): item
         for source, item in zip(sources, metadata)
     }
-    representatives = _representatives_v3(sources, projection)
-    critic = None
-    if potential_kind in {"SOURCE_ANCHORED_FIRST_ORDER", "EXACT_CRITIC_REWARD"}:
-        refit = _json(Path(config["critic_refit_manifest_path"]))
-        _require(refit.get("status") == "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE", "closed Critic refit is incomplete")
-        selected_arm = str(refit.get("selected_arm"))
-        _require(selected_arm in {"C2", "C3"}, "closed Critic arm differs")
-        checkpoints = {int(row["seed"]): Path(row["checkpoint_path"]) for row in refit["checkpoints"]}
-        critic = FrozenCriticEnsembleRewardV3(
-            checkpoint_paths=checkpoints,
-            selected_arm=selected_arm,
-            model_path=Path(config["mrnabert_model_path"]),
-            device=device,
-            kappa=float(config["kappa"]),
-            microbatch_size=int(config["critic_online_microbatch_size"]),
-        )
     measured = _jsonl(Path(config["measured_neighborhood_path"]))
     by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in measured:
@@ -204,27 +172,11 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
                 device=device,
             )
             rate_provider = rates.rates
-            root = initial_state(
-                str(source["source_sequence"]),
-                budget=int(source["edit_budget"]),
-                assay_id=str(source["assay_id"]),
-                context_id=str(source["biological_context_id"]),
-            )
-            if potential_kind == "ZERO":
-                potential = ZeroPotentialV3()
-            else:
-                assert critic is not None
-                reward = critic.bind_source(source, representatives[source_key])
-                potential = (
-                    SourceAnchoredFirstOrderPotentialV3(root, reward)
-                    if potential_kind == "SOURCE_ANCHORED_FIRST_ORDER"
-                    else ExactCriticRewardPotentialV3(reward)
-                )
+            potential = ZeroPotentialV3()
 
             def potential_provider(states: Sequence[FlowState]) -> Sequence[float]:
                 batch = potential(states)
-                for member, count in enumerate(batch.forward_batches_by_member):
-                    critic_forward_calls[member] += int(count)
+                _require(batch.forward_batches_by_member == (0, 0, 0), "closed unguided potential used Critic")
                 return batch.values
         rate_cache: dict[FlowState, dict[LegalAction, float]] = {}
 
