@@ -1518,3 +1518,21 @@ A100 自 `799e156` 一次 fast-forward。evidence sources=53（39 local/contract
 claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
 `minimum_package_complete=false`、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1
 终态均不变。
+
+## 58. V3.3.2 Methods section completion（2026-08-22）
+
+本项无训练命令、GPU 轮询或新 attempt。Methods 从 draft 状态闭合为
+`COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING`，共 14 个 subsection；只使用现有合同、配置、
+terminal summaries 的已登记字段与派生表，不读取 protected outcomes。
+
+补齐 evaluator 的 depth/width/max length、Huber/weighting/scaling、AdamW/LR/WD/batch/BF16/seed，
+generation 的 beam/genetic/oversampling/Base Flow 训练设置，以及 Critic V2 loss/optimizer/
+checkpoint policy；新增统一 statistical-analysis 段，明确 task-macro/source-macro、standardized
+MAE、paired source bootstrap、跨 evidence layer 禁止混排和 unknown outcome 不补零。配置预计
+evaluator parameters=509,905、terminal actual=509,845 的 -60 差异进入 audit，终态实际值优先。
+
+修正 figures/builders 陈旧文案为 7/6；claim/evidence 表从当前 manuscript 显式重建且保持
+35 rows、22 supported markers、13 unsupported claims。GitHub core commit `7ae4e57` 已推送，
+A100 自 `fe3fb6b` 快进；本机/A100 全部 V3.3.2 suite 均为 54/54。evidence=54
+（40 local/contract、14 `/mnt`），MBP=14/3/1、blockers=MBP-10/13/14/15、中央 100-row
+92/3/3/1/1、`minimum_package_complete=false` 与 `submission_ready=false` 均不变。

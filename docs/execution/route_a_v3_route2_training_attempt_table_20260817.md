@@ -894,3 +894,24 @@ local/contract、14 `/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、
 blockers=MBP-10/13/14/15、`submission_ready=false` 不变；中央 100-row 仍为 92
 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+
+## V3.3.2 Methods section completion（2026-08-22）
+
+按 Goal 7 顺序完成 Methods 内部证据稿闭包。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome。Methods 现有 14 个固定 subsection，集中报告 two-track design、数据角色与 estimand、
+baseline/三轨/matched-budget、evaluator、七种 generation methods、统计 analysis unit 与
+missingness、Critic V2 controls/training policy，以及 TEST/refit/LOSO/guidance 的条件顺序。
+
+修正真实陈旧事实：provisional figure assembly 从“5 builders/6 figures”更新为终态 6/7，并
+补入 quality-cost/diversity/failure figure。独立 evaluator config 的 frozen expected parameter
+count 为 509,905，terminal actual 为 509,845，相差 -60；正文报告 terminal actual，历史配置
+不回写。Methods completion audit 保持 human evidence/literature verification、authorship、funding、
+ethics applicability、Data/Code Availability、venue rules、minimum package 与 submission 全部未完成。
+
+claim/evidence builder 新增显式 `--overwrite` 并重建 35-row 表；默认仍拒绝隐式覆盖，22 supported
+markers、13 unsupported claims 和所有 protected fields 不变。GitHub core commit `7ae4e57` 已
+推送，A100 自 `fe3fb6b` 一次 fast-forward；本机/A100 全部 V3.3.2 suite 均为 54/54。
+evidence sources=54（40 local/contract、14 `/mnt`）、claims=22、figures/builders=7/6、
+MBP=14/3/1、blockers=MBP-10/13/14/15、`minimum_package_complete=false`、
+`submission_ready=false` 与中央 100-row 92/3/3/1/1 终态不变。
