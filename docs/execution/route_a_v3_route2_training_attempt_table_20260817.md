@@ -569,3 +569,18 @@ paper packet 仍有 22 个 claim markers，evidence sources 增至 23；本机�
 dataset-table + paper-packet + figure-builder 联合 focused suite 均为 17/17。中央 100 个唯一 attempts 的
 终态不变：92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+
+## Canonical conversion flow figure（2026-08-22）
+
+本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；
+只读取 14-row dataset qualification table 与冻结 split counts，不读取 canonical rows、
+Development TEST、E-MTAB outcome、sealed GSE246381 或 new final Evaluation outcome。
+A100 builder test 2/2 passed，并在既有 `/mnt/.../figures/route2_v332_v1/` 追加一张
+PNG/PDF/SVG conversion-flow figure、manifest 和 alt text，未覆盖原两图。
+
+图中精确保留 14 studies、Development 126,165、historical 8,068、new final Evaluation
+0、qualified/relaxed/listwise=`6,547/88,652/30,966` 和 split
+`89,580/18,293/18,292`；arrow width 明确不编码 magnitude。paper packet 仍有 22 个
+claim markers，evidence sources 增至 25；本机四组联合 focused suite 为 19/19。
+MBP-17 继续是 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`，但最低包仍不完整且
+`submission_ready=false`。中央 100 个 attempts 的 terminal 分布不变。

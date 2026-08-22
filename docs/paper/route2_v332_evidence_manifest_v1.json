@@ -8,11 +8,11 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T12:47:52+08:00",
+    "observed_at": "2026-08-22T14:15:00+08:00",
     "status": "PASS",
-    "source_locations_checked": 23,
-    "local_or_contract_locations_checked": 14,
-    "a100_mnt_locations_checked": 9,
+    "source_locations_checked": 25,
+    "local_or_contract_locations_checked": 15,
+    "a100_mnt_locations_checked": 10,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
     "human_content_verification_completed": false,
@@ -182,6 +182,22 @@
       "kind": "terminal_provisional_figure_manifest",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_figure_manifest_v1.json",
       "locator": "two figure IDs, exact source paths, output formats and byte counts, 300-dpi raster declaration, palette redundancy, target-journal pending and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-CONVERSION-FIGURE-BUILDER",
+      "kind": "reproducible_canonical_conversion_flow_figure_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_canonical_conversion_flow_figure_v1.py",
+      "locator": "14-study role flow, Development qualification strata, grouped TRAIN/VALIDATION/TEST-withheld split, constant-width workflow arrows, alt text and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-CONVERSION-FIGURE-MANIFEST",
+      "kind": "terminal_canonical_conversion_flow_figure_manifest",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_canonical_conversion_flow_figure_v1_manifest.json",
+      "locator": "14/8/1/5 study-role counts, 126165/8068/0 record separation, qualification strata, 89580/18293/18292 split, PNG/PDF/SVG outputs and protected-outcome closure",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "publisher_compliance_claimed": false
     }

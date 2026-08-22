@@ -61,7 +61,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 23
+    assert len(evidence_ids) == len(set(evidence_ids)) == 25
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -81,15 +81,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 23
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 25
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 14
-    assert preflight["a100_mnt_locations_checked"] == 9
+    assert preflight["local_or_contract_locations_checked"] == 15
+    assert preflight["a100_mnt_locations_checked"] == 10
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
     assert preflight["submission_readiness_changed"] is False
@@ -108,6 +108,9 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-DATA-TABLE"]["location"] == (
         "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json"
+    )
+    assert by_id["E-R2-CONVERSION-FIGURE-MANIFEST"]["location"].endswith(
+        "/route2_v332_canonical_conversion_flow_figure_v1_manifest.json"
     )
 
 
@@ -165,7 +168,7 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     )
 
     assert method["status"] == "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
-    assert method["figure_count"] == 2
+    assert method["figure_count"] == 3
     assert method["formats"] == ["png", "pdf", "svg"]
     assert method["raster_dpi"] == 300
     assert method["target_journal"] == "PENDING_SELECTION"
@@ -173,13 +176,33 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     assert method["protected_outcomes"] == {
         "development_test_read": False,
         "new_final_evaluation_read": False,
+        "emtab10902_outcome_read": False,
+        "sealed_gse246381_read": False,
         "guided_xeditflow_run": False,
         "historical_outcome_exposed_gse232572_read": True,
     }
     assert method["evidence_ids"] == [
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
+        "E-R2-CONVERSION-FIGURE-BUILDER",
+        "E-R2-CONVERSION-FIGURE-MANIFEST",
     ]
+
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-CANONICAL-CONVERSION-FLOW"
+    )
+    assert result["registered_study_count"] == 14
+    assert result["development_canonical_records"] == 126165
+    assert result["historical_transfer_canonical_records"] == 8068
+    assert result["split_record_counts"] == {
+        "TRAIN": 89580,
+        "VALIDATION": 18293,
+        "TEST_WITHHELD": 18292,
+    }
+    assert result["workflow_arrow_widths_encode_magnitude"] is False
+    assert result["new_final_evaluation_unexposed_records"] == 0
 
 
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:

@@ -83,14 +83,18 @@ run or absent replacement Evaluation study into a completed item.
 
 ### Provisional figure assembly
 
-A reproducible builder renders two general-manuscript figures from the frozen
-generation/action-space table, the complete nine-task Critic V2 diagnostic and
-the explicitly outcome-exposed GSE232572 historical summary. Each figure is
-exported as 300-dpi PNG, PDF and SVG with an evidence manifest and alt text.
-Development TEST, new final Evaluation and guided XEditFlow remain unopened.
-The target journal, article type and submission phase are still pending, so no
-publisher-specific compliance is claimed.
-[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST]
+Two reproducible builders render three general-manuscript figures. Two result
+figures use the frozen generation/action-space table, the complete nine-task
+Critic V2 diagnostic and the explicitly outcome-exposed GSE232572 historical
+summary. A third canonical conversion-flow figure uses the 14-study
+qualification table and frozen grouped split to separate Development,
+historical exposure, other terminal roles and withheld TEST without mixing
+study counts with record counts; its arrow widths encode workflow rather than
+magnitude. Each figure is exported as 300-dpi PNG, PDF and SVG with an evidence
+manifest and alt text. Development TEST, new final Evaluation and guided
+XEditFlow remain unopened. The target journal, article type and submission
+phase are still pending, so no publisher-specific compliance is claimed.
+[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST,E-R2-CONVERSION-FIGURE-BUILDER,E-R2-CONVERSION-FIGURE-MANIFEST]
 
 ### Prospectively frozen Critic V2 repair
 

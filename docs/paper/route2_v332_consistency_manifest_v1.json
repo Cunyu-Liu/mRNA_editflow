@@ -106,7 +106,7 @@
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
       "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
-      "figure_count": 2,
+      "figure_count": 3,
       "formats": ["png", "pdf", "svg"],
       "raster_dpi": 300,
       "target_journal": "PENDING_SELECTION",
@@ -115,17 +115,23 @@
       "source_tables": [
         "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv",
         "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv",
-        "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json"
+        "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json",
+        "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+        "configs/route_a_v3_route2_method_repair_protocol_v2.json"
       ],
       "protected_outcomes": {
         "development_test_read": false,
         "new_final_evaluation_read": false,
+        "emtab10902_outcome_read": false,
+        "sealed_gse246381_read": false,
         "guided_xeditflow_run": false,
         "historical_outcome_exposed_gse232572_read": true
       },
       "evidence_ids": [
         "E-R2-FIGURE-BUILDER",
-        "E-R2-FIGURE-MANIFEST"
+        "E-R2-FIGURE-MANIFEST",
+        "E-R2-CONVERSION-FIGURE-BUILDER",
+        "E-R2-CONVERSION-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -322,6 +328,35 @@
       "evidence_ids": ["E-R2-GSE232-HIST", "E-R2-CONTRACT"]
     },
     {
+      "result_id": "R-R2-CANONICAL-CONVERSION-FLOW",
+      "status": "PROVISIONAL_CANONICAL_CONVERSION_FLOW_FIGURE_RENDERED",
+      "registered_study_count": 14,
+      "development_study_count": 8,
+      "development_canonical_records": 126165,
+      "historical_study_count": 1,
+      "historical_transfer_canonical_records": 8068,
+      "other_terminal_role_study_count": 5,
+      "other_terminal_role_canonical_records": 0,
+      "qualified_records": 6547,
+      "development_relaxed_records": 88652,
+      "development_listwise_records": 30966,
+      "development_unconvertible_records": 0,
+      "split_record_counts": {
+        "TRAIN": 89580,
+        "VALIDATION": 18293,
+        "TEST_WITHHELD": 18292
+      },
+      "workflow_arrow_widths_encode_magnitude": false,
+      "new_final_evaluation_unexposed_records": 0,
+      "publisher_compliance_claimed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-DATA-TABLE",
+        "E-R2-CONVERSION-FIGURE-BUILDER",
+        "E-R2-CONVERSION-FIGURE-MANIFEST"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -344,7 +379,9 @@
         "E-R2-CONTRACT",
         "E-R2-PACKAGE-AUDIT",
         "E-R2-FIGURE-BUILDER",
-        "E-R2-FIGURE-MANIFEST"
+        "E-R2-FIGURE-MANIFEST",
+        "E-R2-CONVERSION-FIGURE-BUILDER",
+        "E-R2-CONVERSION-FIGURE-MANIFEST"
       ]
     }
   ],

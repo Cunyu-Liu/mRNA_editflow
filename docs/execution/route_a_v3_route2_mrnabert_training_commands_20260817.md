@@ -1164,3 +1164,25 @@ figure-builder 联合 focused suite 均为 17/17。
 本任务不训练或更新参数，不新增中央 attempt；100-row 终态仍为 92 COMPLETED、3
 FAILED、3 INCOMPLETE_NO_TERMINAL_RECORD、1 STOPPED_FOR_THROUGHPUT_REPAIR、1
 STOPPED_PRIORITY_REALLOCATION。guided、Development TEST 与 new final Evaluation 继续关闭。
+
+## 43. Canonical conversion flow figure（2026-08-22）
+
+新增独立 conversion-flow builder 与 focused tests，从已冻结的 14-row dataset
+qualification table 和 method-repair split protocol 构建两面板通用稿件图。Panel A
+分离 8 个 Development study units/126,165 records、1 个 outcome-exposed historical
+study/8,068 records，以及 5 个 zero-canonical-record terminal roles；Panel B 分离
+qualified 6,547、Development-relaxed 88,652、listwise 30,966、unconvertible 0，并显示
+TRAIN/VALIDATION/TEST-withheld=`89,580/18,293/18,292`。箭头只编码 workflow，不按混合的
+study/record 单位缩放；generated candidate credit 与 new final Evaluation records 均为 0。
+
+A100 commit `647de6f` builder focused test 为 2/2，并在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 追加 PNG/PDF/SVG、
+独立 manifest 与 alt text，未覆盖原两图。视觉复核修正标题裁切/重叠；PNG 为
+2160×1860、300 dpi、全像素不透明，PDF 字体嵌入，SVG 无 raster image，主轮廓色对白底
+均超过 3:1。target journal/article type/submission phase 待定，继续明确
+`publisher_compliance_claimed=false`。
+
+paper packet 仍为 22 个 claim markers，evidence sources 从 23 增至 25；本机四组联合
+focused suite 为 19/19。manuscript figures 现为 3 张、2 个 builders；MBP-17 status 和
+最低包 14/3/1 汇总不变，四个 blocker 仍为 MBP-10/13/14/15。本任务不训练或更新参数，
+不新增中央 attempt；100-row terminal 分布和 protected-outcome closure 不变。
