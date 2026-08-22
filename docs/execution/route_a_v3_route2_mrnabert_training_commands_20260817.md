@@ -1738,3 +1738,29 @@ guard/disposition/Code Availability/RC focused tests=17/17；本机/A100 精确 
 model/biological/external/guided success=false、payload migration authorized=false、formal
 release/tag=false、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## 68. V3.3.2 Excel inventory generated-output boundary repair（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。没有读取 Development TEST、new final Evaluation、
+sealed GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 或 guided output；中央 100-row
+仍为 92/3/3/1/1。
+
+核查确认 legacy `import_excel_inventory.py` 的默认 `--parquet` 仍指向 Git tree，显式 override 也会在
+audit Markdown 中被硬编码旧路径掩盖。新增冻结的 Route 2 storage/default constants 和可测试 parser；
+future default 改为 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet`，
+小型 audit default 仍为 `docs/data/excel_inventory_audit.md`，renderer 记录实际输出路径。历史 audit
+只加 provenance notice，原 legacy output 行保留为历史事实。
+
+本项没有运行真实 importer，没有读取真实 Excel/Parquet，没有创建 `/mnt` artifact，也没有复制、删除、
+移动或停止 tracking 现有 5 个 payload。legacy disposition、Code Availability、manuscript、evidence
+manifest 与 internal RC 已同步为 future producer default inside Git=false；remaining migration actions=3，
+但 formal-release payload boundary 仍不合规，明确迁移授权仍缺失。evidence=65
+（51 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15。
+
+producer-boundary/legacy/Code Availability/RC focused tests=13/13；本机精确 V3.3.2 suite=95/95。
+本机 Python 缺少可选 Parquet engine，未安装依赖；A100 项目环境一次完成 V3.3.2 95 项与 importer
+8 项，合计 103/103。GitHub core commit `dc2ed02` 已推送，A100 自 `794df0d` 快进到该 commit。
+中央 model/biological/external/guided success=false、payload migration authorized=false、formal
+release/tag=false、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。

@@ -1138,3 +1138,29 @@ guard/disposition/Code Availability/RC focused tests=17/17；本机/A100 精确 
 92/92。GitHub core commit `794df0d` 已推送，A100 自 `5bd4424` 一次 fast-forward 到该 commit。
 payload migration authorized=false、formal release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## V3.3.2 Excel inventory generated-output boundary repair（2026-08-22）
+
+在 legacy payload migration 仍未授权时，先完成不接触 payload 的 producer-side repair。本项不训练、
+不轮询 GPU/训练进度，不读取 Development TEST、new final Evaluation、sealed GSE246381、
+E-MTAB-10902 outcome、generated-candidate outcome 或 guided output；中央 attempt 表没有新增行，仍为
+100 total / 92 completed / 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。
+
+只读核查确认 `scripts/data/import_excel_inventory.py` 的可达 CLI 默认会把生成型 Parquet 写到 tracked
+`data_registry/excel_inventory.parquet`，且显式 `--parquet` 也不会反映到 audit 的 output 字段。默认现已
+改为 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet`；小型
+`docs/data/excel_inventory_audit.md` 仍留在 Git，audit renderer 改为记录实际选定的 Parquet path。
+历史 audit 增加明确说明，保留旧 output 作为历史运行事实，不伪称现有文件已迁移。
+
+本项没有运行真实 importer，没有读取真实 Excel 或现有 Parquet，没有创建 `/mnt` output，也没有对
+5 个 tracked payload 执行 copy/delete/move。disposition/memo、Code Availability、manuscript、evidence
+manifest 与 internal RC 已同步；剩余 ordered migration actions 从 4 项降为 3 项，但 formal-release
+blocker 仍是 5 个文件 tracked，迁移/停止 tracking 仍需明确用户授权。evidence 仍为 65
+（51 local/contract、14 `/mnt`），claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15。
+
+producer-boundary/legacy/Code Availability/RC focused tests=13/13；本机精确 V3.3.2 suite=95/95。
+本机 importer E2E 因未安装可选 `pyarrow/fastparquet` 未执行完成，未安装或绕过依赖；A100 项目环境
+一次完成精确 V3.3.2 95 项与 importer 8 项，合计 103/103。GitHub core commit `dc2ed02` 已推送，
+A100 自 `794df0d` 一次 fast-forward 到该 commit。formal release/tag=false、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。
