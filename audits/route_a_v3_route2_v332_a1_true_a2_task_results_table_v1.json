@@ -1,0 +1,48 @@
+{
+  "a1": {
+    "development_validation_record_count": 18293,
+    "estimand": "SOURCE_RELATIVE_NUMERIC_EFFECT",
+    "positive_task_spearman_count": 5,
+    "role": "DEVELOPMENT_GENERATION_METHOD_SELECTION_NOT_FINAL_EXTERNAL_CONFIRMATION",
+    "task_count": 9,
+    "task_spearman_max": 0.7619576378536184,
+    "task_spearman_min": -0.10916458562634956
+  },
+  "a1_numeric_task_row_count": 9,
+  "cross_estimand_numeric_ranking_allowed": false,
+  "new_training_attempt_created": false,
+  "open_support_recovery_substitutes_for_true_a2_ranking": false,
+  "protected_outcomes": {
+    "development_test_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "reporting_table_complete": true,
+  "row_count": 14,
+  "schema_version": "route_a_v3_route2_v332_a1_true_a2_task_results_table.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "source_data": {
+    "a1_task_table": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_independent_evaluator_task_table_v1.csv",
+    "baseline_matrix": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_baseline_matrix_v1.csv",
+    "dataset_table": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+    "freshness_audit": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/audits/route_a_v3_route2_v332_freshness_and_critic_v2_freeze_v1.json",
+    "generation_geometry_audit": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/audits/route_a_v3_route2_generation_action_space_geometry_v1.json",
+    "minimum_package_table": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv"
+  },
+  "status": "A1_TRUE_A2_TASK_RESULTS_SEPARATED_TRUE_A2_NUMERIC_NOT_TERMINAL",
+  "table_path": "/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817/docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv",
+  "true_a2": {
+    "benchmark_execution_complete": false,
+    "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+    "closed_measured_ndcg_defined_source_count_all_methods": 0,
+    "development_listwise_record_count": 30966,
+    "development_listwise_study_unit_id": "GSE269595",
+    "estimand": "WITHIN_SOURCE_MEASURED_CANDIDATE_RANKING",
+    "evaluator_implementation_status": "COMPLETE",
+    "listwise_baseline_status": "CONFIGURED_NOT_TERMINAL_INDEPENDENT_BASELINE",
+    "new_independent_evaluation_unexposed_record_count": 0,
+    "qualified_true_a2_study_credit": 0
+  },
+  "true_a2_boundary_row_count": 5,
+  "true_a2_terminal_numeric_performance_row_count": 0
+}
