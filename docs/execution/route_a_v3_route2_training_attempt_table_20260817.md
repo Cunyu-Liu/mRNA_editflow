@@ -1359,6 +1359,19 @@ NDCG/evaluator bootstrap、matched compute 与 protected-read evidence，随后�
 只有完整 PASS 才授权一次 replacement Evaluation；即使 PASS，`submission_ready` 仍保持 false，必须等待
 external measured outcome 复现。focused=4/4、V3.3.2=96/96；当前没有 final comparison artifacts，未运行。
 
+## XEditFlow V3 closed-score / strongest baseline adapter preflight（2026-08-23）
+
+本项只补充 benchmark adapter，不构成新的 optimizer attempt，因此中央训练表不新增行。common closed
+score table 现在必须精确覆盖 Development Validation measured candidates，并使用 sourcewise shifted-exp
+正权重保持冻结分数的 source 内排序；undefined source 不填零。历史 frozen strongest baseline 继续绑定
+`genetic` 与 320 forward-equivalents/source，仅映射已经 terminal 的 open-generation/G0 事实，不复用旧
+open NDCG 作为 closed NDCG，也不重新选择 baseline。新的 closed result 只有在 readiness 后由 frozen
+genetic guiding checkpoint 对 common measured candidates 评分才能产生，当前未执行。
+
+定向测试=12/12、完整 XEditFlow V3 focused=71/71、本机精确 V3.3.2=96/96、compile/diff-check PASS；
+A100 tests/sync 等 active screen jobs terminal 后执行。Development TEST/Evaluation outcomes 未读取，
+guidance 与 replacement Evaluation 均未授权，submission-ready=false。
+
 ## XEditCritic V3 C0 terminal 与 SetFlow source-cache terminal（2026-08-23）
 
 第二次合同节奏检查时，C0 已 terminal，C1 仍运行。C0 使用 seed20260830、8 passes、22,416 updates，

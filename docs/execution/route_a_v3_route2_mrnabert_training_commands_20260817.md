@@ -2072,3 +2072,23 @@ row 之后只能组成精确 3×6 final manifest，再交给既有 strict adjudi
 `zip(strict=True)`；不改变 edit 定义或最大 5 edits/120 paths 规则。本批完整 XEditFlow V3 focused=68/68、
 V3.3.2=96/96、compile/diff-check PASS；未读取 Development TEST/Evaluation，未运行 generation 或统计结果。
 A100 tests/sync 仍受 active screen commit provenance 约束。
+
+## XEditFlow V3 closed-score 与 frozen strongest baseline adapters（2026-08-23）
+
+closed measured-neighborhood 的统一 score adapter 已实现，供 simple-rate、generate-then-rerank、
+first-order 和 frozen strongest baseline 在同一 Development Validation measured-candidate set 上计算
+source-level NDCG、normalized regret 与 top-1 recall。输入 score table 必须与 measured candidates 精确一一
+对应；在每个 source 内只做 `exp(score - max score)` 的稳定正权重变换，因此不改变冻结方法的 candidate
+ranking。少于两个候选或 measured gain 为零的 source 继续保持 undefined，不填零。
+
+历史 strongest generation baseline 仍是只读冻结的 `genetic`，没有重跑也没有重新选择。适配器只把其
+320 forward-equivalents/source、legality、budget、open recovery/top-k/unique 等 terminal 事实映射到 V3
+final schema；历史 open-support NDCG 不会被复用或改名为新的 closed NDCG。真正的 strongest closed 结果
+仍必须由既有 frozen genetic guiding checkpoint 对 common measured candidates 逐一评分后，经上述统一
+adapter 生成。当前该 score producer 和 closed outcome execution 尚未获 readiness 授权，因此没有产生
+benchmark 结果。
+
+新增后定向测试=12/12，完整 XEditFlow V3 focused=71/71，本地精确 V3.3.2=96/96，Python compile 与
+`git diff --check` PASS。A100 tests/sync 继续等待 active screen jobs terminal，以保持 launch commit
+`22317ed` provenance。本项不更新参数、不新增中央 training attempt；Development TEST/new final
+Evaluation read、guidance authorization、model/generation success 与 submission-ready 仍为 false。

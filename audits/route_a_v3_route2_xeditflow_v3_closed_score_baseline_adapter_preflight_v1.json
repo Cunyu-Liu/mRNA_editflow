@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_closed_score_baseline_adapter_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_NOT_EXECUTED",
+  "observed_date": "2026-08-23",
+  "closed_score_adapter": {
+    "cohort": "DEVELOPMENT_VALIDATION_COMMON_MEASURED_NEIGHBORHOOD",
+    "analysis_unit": "SOURCE",
+    "score_field": "frozen_method_score",
+    "candidate_coverage": "EXACT",
+    "score_transform": "SOURCEWISE_EXP_SHIFTED_MAX",
+    "transform_changes_within_source_ranking": false,
+    "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+    "historical_open_ndcg_accepted_as_closed_ndcg": false
+  },
+  "strongest_baseline_adapter": {
+    "frozen_method": "genetic",
+    "selection_status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY",
+    "reselected": false,
+    "forward_equivalent_ceiling_per_source": 320,
+    "historical_open_generation_metrics_preserved": true,
+    "closed_measured_neighborhood_metric_materialized": false,
+    "closed_score_source_required_before_execution": "FROZEN_GENETIC_GUIDING_CHECKPOINT_ON_COMMON_MEASURED_CANDIDATES"
+  },
+  "interfaces": {
+    "closed_score_evaluator": "scripts/route_a_v3/evaluate_route2_xeditflow_closed_scores_v3.py",
+    "strongest_baseline_adapter": "scripts/route_a_v3/adapt_route2_xeditflow_strongest_baseline_v3.py"
+  },
+  "tests": {
+    "local_targeted_passed": 12,
+    "local_targeted_failed": 0,
+    "local_xeditflow_v3_focused_passed": 71,
+    "local_xeditflow_v3_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "authorization": {
+    "closed_score_evaluation_executed": false,
+    "strongest_baseline_adapter_executed": false,
+    "guidance_authorized": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}
