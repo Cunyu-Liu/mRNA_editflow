@@ -1712,3 +1712,29 @@ GitHub core commit `5bd4424` 已推送，A100 自 `b93ba20` 快进到该 commit�
 claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided success=false、
 payload migration authorized=false、formal release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## 67. V3.3.2 legacy B0 active-loader fail-close（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。没有读取 Development TEST、new final Evaluation、
+sealed GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 或 guided output；中央 100-row
+仍为 92/3/3/1/1。
+
+新增 `d1_staging/scripts/b0/legacy_split_guard.py`，并接入
+`audit_split_manifests.py`、`eval_tracks.py`、`leakage_audit.py` 与
+`fm0_exposure_audit.py`。4 个入口请求保留的 repository-root `data/b0_splits` 时，在读取任何
+canonical/manifest 输入前抛出 `SUPERSEDED_NOT_LOADABLE`；其他显式 split path 仍可解析。新增 7 项
+negative-loader tests，覆盖 shared guard、4 个 CLI fail-before-read、旧 JSONL size 不变与 source
+ordering。5 个 tracked payload 的内容未打开，未 copy/delete/move，未改 Git history，未创建 formal
+tag/Release。
+
+legacy disposition、Code Availability、evidence manifest、manuscript 和 internal RC 已同步为
+4 guarded / 0 unguarded / negative-loader evidence=true。当前 formal-release payload boundary 仍不
+合规，因为 1 个 Parquet 和 4 个 legacy B0 JSONL 仍 tracked；向 `/mnt` 保存并停止 current-HEAD
+tracking 需要明确用户授权。evidence=65（51 local/contract、14 `/mnt`），claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15。
+
+guard/disposition/Code Availability/RC focused tests=17/17；本机/A100 精确 V3.3.2 suite 均为
+92/92。GitHub core commit `794df0d` 已推送，A100 自 `5bd4424` 快进到该 commit。中央
+model/biological/external/guided success=false、payload migration authorized=false、formal
+release/tag=false、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。

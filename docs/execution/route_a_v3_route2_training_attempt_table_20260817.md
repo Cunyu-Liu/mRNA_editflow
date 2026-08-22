@@ -1114,3 +1114,27 @@ validator focused tests=8/8，本机/A100 精确 V3.3.2 suite 均为 81/81。evi
 blockers=MBP-10/13/14/15、formal release/tag=false、human review complete=false、
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## V3.3.2 legacy B0 active-loader fail-close（2026-08-22）
+
+按旧 v3.1 preservation rule 与当前 formal-release disposition 顺序，完成 4 个 legacy B0 direct
+reader 的窄范围 fail-close。本项不训练、不轮询 GPU/训练进度，不读取 Development TEST、new final
+Evaluation、sealed GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 或 guided output；
+中央 attempt 表没有新增行，仍为 100 total / 92 completed / 3 failed / 3 incomplete /
+1 stopped-throughput / 1 stopped-priority。
+
+新增共享 `legacy_split_guard.py`；当 4 个入口请求 repository-root `data/b0_splits` 时，在读取
+canonical records、manifest 或 config 前统一抛出 `SUPERSEDED_NOT_LOADABLE`。7 项 focused negative
+tests 覆盖 shared guard、4 个 CLI 入口、guard-before-load ordering 和 4 个 JSONL size 不变；guard
+只拒绝已声明 superseded 的 repository root，不改变其他显式 split path 的行为。旧 JSONL/Parquet
+内容均未打开，5 个 payload 均未 copy/delete/move，Git history 未改写，也未创建 formal tag/Release。
+
+disposition audit/memo、Code Availability、evidence manifest 与 internal RC 已同步：4/4 readers
+guarded、0 unguarded、negative-loader evidence=true。formal-release blocker 已从“reader 未 fail-close
+与 5 文件 tracked”收窄为“5 文件仍 tracked”；迁移/停止 tracking 仍需明确用户授权。evidence 仍为
+65（51 local/contract、14 `/mnt`），claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15。
+
+guard/disposition/Code Availability/RC focused tests=17/17；本机/A100 精确 V3.3.2 suite 均为
+92/92。GitHub core commit `794df0d` 已推送，A100 自 `5bd4424` 一次 fast-forward 到该 commit。
+payload migration authorized=false、formal release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
