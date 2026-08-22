@@ -1,0 +1,123 @@
+{
+  "schema_version": "route_a_v3_route2_v332_github_release_candidate.v1",
+  "status": "INTERNAL_GITHUB_BRANCH_CANDIDATE_ASSEMBLED_FORMAL_RELEASE_NOT_AUTHORIZED",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "authority_rule": "The contract requires focused tests, commits and GitHub pushes for logical tasks, but does not authorize a formal GitHub Release or tag when the minimum package and release reviews are incomplete."
+  },
+  "candidate": {
+    "provider": "GITHUB",
+    "repository_locator": "https://github.com/Cunyu-Liu/mRNA_editflow",
+    "branch": "route-a-v3-route2-method-repair-20260817",
+    "candidate_kind": "VERSION_CONTROLLED_INTERNAL_BENCHMARK_LIMITS_EVIDENCE_BRANCH",
+    "candidate_assembled": true,
+    "formal_github_release_created": false,
+    "release_tag_created": false,
+    "persistent_archive_identifier_assigned": false,
+    "unauthenticated_public_access_verified": false,
+    "submission_release_authorized": false
+  },
+  "current_packet": {
+    "manuscript_title": "Route 2 V3.3.2 Benchmark+limits evidence manuscript",
+    "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+    "methods_subsection_count": 14,
+    "results_subsection_count": 15,
+    "discussion_subsection_count": 5,
+    "data_availability_internal_section_complete": true,
+    "code_availability_internal_section_complete": true,
+    "route2_v332_readme_notice_present": true,
+    "claim_marker_count": 22,
+    "supported_claim_row_count": 22,
+    "unsupported_claim_row_count": 13,
+    "evidence_source_count": 59,
+    "evidence_local_or_contract_count": 45,
+    "evidence_a100_mnt_count": 14,
+    "figure_count": 7,
+    "figure_builder_count": 6,
+    "minimum_package_complete_or_limited_count": 14,
+    "minimum_package_partial_count": 3,
+    "minimum_package_unavailable_count": 1,
+    "minimum_package_blocker_ids": [
+      "MBP-10",
+      "MBP-13",
+      "MBP-14",
+      "MBP-15"
+    ]
+  },
+  "required_git_artifacts": [
+    "README.md",
+    "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "docs/paper/route2_v332_consistency_manifest_v1.json",
+    "docs/paper/route2_v332_evidence_manifest_v1.json",
+    "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv",
+    "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json",
+    "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv",
+    "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
+    "docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv",
+    "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json",
+    "audits/route_a_v3_route2_v332_methods_completion_v1.json",
+    "audits/route_a_v3_route2_v332_results_completion_v1.json",
+    "audits/route_a_v3_route2_v332_discussion_completion_v1.json",
+    "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
+    "audits/route_a_v3_route2_v332_code_availability_completion_v1.json"
+  ],
+  "tracked_data_policy": {
+    "contract_compliant_for_formal_release": false,
+    "automatic_removal_performed": false,
+    "tracked_weight_or_checkpoint_file_count": 0,
+    "tracked_parquet_files": [
+      {
+        "path": "data_registry/excel_inventory.parquet",
+        "size_bytes": 46498,
+        "current_reference_state": "REFERENCED_BY_LEGACY_DATA_IMPORT_AND_AUDIT_MATERIAL"
+      }
+    ],
+    "tracked_legacy_b0_jsonl_files": [
+      {
+        "path": "data/b0_splits/split_study_disjoint.jsonl",
+        "size_bytes": 11462850
+      },
+      {
+        "path": "data/b0_splits/split_cross_region_transfer.jsonl",
+        "size_bytes": 11299013
+      },
+      {
+        "path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+        "size_bytes": 7638905
+      },
+      {
+        "path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+        "size_bytes": 4338809
+      }
+    ],
+    "legacy_b0_jsonl_total_size_bytes": 34739577,
+    "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and rejects active loading; removing or migrating them requires a separate deliberate repository-policy decision."
+  },
+  "formal_release_blockers": [
+    "The minimum benchmark package remains incomplete at 14 complete-or-limited, 3 partial and 1 unavailable, with blockers MBP-10, MBP-13, MBP-14 and MBP-15.",
+    "Accountable human evidence-content, study-rights and code-license verification remains incomplete.",
+    "The Route 2 V3.3.2 workflow has not passed an exact clean-environment reproduction from the declared environment descriptors.",
+    "No immutable release tag, archived container or persistent archive identifier has been assigned.",
+    "Five tracked legacy JSONL/Parquet payload files conflict with the current contract's formal Git release boundary and cannot be automatically removed without resolving their legacy preservation and reference requirements.",
+    "Target venue, authorship, contributions, declarations, funding, ethics applicability and AI-use disclosure remain pending."
+  ],
+  "release_boundary": {
+    "github_branch_candidate_assembled": true,
+    "formal_tag_or_release_authorized": false,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "human_evidence_content_verification_complete": false,
+    "data_public_release_ready": false,
+    "code_public_release_ready": false,
+    "submission_ready": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}

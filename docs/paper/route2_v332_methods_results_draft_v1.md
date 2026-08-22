@@ -1,10 +1,10 @@
-# Route 2 V3.3.2 methods/results evidence draft
+# Route 2 V3.3.2 Benchmark+limits evidence manuscript
 
 > Internal evidence-bound draft. Not submission-ready. All claim and evidence
 > markers must remain until an accountable human verifies the local/remote
-> artifacts and approves the scientific wording. No external literature,
-> authorship, funding, ethics, availability or AI-disclosure statement is
-> supplied here.
+> artifacts and approves the scientific wording. Data and Code Availability are
+> internal review-pending statements; no external literature, authorship,
+> funding, ethics or AI-use disclosure is supplied here.
 
 ## Scope and current answer
 
@@ -907,9 +907,10 @@ The repository contains `pyproject.toml`, `requirements-lock.txt`,
 `environment.yml` and a `Dockerfile`. These files document a Python 3.10 and
 PyTorch 2.5.1 environment, but the complete Route 2 V3.3.2 evidence workflow has
 not yet been independently reproduced from them or verified by an accountable
-human. The current README authority header predates the governing Route A
-V3.3.2 contract and must not replace the contract, execution protocol or frozen
-manifests for this packet.
+human. The README now begins with a Route A V3.3.2 branch notice that binds the
+current contract and packet entry points; the remaining repository-wide v2
+material is explicitly retained as background rather than authority for this
+branch.
 
 Package metadata currently declares `Proprietary`, and no standalone `LICENSE`
 file is tracked. Repository access therefore must not be interpreted as an
@@ -936,7 +937,7 @@ archived version.
 - Target venue, article type and submission phase selection, followed by one
   official publisher-rule check and any required format-only regeneration from
   the same frozen evidence.
-- A Route 2-current README, accountable code-license review, exact clean-
-  environment reproduction check and immutable release tag or archive.
+- Accountable code-license review, exact clean-environment reproduction check
+  and an immutable release tag or archive.
 - Reporting guideline, author list, contributions, declarations, funding,
   ethics applicability and AI-use disclosure.

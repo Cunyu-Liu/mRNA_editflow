@@ -34,7 +34,7 @@ def test_code_availability_is_complete_but_release_and_submission_are_false() ->
     boundary = audit["completion_boundary"]
     assert boundary["code_availability_section_complete"] is True
     assert boundary["accountable_human_license_review_complete"] is False
-    assert boundary["route2_current_readme_complete"] is False
+    assert boundary["route2_current_readme_notice_complete"] is True
     assert boundary["route2_clean_environment_reproduction_complete"] is False
     assert boundary["immutable_release_assigned"] is False
     assert boundary["public_code_release_claimed"] is False
@@ -45,12 +45,13 @@ def test_code_availability_is_complete_but_release_and_submission_are_false() ->
     current = consistency["manuscript_sections"]["code_availability"]
     assert current["status"] == "COMPLETE_INTERNAL_RELEASE_REVIEW_PENDING"
     assert current["accountable_human_license_review_complete"] is False
+    assert current["route2_current_readme_notice_complete"] is True
     assert current["route2_clean_environment_reproduction_complete"] is False
     assert current["immutable_release_assigned"] is False
     assert current["submission_ready"] is False
     unresolved = draft.split("## Unresolved items before manuscript integration", 1)[1]
     assert "code availability" not in unresolved.lower()
-    assert "Route 2-current README" in unresolved
+    assert "Accountable code-license review" in unresolved
 
 
 def test_code_availability_retains_repository_environment_and_license_boundaries() -> None:
@@ -68,7 +69,8 @@ def test_code_availability_retains_repository_environment_and_license_boundaries
     ]
     assert all((ROOT / path).is_file() for path in facts["environment_descriptors"])
     assert facts["route2_v332_clean_environment_reproduction_complete"] is False
-    assert facts["readme_authority_header_current_for_route2_v332"] is False
+    assert facts["route2_v332_readme_notice_present"] is True
+    assert facts["legacy_readme_body_marked_non_authoritative_for_route2_v332"] is True
     assert facts["pyproject_license_text"] == "Proprietary"
     assert facts["standalone_license_file_tracked"] is False
     assert not any(ROOT.glob("LICENSE*"))
@@ -76,6 +78,7 @@ def test_code_availability_retains_repository_environment_and_license_boundaries
     assert facts["large_artifact_storage_root"] in section
     assert "does not assert unauthenticated public access" in section
     assert "not yet been independently reproduced" in section
+    assert "README now begins with a Route A V3.3.2 branch notice" in section
     assert "no standalone `LICENSE` file is tracked" in section
     assert "No code-availability-on-request promise is made" in section
 

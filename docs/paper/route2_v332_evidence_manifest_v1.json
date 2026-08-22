@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:17:28+08:00",
+    "observed_at": "2026-08-22T18:24:33+08:00",
     "status": "PASS",
-    "source_locations_checked": 58,
-    "local_or_contract_locations_checked": 44,
+    "source_locations_checked": 59,
+    "local_or_contract_locations_checked": 45,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -455,7 +455,15 @@
       "evidence_id": "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT",
       "kind": "derived_code_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
-      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container, no clean-environment Route 2 reproduction, a stale pre-Route-A README authority header, Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
+      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; Route A branch notice present, repository-wide v2 body explicitly non-authoritative for this branch, Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-GITHUB-RC-AUDIT",
+      "kind": "derived_internal_github_branch_release_candidate_audit",
+      "location": "audits/route_a_v3_route2_v332_github_release_candidate_v1.json",
+      "locator": "internal GitHub branch candidate with Route A README notice and complete internal Methods, Results, Discussion, Data Availability and Code Availability sections; formal tag/Release remains unauthorized because minimum-package, human evidence/rights/license, clean-environment, immutable-archive and tracked legacy JSONL/Parquet policy blockers remain",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

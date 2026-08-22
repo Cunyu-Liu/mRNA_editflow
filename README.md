@@ -1,5 +1,28 @@
 # mRNA-EditFlow
 
+> **Route A V3.3.2 Route 2 branch notice — 2026-08-22**
+>
+> This notice applies to branch
+> `route-a-v3-route2-method-repair-20260817` and its Route 2 evidence packet.
+> The governing scientific authority is the project-internal **Route A V3.3.2
+> data-gate-transition contract**, followed by the **mRNA V3.3.2 execution
+> prompt**. The repository-wide v2 material below predates this branch packet
+> and is background only; it must not override the Route A V3.3.2 data roles,
+> Evaluation boundary, execution order or claim limits.
+>
+> Terminal evidence selects the
+> `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER` forward manuscript route,
+> but its full trigger, minimum benchmark package and submission eligibility are
+> not complete. Critic V2 stopped at its frozen control NO-GO; Development TEST,
+> new final Evaluation and guided XEditFlow were not opened. GSE232572 remains a
+> historically outcome-exposed transfer diagnostic, not final confirmation.
+>
+> Start with the [Route 2 V3.3.2 internal evidence manuscript](docs/paper/route2_v332_methods_results_draft_v1.md),
+> [consistency manifest](docs/paper/route2_v332_consistency_manifest_v1.json) and
+> [evidence manifest](docs/paper/route2_v332_evidence_manifest_v1.json). These are
+> internal evidence-bound materials, not a formal software release or
+> submission-ready paper.
+
 **Source-conditioned, region-aware, grammar-constrained continuous-time Edit Flow for 5′UTR / 3′UTR minimal editing.**
 
 > **Research status — 2026-08-01**
