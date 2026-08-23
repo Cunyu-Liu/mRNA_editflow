@@ -1578,3 +1578,10 @@ relative improvement=-0.013805184208472678，F1 的 10% NLL diagnostic check明�
 唯一一次 F1 unguided validation 已在 GPU1 启动，Python PID3153416；首次5分钟检查仍运行且无 terminal/
 failure/error，下一次不早于08:20:27。F2/C1仍RUNNING，F3/C2/C3未启动。Development TEST/new Evaluation
 read=0，A100 HEAD保持`22317ed`。
+
+## 08:15/08:20 scheduled screen status（2026-08-23）
+
+F2仍为RUNNING，elapsed=4:12:57，无terminal/failure/error；已切换60分钟节奏，下次不早于09:15:25。
+F1 unguided validation亦RUNNING，elapsed=36:49，无terminal/failure/error，下次不早于08:50:44。两次观察
+均未读取active metric；C1未触碰，仍不早于08:42:39。GPU0–5无足够安全显存，F3/C2/C3未启动，中央
+CSV和protected outcome状态不变，A100 HEAD=`22317ed`。

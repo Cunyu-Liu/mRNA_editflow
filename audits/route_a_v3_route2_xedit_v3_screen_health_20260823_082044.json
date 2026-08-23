@@ -1,0 +1,58 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_screen_health.v1",
+  "status": "F2_AND_F1_VALIDATION_ACTIVE_HEALTHY_NO_NEW_LAUNCH",
+  "observations": {
+    "f2_training": {
+      "observed_at": "2026-08-23T08:15:25+08:00",
+      "pid": 1822702,
+      "elapsed_seconds": 15177,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false,
+      "elapsed_exceeds_four_hours": true,
+      "next_check_not_before": "2026-08-23T09:15:25+08:00"
+    },
+    "f1_unguided_validation": {
+      "observed_at": "2026-08-23T08:20:44+08:00",
+      "python_pid": 3153416,
+      "elapsed_seconds": 2209,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false,
+      "next_check_not_before": "2026-08-23T08:50:44+08:00"
+    },
+    "critic_c1": {
+      "checked_in_these_observations": false,
+      "next_check_not_before": "2026-08-23T08:42:39+08:00"
+    }
+  },
+  "monitoring_policy": {
+    "active_curves_or_performance_metrics_read": false,
+    "separate_job_windows_preserved": true,
+    "f2_switched_to_sixty_minute_interval_after_four_hours": true
+  },
+  "gpu_0_to_5_free_memory_mib_at_f2_observation": [2633, 9049, 3197, 3617, 4289, 7757],
+  "gpu_0_to_5_utilization_percent_at_f2_observation": [100, 100, 100, 100, 100, 100],
+  "gpu1_free_memory_mib_at_validation_observation": 7927,
+  "launch_decision": {
+    "f3_started": false,
+    "critic_c2_or_c3_started": false,
+    "reason": "NO_AUTHORIZED_GPU_0_TO_5_HAS_SUFFICIENT_SAFE_FREE_MEMORY_FOR_ANOTHER_FROZEN_CAPACITY_ARM",
+    "capacity_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "central_training_ledger_changed": false,
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "632be16"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -2359,3 +2359,14 @@ error 均不存在，GPU1 free约6.9GiB；下一次 validation check不早于08:
 足够安全显存启动F3/C2/C3；不降容量、不CPU fallback、不使用GPU6/7。A100 launch HEAD继续为`22317ed`，
 current-HEAD sync等待所有该HEAD jobs terminal。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`。
+
+## 08:15/08:20 low-frequency screen checks（2026-08-23）
+
+08:15:25只检查F2：elapsed=4:12:57，仍存活，无terminal/failure/error；没有读取curve或performance。F2已
+超过4小时，后续改为60分钟节奏，下一次不早于09:15:25。GPU0–5 free memory=2,633/9,049/3,197/
+3,617/4,289/7,757MiB、utilization均100%，仍不启动F3/C2/C3。
+
+08:20:44只检查F1 unguided validation：Python PID3153416 elapsed=36:49，仍存活，无terminal/failure/error；
+GPU1 free=7,927MiB。下一次validation check不早于08:50:44。C1在两次观察中均未触碰，保持08:42:39
+窗口。中央ledger不变、active metrics未读、capacity/batch不变、CPU fallback=false、GPU6/7未用，A100
+HEAD继续`22317ed`。审计：`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_082044.json`。
