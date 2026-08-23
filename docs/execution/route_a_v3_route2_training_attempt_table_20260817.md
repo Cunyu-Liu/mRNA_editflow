@@ -1833,6 +1833,19 @@ gate计算，不手读per-task rows。C2仍因primary gate和edit-metadata contr
 两个terminal summary未重读，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_control_package_terminal_v1.json`。
 
+## A100 current-HEAD tests 与 SetFlow formal gate（2026-08-24）
+
+所有`22317ed` launch-head jobs terminal后，A100工作树在clean/correct-branch/无旧PID前提下通过
+`git pull --ff-only`同步到`0f21b8e`。current-HEAD固定验证为Critic focused 70/70（55项模型/训练/gate +
+15项projection/cache/protocol）、SetFlow focused 30/30、精确V3.3.2 96/96；唯一warning为PyTorch
+nested-tensor性能提示，不影响正确性。
+
+随后原子生成SetFlow `screen_gate.json`（3,551 bytes）：status=`XEDITSETFLOW_V3_SCREEN_NO_GO`、
+selected arm=`null`、reason=`NO_SELECTABLE_ARM_PASSED`。F2只失败unique≥0.90；F3失败recovery≥0.25、
+top-k≥0.15和unique≥0.90。confirmation/additional seed/Development TEST/guidance授权均为false；不新增
+optimizer attempt，不重训F0/F2/F3。Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_a100_current_head_sync_tests_setflow_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

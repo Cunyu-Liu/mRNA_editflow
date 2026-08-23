@@ -2943,3 +2943,17 @@ formal gate。至此C2 full与四controls全部terminal，C2因primary与edit-me
 no confirmation、TEST、LOSO或guidance授权。所有launch-HEAD jobs已terminal，下一步允许A100 current-HEAD
 同步、固定tests与正式gate materialization。protected read=0；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_control_package_terminal_v1.json`。
+
+## A100 current-HEAD sync、fixed tests 与 SetFlow gate materialization（2026-08-24）
+
+同步前远端worktree clean、分支/upstream正确、所有旧C2/SetFlow PID不存在；A100从`22317ed`使用
+fast-forward-only同步至GitHub current HEAD `0f21b8e`，同步后仍clean。固定测试顺序执行，避免pytest cache
+竞争：Critic `*xeditcritic*`文件55/55，加projection/edit-site cache/source cache/prospective protocol
+15/15，合计70/70；SetFlow30/30；精确V3.3.2 96/96。Critic cohort仅有既知nested-tensor性能warning。
+
+在formal gate此前不存在的前提下，只运行一次current-HEAD SetFlow adjudicator并原子写入
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/screen_gate.json`。
+固定裁决为`XEDITSETFLOW_V3_SCREEN_NO_GO`、无selected arm；F2 unique=0.6793630752失败，F3 recovery=
+0.1939768051、top-k=0.1048712807、unique=0.6374508979均失败。confirmation/additional seed/TEST/
+guidance全部未授权。该同步/测试/裁决不新增中央optimizer attempt，protected read=0。审计：
+`audits/route_a_v3_route2_a100_current_head_sync_tests_setflow_gate_v1.json`。

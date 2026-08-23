@@ -1,0 +1,89 @@
+{
+  "schema_version": "route_a_v3_route2_a100_current_head_sync_tests_setflow_gate.v1",
+  "status": "A100_CURRENT_HEAD_SYNCED_TESTS_PASS_SET_FLOW_SCREEN_GATE_MATERIALIZED_NO_GO",
+  "observed_at": "2026-08-24T02:47:59+08:00",
+  "repository_sync": {
+    "remote_worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_method_repair_20260817",
+    "branch": "route-a-v3-route2-method-repair-20260817",
+    "upstream": "origin/route-a-v3-route2-method-repair-20260817",
+    "head_before": "22317ed3b62944098160fd69ea034110158faa2f",
+    "head_after": "0f21b8ea84efdab5cb3428786c187663318e3c73",
+    "remote_worktree_clean_before": true,
+    "remote_worktree_clean_after": true,
+    "old_launch_jobs_active_before_sync": false,
+    "sync_method": "git pull --ff-only",
+    "shared_history_rewritten": false
+  },
+  "a100_current_head_verification": {
+    "python": "/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10",
+    "critic_model_training_gate_files_passed": 55,
+    "critic_projection_cache_protocol_files_passed": 15,
+    "critic_focused_total_passed": 70,
+    "critic_focused_failed": 0,
+    "setflow_focused_passed": 30,
+    "setflow_focused_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "critic_warning": "PyTorch nested-tensor performance warning only; no correctness failure.",
+    "test_execution_order": [
+      "critic model/training/gate cohort",
+      "setflow cohort",
+      "critic projection/cache/protocol completion cohort",
+      "exact V3.3.2 cohort"
+    ],
+    "shared_pytest_cache_race_avoided": true
+  },
+  "setflow_screen_gate": {
+    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/screen_gate.json",
+    "size_bytes": 3551,
+    "mtime": "2026-08-24T02:47:59+08:00",
+    "schema_version": "route_a_v3_route2_xeditsetflow_screen_gate.v3",
+    "status": "XEDITSETFLOW_V3_SCREEN_NO_GO",
+    "screen_seed": 20260903,
+    "selected_arm": null,
+    "selection_reason": "NO_SELECTABLE_ARM_PASSED",
+    "confirmation_authorized": false,
+    "additional_seed_authorized": false,
+    "development_test_authorized": false,
+    "guidance_authorized": false,
+    "f2": {
+      "passes_screen_gate": false,
+      "common_validation_set_marginal_nll": 2.0680908163671576,
+      "relative_common_nll_improvement": 0.6168717665949648,
+      "source_macro_candidate_recovery_rate": 0.2924616535727647,
+      "source_macro_top_k_recovery_at_k": 0.168278220268518,
+      "source_macro_unique_candidate_rate": 0.6793630751964085,
+      "failed_frozen_checks": [
+        "source_macro_unique_rate_at_least_0_90"
+      ]
+    },
+    "f3": {
+      "passes_screen_gate": false,
+      "common_validation_set_marginal_nll": 2.05042941274086,
+      "relative_common_nll_improvement": 0.6201436646747033,
+      "source_macro_candidate_recovery_rate": 0.19397680508791618,
+      "source_macro_top_k_recovery_at_k": 0.10487128067094396,
+      "source_macro_unique_candidate_rate": 0.6374508978675645,
+      "failed_frozen_checks": [
+        "source_macro_recovery_at_least_0_25",
+        "source_macro_top_k_recovery_at_least_0_15",
+        "source_macro_unique_rate_at_least_0_90"
+      ]
+    }
+  },
+  "authorization_state": {
+    "setflow_confirmation_authorized": false,
+    "setflow_retraining_authorized": false,
+    "soft_value_guidance_authorized": false,
+    "critic_c3_screen_authorized": true,
+    "critic_confirmation_authorized": false
+  },
+  "experiment_tracking": {
+    "optimizer_attempt_added": false,
+    "reason": "Repository synchronization, tests, and deterministic gate adjudication do not update trainable parameters."
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
