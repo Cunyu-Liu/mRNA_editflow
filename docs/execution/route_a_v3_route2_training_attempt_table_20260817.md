@@ -1699,6 +1699,15 @@ C2 full/C2 source-only/F3 training分别在14:02:06/14:15:24/14:37:09保持RUNNI
 15:02:06/15:15:24/15:37:09。未读active metric、未新增attempt或叠加GPU任务；protected outcome
 read=0，A100 HEAD=`22317ed`。
 
+## 15:03–15:40 long-run scheduled screen health（2026-08-23）
+
+C2 full/C2 source-only/F3 training分别在15:03:44/15:19:38/15:40:03保持RUNNING，elapsed分别为
+18,903/19,012/22,824秒，均无terminal/failure；source-only与F3中央ledger第108/106行仍为RUNNING。
+三项继续使用60分钟窗口，下一窗口分别为16:03:44/16:19:38/16:40:03。未读active metric、未新增attempt
+或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。等待期间只修正interim paper evidence中
+“F2 validation仍在运行”的过时句子，使其与已冻结F2 terminal unique-rate gate failure一致；不改变结果或gate，
+不新增中央optimizer attempt。
+
 ## F2 terminal diversity-by-domain diagnostic（2026-08-23）
 
 F2终态mean unique在GSE269595/GSE114002/ENCSR854RUF/GSE217518分别为0.4359375/0.6580713190/

@@ -2585,3 +2585,18 @@ PID3408897、elapsed19,051秒、无terminal/failure；保持60分钟，下一次
 三项现均超过4小时并严格使用60分钟窗口；未读active performance，未在GPU0/3/5叠加任务，未新增control。
 无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_143709.json`。
+
+## 15:03–15:40 long-run scheduled screen health（2026-08-23）
+
+C2 full在15:03:44仍RUNNING：PID3481436、elapsed18,903秒、无terminal/failure，下一次不早于
+16:03:44。该查询只是补回被编排上下文截断的15:02计划观察，重取alive/terminal/failure/GPU最小字段，
+不构成额外进度轮询。C2 source-only在15:19:38仍RUNNING：实际Python PID3577062、elapsed19,012秒、
+中央ledger第108行仍RUNNING、无terminal/failure，下一次不早于16:19:38。F3 training在15:40:03仍
+RUNNING：PID3408897、elapsed22,824秒、中央ledger第106行仍RUNNING、无terminal/failure，下一次不早于
+16:40:03。
+
+三项继续使用60分钟窗口；未读active performance、未新增control或叠加GPU任务。等待期间核查
+`docs/paper/route2_xedit_v3_interim_results_evidence_v1.md`，修正其开头仍称F2 validation running的过时句子；
+F2指标、terminal gate failure、threshold、seed、task和selection均未改变，文中引用的终态审计路径全部存在。
+本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_154003.json`。

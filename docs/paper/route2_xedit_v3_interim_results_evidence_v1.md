@@ -4,7 +4,7 @@ Status date: 2026-08-23. This note is an observed-results companion to the prosp
 
 ## Interpretation boundary
 
-The screen is still incomplete. Terminal diagnostic arms are recorded below without converting partial evidence into a screen decision. C0 and C1 are not selectable Critic arms; F0 is a read-only historical reference and F1 is an objective diagnostic that cannot be selected. F2 training evidence alone cannot establish a Flow screen pass because its open-generation validation is still running. C2, F3, and the remaining preregistered critic controls are also incomplete.
+The screen is still incomplete. Terminal diagnostic arms are recorded below without converting partial evidence into a screen decision. C0 and C1 are not selectable Critic arms; F0 is a read-only historical reference and F1 is an objective diagnostic that cannot be selected. F2 has completed open-generation validation and failed its frozen arm gate on unique-candidate rate, so it cannot enter confirmation. C2, F3, and the remaining preregistered critic controls are also incomplete.
 
 ## Critic diagnostic evidence
 
