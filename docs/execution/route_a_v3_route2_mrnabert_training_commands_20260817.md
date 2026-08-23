@@ -2600,3 +2600,25 @@ RUNNING：PID3408897、elapsed22,824秒、中央ledger第106行仍RUNNING、无t
 F2指标、terminal gate failure、threshold、seed、task和selection均未改变，文中引用的终态审计路径全部存在。
 本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_154003.json`。
+
+## F3 training terminal 与 unguided validation 启动（2026-08-23）
+
+16:43:01的计划检查确认F3 training已正常terminal，中央ledger第106行在15:41:08更新为COMPLETED，且无
+failure artifact。唯一一次精简summary读取固定：seed20260903、5 completed passes、patience早停、selected
+pass3、21,345 updates、42,196,934 trainable parameters、parameter changed=true、BF16/GPU3、peak
+VRAM=3,134.016MiB、wall time=22,863.549秒。best common Validation set-NLL=2.05042941274086，
+相对冻结F0=5.397907635224613改善0.6201436646747034，训练侧10% NLL门槛通过；critic/independent evaluator
+未用于训练，Development TEST/new Evaluation read=0。
+
+从已验证的F2 validation runtime config复制F3运营配置，只把`device=cuda:1, physical_gpu_index=1`改为
+`cuda:3, physical_gpu_index=3`；JSON已验证，科学config、checkpoint、cohort、seed、candidate cap、metric和
+gate均不变。F3 unguided validation在释放后的GPU3启动，PID49555；16:50:25的首次检查elapsed322秒，
+CUDA进程占用1,192MiB、GPU3 free38,396MiB/util56%，stderr为空且无terminal/failure。下一次不早于
+17:20:25，随后30分钟节奏。
+
+并行Critic健康：C2 full在16:06:57仍RUNNING（elapsed22,696秒），source-only在16:21:45仍RUNNING
+（elapsed22,739秒），下一次分别不早于17:06:57/17:21:45。16:06资源快照中GPU1/2/4仅剩
+9,785/3,155/4,267MiB且util均100%，没有安全独立卡启动新control；未叠加、未降容量。F3 recovery、top-k、
+unique与G0仍pending，screen/confirmation未授权。本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，
+protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f3_training_terminal_validation_launch_v1.json`。

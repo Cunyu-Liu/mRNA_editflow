@@ -1,0 +1,110 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f3_training_terminal_validation_launch.v1",
+  "status": "F3_TRAINING_TERMINAL_NLL_GATE_PASS_VALIDATION_RUNNING",
+  "observed_at": "2026-08-23T16:50:25+08:00",
+  "f3_training": {
+    "status": "COMPLETED",
+    "seed": 20260903,
+    "selectable": true,
+    "completed_passes": 5,
+    "maximum_passes": 12,
+    "stopped_early": true,
+    "selected_pass": 3,
+    "optimizer_steps": 21345,
+    "trainable_parameter_count": 42196934,
+    "parameter_changed": true,
+    "best_common_validation_set_marginal_nll": 2.05042941274086,
+    "frozen_f0_common_set_marginal_nll": 5.397907635224613,
+    "relative_nll_improvement_over_f0": 0.6201436646747034,
+    "common_nll_improvement_at_least_0_10": true,
+    "train_record_count": 68294,
+    "validation_record_count": 15924,
+    "physical_gpu_index": 3,
+    "torch_device": "cuda:3",
+    "training_precision": "BF16",
+    "cpu_fallback_used": false,
+    "peak_vram_mb": 3134.01611328125,
+    "wall_time_seconds": 22863.548585891724,
+    "central_ledger_line_number": 106,
+    "central_ledger_status": "COMPLETED",
+    "central_ledger_completed_at": "2026-08-23T15:41:08+08:00",
+    "critic_score_used": false,
+    "independent_evaluator_used": false,
+    "development_test_record_count_withheld": 18292,
+    "development_test_outcomes_accessed": false,
+    "evaluation_records_read": 0,
+    "evaluation_outcomes_accessed": false,
+    "terminal_summary_read_once": true
+  },
+  "f3_unguided_validation": {
+    "status": "RUNNING",
+    "launcher_and_python_pid": 49555,
+    "initial_check_observed_at": "2026-08-23T16:50:25+08:00",
+    "initial_check_elapsed_seconds": 322,
+    "initial_check_after_at_least_five_minutes": true,
+    "physical_gpu_index": 3,
+    "gpu_process_memory_mib": 1192,
+    "gpu_free_memory_mib": 38396,
+    "gpu_utilization_percent": 56,
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "stderr_empty": true,
+    "runtime_config": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v3/screen_f3_validation_seed20260903_gpu3.json",
+    "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f3",
+    "operational_config_difference_from_frozen_config": {
+      "device": "cuda:3",
+      "physical_gpu_index": 3
+    },
+    "scientific_config_changed": false,
+    "monitoring_interval_minutes_after_initial_check": 30,
+    "next_check_not_before": "2026-08-23T17:20:25+08:00"
+  },
+  "f3_gate_state": {
+    "training_side_nll_gate_pass": true,
+    "recovery_pending": true,
+    "top_k_recovery_pending": true,
+    "unique_candidate_rate_pending": true,
+    "g0_correctness_pending": true,
+    "arm_gate_adjudication_authorized_now": false,
+    "confirmation_authorized_now": false
+  },
+  "concurrent_critic_health": {
+    "c2_full_observed_at": "2026-08-23T16:06:57+08:00",
+    "c2_full_elapsed_seconds": 22696,
+    "c2_full_status": "RUNNING",
+    "c2_full_terminal_or_failure_present": false,
+    "c2_full_next_check_not_before": "2026-08-23T17:06:57+08:00",
+    "c2_source_only_observed_at": "2026-08-23T16:21:45+08:00",
+    "c2_source_only_elapsed_seconds": 22739,
+    "c2_source_only_status": "RUNNING",
+    "c2_source_only_terminal_or_failure_present": false,
+    "c2_source_only_next_check_not_before": "2026-08-23T17:21:45+08:00"
+  },
+  "resource_decision": {
+    "snapshot_observed_at": "2026-08-23T16:06:57+08:00",
+    "gpu_1_free_memory_mib": 9785,
+    "gpu_1_utilization_percent": 100,
+    "gpu_2_free_memory_mib": 3155,
+    "gpu_2_utilization_percent": 100,
+    "gpu_4_free_memory_mib": 4267,
+    "gpu_4_utilization_percent": 100,
+    "additional_critic_control_launched": false,
+    "reason": "No independent GPU among 1, 2, and 4 had safe memory and compute headroom; GPUs 0, 3, and 5 were reserved for the formal jobs already assigned at the snapshot."
+  },
+  "verification": {
+    "runtime_config_json_validated": true,
+    "runtime_config_only_changes_device_placement": true,
+    "code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "The frozen executable code did not change; this task terminalized a formal training arm and launched its preregistered validation."
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "5f9d164"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

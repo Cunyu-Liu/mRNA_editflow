@@ -1708,6 +1708,17 @@ C2 full/C2 source-only/F3 training分别在15:03:44/15:19:38/15:40:03保持RUNNI
 “F2 validation仍在运行”的过时句子，使其与已冻结F2 terminal unique-rate gate failure一致；不改变结果或gate，
 不新增中央optimizer attempt。
 
+## F3 training terminal / unguided validation launch（2026-08-23）
+
+F3中央CSV第106行在15:41:08 terminal COMPLETED。固定训练事实：seed20260903、5 completed passes、
+selected pass3、21,345 updates、42,196,934 trainable parameters、BF16/GPU3、peak VRAM3,134.016MiB，
+common Validation set-NLL=2.05042941274086，相对F0改善0.6201436646747034；参数确实更新，TEST/Evaluation
+read=0。训练侧NLL gate通过，但不形成arm gate PASS。
+
+F3 unguided validation用仅改变物理device为GPU3的运营config启动，PID49555；5分钟初检健康，下一次不早于
+17:20:25。该validation不新增optimizer attempt；recovery/top-k/unique/G0均pending，screen和confirmation
+未授权。同期C2 full/source-only仍RUNNING，下一窗口为17:06:57/17:21:45；没有安全GPU启动更多control。
+
 ## F2 terminal diversity-by-domain diagnostic（2026-08-23）
 
 F2终态mean unique在GSE269595/GSE114002/ENCSR854RUF/GSE217518分别为0.4359375/0.6580713190/
