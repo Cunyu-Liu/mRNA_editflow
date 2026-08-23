@@ -1885,6 +1885,17 @@ elapsed分别为6,259/6,260/6,260/5,834/5,452秒，CUDA显存分别为1,846/1,77
 outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_043959.json`。
 
+## C3 screen second long-interval health（2026-08-24）
+
+上一远端观察04:39:59后3,627秒，于05:40:26完成第二次60分钟低频检查，未早于05:39:59窗口。
+C3 full/source-only/edit-metadata-only/no-candidate/permutation仍全部alive、中央ledger `RUNNING/BF16`；
+elapsed分别为9,886/9,889/9,889/9,460/9,079秒，CUDA显存分别为1,846/1,776/1,846/1,776/
+1,846 MiB。均无terminal summary、failure artifact或Critic screen gate；下一次统一不得早于06:40:26。
+
+未读stdout、stderr、active curve、performance metric或terminal payload；无新增attempt、代码变化、A100 sync
+或重复测试。Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_054026.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
