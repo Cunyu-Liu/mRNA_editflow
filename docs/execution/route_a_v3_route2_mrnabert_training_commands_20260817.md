@@ -2877,3 +2877,15 @@ free31,167MiB/util71%），无terminal/failure，下一次≥01:09:26。no-candi
 仅检查该job的alive/terminal/failure/ledger/GPU，不读active curve/metric；未干预、叠加、降容量或启动C3。
 无代码变化，不重复测试；A100 sync/tests pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260824_000926.json`。
+
+## 00:26–00:34 C2 remaining controls second long-interval health（2026-08-24）
+
+no-candidate在00:26:42仍RUNNING（PID1136782、elapsed22,361秒、ledger110、GPU5 free32,908MiB/
+util46%），无terminal/failure，下一次按实际观测锚定为≥01:26:42。该查询因使用累计本地等待估计且未在
+最终调用前再次校准时钟，比原00:28:53边界早131秒；未立即重查掩盖偏差，后续必须先做最终本地时钟检查。
+
+permutation在00:34:02仍RUNNING（PID1266566、elapsed22,204秒、ledger111、GPU0 free32,662MiB/
+util71%），无terminal/failure，下一次≥01:34:02。edit-metadata未提前重查，下一次仍≥01:09:26。
+未读active curve/metric，未干预、叠加、降容量或启动C3；无代码变化，不重复测试；A100 sync/tests pending，
+protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260824_003402.json`。
