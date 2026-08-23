@@ -2574,3 +2574,14 @@ C2 full在13:31:47仍RUNNING：PID3481436、elapsed13,386秒、无terminal/failu
 三项未读active performance，GPU0/3/5继续由正式job占用，GPU1/2/4在C2快照中无安全显存。未新增control、
 未叠加任务；无代码变化，不重复test cohort。A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_134358.json`。
+
+## 14:02–14:37 long-run scheduled screen health（2026-08-23）
+
+C2 full在14:02:06仍RUNNING：PID3481436、elapsed15,205秒、无terminal/failure；已转60分钟，下一次不
+早于15:02:06。C2 source-only在14:15:24仍RUNNING：实际Python PID3577062、elapsed15,158秒、无
+terminal/failure/error；已转60分钟，下一次不早于15:15:24。F3 training在14:37:09仍RUNNING：
+PID3408897、elapsed19,051秒、无terminal/failure；保持60分钟，下一次不早于15:37:09。
+
+三项现均超过4小时并严格使用60分钟窗口；未读active performance，未在GPU0/3/5叠加任务，未新增control。
+无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_143709.json`。
