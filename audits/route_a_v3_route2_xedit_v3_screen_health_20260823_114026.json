@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_screen_health.v1",
+  "status": "C2_FULL_C2_SOURCE_ONLY_AND_F3_TRAINING_HEALTHY",
+  "critic_c2_full": {
+    "observed_at": "2026-08-23T11:30:38+08:00",
+    "python_pid": 3481436,
+    "elapsed_seconds": 6117,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "physical_gpu_index": 5,
+    "gpu_free_memory_mib": 37624,
+    "gpu_utilization_percent": 17,
+    "central_ledger_line_number": 107,
+    "central_ledger_status": "RUNNING",
+    "next_check_not_before": "2026-08-23T12:00:38+08:00"
+  },
+  "setflow_f3_training": {
+    "observed_at": "2026-08-23T11:34:12+08:00",
+    "python_pid": 3408897,
+    "elapsed_seconds": 8073,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "physical_gpu_index": 3,
+    "gpu_free_memory_mib": 34988,
+    "gpu_utilization_percent": 0,
+    "central_ledger_line_number": 106,
+    "central_ledger_status": "RUNNING",
+    "next_check_not_before": "2026-08-23T12:04:12+08:00"
+  },
+  "critic_c2_source_only": {
+    "observed_at": "2026-08-23T11:40:26+08:00",
+    "launcher_pid": 3577060,
+    "python_pid": 3577062,
+    "elapsed_seconds": 5860,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "physical_gpu_index": 0,
+    "gpu_free_memory_mib": 31275,
+    "gpu_utilization_percent": 74,
+    "central_ledger_line_number": 108,
+    "central_ledger_status": "RUNNING",
+    "next_check_not_before": "2026-08-23T12:10:26+08:00"
+  },
+  "scheduling": {
+    "additional_control_launched": false,
+    "reason": "GPU0_GPU3_GPU5_ALREADY_OWNED_BY_FORMAL_JOBS_AND_GPU1_GPU2_GPU4_LACKED_SAFE_MEMORY_AT_THE_C2_SNAPSHOT",
+    "capacity_reduced": false,
+    "batch_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "monitoring_policy": {
+    "active_training_curve_or_performance_metric_read": false,
+    "terminal_failure_alive_only": true,
+    "separate_task_windows_respected": true,
+    "automatic_goal_continuation_before_window_did_not_trigger_early_check": true
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "30f5e8e"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -1665,3 +1665,9 @@ C2 full在10:29:35仍RUNNING（中央CSV第107行、PID3481436、elapsed2,454秒
 C2 full/F3 training/C2 source-only分别在10:59:48/11:03:35/11:09:59保持RUNNING，elapsed分别为
 4,267/6,236/4,033秒，均无terminal/failure；下一窗口分别为11:29:48/11:33:35/11:39:59。未读active
 metric、未新增attempt或叠加GPU任务，protected outcome read=0，A100 HEAD=`22317ed`。
+
+## 11:30–11:40 scheduled screen health（2026-08-23）
+
+C2 full/F3 training/C2 source-only分别在11:30:38/11:34:12/11:40:26保持RUNNING，elapsed分别为
+6,117/8,073/5,860秒，均无terminal/failure；下一窗口分别为12:00:38/12:04:12/12:10:26。自动续轮未
+触发早查，未读active metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。

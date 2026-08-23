@@ -2504,3 +2504,15 @@ failure/error，下一次不早于11:39:59。
 所以不启动额外control；capacity/batch、seed和threshold不变，无CPU fallback/GPU6–7/进程终止。无代码
 变化，因此不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_110959.json`。
+
+## 11:30–11:40 scheduled screen health（2026-08-23）
+
+C2 full在11:30:38仍RUNNING：PID3481436、elapsed6,117秒、无terminal/failure，下一次不早于12:00:38。
+F3 training在11:34:12仍RUNNING：PID3408897、elapsed8,073秒、无terminal/failure，下一次不早于
+12:04:12。C2 source-only在11:40:26仍RUNNING：实际Python PID3577062、elapsed5,860秒、无terminal/
+failure/error，下一次不早于12:10:26。
+
+自动goal continuation在窗口前唤醒时没有触发早查；三项仍分别按绝对窗口检查，未读active curve或
+performance。GPU0/3/5已有正式job，GPU1/2/4在C2快照中无安全显存，所以未新增control、未叠加任务。
+无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_114026.json`。
