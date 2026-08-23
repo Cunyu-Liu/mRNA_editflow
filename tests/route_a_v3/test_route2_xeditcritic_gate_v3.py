@@ -140,6 +140,45 @@ def test_missing_or_unauthorized_artifact_hard_fails() -> None:
         adjudicate_critic_screen_v3(summaries)
 
 
+def test_screen_accepts_exact_launch_head_summary_without_added_identity_fields() -> None:
+    summaries = _screen()
+    for summary in summaries.values():
+        summary.pop("selected_pass")
+        summary.pop("training_scope")
+        summary["schema_version"] = (
+            "route_a_v3_route2_xeditcritic_v3_screen_run.v1"
+        )
+        summary["selection_policy"] = (
+            "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION"
+        )
+    result = adjudicate_critic_screen_v3(summaries)
+    assert result["status"] == "XEDITCRITIC_V3_SCREEN_PASS"
+    assert set(result["arm_results"]["C2"]["screen_training_identity_sources"].values()) == {
+        "DERIVED_FROM_TERMINAL_V1_SCREEN_BUDGET_AND_SELECTION_POLICY"
+    }
+
+
+def test_screen_missing_identity_fails_outside_exact_launch_head_summary() -> None:
+    summaries = _screen()
+    summaries["c2"].pop("selected_pass")
+    summaries["c2"].pop("training_scope")
+    with pytest.raises(Exception, match="identity is absent"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c2"].pop("selected_pass")
+    with pytest.raises(Exception, match="partially present"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c2"].pop("selected_pass")
+    summaries["c2"].pop("training_scope")
+    summaries["c2"]["schema_version"] = (
+        "route_a_v3_route2_xeditcritic_v3_screen_run.v1"
+    )
+    summaries["c2"]["selection_policy"] = "BEST_VALIDATION_PASS"
+    with pytest.raises(Exception, match="identity is absent"):
+        adjudicate_critic_screen_v3(summaries)
+
+
 def test_misidentified_control_or_partial_permutation_hard_fails() -> None:
     summaries = _screen()
     summaries["c2_source_only"]["control_mode"] = "NONE"

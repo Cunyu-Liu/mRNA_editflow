@@ -2687,3 +2687,19 @@ run summary/failure。stderr唯一内容是PyTorch nested-tensor因`norm_first=T
 未用GPU6/7。无代码变化，不重复test cohort；Development TEST/new Evaluation read=0。A100 current-HEAD
 sync/tests仍等待所有`22317ed` jobs terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_only_launch_v1.json`。
+
+## Critic screen launch-HEAD training identity repair（2026-08-23）
+
+C2 terminal summary preflight发现current gate要求后加的`selected_pass=8`与`training_scope=FROZEN_TRAIN_VALIDATION`，
+但正式screen jobs的launch HEAD=`22317ed`尚未把两字段复制进`screen_run.v1` summary。旧写出逻辑已明确
+固定`pass_count=8`、`update_count=22416`、selection policy=`FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION`，
+并在ledger写selected epoch8、保存final-pass checkpoint；因此缺字段不是checkpoint reselection。
+
+现仅对精确schema/status/seed20260830/budget/selection policy且两个后加字段同时缺失的terminal screen summary，
+派生selected pass8与frozen TRAIN/Validation scope，并把identity source写入gate output。部分缺失、错误policy、
+其他schema/seed继续硬失败；confirmation、atomic TEST、LOSO、capacity、cohort、control、protected checks及所有
+metric threshold/selection order均不变。terminal summary不改写，也不建通用compat层。
+
+定向gate=16/16、完整Critic V3 focused=70/70、本机精确V3.3.2=96/96，compile/diff-check PASS。
+A100 current-HEAD sync/tests等待旧HEAD jobs terminal。本项不新增optimizer attempt、不读取Development TEST/
+new Evaluation。审计：`audits/route_a_v3_route2_xeditcritic_v3_screen_identity_repair_v1.json`。

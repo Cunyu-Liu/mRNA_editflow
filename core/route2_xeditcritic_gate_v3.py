@@ -21,6 +21,11 @@ TRAINABLE_PARAMETER_COUNTS_V3 = {
     "C3": 30_472_089,
 }
 
+SCREEN_RUN_SUMMARY_SCHEMA_V1 = (
+    "route_a_v3_route2_xeditcritic_v3_screen_run.v1"
+)
+SCREEN_SELECTION_POLICY_V3 = "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION"
+
 
 def _require(condition: bool, message: str) -> None:
     if not condition:
@@ -34,6 +39,54 @@ def _trainable_parameter_count_v3(summary: Mapping[str, Any]) -> int:
             summary.get("trainable_parameter_count", -1),
         )
     )
+
+
+def _screen_training_identity_v3(summary: Mapping[str, Any]) -> dict[str, Any]:
+    """Resolve fields added after the formal seed-20260830 screen launch.
+
+    Launch HEAD 22317ed fixed the final pass in ``selection_policy`` and wrote
+    eight completed passes plus 22,416 updates, but its v1 screen summary did
+    not yet duplicate that identity into ``selected_pass`` or
+    ``training_scope``.  Only that exact terminal screen shape is derivable.
+    """
+
+    selected_pass = summary.get("selected_pass")
+    training_scope = summary.get("training_scope")
+    if selected_pass is not None and training_scope is not None:
+        return {
+            "selected_pass": int(selected_pass),
+            "training_scope": str(training_scope),
+            "identity_source": "EXPLICIT_SCREEN_TRAINING_IDENTITY",
+        }
+    _require(
+        selected_pass is None and training_scope is None,
+        "screen training identity is only partially present",
+    )
+    _require(
+        summary.get("schema_version") == SCREEN_RUN_SUMMARY_SCHEMA_V1
+        and summary.get("status") == "TERMINAL_SCREEN_ARM_COMPLETE"
+        and int(summary.get("seed", -1)) == 20260830
+        and int(summary.get("pass_count", -1)) == 8
+        and int(summary.get("update_count", -1)) == 22416
+        and summary.get("selection_policy") == SCREEN_SELECTION_POLICY_V3,
+        "screen training identity is absent outside the exact launch-head terminal summary",
+    )
+    return {
+        "selected_pass": 8,
+        "training_scope": "FROZEN_TRAIN_VALIDATION",
+        "identity_source": "DERIVED_FROM_TERMINAL_V1_SCREEN_BUDGET_AND_SELECTION_POLICY",
+    }
+
+
+def _screen_matched_budget_v3(summary: Mapping[str, Any]) -> dict[str, int]:
+    identity = _screen_training_identity_v3(summary)
+    return {
+        "train_record_count": int(summary.get("train_record_count", -1)),
+        "validation_record_count": int(summary.get("validation_record_count", -1)),
+        "pass_count": int(summary.get("pass_count", -1)),
+        "selected_pass": int(identity["selected_pass"]),
+        "update_count": int(summary.get("update_count", -1)),
+    }
 
 
 def _require_verified_parameter_update_v3(
@@ -71,6 +124,7 @@ def _validate_screen_summary(
     expected_control_mode: str = "NONE",
     expected_candidate_permutation: bool = False,
 ) -> Mapping[str, Any]:
+    training_identity = _screen_training_identity_v3(summary)
     _require(summary.get("status") == "TERMINAL_SCREEN_ARM_COMPLETE", "screen arm is not terminal-complete")
     _require(int(summary.get("seed", -1)) == expected_seed, "screen seed differs from the freeze")
     _require(str(summary.get("arm")) == expected_arm, "screen arm identity differs")
@@ -91,7 +145,7 @@ def _validate_screen_summary(
     )
     _require(
         int(summary.get("pass_count", -1)) == 8
-        and int(summary.get("selected_pass", -1)) == 8
+        and int(training_identity["selected_pass"]) == 8
         and int(summary.get("update_count", -1)) == 22416,
         "screen training budget differs",
     )
@@ -99,7 +153,7 @@ def _validate_screen_summary(
         summary.get("precision") == "BF16"
         and summary.get("cuda_training_tensors_verified") is True
         and summary.get("cpu_fallback_used") is False
-        and summary.get("training_scope") == "FROZEN_TRAIN_VALIDATION",
+        and training_identity["training_scope"] == "FROZEN_TRAIN_VALIDATION",
         "screen CUDA/precision/training scope differs",
     )
     _require_verified_parameter_update_v3(summary, expected_arm=expected_arm)
@@ -167,18 +221,11 @@ def evaluate_screen_candidate_v3(
         and set(permutation["tasks"]) == set(candidate_tasks),
         "candidate/control task sets differ",
     )
-    matched_budget_fields = (
-        "train_record_count",
-        "validation_record_count",
-        "pass_count",
-        "selected_pass",
-        "update_count",
-    )
+    candidate_budget = _screen_matched_budget_v3(candidate_summary)
     _require(
         all(
-            summary[field] == candidate_summary[field]
+            _screen_matched_budget_v3(summary) == candidate_budget
             for summary in (*control_summaries.values(), permutation_summary)
-            for field in matched_budget_fields
         ),
         "candidate/control training budgets differ",
     )
@@ -253,6 +300,20 @@ def evaluate_screen_candidate_v3(
         "control_task_macro_spearmans": {
             name: float(metrics["task_macro_spearman"])
             for name, metrics in sorted(controls.items())
+        },
+        "screen_training_identity_sources": {
+            "candidate": _screen_training_identity_v3(candidate_summary)[
+                "identity_source"
+            ],
+            **{
+                name.lower(): _screen_training_identity_v3(summary)[
+                    "identity_source"
+                ]
+                for name, summary in sorted(control_summaries.items())
+            },
+            "candidate_bundle_permutation": _screen_training_identity_v3(
+                permutation_summary
+            )["identity_source"],
         },
     }
 

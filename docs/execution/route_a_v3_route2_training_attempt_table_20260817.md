@@ -1706,6 +1706,13 @@ F3释放GPU3后启动预注册C2 `EDIT_METADATA_ONLY`，seed20260830、旧launch
 为RUNNING，PID889042。5分钟初检确认CUDA/GPU3、无terminal/failure；stderr仅PyTorch性能warning，下一次
 不早于18:32:31。该项是screen required control，不重复terminal实验，不改变SetFlow NO-GO或protected read。
 
+## Critic screen launch-HEAD training identity repair（2026-08-23）
+
+current gate现仅对`22317ed`写出的精确terminal `screen_run.v1`在同时缺少后加selected-pass/scope字段时，
+由seed20260830、8 passes、22,416 updates与fixed-final-pass policy派生pass8/frozen scope；其他缺失或错误
+identity仍硬失败，terminal artifact/metric/threshold不变。本项不新增中央attempt；Critic focused=70/70、
+精确V3.3.2=96/96，A100 current-HEAD测试pending，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_screen_identity_repair.v1",
+  "status": "CURRENT_HEAD_GATE_ACCEPTS_EXACT_LAUNCH_HEAD_SCREEN_IDENTITY_WITHOUT_CHANGING_SELECTION",
+  "observed_at": "2026-08-23",
+  "failure_detected": "Current-HEAD Critic screen gate required selected_pass and training_scope fields added after formal screen jobs launched at HEAD 22317ed.",
+  "launch_head_writer_facts": {
+    "summary_schema": "route_a_v3_route2_xeditcritic_v3_screen_run.v1",
+    "selected_pass_field_written": false,
+    "training_scope_field_written": false,
+    "pass_count_written": 8,
+    "update_count_written": 22416,
+    "selection_policy_written": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION",
+    "ledger_selected_epoch_written": 8,
+    "checkpoint_policy": "final_pass_checkpoint"
+  },
+  "repair": {
+    "derived_selected_pass": 8,
+    "derived_training_scope": "FROZEN_TRAIN_VALIDATION",
+    "accepted_only_when": {
+      "schema_version": "route_a_v3_route2_xeditcritic_v3_screen_run.v1",
+      "status": "TERMINAL_SCREEN_ARM_COMPLETE",
+      "seed": 20260830,
+      "pass_count": 8,
+      "update_count": 22416,
+      "selection_policy": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION",
+      "both_added_fields_absent": true
+    },
+    "identity_source_recorded_in_gate_output": true,
+    "terminal_summary_rewritten": false,
+    "checkpoint_or_metric_changed": false,
+    "generic_migration_or_compatibility_layer_added": false
+  },
+  "fail_closed_boundaries": {
+    "partial_identity_rejected": true,
+    "wrong_selection_policy_rejected": true,
+    "other_schema_or_seed_rejected": true,
+    "confirmation_identity_unchanged": true,
+    "frozen_test_identity_unchanged": true,
+    "loso_identity_unchanged": true,
+    "capacity_cohort_control_and_protected_checks_unchanged": true,
+    "screen_metrics_thresholds_and_selection_order_unchanged": true
+  },
+  "verification": {
+    "targeted_gate_tests_passed": 16,
+    "critic_v3_focused_tests_passed": 70,
+    "exact_v332_tests_passed": 96,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_current_head_tests": "PENDING_LAUNCH_HEAD_ACTIVE_JOBS_TERMINAL"
+  },
+  "experiment_state": {
+    "optimizer_attempt_added": false,
+    "terminal_artifact_modified": false,
+    "development_test_authorized": false,
+    "guidance_authorized": false
+  },
+  "repository": {
+    "local_and_github_head_before_repair_commit": "f3e222e",
+    "a100_synced_to_current_head": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
