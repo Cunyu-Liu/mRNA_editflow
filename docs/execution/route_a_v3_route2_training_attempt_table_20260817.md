@@ -1860,6 +1860,18 @@ physical microbatch1。按预计超过4小时的60分钟节奏，下一检查分
 Critic adjudication/confirmation、TEST和guidance均未授权，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_launch_v1.json`。
 
+## XEdit V3 manuscript status addendum（2026-08-24）
+
+C3低频等待期间，将完整论文草稿同步为“保留V2 terminal历史 + 显式V3 active addendum”：Methods加入
+projection/endpoint isolation、C2/C3精确容量与controls、SetFlow set-marginal/hybrid设计；Results加入
+C0/C1/C2 terminal和SetFlow正式NO-GO，不写任何C3 active metric；Discussion加入C2 control failure与
+SetFlow likelihood-generation misalignment边界。旧22个claim markers、evidence registry与旧terminal数值不改。
+
+paper focused tests 30/30。首次精确V3.3.2为95/96，唯一失败是首行标题binding；恢复原标题后affected test
+3/3、最终精确V3.3.2 96/96。此项不新增optimizer attempt；A100 tests/sync因`4047f55` C3 jobs active而
+deferred，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_manuscript_status_addendum_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

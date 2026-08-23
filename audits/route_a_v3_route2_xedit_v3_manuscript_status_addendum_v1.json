@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_manuscript_status_addendum.v1",
+  "status": "MANUSCRIPT_RETAINS_TERMINAL_V2_HISTORY_AND_ADDS_ACTIVE_V3_METHOD_REPAIR_BOUNDARY",
+  "observed_at": "2026-08-24",
+  "updated_artifact": "docs/paper/route2_v332_methods_results_draft_v1.md",
+  "scope": {
+    "pre_repair_critic_v2_results_rewritten": false,
+    "pre_repair_base_flow_v2_results_rewritten": false,
+    "active_v3_method_layer_added": true,
+    "active_c3_performance_metric_added": false,
+    "new_claim_marker_added": false,
+    "existing_claim_marker_count": 22,
+    "existing_evidence_registry_modified": false
+  },
+  "method_addendum": {
+    "development_projection_boundary_recorded": true,
+    "outcome_free_endpoint_conditioning_recorded": true,
+    "c2_and_c3_exact_trainable_parameter_counts_recorded": true,
+    "c3_last_four_block_rank16_lora_recorded": true,
+    "eight_pass_fixed_final_checkpoint_policy_recorded": true,
+    "four_candidate_information_controls_recorded": true,
+    "set_marginal_setflow_objective_and_f2_f3_capacity_recorded": true
+  },
+  "result_addendum": {
+    "c0_c1_c2_terminal_metrics_recorded": true,
+    "c2_primary_and_edit_metadata_control_failure_recorded": true,
+    "c3_status": "FULL_AND_FOUR_CONTROLS_RUNNING_NO_ACTIVE_PERFORMANCE_READ",
+    "setflow_formal_status": "XEDITSETFLOW_V3_SCREEN_NO_GO",
+    "setflow_f2_f3_nll_recovery_topk_unique_and_correctness_recorded": true,
+    "setflow_confirmation_or_guidance_claimed": false
+  },
+  "discussion_addendum": {
+    "c2_candidate_information_without_incremental_control_advantage_recorded": true,
+    "setflow_likelihood_to_generation_misalignment_recorded": true,
+    "parameter_scaling_general_failure_claimed": false,
+    "c3_screen_treated_as_unresolved": true,
+    "passing_screen_treated_as_model_success": false,
+    "development_test_or_guidance_authorized": false
+  },
+  "verification": {
+    "methods_results_discussion_and_paper_packet_focused_passed": 30,
+    "initial_exact_v332_passed": 95,
+    "initial_exact_v332_failed": 1,
+    "initial_failure": "The manuscript title changed and violated the frozen release-candidate title binding.",
+    "repair": "Restored the exact existing manuscript title and retained the active V3 status in the explicit addendum.",
+    "affected_release_candidate_tests_passed_after_repair": 3,
+    "final_exact_v332_passed": 96,
+    "final_exact_v332_failed": 0,
+    "a100_current_head_test_status": "DEFERRED_ACTIVE_LAUNCH_HEAD_C3_JOBS"
+  },
+  "experiment_tracking": {
+    "optimizer_attempt_added": false,
+    "central_ledger_status_changed": false,
+    "reason": "Manuscript evidence synchronization does not update model parameters."
+  },
+  "repository": {
+    "parent_head": "be6c027",
+    "a100_launch_head": "4047f5503373f8e761f74b2e95bc717777560eb2",
+    "a100_sync_while_jobs_active": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

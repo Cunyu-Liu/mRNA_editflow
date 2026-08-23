@@ -2976,3 +2976,16 @@ C3预计超过4小时，后续60分钟低频检查；full/source/edit下一窗�
 permutation≥04:15:10，每次SSH前仍须最终本地时钟校准。active launch HEAD固定为`4047f55`，运行期间不做
 A100 current-HEAD sync。Critic adjudication/confirmation与所有protected downstream仍关闭；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_launch_v1.json`。
+
+## XEdit V3 manuscript active-status integration（2026-08-24）
+
+等待C3且尚未到任何next-check窗口时，只更新不会污染实验的完整稿件：保留Critic V2/Base Flow V2终态与
+旧Benchmark+limits adjudication为历史snapshot，在稿首、Methods、Results和Discussion显式加入当前冻结V3
+method-repair层。新增文本记录projection/outcome isolation、C2/C3参数与四controls、SetFlow set-marginal设计、
+C0/C1/C2终态、F2/F3正式NO-GO及likelihood-generation mismatch；C3只写RUNNING/no active metric read。
+没有新claim marker、没有把screen PASS写成model success，也没有授权TEST/guidance。
+
+Methods/Results/Discussion/evidence packet focused=30/30。精确V3.3.2首次95/96发现首行标题binding，恢复既有
+标题后affected=3/3、最终=96/96。无代码/训练改动、不新增中央attempt；A100 current-HEAD sync/tests在五个
+launch-head C3 jobs全部terminal前继续deferred。protected read=0；审计：
+`audits/route_a_v3_route2_xedit_v3_manuscript_status_addendum_v1.json`。

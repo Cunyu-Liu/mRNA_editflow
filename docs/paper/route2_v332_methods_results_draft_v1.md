@@ -6,6 +6,18 @@
 > internal review-pending statements; no external literature, authorship,
 > funding, ethics or AI-use disclosure is supplied here.
 
+> **Current method-repair addendum (2026-08-24).** The manuscript below retains
+> the complete pre-repair Critic V2 and Base Flow V2 evidence as historical
+> terminal results. A subsequently prospectively frozen XEditCritic V3 and
+> XEditSetFlow V3 protocol re-opened only the explicitly declared Development
+> screen arms; it did not re-open Critic V2, Base Flow V2, Development TEST or
+> external Evaluation. XEditSetFlow V3 is now terminal `SCREEN_NO_GO`, while the
+> XEditCritic V3 C3 full arm and four controls are active with no performance
+> metric read. Accordingly, statements below that the manuscript route was
+> frozen to Benchmark+limits describe the pre-repair adjudication snapshot and
+> do not pre-empt the still-active V3 screen. Submission readiness, model
+> success, guided-generation success and external confirmation all remain false.
+
 ## Scope and current answer
 
 Route 2 asks whether a source-relative Delta critic trained on heterogeneous
@@ -262,6 +274,24 @@ after both `CRITIC_READY_FOR_GUIDANCE` and `FLOW_G0_READY`; neither readiness
 state is a biological-success claim. [claim:C-R2-014]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V2-READINESS]
 [evidence:E-R2-CRITIC-V2-LOSO-AGG]
+
+**Prospectively frozen V3 method-repair layer.** The newer screen keeps the same
+89,580 TRAIN and 18,293 VALIDATION records but routes training through
+split-authorized label-bearing projections. Endpoint conditioning is
+outcome-free and shared by the matched raw baseline and full critic. The C2
+critic combines a strictly antisymmetric width-65, depth-2 raw branch with an
+eight-layer, width-512 edit-site transformer over cached mRNABERT token and
+radius-16 local-window features; the C3 arm adds rank-16 LoRA to the final four
+mRNABERT blocks. Exact trainable counts are 29,489,049 for C2 and 30,472,089 for
+C3. Each screen arm uses eight Development passes, a fixed final-pass
+checkpoint, effective batch 32, BF16 AdamW and a final-pass Huber plus 0.25
+same-task pairwise-ranking objective. Full arms are compared with source-only,
+edit-metadata-only, no-candidate-sequence and complete source/task-stratified
+candidate-bundle permutation controls. The parallel XEditSetFlow V3 screen
+replaces single-order next-action labels with set-marginal targets and compares
+eight-block/width-384 and twelve-block/width-512 hybrid trunks while retaining
+hard `SUB + STOP` legality. This layer is an addendum to the frozen Methods; it
+does not modify any historical V2 result or downstream authorization boundary.
 
 ## Results
 
@@ -560,6 +590,30 @@ Development TEST, refit, LOSO, readiness or guided generation stage was opened.
 [claim:C-R2-012]
 [evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ]
 
+**Active V3 screen update.** The endpoint-aware raw C0 baseline reached
+task-macro Spearman 0.1108181, standardized MAE 1.9924298 and eight positive
+tasks; the nonselectable global-residual C1 diagnostic reached 0.1386461,
+1.9004665 and eight positive tasks. The selectable frozen edit-site C2 full arm
+reached Spearman 0.1042656, a -0.0065524 margin versus C0, standardized MAE
+1.9705208 and seven positive tasks, failing its primary Spearman, margin, MAE and
+task-breadth criteria. C2 exceeded source-only, no-candidate-sequence and the
+complete-bundle permutation controls on aggregate Spearman, but it did not beat
+the edit-metadata-only control (0.1078162); C2 is therefore terminal and
+ineligible. The C3 full arm and all four controls are running on the synchronized
+launch head. No active C3 curve or performance metric has been read, and no
+confirmation seed is authorized.
+
+The SetFlow V3 screen is terminal `XEDITSETFLOW_V3_SCREEN_NO_GO`. F2 reduced
+common set-marginal NLL by 61.69% relative to the frozen F0 replay and passed the
+recovery and top-k thresholds, but its unique-candidate rate was only 0.6794.
+F3 reduced NLL by 62.01%, yet recovery, top-k recovery and unique rate were
+0.1940, 0.1049 and 0.6375. Both arms retained hard legality 100% with zero
+budget, replay or numerical failures. Greater capacity therefore improved the
+likelihood objective without satisfying the frozen candidate-recovery/diversity
+profile. No SetFlow confirmation seed or soft-value guidance stage is
+authorized, and these Development findings do not establish biological
+optimization.
+
 ### Critic V2 exposed localized candidate signal but not task-wide superiority
 
 The control result does not support the stronger interpretation that candidate
@@ -663,6 +717,18 @@ transparent reporting of Development benchmarks, historical-transfer limits
 and missing evidence, but not claims of model success, biological efficacy,
 external confirmation, package completeness or submission readiness.
 [evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-PACKAGE-AUDIT,E-R2-CLAIM-EVIDENCE-AUDIT]
+
+The active V3 repair sharpens rather than erases this boundary. C2 shows that a
+larger local edit-site critic can use candidate-side information while still
+failing both the matched raw baseline and an edit-metadata control. SetFlow F2
+and F3 show a separate objective-to-generation mismatch: large NLL gains did not
+produce the preregistered diversity profile, and the larger F3 model was worse
+than F2 on recovery, top-k recovery and uniqueness. These are method-level
+failure diagnoses, not evidence that parameter scaling is generally useless.
+C3 remains the only unresolved critic screen arm; until it and its controls are
+terminal, the current paper outcome cannot be re-adjudicated. Even a passing C3
+screen would authorize only the frozen confirmation sequence, not a model claim,
+Development TEST access or guidance by itself.
 
 ### Candidate-specific rank signal did not become task-wide superiority
 
