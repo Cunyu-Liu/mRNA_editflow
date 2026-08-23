@@ -1785,6 +1785,12 @@ no-candidate/permutation分别在22:28:23/22:32:40保持RUNNING，elapsed为15,2
 保持ACTIVE、failed-only与当前thread target，未创建重复automation。此运营调整不新增optimizer attempt、
 不查询远端训练、不改变A100 HEAD，protected read=0。
 
+## 23:09 C2 edit-metadata long-interval health（2026-08-23）
+
+edit-metadata在23:09:17保持RUNNING，elapsed18,718秒，中央CSV第109行仍RUNNING且无terminal/failure；
+下一窗口为2026-08-24 00:09:17。no-candidate/permutation本轮未提前重查，仍为23:28:23/23:32:40。
+未新增attempt、未读active metric，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

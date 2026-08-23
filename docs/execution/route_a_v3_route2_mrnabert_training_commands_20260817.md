@@ -2845,3 +2845,13 @@ GPU0 free33,164MiB/util35%），也切换60分钟，下一次≥23:32:40；本�
 首次工具调用因使用错误判别字段而在mutation前被拒绝，随后用正确update模式成功并只复核一次配置。此任务未
 查询远端训练、改变训练配置、增加optimizer attempt或读取protected outcome；仓库代码未改，不重复测试。
 审计：`audits/route_a_v3_route2_heartbeat_sixty_minute_alignment_v1.json`。
+
+## 23:09 C2 edit-metadata long-interval health（2026-08-23）
+
+`EDIT_METADATA_ONLY`在23:09:17仍RUNNING（PID889042、elapsed18,718秒、ledger109、GPU3
+free30,741MiB/util72%），无terminal/failure，下一次≥2026-08-24 00:09:17。no-candidate与
+permutation未提前重查，仍保持各自23:28:23/23:32:40窗口。
+
+仅检查该job的alive/terminal/failure/ledger/GPU，不读active curve/metric；未干预、叠加、降容量或启动C3。
+无代码变化，不重复测试；A100 sync/tests pending，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_230917.json`。
