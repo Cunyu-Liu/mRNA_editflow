@@ -1700,6 +1700,12 @@ F2/F3两个selectable arms均terminal fail，SetFlow V3冻结为`XEDITSETFLOW_V3
 confirmation/retraining/额外seed/降阈值均不授权。validation不新增optimizer attempt，protected read=0；正式
 current-HEAD gate artifact与A100 tests等待旧HEAD C2 jobs terminal后materialize。
 
+## C2 EDIT_METADATA_ONLY control launch（2026-08-23）
+
+F3释放GPU3后启动预注册C2 `EDIT_METADATA_ONLY`，seed20260830、旧launch HEAD=`22317ed`；中央CSV第109行
+为RUNNING，PID889042。5分钟初检确认CUDA/GPU3、无terminal/failure；stderr仅PyTorch性能warning，下一次
+不早于18:32:31。该项是screen required control，不重复terminal实验，不改变SetFlow NO-GO或protected read。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

@@ -2671,3 +2671,19 @@ critic/evaluator未使用，Development TEST/new Evaluation read=0，private tra
 该运营等待不能改变NO-GO。终态记录不改代码，不重复test cohort；最近current-HEAD SetFlow focused=30/30、
 精确V3.3.2=96/96，A100 current-HEAD tests仍pending。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f3_terminal_screen_no_go_v1.json`。
+
+## C2 EDIT_METADATA_ONLY control 启动与初检（2026-08-23）
+
+F3 validation terminal释放GPU3后，按预注册顺序启动C2 `EDIT_METADATA_ONLY` control；它保持screen seed
+20260830、C2 geometry、8 passes/固定final pass、同split/sampler/budget，仅control mode不同。启动前同名
+output/stdout/stderr与中央ledger attempt均不存在；17:57:42在旧launch HEAD=`22317ed`、GPU3启动，
+Python PID889042，中央CSV新增第109行RUNNING。
+
+18:02:31首次检查elapsed313秒，CUDA进程在GPU3占用1,534MiB，GPU3 free37,210MiB/util20%，无
+run summary/failure。stderr唯一内容是PyTorch nested-tensor因`norm_first=True`未启用的性能warning，
+无Traceback/OOM/runtime failure；后续不再读active log，下一次不早于18:32:31并采用30分钟节奏。
+
+这是冻结screen negative control，不是新模型、追加seed或terminal实验重跑；未降容量/batch、未CPU fallback、
+未用GPU6/7。无代码变化，不重复test cohort；Development TEST/new Evaluation read=0。A100 current-HEAD
+sync/tests仍等待所有`22317ed` jobs terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_only_launch_v1.json`。
