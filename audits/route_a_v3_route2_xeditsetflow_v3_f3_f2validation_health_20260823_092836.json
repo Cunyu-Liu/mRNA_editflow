@@ -1,0 +1,55 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f3_f2validation_health.v1",
+  "status": "F3_TRAINING_AND_F2_VALIDATION_HEALTHY_AFTER_INITIAL_CHECK",
+  "observed_at": "2026-08-23T09:28:36+08:00",
+  "f3_training": {
+    "launcher_pid": 3408896,
+    "python_pid": 3408897,
+    "elapsed_seconds": 537,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "physical_gpu_index": 3,
+    "gpu_free_memory_mib": 3861,
+    "central_ledger_line_number": 106,
+    "central_ledger_status": "RUNNING",
+    "trainable_parameter_count": 42196934,
+    "next_check_not_before": "2026-08-23T09:58:36+08:00"
+  },
+  "f2_unguided_validation": {
+    "launcher_pid": 3408903,
+    "python_pid": 3408905,
+    "elapsed_seconds": 538,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "physical_gpu_index": 1,
+    "gpu_free_memory_mib": 8213,
+    "trajectory_forward_batch_size": 64,
+    "next_check_not_before": "2026-08-23T09:58:36+08:00"
+  },
+  "monitoring_policy": {
+    "initial_check_after_at_least_five_minutes": true,
+    "active_curves_or_performance_metrics_read": false,
+    "critic_c1_checked_in_this_observation": false,
+    "critic_c1_next_check_not_before": "2026-08-23T09:45:08+08:00"
+  },
+  "launch_policy": {
+    "capacity_reduced": false,
+    "batch_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "77c21e4"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

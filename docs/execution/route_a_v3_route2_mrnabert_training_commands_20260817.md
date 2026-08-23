@@ -2406,3 +2406,14 @@ architecture、vocab、training result、seed、阈值或baseline。
 修复定向=10/10、SetFlow focused=28/28、精确V3.3.2=96/96；A100 current-HEAD tests/sync仍等待`22317ed`
 active jobs terminal。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_frozen_vocab_capacity_correction_v1.json`。
+
+## F3/F2-validation initial health（2026-08-23）
+
+09:28:36完成启动后首次检查。F3实际Python PID3408897、elapsed537秒，中央ledger第106行为RUNNING且
+精确容量42,196,934；GPU3 free=3,861MiB。F2 unguided validation实际Python PID3408905、elapsed538秒，
+GPU1 free=8,213MiB。两者均无terminal/failure/error，active curve/performance未读，下一次均不早于
+09:58:36。
+
+运行保持原F3 width512/depth12/FFN2048/batch32与F2 validation batch64；未降容量/batch、未CPU fallback、
+未用GPU6/7、未终止其他进程。C1本次未检查，保持09:45:08窗口；A100 HEAD仍为`22317ed`。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f3_f2validation_health_20260823_092836.json`。

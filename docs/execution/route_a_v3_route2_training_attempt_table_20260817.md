@@ -1607,3 +1607,9 @@ formal frozen vocab的实际capacity为F2=16,178,790、F3=42,196,934；旧gate/p
 screen adjudication前纠正。模型/数据/seed/threshold均未变。F3 training已在GPU3启动，F2 unguided
 validation已在GPU1启动；首次检查遵守5分钟。定向10/10、SetFlow focused28/28、V3.3.2 96/96，A100 HEAD
 仍为`22317ed`，protected outcome read=0。
+
+## F3 training / F2 validation initial health（2026-08-23）
+
+F3中央CSV第106行为RUNNING，实际Python PID3408897、elapsed537秒、GPU3 free3,861MiB；F2 validation
+PID3408905、elapsed538秒、GPU1 free8,213MiB。两者无terminal/failure/error，下次不早于09:58:36。
+capacity/batch/seed未变，active metric未读，C1仍不早于09:45:08，A100 HEAD=`22317ed`。
