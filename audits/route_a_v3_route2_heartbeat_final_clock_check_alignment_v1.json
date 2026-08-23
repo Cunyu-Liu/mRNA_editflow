@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_heartbeat_final_clock_check_alignment.v1",
+  "status": "ROUTE2_HEARTBEAT_REQUIRES_FINAL_CLOCK_CHECK_BEFORE_REMOTE_MONITORING",
+  "updated_on": "2026-08-24",
+  "trigger": {
+    "job": "xeditcritic_v3_screen_seed20260830::c2_no_candidate_sequence",
+    "scheduled_not_before": "2026-08-24T00:28:53+08:00",
+    "observed_at": "2026-08-24T00:26:42+08:00",
+    "observed_early_seconds": 131,
+    "immediate_corrective_requery_performed": false
+  },
+  "automation": {
+    "id": "route2",
+    "kind": "heartbeat",
+    "status": "ACTIVE",
+    "rrule": "RRULE:FREQ=MINUTELY;INTERVAL=60",
+    "notification_policy": "failed_runs_only",
+    "target_thread_id": "01a01eec-250e-7ed3-bcf2-705bc403f233",
+    "duplicate_automation_created": false,
+    "prompt_requires_final_local_clock_read": true,
+    "prompt_requires_recent_remote_offset_calibration": true,
+    "prompt_forbids_ssh_before_remote_next_check_not_before": true,
+    "prompt_forbids_immediate_requery_to_hide_early_observation": true,
+    "post_update_configuration_verified_once": true
+  },
+  "experiment_state": {
+    "remote_training_queried_during_automation_update_task": false,
+    "training_configuration_changed": false,
+    "optimizer_attempt_added": false,
+    "a100_head_changed": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "verification": {
+    "repository_code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Only the external Codex heartbeat prompt and its evidence record changed; executable repository behavior did not change.",
+    "git_diff_check_required": true
+  },
+  "repository": {
+    "local_and_github_head_before_record_commit": "c1413aa",
+    "user_dirty_deletion_staged_or_restored": false
+  }
+}

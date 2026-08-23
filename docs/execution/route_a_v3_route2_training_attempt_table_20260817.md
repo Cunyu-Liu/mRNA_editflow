@@ -1798,6 +1798,12 @@ no-candidate/permutation分别在00:26:42/00:34:02保持RUNNING，elapsed为22,3
 估计失准而早于原窗口131秒，未立即重查，下一窗口改按实际观测锚定；后续调用前须最终校准本地时钟。
 edit-metadata本轮未提前重查，下一窗口仍为01:09:26。未新增attempt、未读active metric，protected read=0。
 
+## Route 2 heartbeat final clock-check alignment（2026-08-24）
+
+`route2` heartbeat继续保持ACTIVE/60分钟/failed-only/当前thread target，并新增远端检查前最终本地时钟读取与
+远端偏移校准约束；未越过远端`next_check_not_before`时禁止SSH。未创建重复automation，不新增optimizer
+attempt，不改变A100 HEAD，protected read=0。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

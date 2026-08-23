@@ -2889,3 +2889,13 @@ util71%），无terminal/failure，下一次≥01:34:02。edit-metadata未提前
 未读active curve/metric，未干预、叠加、降容量或启动C3；无代码变化，不重复测试；A100 sync/tests pending，
 protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260824_003402.json`。
+
+## Route 2 heartbeat final clock-check alignment（2026-08-24）
+
+因no-candidate在00:26:42比登记窗口早131秒，现有`route2` heartbeat prompt已原位加入窄运营硬约束：
+每次远端训练检查前最后一步必须读取本地时间，并用最近一次远端时间校准偏移；尚未越过远端
+`next_check_not_before`时不得发起SSH，也不得立即补查掩盖提前观测。heartbeat仍为ACTIVE、60分钟、
+failed-only并绑定当前thread，没有创建副本。
+
+此运营修复未查询训练、改变训练配置、增加attempt或读取protected outcome；仓库代码未改，不重复测试。
+审计：`audits/route_a_v3_route2_heartbeat_final_clock_check_alignment_v1.json`。
