@@ -2703,3 +2703,27 @@ metric threshold/selection order均不变。terminal summary不改写，也不�
 定向gate=16/16、完整Critic V3 focused=70/70、本机精确V3.3.2=96/96，compile/diff-check PASS。
 A100 current-HEAD sync/tests等待旧HEAD jobs terminal。本项不新增optimizer attempt、不读取Development TEST/
 new Evaluation。审计：`audits/route_a_v3_route2_xeditcritic_v3_screen_identity_repair_v1.json`。
+
+## C2 full/source-only terminal 与 remaining controls（2026-08-23）
+
+C2 full在17:53:13生成唯一terminal summary，中央ledger第107行17:55:21更新COMPLETED，无failure。
+固定结果：Spearman=0.10426561121126687、相对C0=0.11081805900233642 margin=-0.006552447791069546、
+standardized MAE=1.9705208102186613、7/9 tasks正、prediction std=45.9323。29,489,049参数、8 passes、
+22,416 updates、BF16/GPU5、parameter changed/CUDA verified、CPU fallback=false、TEST/Evaluation read=0。
+它未过Spearman≥0.25、margin≥0.08、MAE≤1.70、positive≥8，因此C2已不可能eligible。
+
+C2 source-only在17:48:19生成唯一terminal summary，ledger第108行17:50:27 COMPLETED：Spearman=
+-0.0013102929925545292、MAE=1.9220229682496237、3/9 tasks正；full-source margin=0.1055759042038214，
+故full确实胜source-only，但不能补救主门槛失败。两个summary均只读top-level/final Validation一次，未读passes。
+
+GPU5释放后18:14:16启动预注册`NO_CANDIDATE_SEQUENCE`（PID1136782、ledger第110行）；18:23:07
+初检elapsed546秒、GPU5 CUDA正常、无terminal/failure，stderr仅PyTorch性能warning，下一次≥18:53:07。
+GPU0释放后18:24:20启动预注册candidate-bundle permutation（PID1266566、ledger第111行）；18:29:36
+初检elapsed339秒、GPU0 CUDA正常、无terminal/failure、同一性能warning，下一次≥18:59:36。
+`EDIT_METADATA_ONLY`在18:33:03仍RUNNING（PID889042、elapsed2,144秒、ledger第109行），下一次≥
+19:03:03。
+
+C2 controls不因full失败而选择性停止，必须全部terminal；C3及其controls仍待current-HEAD sync。无代码变化，
+不重复test cohort；最近current-HEAD Critic focused=70/70、精确V3.3.2=96/96，A100 tests pending，
+protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_full_source_terminal_controls_running_v1.json`。

@@ -1713,6 +1713,13 @@ current gate现仅对`22317ed`写出的精确terminal `screen_run.v1`在同时�
 identity仍硬失败，terminal artifact/metric/threshold不变。本项不新增中央attempt；Critic focused=70/70、
 精确V3.3.2=96/96，A100 current-HEAD测试pending，protected read=0。
 
+## C2 full/source-only terminal / remaining controls running（2026-08-23）
+
+C2 full中央CSV第107行COMPLETED：Spearman0.1042656112、C0 margin-0.0065524478、MAE1.9705208102、
+7/9 tasks正，primary screen criteria已失败。source-only第108行COMPLETED：Spearman-0.0013102930，full胜该
+control但仍不eligible。第109行edit-metadata保持RUNNING；第110/111行新增预注册no-candidate/permutation，
+5分钟初检均健康。controls继续到terminal，不因C2 full失败而删减；protected read=0，C3仍待current-HEAD sync。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

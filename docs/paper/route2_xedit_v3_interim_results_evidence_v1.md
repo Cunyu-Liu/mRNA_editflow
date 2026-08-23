@@ -12,10 +12,11 @@ The Critic screen is still incomplete, whereas the SetFlow screen is terminal NO
 |---|---|---:|---:|---:|---:|---|
 | C0 endpoint-aware raw CNN | Terminal | 0.1108180590 | 0 | 1.9924297611 | 8/9 | Matched same-information baseline only. Ranking is weak and MAE exceeds 1.70. |
 | C1 C0 + global mRNABERT mean residual | Terminal | 0.1386460633 | +0.0278280043 | 1.9004665151 | 8/9 | Global residual gives a small diagnostic improvement, but C1 is nonselectable and misses the 0.25 Spearman and 1.70 MAE thresholds. No retraining is authorized. |
+| C2 frozen edit-site token critic | Full arm terminal; controls running | 0.1042656112 | -0.0065524478 | 1.9705208102 | 7/9 | The full arm fails Spearman, margin, MAE and positive-task thresholds and cannot become eligible. Preregistered controls continue to terminal for complete evidence. |
 
-C1 therefore supports only the narrow observation that the legacy global pretrained residual contains some Development signal. It does not support a high-performance critic claim and does not predict whether the edit-site C2/C3 arms will pass.
+C1 therefore supports only the narrow observation that the legacy global pretrained residual contains some Development signal. C2 supplies no edit-site ranking advantage: it underperforms C0 by 0.0066 Spearman, exceeds the 1.70 MAE ceiling, and has only seven positive tasks. Its full model does beat the source-only control, whose task-macro Spearman is -0.0013, but this cannot rescue the failed primary criteria. C2 is ineligible; C3 remains the only architecture that could pass the Critic screen after current-HEAD synchronization.
 
-Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json`. The authoritative full artifacts remain under the Route 2 `/mnt` experiment root and the central attempt ledger.
+Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json` and `audits/route_a_v3_route2_xeditcritic_v3_c2_full_source_terminal_controls_running_v1.json`. The authoritative full artifacts remain under the Route 2 `/mnt` experiment root and the central attempt ledger.
 
 ## SetFlow diagnostic evidence
 
