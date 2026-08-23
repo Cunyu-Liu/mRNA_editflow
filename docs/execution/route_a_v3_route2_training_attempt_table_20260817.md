@@ -1671,3 +1671,9 @@ metric、未新增attempt或叠加GPU任务，protected outcome read=0，A100 HE
 C2 full/F3 training/C2 source-only分别在11:30:38/11:34:12/11:40:26保持RUNNING，elapsed分别为
 6,117/8,073/5,860秒，均无terminal/failure；下一窗口分别为12:00:38/12:04:12/12:10:26。自动续轮未
 触发早查，未读active metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
+
+## 12:00–12:11 scheduled screen health（2026-08-23）
+
+C2 full/F3 training/C2 source-only分别在12:00:54/12:04:56/12:11:01保持RUNNING，elapsed分别为
+7,933/9,917/7,695秒，均无terminal/failure；下一窗口分别为12:30:54/12:34:56/12:41:01。未读active
+metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。

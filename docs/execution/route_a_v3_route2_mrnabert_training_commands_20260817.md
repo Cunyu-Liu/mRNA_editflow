@@ -2516,3 +2516,14 @@ failure/error，下一次不早于12:10:26。
 performance。GPU0/3/5已有正式job，GPU1/2/4在C2快照中无安全显存，所以未新增control、未叠加任务。
 无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_114026.json`。
+
+## 12:00–12:11 scheduled screen health（2026-08-23）
+
+C2 full在12:00:54仍RUNNING：PID3481436、elapsed7,933秒、无terminal/failure，下一次不早于12:30:54。
+F3 training在12:04:56仍RUNNING：PID3408897、elapsed9,917秒、无terminal/failure，下一次不早于
+12:34:56。C2 source-only在12:11:01仍RUNNING：实际Python PID3577062、elapsed7,695秒、无terminal/
+failure/error，下一次不早于12:41:01。
+
+三次观察仍只检查terminal/failure/alive/CUDA，未读active performance。GPU0/3/5已有正式job，C2快照中
+GPU1/2/4无安全显存，因此未新增control或叠加任务。无代码变化，不重复test cohort；A100 HEAD=`22317ed`，
+protected outcome read=0。审计：`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_121101.json`。
