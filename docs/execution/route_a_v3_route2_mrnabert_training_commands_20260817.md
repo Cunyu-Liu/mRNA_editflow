@@ -2754,3 +2754,16 @@ F3按domain recovery为GSE269595=0、ENCSR854RUF=0.0370、GSE217518=0.0405、GSE
 measured outcome、private trajectory、TEST或Evaluation，未新增attempt或修改A100 artifact。无代码变化，
 focused/V3.3.2 cohort不重复。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f2_f3_budget_domain_recovery_diagnostic_v1.json`。
+
+## 19:25–19:33 C2 remaining-control health（2026-08-23）
+
+按第二个30分钟窗口，`NO_CANDIDATE_SEQUENCE`在19:25:57仍RUNNING（PID1136782、elapsed4,316秒、
+ledger第110行RUNNING、GPU5 free30,073MiB/util75%），下一次≥19:55:57；candidate-bundle permutation在
+19:30:13仍RUNNING（PID1266566、elapsed3,975秒、ledger第111行RUNNING、GPU0 free25,593MiB/util96%），
+下一次≥20:00:13；`EDIT_METADATA_ONLY`在19:33:56仍RUNNING（PID889042、elapsed5,797秒、ledger第109行
+RUNNING、GPU3 free30,771MiB/util21%），下一次≥20:03:56。三项均无terminal/failure。
+
+仍只读alive/terminal/failure/ledger/GPU，没有active curve或metric；未选择性停止、未叠加、未降容量、未启动C3。
+无代码变化，故不重复current-HEAD Critic70/70或V3.3.2 96/96；A100 tests/sync继续等待旧HEAD control终止。
+Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_193356.json`。

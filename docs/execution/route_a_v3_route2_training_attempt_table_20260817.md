@@ -1734,6 +1734,12 @@ top-k差值为-0.0244/-0.1399/-0.0234，unique差值为-0.0245/-0.0574/-0.0416�
 budget修复生成指标。F3四个domain unique均低于0.90，三项minority-domain recovery为0–0.0405；总体受
 652/891-source GSE114002组成影响。该项不新增optimizer attempt、不改gate、不读protected outcome、不重复test。
 
+## 19:25–19:33 C2 remaining-control health（2026-08-23）
+
+C2 no-candidate/permutation/edit-metadata分别在19:25:57/19:30:13/19:33:56保持RUNNING，elapsed为
+4,316/3,975/5,797秒，中央CSV第110/111/109行均仍RUNNING且无terminal/failure。下一窗口为
+19:55:57/20:00:13/20:03:56。未新增attempt或停止control；无代码变化，不重复测试，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为
