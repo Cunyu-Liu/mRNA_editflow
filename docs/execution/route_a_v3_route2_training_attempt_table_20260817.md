@@ -1779,6 +1779,12 @@ no-candidate/permutation分别在22:28:23/22:32:40保持RUNNING，elapsed为15,2
 23:28:23/23:32:40。edit-metadata本轮未提前重查，下一窗口仍为23:09:02。三个control现均进入
 60分钟节奏；未新增attempt、未读active metric，protected read=0。
 
+## Route 2 heartbeat long-run interval alignment（2026-08-23）
+
+既有`route2` heartbeat从130分钟原位调整为60分钟，以匹配当前三个超过四小时control的合同监控节奏；
+保持ACTIVE、failed-only与当前thread target，未创建重复automation。此运营调整不新增optimizer attempt、
+不查询远端训练、不改变A100 HEAD，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

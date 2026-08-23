@@ -2835,3 +2835,13 @@ GPU0 free33,164MiB/util35%），也切换60分钟，下一次≥23:32:40；本�
 三项现均使用60分钟节奏。无terminal/failure、active metric/log读取、训练干预或C3叠加；无代码变化，不重复
 测试，A100 sync/tests pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_223240.json`。
+
+## Route 2 heartbeat long-run interval alignment（2026-08-23）
+
+三个active C2 control均已观测超过四小时并进入60分钟监控后，核对发现既有`route2` heartbeat实际为
+130分钟，而非先前摘要中的30分钟。该间隔不会造成频繁轮询，但会漏过合同要求的60分钟长任务窗口。
+同一heartbeat已原位更新为60分钟；保持ACTIVE、failed-only、当前thread target和原prompt，不创建副本。
+
+首次工具调用因使用错误判别字段而在mutation前被拒绝，随后用正确update模式成功并只复核一次配置。此任务未
+查询远端训练、改变训练配置、增加optimizer attempt或读取protected outcome；仓库代码未改，不重复测试。
+审计：`audits/route_a_v3_route2_heartbeat_sixty_minute_alignment_v1.json`。

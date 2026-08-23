@@ -1,0 +1,47 @@
+{
+  "schema_version": "route_a_v3_route2_heartbeat_sixty_minute_alignment.v1",
+  "status": "ROUTE2_HEARTBEAT_ALIGNED_TO_LONG_RUN_MONITORING_INTERVAL",
+  "observed_and_updated_on": "2026-08-23",
+  "automation": {
+    "id": "route2",
+    "kind": "heartbeat",
+    "name": "Route 2 V3.3.2 低频执行监控",
+    "target_thread_id": "01a01eec-250e-7ed3-bcf2-705bc403f233",
+    "status": "ACTIVE",
+    "notification_policy": "failed_runs_only",
+    "previous_rrule": "RRULE:FREQ=MINUTELY;INTERVAL=130",
+    "current_rrule": "RRULE:FREQ=MINUTELY;INTERVAL=60",
+    "duplicate_automation_created": false,
+    "prompt_preserved": true
+  },
+  "reason": {
+    "all_current_c2_controls_observed_over_four_hours": true,
+    "contract_monitoring_interval_minutes": 60,
+    "previous_130_minute_interval_would_miss_required_long_run_windows": true,
+    "change_affects_codex_wakeup_frequency_only": true
+  },
+  "tool_execution": {
+    "first_call_rejected_before_mutation": true,
+    "first_call_error": "INVALID_DISCRIMINATOR_ACTION_EXPECTED_MODE",
+    "successful_update_mode": "update",
+    "post_update_toml_verified_once": true
+  },
+  "experiment_state": {
+    "remote_training_status_queried_during_automation_task": false,
+    "training_configuration_changed": false,
+    "optimizer_attempt_added": false,
+    "a100_head_changed": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "verification": {
+    "repository_code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Only the external Codex heartbeat interval and its evidence record changed; executable repository behavior did not change.",
+    "git_diff_check_required": true
+  },
+  "repository": {
+    "local_and_github_head_before_record_commit": "d4c2e01",
+    "user_dirty_deletion_staged_or_restored": false
+  }
+}
