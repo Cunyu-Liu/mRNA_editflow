@@ -2622,3 +2622,16 @@ CUDA进程占用1,192MiB、GPU3 free38,396MiB/util56%，stderr为空且无termin
 unique与G0仍pending，screen/confirmation未授权。本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，
 protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f3_training_terminal_validation_launch_v1.json`。
+
+## 17:10–17:22 mixed-interval screen health（2026-08-23）
+
+C2 full在17:10:17仍RUNNING：PID3481436、elapsed26,497秒、中央ledger第107行仍RUNNING、无
+terminal/failure，下一次不早于18:10:17。F3 unguided validation在17:20:36仍RUNNING：PID49555、
+elapsed2,133秒、stderr为空且无terminal/failure，下一次不早于17:50:36。C2 source-only在17:22:22仍
+RUNNING：实际Python PID3577062、elapsed26,376秒、中央ledger第108行仍RUNNING、无terminal/failure，
+下一次不早于18:22:22。
+
+C2两项继续60分钟节奏，F3 validation继续30分钟节奏；未读active metric。17:10资源快照中GPU1/2/4
+free=8,627/3,155/4,305MiB且util均100%，GPU0/3/5已有正式任务，未新增control、未叠加或降容量。
+本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_172222.json`。

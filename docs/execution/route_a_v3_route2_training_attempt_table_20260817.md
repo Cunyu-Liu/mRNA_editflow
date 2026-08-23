@@ -1719,6 +1719,13 @@ F3 unguided validation用仅改变物理device为GPU3的运营config启动，PID
 17:20:25。该validation不新增optimizer attempt；recovery/top-k/unique/G0均pending，screen和confirmation
 未授权。同期C2 full/source-only仍RUNNING，下一窗口为17:06:57/17:21:45；没有安全GPU启动更多control。
 
+## 17:10–17:22 mixed-interval screen health（2026-08-23）
+
+C2 full/F3 unguided validation/C2 source-only分别在17:10:17/17:20:36/17:22:22保持RUNNING，elapsed分别为
+26,497/2,133/26,376秒，均无terminal/failure；F3 stderr为空。C2两项下一窗口为18:10:17/18:22:22，
+F3 validation下一窗口为17:50:36。未读active metric、未新增attempt或叠加GPU任务；protected outcome
+read=0，A100 HEAD=`22317ed`。
+
 ## F2 terminal diversity-by-domain diagnostic（2026-08-23）
 
 F2终态mean unique在GSE269595/GSE114002/ENCSR854RUF/GSE217518分别为0.4359375/0.6580713190/
