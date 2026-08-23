@@ -2778,3 +2778,14 @@ ledger109、GPU3 free29,283MiB/util31%），下一次≥20:34:49。三项均无t
 只读alive/terminal/failure/ledger/GPU，没有active metric/log；未停止、叠加、降容量或启动C3。无代码变化，
 不重复Critic70/70与V3.3.2 96/96；A100 current-HEAD sync/tests仍pending。protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_200449.json`。
+
+## 20:26–20:36 C2 remaining-control health（2026-08-23）
+
+第四个30分钟窗口：no-candidate在20:26:38仍RUNNING（elapsed7,957秒、ledger110、GPU5 free31,871MiB/
+util76%），下一次≥20:56:38；permutation在20:31:03仍RUNNING（elapsed7,625秒、ledger111、GPU0
+free25,613MiB/util99%），下一次≥21:01:03；edit-metadata在20:36:21仍RUNNING（elapsed9,542秒、
+ledger109、GPU3 free36,451MiB/util3%），下一次≥21:06:21。三项无terminal/failure且仍低于四小时。
+
+GPU3的瞬时低util不构成调度或停止门槛；未读取curve/metric/log，未干预、叠加、降容量或启动C3。无代码变化，
+不重复Critic70/70或V3.3.2 96/96，A100 sync/tests继续等待；protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_203621.json`。
