@@ -2923,3 +2923,23 @@ elapsed25,831秒、ledger111、GPU0 free33,198MiB/util37%），无terminal/failu
 edit-metadata已经terminal且本轮未重读其artifact。未读active curve/metric，未干预、叠加、降容量或启动C3；
 无代码变化，不重复测试；A100 sync/tests继续等待两项旧HEAD jobs terminal，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_remaining_controls_health_20260824_013429.json`。
+
+## C2 no-candidate/permutation terminal package（2026-08-24）
+
+在各自60分钟窗口后，no-candidate与candidate-bundle permutation均自然terminal；PID已退出，中央CSV
+第110/111行分别在01:51:43/01:59:06标记COMPLETED。终态JSON已在首次terminal观察中各读取一次compact
+字段，本记录任务不重读summary、passes、per-task rows或predictions，仅复核中央ledger。
+
+no-candidate：seed20260830、8 passes、22,416 updates、29,489,049 trainable parameters、
+Spearman0.0384855077、standardized MAE1.8590261707、4/9 task为正、prediction std1.7508677040、
+GPU5/A100/BF16、wall27,457.55秒、peak695.638MiB。C2 full的Spearman高0.0657801035，但MAE高
+0.1114946395；candidate sequence提供aggregate排序信息，却未改善MAE或primary gate。
+
+candidate-bundle permutation：相同seed/预算/参数量，Spearman0.0592276162、MAE1.9698397875、
+7/9 task为正、prediction std49.9676716142、GPU0/A100/BF16、wall27,302.53秒、peak925.984MiB。
+该control对29,271个recipient进行精确source/task-stratified完整bundle permutation，29,259个sequence改变，
+适用task数为6。full的aggregate Spearman高0.0450379950；精确适用task win count不手读，等待current-HEAD
+formal gate。至此C2 full与四controls全部terminal，C2因primary与edit-metadata control双重失败保持ineligible；
+no confirmation、TEST、LOSO或guidance授权。所有launch-HEAD jobs已terminal，下一步允许A100 current-HEAD
+同步、固定tests与正式gate materialization。protected read=0；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_control_package_terminal_v1.json`。

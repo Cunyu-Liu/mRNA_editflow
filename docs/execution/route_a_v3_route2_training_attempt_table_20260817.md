@@ -1818,6 +1818,21 @@ no-candidate/permutation分别在01:28:50/01:34:29保持RUNNING，elapsed为26,0
 第110/111行仍RUNNING且无terminal/failure；下一窗口为02:28:50/02:34:29。两次SSH前均完成最终本地
 时钟校准。edit-metadata已terminal且不再健康轮询；未新增attempt、未读active metric，protected read=0。
 
+## C2 no-candidate/permutation terminal package（2026-08-24）
+
+中央CSV第110/111行分别于01:51:43/01:59:06 terminal COMPLETED；C2 full及四个预注册control现在全部
+terminal。no-candidate固定结果为seed20260830、8 passes、22,416 updates、29,489,049 trainable parameters、
+Spearman0.0384855077、standardized MAE1.8590261707、4/9 task为正、A100/BF16/GPU5、
+wall27,457.55秒、peak695.638MiB。full的Spearman高0.0657801035，但MAE差0.1114946395。
+
+完整candidate-bundle permutation固定结果为同seed/预算/参数量、Spearman0.0592276162、
+standardized MAE1.9698397875、7/9 task为正、A100/BF16/GPU0、wall27,302.53秒、peak925.984MiB；
+29,271个recipient中29,259个candidate sequence发生变化，六个适用task保持精确source/task strata并打乱
+完整candidate bundle。full的aggregate Spearman高0.0450379950；正式适用task win count留给current-HEAD
+gate计算，不手读per-task rows。C2仍因primary gate和edit-metadata control失败而ineligible，不授权confirmation。
+两个terminal summary未重读，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_control_package_terminal_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
