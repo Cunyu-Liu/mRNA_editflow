@@ -1812,6 +1812,12 @@ A100/BF16/GPU3、wall24,317.77秒、peak925.234MiB、参数更新、protected re
 edit-metadata-only低0.0035506020且MAE高0.0439439561，故未通过“full beats edit-metadata-only”control。
 no-candidate/permutation仍RUNNING，不新增attempt或启动C3。
 
+## 01:28–01:34 C2 two remaining controls health（2026-08-24）
+
+no-candidate/permutation分别在01:28:50/01:34:29保持RUNNING，elapsed为26,089/25,831秒，中央CSV
+第110/111行仍RUNNING且无terminal/failure；下一窗口为02:28:50/02:34:29。两次SSH前均完成最终本地
+时钟校准。edit-metadata已terminal且不再健康轮询；未新增attempt、未读active metric，protected read=0。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

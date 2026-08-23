@@ -2912,3 +2912,14 @@ prediction spread finite/nonzero。C2 full比该control的Spearman低0.003550602
 因此full未击败edit-metadata-only，candidate-sequence/edit-site分支没有形成增量优势。C2已额外失败冻结control
 gate；no-candidate/permutation继续自然terminal，不提前停止。无代码变化，不重复测试。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_terminal_v1.json`。
+
+## 01:28–01:34 C2 two remaining controls health（2026-08-24）
+
+no-candidate在01:28:50仍RUNNING（PID1136782、elapsed26,089秒、ledger110、GPU5 free28,375MiB/
+util82%），无terminal/failure，下一次≥02:28:50。permutation在01:34:29仍RUNNING（PID1266566、
+elapsed25,831秒、ledger111、GPU0 free33,198MiB/util37%），无terminal/failure，下一次≥02:34:29。
+两次SSH前均完成最终本地时钟检查，未重复提前观测。
+
+edit-metadata已经terminal且本轮未重读其artifact。未读active curve/metric，未干预、叠加、降容量或启动C3；
+无代码变化，不重复测试；A100 sync/tests继续等待两项旧HEAD jobs terminal，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_remaining_controls_health_20260824_013429.json`。
