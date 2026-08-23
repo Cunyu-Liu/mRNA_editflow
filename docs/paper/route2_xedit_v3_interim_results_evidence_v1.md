@@ -28,7 +28,9 @@ Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_termina
 
 F1 supplies useful mechanism evidence: an order-invariant set target can improve measured-candidate recovery even when the small legacy trunk remains severely mode-concentrated. F2 shows that the larger hybrid trunk can strongly improve common set-NLL and clear the recovery/top-k thresholds, but its source-macro unique rate remains only 0.6794. F3 is therefore the only remaining potentially eligible arm. Neither result is itself a model-advantage claim.
 
-Primary repository evidence: `audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f2_terminal_f3_health_v1.json`, and `docs/execution/route_a_v3_route2_training_attempt_table_20260817.md`.
+An outcome-free post-terminal decomposition shows that F2's diversity failure is not confined to the one-edit budget. Mean source-level unique rates for B1, B3, and B5 are 0.4832, 0.7134, and 0.8066, respectively; the fractions of sources reaching 0.90 are 0%, 22.0%, and 35.8%. B1 is the most concentrated regime, but every edit budget remains below the frozen diversity target. The appropriate interpretation is therefore that F2 improves distributional fit and measured recovery without resolving candidate concentration across the full budget range.
+
+Primary repository evidence: `audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f2_terminal_f3_health_v1.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f2_diversity_diagnostic_v1.json`, and `docs/execution/route_a_v3_route2_training_attempt_table_20260817.md`.
 
 ## Current claim state
 

@@ -1,0 +1,55 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f2_diversity_diagnostic.v1",
+  "status": "F2_TERMINAL_DIVERSITY_FAILURE_PERSISTS_ACROSS_ALL_EDIT_BUDGETS",
+  "observed_at": "2026-08-23T10:39:50+08:00",
+  "source_artifact": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f2/validation_summary.json",
+  "analysis_scope": "TERMINAL_OUTCOME_FREE_GENERATION_DIVERSITY_AND_STOP_CAUSES_ONLY",
+  "budgets": {
+    "B1": {
+      "source_count": 263,
+      "mean_unique_candidate_rate": 0.4832461977186312,
+      "median_unique_candidate_rate": 0.5,
+      "fraction_sources_unique_rate_at_least_0_90": 0.0,
+      "explicit_stop_count": 170,
+      "budget_exhausted_count": 8246
+    },
+    "B3": {
+      "source_count": 304,
+      "mean_unique_candidate_rate": 0.7134046052631579,
+      "median_unique_candidate_rate": 0.6875,
+      "fraction_sources_unique_rate_at_least_0_90": 0.22039473684210525,
+      "explicit_stop_count": 7388,
+      "budget_exhausted_count": 2340
+    },
+    "B5": {
+      "source_count": 324,
+      "mean_unique_candidate_rate": 0.806616512345679,
+      "median_unique_candidate_rate": 0.84375,
+      "fraction_sources_unique_rate_at_least_0_90": 0.35802469135802467,
+      "explicit_stop_count": 7902,
+      "budget_exhausted_count": 2466
+    }
+  },
+  "interpretation": {
+    "b1_is_most_concentrated": true,
+    "diversity_failure_is_limited_to_b1": false,
+    "all_budget_mean_unique_rates_below_0_90": true,
+    "f2_gate_or_terminal_status_changed": false,
+    "f3_architecture_or_training_changed": false,
+    "new_hyperparameter_or_seed_authorized": false
+  },
+  "aggregation_execution": {
+    "first_command": "SYNTAX_ERROR_BEFORE_AGGREGATE_OUTPUT",
+    "second_corrected_command": "COMPLETED_READ_ONLY_AGGREGATION",
+    "experiment_state_changed_by_first_command": false,
+    "artifact_written_or_modified_by_aggregation": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "local_and_github_head_before_record_commit": "5389085"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

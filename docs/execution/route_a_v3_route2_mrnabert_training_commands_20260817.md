@@ -2481,3 +2481,14 @@ Evaluation read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v3_f2_termin
 
 C2 full的独立10:29:35窗口亦只检查一次：PID3481436、elapsed2,454秒、无terminal/failure，下一次不早于
 10:59:35。GPU5虽有37,732MiB free但仍归该正式job使用，没有叠加新任务或提前读取metric。
+
+## F2 terminal diversity-by-budget diagnostic（2026-08-23）
+
+对已terminal F2 validation只汇总outcome-free unique rate与STOP cause。B1/B3/B5 mean unique分别为
+0.4832461977186312/0.7134046052631579/0.806616512345679；source达到0.90的比例分别为0/0.2203947368/
+0.3580246914。B1最集中，但三个budget均未解决多样性gate，不能解释成单一B1特例。
+
+首个只读汇总命令因括号SyntaxError未输出，纠正后的同一聚合成功；没有写artifact或改变experiment。
+本项只改变终态论文解释，不改变F2 terminal状态、F3、threshold、seed或selection。没有optimizer attempt或
+代码变化，不重复test cohort；protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f2_diversity_diagnostic_v1.json`。

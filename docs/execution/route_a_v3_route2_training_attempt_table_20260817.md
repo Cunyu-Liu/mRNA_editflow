@@ -1653,3 +1653,9 @@ F3 validation未开始，总screen不adjudicate；protected outcome read=0，A10
 
 C2 full在10:29:35仍RUNNING（中央CSV第107行、PID3481436、elapsed2,454秒），无terminal/failure，下一次
 不早于10:59:35；未因GPU5瞬时低utilization叠加任务。
+
+## F2 terminal diversity-by-budget diagnostic（2026-08-23）
+
+已terminal F2的B1/B3/B5 mean unique分别为0.4832461977/0.7134046053/0.8066165123，达到0.90的source
+比例为0/0.2203947368/0.3580246914；失败贯穿三个预算而非仅B1。本项只读终态artifact、不训练、不新增
+中央attempt；F2/F3与protected outcome状态不变。
