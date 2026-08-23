@@ -2562,3 +2562,15 @@ GPU0在source-only观察时瞬时free38,314MiB/utilization0，但正式进程仍
 active performance；GPU1/2/4在C2快照中仍无安全显存。无代码变化，不重复test cohort；A100 HEAD=
 `22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_131304.json`。
+
+## 13:31–13:43 scheduled screen health（2026-08-23）
+
+C2 full在13:31:47仍RUNNING：PID3481436、elapsed13,386秒、无terminal/failure，下一次不早于14:01:47；
+下次若仍运行，后续切换60分钟。F3 training在13:36:46仍RUNNING：PID3408897、elapsed15,427秒、
+无terminal/failure；已超过4小时，后续60分钟节奏，下一次不早于14:36:46。C2 source-only在13:43:58
+仍RUNNING：实际Python PID3577062、elapsed13,272秒、无terminal/failure/error，下一次不早于14:13:58；
+下次若仍运行，后续切换60分钟。
+
+三项未读active performance，GPU0/3/5继续由正式job占用，GPU1/2/4在C2快照中无安全显存。未新增control、
+未叠加任务；无代码变化，不重复test cohort。A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_134358.json`。

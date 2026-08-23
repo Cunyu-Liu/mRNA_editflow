@@ -1685,6 +1685,13 @@ C2 full/F3 training/C2 source-only分别在13:01:35/13:05:49/13:13:04保持RUNNI
 F3下次若仍运行将切换60分钟节奏；未读active metric、未新增attempt或叠加GPU任务，protected outcome
 read=0，A100 HEAD=`22317ed`。
 
+## 13:31–13:43 scheduled screen health（2026-08-23）
+
+C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为
+13,386/15,427/13,272秒，均无terminal/failure。F3已转60分钟并下一次不早于14:36:46；C2 full与
+source-only下一次分别为14:01:47/14:13:58，届时若仍运行也转60分钟。未读active metric、未新增attempt
+或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
+
 ## F2 terminal diversity-by-domain diagnostic（2026-08-23）
 
 F2终态mean unique在GSE269595/GSE114002/ENCSR854RUF/GSE217518分别为0.4359375/0.6580713190/
