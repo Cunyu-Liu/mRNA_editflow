@@ -1846,6 +1846,20 @@ top-k≥0.15和unique≥0.90。confirmation/additional seed/Development TEST/gui
 optimizer attempt，不重训F0/F2/F3。Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_a100_current_head_sync_tests_setflow_gate_v1.json`。
 
+## C3 full + four controls launch/initial health（2026-08-24）
+
+在current launch HEAD=`4047f55`、五个output目录/attempt均不存在且Critic gate未生成的前提下，启动唯一
+C3 screen cohort。full/source-only/edit-metadata-only于02:55:39分别在GPU3/0/5启动；no-candidate于
+03:02:48在GPU1启动；permutation在GPU2释放到10,004MiB后于03:09:08启动。未使用GPU6/7、CPU fallback、
+同卡叠加或终止其他进程。
+
+五项≥5分钟首检全部alive/CUDA：显存1,776–1,844MiB，中央CSV第112–116行均RUNNING/BF16，output目录
+存在但无run summary/failure；stderr仅同一组已知nested-tensor和transformers加载warning，未读stdout/active
+metric。冻结预算为30,472,089 trainable parameters、8 passes、预期22,416 updates、effective batch32、
+physical microbatch1。按预计超过4小时的60分钟节奏，下一检查分别不得早于04:02:02、04:09:08、04:15:10。
+Critic adjudication/confirmation、TEST和guidance均未授权，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_launch_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

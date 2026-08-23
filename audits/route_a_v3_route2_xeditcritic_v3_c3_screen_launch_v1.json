@@ -1,0 +1,152 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_launch.v1",
+  "status": "C3_FULL_AND_ALL_FOUR_CONTROLS_RUNNING_INITIAL_CUDA_HEALTH_PASS",
+  "observed_at": "2026-08-24T03:15:10+08:00",
+  "frozen_experiment": {
+    "arm": "C3",
+    "screen_seed": 20260830,
+    "trainable_parameter_count": 30472089,
+    "head_trainable_parameter_count": 29489049,
+    "lora_trainable_parameter_count": 983040,
+    "passes": 8,
+    "expected_updates": 22416,
+    "effective_batch_size": 32,
+    "physical_microbatch_records": 1,
+    "precision": "BF16",
+    "head_learning_rate": 0.0003,
+    "lora_learning_rate": 0.00003,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "optimizer": "AdamW",
+    "checkpoint_selection": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION"
+  },
+  "runs": {
+    "c3": {
+      "control": "NONE",
+      "pid": 2443206,
+      "physical_gpu_index": 3,
+      "launched_at": "2026-08-24T02:55:39+08:00",
+      "initial_check_at": "2026-08-24T03:02:02+08:00",
+      "initial_check_elapsed_seconds": 382,
+      "gpu_process_memory_mib": 1844,
+      "central_ledger_line_number": 112,
+      "central_ledger_status": "RUNNING",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T04:02:02+08:00"
+    },
+    "c3_source_only": {
+      "control": "SOURCE_ONLY",
+      "pid": 2443207,
+      "physical_gpu_index": 0,
+      "launched_at": "2026-08-24T02:55:39+08:00",
+      "initial_check_at": "2026-08-24T03:02:02+08:00",
+      "initial_check_elapsed_seconds": 382,
+      "gpu_process_memory_mib": 1776,
+      "central_ledger_line_number": 114,
+      "central_ledger_status": "RUNNING",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T04:02:02+08:00"
+    },
+    "c3_edit_metadata_only": {
+      "control": "EDIT_METADATA_ONLY",
+      "pid": 2443208,
+      "physical_gpu_index": 5,
+      "launched_at": "2026-08-24T02:55:39+08:00",
+      "initial_check_at": "2026-08-24T03:02:02+08:00",
+      "initial_check_elapsed_seconds": 382,
+      "gpu_process_memory_mib": 1844,
+      "central_ledger_line_number": 113,
+      "central_ledger_status": "RUNNING",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T04:02:02+08:00"
+    },
+    "c3_no_candidate_sequence": {
+      "control": "NO_CANDIDATE_SEQUENCE",
+      "pid": 2529140,
+      "physical_gpu_index": 1,
+      "launched_at": "2026-08-24T03:02:48+08:00",
+      "initial_check_at": "2026-08-24T03:09:08+08:00",
+      "initial_check_elapsed_seconds": 379,
+      "gpu_process_memory_mib": 1776,
+      "central_ledger_line_number": 115,
+      "central_ledger_status": "RUNNING",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T04:09:08+08:00"
+    },
+    "c3_candidate_bundle_permutation": {
+      "control": "COMPLETE_CANDIDATE_BUNDLE_PERMUTATION",
+      "pid": 2592082,
+      "physical_gpu_index": 2,
+      "launched_at": "2026-08-24T03:09:08+08:00",
+      "initial_check_at": "2026-08-24T03:15:10+08:00",
+      "initial_check_elapsed_seconds": 360,
+      "gpu_process_memory_mib": 1844,
+      "central_ledger_line_number": 116,
+      "central_ledger_status": "RUNNING",
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T04:15:10+08:00"
+    }
+  },
+  "initial_log_check": {
+    "active_curve_or_metric_read": false,
+    "stdout_metrics_read": false,
+    "stderr_warning_bytes_per_run": 624,
+    "warnings": [
+      "PyTorch nested-tensor performance warning",
+      "Transformers model-type compatibility warning from the already-tested mRNABERT load path"
+    ],
+    "traceback_or_oom_or_runtime_failure_detected": false
+  },
+  "monitoring_policy": {
+    "expected_runtime_over_four_hours": true,
+    "monitoring_interval_minutes_after_initial_check": 60,
+    "final_local_clock_check_performed_before_each_initial_ssh": true,
+    "remote_clock_offset_calibrated": true,
+    "initial_checks_not_early": true,
+    "next_remote_check_must_use_per_run_anchor": true
+  },
+  "screen_state": {
+    "c2_primary_eligible": false,
+    "c2_package_terminal": true,
+    "c3_and_all_controls_running": true,
+    "critic_screen_adjudication_authorized": false,
+    "critic_confirmation_authorized": false,
+    "setflow_status": "XEDITSETFLOW_V3_SCREEN_NO_GO",
+    "soft_value_guidance_authorized": false
+  },
+  "verification": {
+    "code_changed": false,
+    "tests_repeated_after_launch": false,
+    "test_skip_reason": "The five runs use the same current code HEAD immediately verified on A100 before launch.",
+    "a100_current_head_critic_focused_tests_passed": 70,
+    "a100_current_head_setflow_focused_tests_passed": 30,
+    "a100_current_head_exact_v332_tests_passed": 96
+  },
+  "repository": {
+    "launch_head": "4047f5503373f8e761f74b2e95bc717777560eb2",
+    "branch": "route-a-v3-route2-method-repair-20260817",
+    "a100_sync_during_active_jobs_authorized": false
+  },
+  "resource_policy": {
+    "used_physical_gpu_indices": [0, 1, 2, 3, 5],
+    "gpu_6_or_7_used": false,
+    "cpu_fallback_used": false,
+    "other_process_terminated": false,
+    "formal_jobs_stacked_on_same_gpu": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -2957,3 +2957,22 @@ fast-forward-only同步至GitHub current HEAD `0f21b8e`，同步后仍clean。�
 0.1939768051、top-k=0.1048712807、unique=0.6374508979均失败。confirmation/additional seed/TEST/
 guidance全部未授权。该同步/测试/裁决不新增中央optimizer attempt，protected read=0。审计：
 `audits/route_a_v3_route2_a100_current_head_sync_tests_setflow_gate_v1.json`。
+
+## C3 screen full + four controls launch 与首次健康检查（2026-08-24）
+
+Critic C3是本轮最后一个selectable architecture，使用冻结screen seed20260830、8 passes/final-pass selection、
+effective batch32/physical microbatch1、head LR3e-4、LoRA LR3e-5、rank16/alpha32/dropout0.05和精确
+30,472,089 trainable parameters。五个run/output/ledger ID启动前均不存在，Critic `screen_gate.json`也不存在。
+
+full、source-only、edit-metadata-only于远端02:55:39在GPU3/0/5启动（PID2443206/2443207/2443208）；
+首检03:02:02 elapsed382秒，CUDA显存1,844/1,776/1,844MiB，ledger112/114/113 RUNNING/BF16。
+GPU1保留8,707MiB后于03:02:48启动no-candidate（PID2529140），03:09:08首检elapsed379秒、
+1,776MiB、ledger115 RUNNING。随后GPU2释放到10,004MiB，于03:09:08启动完整candidate-bundle
+permutation（PID2592082），03:15:10首检elapsed360秒、1,844MiB、ledger116 RUNNING。
+
+五项均无terminal/failure，stderr只有已验证mRNABERT路径的nested-tensor性能warning与transformers兼容性
+warning；未读stdout、pass curve或active metric。未用GPU6/7、CPU fallback、formal同卡叠加或抢占其他任务。
+C3预计超过4小时，后续60分钟低频检查；full/source/edit下一窗口≥04:02:02，no-candidate≥04:09:08，
+permutation≥04:15:10，每次SSH前仍须最终本地时钟校准。active launch HEAD固定为`4047f55`，运行期间不做
+A100 current-HEAD sync。Critic adjudication/confirmation与所有protected downstream仍关闭；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_launch_v1.json`。
