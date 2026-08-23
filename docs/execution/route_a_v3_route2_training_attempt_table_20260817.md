@@ -1613,3 +1613,12 @@ validation已在GPU1启动；首次检查遵守5分钟。定向10/10、SetFlow f
 F3中央CSV第106行为RUNNING，实际Python PID3408897、elapsed537秒、GPU3 free3,861MiB；F2 validation
 PID3408905、elapsed538秒、GPU1 free8,213MiB。两者无terminal/failure/error，下次不早于09:58:36。
 capacity/batch/seed未变，active metric未读，C1仍不早于09:45:08，A100 HEAD=`22317ed`。
+
+## XEditCritic V3 C1 terminal / C2 full launch（2026-08-23）
+
+C1 terminal `COMPLETED`：Spearman=0.1386460633119141、相对C0 margin=0.027828004309577672、MAE=
+1.9004665150593998、8/9 tasks正。C1弱改善但未达screen阈值，不可final、不重训。Critic terminal summary
+文件约定已纠正为`run_summary.json`，此前错误existence check未改变结果。
+
+C2 full已在GPU5启动，PID3481436、seed20260830、control NONE；中央screen inventory仍缺C2 controls与
+C3 full/controls，不允许adjudicate。TEST/Evaluation read=0，A100 HEAD保持`22317ed`。

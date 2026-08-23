@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch.v1",
+  "status": "C1_TERMINAL_DIAGNOSTIC_C2_FULL_LAUNCHED",
+  "observed_at": "2026-08-23T09:47:42+08:00",
+  "c1_terminal": {
+    "status": "TERMINAL_SCREEN_ARM_COMPLETE",
+    "arm": "C1",
+    "selectable": false,
+    "seed": 20260830,
+    "pass_count": 8,
+    "update_count": 22416,
+    "trainable_parameter_count": 1798528,
+    "task_macro_spearman": 0.1386460633119141,
+    "matched_c0_task_macro_spearman": 0.11081805900233642,
+    "spearman_improvement_over_c0": 0.027828004309577672,
+    "task_macro_standardized_mae": 1.9004665150593998,
+    "positive_task_count": 8,
+    "task_count": 9,
+    "prediction_std": 30.62110457834488,
+    "parameter_changed": true,
+    "cuda_training_tensors_verified": true,
+    "cpu_fallback_used": false,
+    "physical_gpu_index": 5,
+    "peak_vram_mb": 120.755859375,
+    "wall_time_seconds": 26893.99116754532,
+    "terminal_attempt_status": "COMPLETED",
+    "central_ledger_line_number": 102,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "c1_interpretation": {
+    "global_pretrained_residual_improved_c0": true,
+    "screen_spearman_threshold_0_25_reached": false,
+    "screen_mae_threshold_1_70_reached": false,
+    "c1_can_enter_final_selection": false,
+    "c1_retraining_authorized": false
+  },
+  "health_check_path_correction": {
+    "incorrect_path_used_before_terminal_diagnosis": "training_summary.json",
+    "correct_critic_terminal_summary_path": "run_summary.json",
+    "experiment_state_changed_by_path_error": false,
+    "retraining_triggered": false
+  },
+  "c2_full_launch": {
+    "pid": 3481436,
+    "seed": 20260830,
+    "arm": "C2",
+    "control_mode": "NONE",
+    "physical_gpu_index": 5,
+    "status": "LAUNCHED",
+    "output_preexisted": false,
+    "failure_artifact_preexisted": false,
+    "initial_check_after_five_minutes": true
+  },
+  "screen_inventory": {
+    "c0_terminal": true,
+    "c1_terminal": true,
+    "c2_full_launched": true,
+    "c2_controls_launched": false,
+    "c3_full_or_controls_launched": false,
+    "screen_adjudication_authorized_now": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "159220a"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

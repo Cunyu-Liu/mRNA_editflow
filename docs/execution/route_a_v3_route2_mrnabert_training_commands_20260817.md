@@ -2417,3 +2417,19 @@ GPU1 free=8,213MiB。两者均无terminal/failure/error，active curve/performan
 运行保持原F3 width512/depth12/FFN2048/batch32与F2 validation batch64；未降容量/batch、未CPU fallback、
 未用GPU6/7、未终止其他进程。C1本次未检查，保持09:45:08窗口；A100 HEAD仍为`22317ed`。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f3_f2validation_health_20260823_092836.json`。
+
+## XEditCritic V3 C1 terminal 与 C2 full启动（2026-08-23）
+
+09:47:42的C1-only检查发现原PID已退出；Critic runner的正确terminal文件是`run_summary.json`，不是
+SetFlow式`training_summary.json`。正确文件、checkpoint、predictions sidecar和中央ledger第102行都显示C1
+正常`COMPLETED`，没有failure/error；早先路径误判没有改变experiment状态，也没有触发重跑。后续Critic
+health检查统一使用`run_summary.json`。
+
+C1固定结果：task-macro Spearman=0.1386460633119141，相对C0 0.11081805900233642提升
+0.027828004309577672；standardized MAE=1.9004665150593998；8/9 task正；prediction std=30.6211。
+全局mRNABERT mean residual提供弱改善，但Spearman未达0.25、MAE未达1.70，C1不可final且不重训。
+
+C1释放后GPU5 free约8.5GiB；C2使用冻结edit-site cache，已在GPU5启动full arm，PID3481436、
+seed20260830、control=NONE。输出/failure路径启动前均不存在；首次health检查等待至少5分钟。C2 controls与
+C3仍未启动，screen不可能提前adjudicate。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json`。
