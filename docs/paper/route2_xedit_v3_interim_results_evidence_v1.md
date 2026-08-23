@@ -4,7 +4,7 @@ Status date: 2026-08-23. This note is an observed-results companion to the prosp
 
 ## Interpretation boundary
 
-The Critic screen is still incomplete, whereas the SetFlow screen is terminal NO-GO. C0 and C1 are not selectable Critic arms; the C2 full arm is terminal and ineligible, while its remaining preregistered controls are still running. For SetFlow, F0 is a read-only historical reference and F1 is an objective diagnostic that cannot be selected. Both selectable arms have completed: F2 failed its frozen arm gate on unique-candidate rate, and F3 failed recovery, top-k recovery, and unique-candidate rate. Neither arm can enter confirmation.
+The Critic screen is still incomplete, whereas the SetFlow screen is terminal NO-GO. C0 and C1 are not selectable Critic arms; the C2 full arm is terminal and ineligible. Its source-only and edit-metadata-only controls are terminal, while the no-candidate-sequence and candidate-bundle-permutation controls are still running. For SetFlow, F0 is a read-only historical reference and F1 is an objective diagnostic that cannot be selected. Both selectable arms have completed: F2 failed its frozen arm gate on unique-candidate rate, and F3 failed recovery, top-k recovery, and unique-candidate rate. Neither arm can enter confirmation.
 
 ## Critic diagnostic evidence
 
@@ -12,11 +12,13 @@ The Critic screen is still incomplete, whereas the SetFlow screen is terminal NO
 |---|---|---:|---:|---:|---:|---|
 | C0 endpoint-aware raw CNN | Terminal | 0.1108180590 | 0 | 1.9924297611 | 8/9 | Matched same-information baseline only. Ranking is weak and MAE exceeds 1.70. |
 | C1 C0 + global mRNABERT mean residual | Terminal | 0.1386460633 | +0.0278280043 | 1.9004665151 | 8/9 | Global residual gives a small diagnostic improvement, but C1 is nonselectable and misses the 0.25 Spearman and 1.70 MAE thresholds. No retraining is authorized. |
-| C2 frozen edit-site token critic | Full arm terminal; controls running | 0.1042656112 | -0.0065524478 | 1.9705208102 | 7/9 | The full arm fails Spearman, margin, MAE and positive-task thresholds and cannot become eligible. Preregistered controls continue to terminal for complete evidence. |
+| C2 frozen edit-site token critic | Full arm terminal; 2/4 controls terminal | 0.1042656112 | -0.0065524478 | 1.9705208102 | 7/9 | The full arm fails Spearman, margin, MAE and positive-task thresholds and cannot become eligible. Preregistered controls continue to terminal for complete evidence. |
+| C2 source-only control | Terminal control | -0.0013102930 | not applicable | 1.9220229682 | 3/9 | The full model beats source-only, so candidate-side information is used, but this does not rescue the failed primary gate. |
+| C2 edit-metadata-only control | Terminal control | 0.1078162132 | -0.0030018458 versus C0 | 1.9265768541 | 7/9 | The full model is 0.0035506020 lower in Spearman and 0.0439439561 worse in standardized MAE; therefore it fails the frozen requirement to beat this control. |
 
-C1 therefore supports only the narrow observation that the legacy global pretrained residual contains some Development signal. C2 supplies no edit-site ranking advantage: it underperforms C0 by 0.0066 Spearman, exceeds the 1.70 MAE ceiling, and has only seven positive tasks. Its full model does beat the source-only control, whose task-macro Spearman is -0.0013, but this cannot rescue the failed primary criteria. C2 is ineligible; C3 remains the only architecture that could pass the Critic screen after current-HEAD synchronization.
+C1 therefore supports only the narrow observation that the legacy global pretrained residual contains some Development signal. C2 supplies no edit-site ranking advantage: it underperforms C0 by 0.0066 Spearman, exceeds the 1.70 MAE ceiling, and has only seven positive tasks. Its full model does beat the source-only control, whose task-macro Spearman is -0.0013, so candidate-side information is used. However, the edit-metadata-only control reaches 0.1078 Spearman and 1.9266 standardized MAE, outperforming the full model on both measures. Thus the candidate-sequence/edit-site branches provide no measured incremental advantage over edit metadata in this screen. C2 fails both its primary criteria and a required control comparison; C3 remains the only architecture that could pass the Critic screen after current-HEAD synchronization.
 
-Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json` and `audits/route_a_v3_route2_xeditcritic_v3_c2_full_source_terminal_controls_running_v1.json`. The authoritative full artifacts remain under the Route 2 `/mnt` experiment root and the central attempt ledger.
+Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json`, `audits/route_a_v3_route2_xeditcritic_v3_c2_full_source_terminal_controls_running_v1.json`, and `audits/route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_terminal_v1.json`. The authoritative full artifacts remain under the Route 2 `/mnt` experiment root and the central attempt ledger.
 
 ## SetFlow diagnostic evidence
 

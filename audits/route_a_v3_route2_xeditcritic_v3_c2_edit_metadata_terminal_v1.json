@@ -1,0 +1,93 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_terminal.v1",
+  "status": "C2_EDIT_METADATA_CONTROL_TERMINAL_FULL_MODEL_FAILS_CONTROL",
+  "observed_at": "2026-08-24T01:10:15+08:00",
+  "terminal_artifact": {
+    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/c2_edit_metadata_only/run_summary.json",
+    "size_bytes": 23856,
+    "mtime": "2026-08-24T00:40:31+08:00",
+    "terminal_summary_read_once": true,
+    "passes_read": false,
+    "per_task_rows_read": false
+  },
+  "central_ledger": {
+    "line_number": 109,
+    "status": "COMPLETED",
+    "completed_at": "2026-08-24T00:42:40+08:00"
+  },
+  "c2_edit_metadata_only": {
+    "terminal_status": "TERMINAL_SCREEN_ARM_COMPLETE",
+    "schema_version": "route_a_v3_route2_xeditcritic_v3_screen_run.v1",
+    "seed": 20260830,
+    "arm": "C2",
+    "control_mode": "EDIT_METADATA_ONLY",
+    "candidate_bundle_permutation": false,
+    "trainable_parameter_count": 29489049,
+    "train_record_count": 89580,
+    "validation_record_count": 18293,
+    "pass_count": 8,
+    "update_count": 22416,
+    "selection_policy": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION",
+    "task_macro_spearman": 0.10781621323637308,
+    "task_macro_standardized_mae": 1.926576854133151,
+    "positive_task_count": 7,
+    "task_count": 9,
+    "prediction_std": 30.578597755912195,
+    "prediction_min": -1065.8701171875,
+    "prediction_max": 787.6466674804688,
+    "parameter_changed": true,
+    "cuda_training_tensors_verified": true,
+    "cuda_device_name": "NVIDIA A100-PCIE-40GB",
+    "physical_gpu_index": 3,
+    "precision": "BF16",
+    "cpu_fallback_used": false,
+    "peak_vram_bytes": 970178560,
+    "peak_vram_mib": 925.234375,
+    "wall_time_seconds": 24317.769543647766,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false,
+    "old_launch_schema_missing_selected_pass": true,
+    "old_launch_schema_missing_training_scope": true,
+    "current_head_gate_identity_repair_derives_fixed_final_pass_8_and_frozen_train_validation": true
+  },
+  "frozen_comparisons": {
+    "c2_full_task_macro_spearman": 0.10426561121126687,
+    "c2_full_task_macro_standardized_mae": 1.9705208102186613,
+    "c2_full_positive_task_count": 7,
+    "full_minus_edit_metadata_spearman": -0.00355060202510621,
+    "full_minus_edit_metadata_standardized_mae": 0.0439439560855103,
+    "full_beats_edit_metadata_control": false,
+    "matched_c0_task_macro_spearman": 0.11081805900233642,
+    "edit_metadata_minus_c0_spearman": -0.00300184576596334,
+    "candidate_sequence_and_edit_site_branches_show_incremental_advantage_over_edit_metadata": false
+  },
+  "screen_state": {
+    "c2_primary_eligible": false,
+    "c2_control_gate_can_pass": false,
+    "c2_source_only_terminal": true,
+    "c2_edit_metadata_only_terminal": true,
+    "c2_no_candidate_sequence_terminal": false,
+    "c2_candidate_bundle_permutation_terminal": false,
+    "remaining_controls_stopped_early": false,
+    "critic_screen_adjudication_authorized": false,
+    "c3_and_controls_started": false,
+    "confirmation_authorized": false
+  },
+  "verification": {
+    "code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Only a terminal result and its evidence documents changed; executable behavior did not change.",
+    "most_recent_current_head_critic_focused_tests_passed": 70,
+    "most_recent_exact_v332_tests_passed": 96,
+    "a100_current_head_tests": "PENDING_REMAINING_LAUNCH_HEAD_C2_CONTROLS_TERMINAL"
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "fa5ac1e"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

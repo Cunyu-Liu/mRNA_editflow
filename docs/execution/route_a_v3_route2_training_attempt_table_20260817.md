@@ -1804,6 +1804,14 @@ edit-metadata本轮未提前重查，下一窗口仍为01:09:26。未新增attem
 远端偏移校准约束；未越过远端`next_check_not_before`时禁止SSH。未创建重复automation，不新增optimizer
 attempt，不改变A100 HEAD，protected read=0。
 
+## C2 edit-metadata-only terminal control（2026-08-24）
+
+中央CSV第109行于00:42:40 terminal COMPLETED。固定结果：seed20260830、8 passes、22,416 updates、
+29,489,049 trainable parameters、Spearman0.1078162132、standardized MAE1.9265768541、7/9 task为正、
+A100/BF16/GPU3、wall24,317.77秒、peak925.234MiB、参数更新、protected read=0。C2 full的Spearman比
+edit-metadata-only低0.0035506020且MAE高0.0439439561，故未通过“full beats edit-metadata-only”control。
+no-candidate/permutation仍RUNNING，不新增attempt或启动C3。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

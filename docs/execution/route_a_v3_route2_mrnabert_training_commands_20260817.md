@@ -2899,3 +2899,16 @@ failed-only并绑定当前thread，没有创建副本。
 
 此运营修复未查询训练、改变训练配置、增加attempt或读取protected outcome；仓库代码未改，不重复测试。
 审计：`audits/route_a_v3_route2_heartbeat_final_clock_check_alignment_v1.json`。
+
+## C2 edit-metadata-only terminal control（2026-08-24）
+
+按01:09:26窗口先完成最终本地时钟校准，再于远端01:10:15检查：PID已退出，`run_summary.json`已在
+00:40:31生成，中央ledger第109行于00:42:40记为COMPLETED。终态JSON只读一次compact字段，不读passes或
+per-task rows。固定结果为seed20260830、8 passes、22,416 updates、29,489,049 trainable parameters、
+A100/BF16/GPU3、wall24,317.77秒、peak925.234MiB、参数更新且protected read=0。
+
+edit-metadata-only的task-macro Spearman=0.1078162132、standardized MAE=1.9265768541、7/9 task为正、
+prediction spread finite/nonzero。C2 full比该control的Spearman低0.0035506020，MAE高0.0439439561，
+因此full未击败edit-metadata-only，candidate-sequence/edit-site分支没有形成增量优势。C2已额外失败冻结control
+gate；no-candidate/permutation继续自然terminal，不提前停止。无代码变化，不重复测试。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_edit_metadata_terminal_v1.json`。
