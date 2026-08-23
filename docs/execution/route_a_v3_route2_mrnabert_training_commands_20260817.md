@@ -2867,3 +2867,13 @@ util64%），无terminal/failure，下一次≥2026-08-24 00:28:53。permutation
 继续60分钟节奏，由同一active Route 2 heartbeat续跑。无代码变化，不重复测试；A100 sync/tests pending，
 protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_233305.json`。
+
+## 00:09 C2 edit-metadata second long-interval health（2026-08-24）
+
+`EDIT_METADATA_ONLY`在00:09:26仍RUNNING（PID889042、elapsed22,327秒、ledger109、GPU3
+free31,167MiB/util71%），无terminal/failure，下一次≥01:09:26。no-candidate与permutation未提前
+重查，仍保持各自00:28:53/00:33:05窗口。
+
+仅检查该job的alive/terminal/failure/ledger/GPU，不读active curve/metric；未干预、叠加、降容量或启动C3。
+无代码变化，不重复测试；A100 sync/tests pending，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260824_000926.json`。
