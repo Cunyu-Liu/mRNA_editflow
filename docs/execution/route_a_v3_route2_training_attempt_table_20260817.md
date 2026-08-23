@@ -1872,6 +1872,19 @@ paper focused tests 30/30。首次精确V3.3.2为95/96，唯一失败是首行�
 deferred，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_manuscript_status_addendum_v1.json`。
 
+## C3 screen first long-interval health（2026-08-24）
+
+以最近远端时钟偏移校准后，04:39:59在五个run各自next-check窗口之后完成一次统一低频健康检查。
+C3 full/source-only/edit-metadata-only/no-candidate/permutation均保持alive、中央ledger `RUNNING/BF16`，
+elapsed分别为6,259/6,260/6,260/5,834/5,452秒，CUDA显存分别为1,846/1,776/1,846/1,776/
+1,846 MiB；均无terminal summary或failure artifact，Critic screen gate仍不存在。下一次统一不得早于远端
+05:39:59。
+
+未读stdout、stderr、active curve、性能metric或任何terminal payload；没有新增attempt、代码变化、A100 sync
+或重复测试。最近A100 fixed cohort仍为Critic 70/70、SetFlow 30/30、精确V3.3.2 96/96；protected
+outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_043959.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

@@ -2989,3 +2989,15 @@ Methods/Results/Discussion/evidence packet focused=30/30。精确V3.3.2首次95/
 标题后affected=3/3、最终=96/96。无代码/训练改动、不新增中央attempt；A100 current-HEAD sync/tests在五个
 launch-head C3 jobs全部terminal前继续deferred。protected read=0；审计：
 `audits/route_a_v3_route2_xedit_v3_manuscript_status_addendum_v1.json`。
+
+## C3 screen 04:39:59 scheduled health（2026-08-24）
+
+连接前本地时钟04:37:31，远端观察时钟04:39:59，稳定偏移`+148s`；全部run已越过各自首个60分钟窗口。
+full/source/edit/no-candidate/permutation的PID均存活，elapsed为6,259/6,260/6,260/5,834/5,452秒，
+对应GPU3/0/5/1/2进程显存1,846/1,776/1,846/1,776/1,846 MiB；中央CSV五行仍为
+`RUNNING/BF16`。五个output均无`run_summary.json`/`failure.json`，`screen_gate.json`不存在。
+
+本次只观察terminal/failure/alive/CUDA/ledger状态，不读stdout、stderr、curve或metric；下一统一窗口
+`>=05:39:59`。无代码变化，因此不重复focused/V3.3.2测试；五项launch-head job active期间继续禁止A100
+current-HEAD sync。Development TEST/new Evaluation outcome read=0；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_043959.json`。
