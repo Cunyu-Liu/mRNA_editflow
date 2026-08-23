@@ -1692,6 +1692,14 @@ current-HEAD screen gate现可对`22317ed`生成的精确terminal v3 screen summ
 显式CONFIRMATION。terminal artifacts与所有metric/gate/selection不改。本项不新增中央optimizer attempt；
 focused=30/30、精确V3.3.2=96/96，A100 current-HEAD测试等待旧HEAD jobs terminal，protected read=0。
 
+## F3 validation terminal / XEDITSETFLOW_V3_SCREEN_NO_GO（2026-08-23）
+
+F3唯一unguided validation已terminal：recovery=0.19397680508791618、top-k=0.10487128067094396、
+unique=0.6374508978675645；训练NLL改善62.014%，G0 correctness全部通过，但三项生成门槛均失败。
+F2/F3两个selectable arms均terminal fail，SetFlow V3冻结为`XEDITSETFLOW_V3_SCREEN_NO_GO`；selected arm为空，
+confirmation/retraining/额外seed/降阈值均不授权。validation不新增optimizer attempt，protected read=0；正式
+current-HEAD gate artifact与A100 tests等待旧HEAD C2 jobs terminal后materialize。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

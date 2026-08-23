@@ -1,0 +1,111 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f3_terminal_screen_no_go.v1",
+  "status": "XEDITSETFLOW_V3_SCREEN_NO_GO",
+  "observed_at": "2026-08-23T17:54:08+08:00",
+  "f3_training": {
+    "status": "COMPLETED",
+    "seed": 20260903,
+    "selected_pass": 3,
+    "optimizer_steps": 21345,
+    "trainable_parameter_count": 42196934,
+    "common_validation_set_marginal_nll": 2.05042941274086,
+    "frozen_f0_common_set_marginal_nll": 5.397907635224613,
+    "relative_common_nll_improvement": 0.6201436646747034,
+    "common_nll_improvement_at_least_10pct": true
+  },
+  "f3_unguided_validation": {
+    "status": "FLOW_G0_READY",
+    "terminal_file_mtime": "2026-08-23T17:49:49+08:00",
+    "terminal_file_size_bytes": 1567530,
+    "source_count": 891,
+    "candidate_count": 28512,
+    "trajectory_forward_batch_size": 64,
+    "source_macro_candidate_recovery_rate": 0.19397680508791618,
+    "source_macro_measured_top_k_recovery_at_k": 0.10487128067094396,
+    "source_macro_unique_candidate_rate": 0.6374508978675645,
+    "hard_legality_rate": 1.0,
+    "edit_budget_violation_count": 0,
+    "candidate_budget_violation_count": 0,
+    "trajectory_replay_failure_count": 0,
+    "numerical_failure_count": 0,
+    "small_graph_status": "PASS",
+    "small_graph_total_variation": 0.0,
+    "parameter_update_count": 0,
+    "guided_critic_used": false,
+    "independent_evaluator_used": false,
+    "physical_gpu_index": 3,
+    "torch_device": "cuda:3",
+    "cpu_fallback_used": false,
+    "peak_vram_mb": 604.71484375,
+    "wall_time_seconds": 3961.890439748764,
+    "development_test_outcomes_accessed": false,
+    "evaluation_records_read": 0,
+    "evaluation_outcomes_accessed": false,
+    "generated_candidates_grant_canonical_credit": false,
+    "biological_optimization_established": false,
+    "terminal_summary_read_once": true,
+    "private_trajectories_read": false
+  },
+  "f3_frozen_arm_checks": {
+    "common_nll_improvement_at_least_0_10": true,
+    "recovery_at_least_0_25": false,
+    "top_k_recovery_at_least_0_15": false,
+    "unique_rate_at_least_0_90": false,
+    "hard_legality_is_1": true,
+    "all_failure_counters_zero": true,
+    "arm_gate_pass": false,
+    "terminal_reason": "RECOVERY_TOP_K_AND_UNIQUE_THRESHOLDS_FAILED"
+  },
+  "selectable_arm_inventory": {
+    "f2": {
+      "terminal": true,
+      "arm_gate_pass": false,
+      "recovery": 0.2924616535727647,
+      "top_k_recovery": 0.168278220268518,
+      "unique_candidate_rate": 0.6793630751964085,
+      "terminal_reason": "SOURCE_MACRO_UNIQUE_CANDIDATE_RATE_BELOW_0_90"
+    },
+    "f3": {
+      "terminal": true,
+      "arm_gate_pass": false,
+      "recovery": 0.19397680508791618,
+      "top_k_recovery": 0.10487128067094396,
+      "unique_candidate_rate": 0.6374508978675645,
+      "terminal_reason": "RECOVERY_TOP_K_AND_UNIQUE_THRESHOLDS_FAILED"
+    }
+  },
+  "screen_decision": {
+    "scientific_status": "XEDITSETFLOW_V3_SCREEN_NO_GO",
+    "selection_reason": "NO_SELECTABLE_ARM_PASSED",
+    "selected_arm": null,
+    "confirmation_authorized": false,
+    "additional_training_seed_authorized": false,
+    "retraining_authorized": false,
+    "threshold_change_authorized": false,
+    "formal_current_head_gate_artifact_materialized": false,
+    "formal_gate_materialization_pending": "A100 current-HEAD sync after the remaining launch-HEAD C2 jobs are terminal",
+    "pending_materialization_can_change_scientific_decision": false
+  },
+  "project_consequence": {
+    "upgraded_flow_g0_ready": false,
+    "soft_value_guidance_authorized": false,
+    "generator_model_advantage_claim_supported": false,
+    "submission_ready": false
+  },
+  "verification": {
+    "code_changed_in_terminal_result_task": false,
+    "test_cohort_repeated_for_terminal_result": false,
+    "most_recent_current_head_setflow_focused_tests_passed": 30,
+    "most_recent_exact_v332_tests_passed": 96,
+    "a100_current_head_tests": "PENDING_LAUNCH_HEAD_C2_JOBS_TERMINAL"
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "589200d"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

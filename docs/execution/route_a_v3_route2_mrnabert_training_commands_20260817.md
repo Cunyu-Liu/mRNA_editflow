@@ -2652,3 +2652,22 @@ confirmation仍必须显式`run_stage=CONFIRMATION`。不改写terminal artifact
 PASS。A100 current-HEAD测试/同步仍等待旧HEAD active jobs全部terminal。本项不新增optimizer attempt，
 不重跑训练/validation，不读取Development TEST/new Evaluation；F3 validation与Critic jobs继续原节奏。
 审计：`audits/route_a_v3_route2_xeditsetflow_v3_screen_stage_identity_repair_v1.json`。
+
+## F3 unguided validation terminal / SetFlow V3 screen NO-GO（2026-08-23）
+
+17:54:08的计划检查发现F3 validation已在17:49:49正常terminal，failure不存在、stderr为空、GPU3释放。
+唯一一次精简summary读取固定：891 sources、28,512 candidates、batch64；recovery=0.19397680508791618、
+top-k=0.10487128067094396、unique=0.6374508978675645；hard legality=1，edit/candidate budget violation、
+replay failure、numerical failure均为0，small-graph TV=0且PASS。GPU3/BF16 provenance保持，parameter update=0，
+critic/evaluator未使用，Development TEST/new Evaluation read=0，private trajectories未读。
+
+结合training NLL相对F0改善0.6201436646747034，F3仅通过NLL与G0 checks，未通过recovery≥0.25、top-k≥
+0.15、unique≥0.90。F2已因unique=0.6793630751964085失败，故两个selectable arms均terminal fail，冻结
+科学裁决为`XEDITSETFLOW_V3_SCREEN_NO_GO`、selection reason=`NO_SELECTABLE_ARM_PASSED`。不运行seed
+20260904/05/06，不重训、不追加seed、不降低阈值、不替换architecture；upgraded FLOW_G0与soft-value guidance
+均不授权。
+
+正式current-HEAD `screen_gate.json`需等待仍运行的旧HEAD C2 jobs terminal后同步A100再原子materialize；
+该运营等待不能改变NO-GO。终态记录不改代码，不重复test cohort；最近current-HEAD SetFlow focused=30/30、
+精确V3.3.2=96/96，A100 current-HEAD tests仍pending。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f3_terminal_screen_no_go_v1.json`。
