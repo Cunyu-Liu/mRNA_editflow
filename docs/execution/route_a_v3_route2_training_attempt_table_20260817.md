@@ -1585,3 +1585,13 @@ F2仍为RUNNING，elapsed=4:12:57，无terminal/failure/error；已切换60分�
 F1 unguided validation亦RUNNING，elapsed=36:49，无terminal/failure/error，下次不早于08:50:44。两次观察
 均未读取active metric；C1未触碰，仍不早于08:42:39。GPU0–5无足够安全显存，F3/C2/C3未启动，中央
 CSV和protected outcome状态不变，A100 HEAD=`22317ed`。
+
+## XEditSetFlow V3 F1 full diagnostic terminal（2026-08-23）
+
+F1 validation terminal `FLOW_G0_READY`：recovery=0.26917321361765806、top-k=0.21314548765446636，达到两项
+阈值；unique=0.4192269921436588，未达到0.90；legality=1且全部failure counter=0。training NLL相对F0
+恶化1.3805%，所以F1 objective-only diagnostic完整失败、不可final且不重训。它支持“set-marginal改善
+measured recovery但旧小trunk严重mode concentration”的方法诊断，不支持模型优势claim。
+
+C1在08:45:08仍RUNNING、无terminal/failure/error，下一次不早于09:45:08；F2下一次不早于09:15:25。
+protected outcome read=0，A100 HEAD保持`22317ed`。

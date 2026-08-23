@@ -2370,3 +2370,19 @@ current-HEAD sync等待所有该HEAD jobs terminal。审计：
 GPU1 free=7,927MiB。下一次validation check不早于08:50:44。C1在两次观察中均未触碰，保持08:42:39
 窗口。中央ledger不变、active metrics未读、capacity/batch不变、CPU fallback=false、GPU6/7未用，A100
 HEAD继续`22317ed`。审计：`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_082044.json`。
+
+## XEditSetFlow V3 F1 terminal diagnostic（2026-08-23）
+
+F1唯一一次unguided validation已terminal `FLOW_G0_READY`，891 sources、28,512 trajectories。engineering
+correctness全部通过：hard legality=1、edit/candidate/replay/numerical failures=0、small-graph TV=0≤1e-12；
+Development TEST/Evaluation read=0，parameter update=0，critic/evaluator均未使用。
+
+性能诊断呈现清晰分裂：source-macro candidate recovery=0.26917321361765806、top-k recovery=
+0.21314548765446636，分别超过0.25/0.15；但unique rate=0.4192269921436588，远低于0.90。再结合training
+common NLL相对F0 improvement=-0.013805184208472678，F1完整diagnostic明确失败且不可final。解释冻结为：
+set-marginal objective能恢复更多measured candidates，但旧817,957参数两层trunk出现严重mode concentration；
+不能据此降低unique gate或重训F1，F2/F3必须用大容量hybrid trunk解决。
+
+08:45:08 C1-only检查显示elapsed=6:27:48、仍运行且无terminal/failure/error，下一次不早于09:45:08；
+F2下一次不早于09:15:25。A100 HEAD=`22317ed`，F3/C2/C3仍未启动。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`。

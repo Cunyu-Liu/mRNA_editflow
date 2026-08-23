@@ -1,0 +1,78 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic.v1",
+  "status": "F1_TERMINAL_DIAGNOSTIC_FAIL_NOT_SELECTABLE",
+  "observed_at": "2026-08-23T08:50:25+08:00",
+  "arm": "f1",
+  "seed": 20260903,
+  "selectable": false,
+  "training": {
+    "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE",
+    "completed_passes": 3,
+    "selected_pass": 1,
+    "optimizer_steps": 12807,
+    "trainable_parameter_count": 817957,
+    "best_validation_common_set_marginal_nll": 5.47242674446921,
+    "frozen_f0_common_set_marginal_nll": 5.397907635224613,
+    "relative_common_nll_improvement_over_f0": -0.013805184208472678,
+    "common_nll_improvement_at_least_10pct": false
+  },
+  "unguided_validation": {
+    "status": "FLOW_G0_READY",
+    "source_count": 891,
+    "candidate_count": 28512,
+    "source_macro_candidate_recovery_rate": 0.26917321361765806,
+    "source_macro_measured_top_k_recovery_at_k": 0.21314548765446636,
+    "source_macro_unique_candidate_rate": 0.4192269921436588,
+    "recovery_at_least_0_25": true,
+    "top_k_recovery_at_least_0_15": true,
+    "unique_rate_at_least_0_90": false,
+    "hard_legality_rate": 1.0,
+    "edit_budget_violation_count": 0,
+    "candidate_budget_violation_count": 0,
+    "trajectory_replay_failure_count": 0,
+    "numerical_failure_count": 0,
+    "small_graph_total_variation": 0.0,
+    "small_graph_tolerance": 1e-12,
+    "small_graph_status": "PASS",
+    "terminal_causes": {
+      "BUDGET_EXHAUSTED": 8165,
+      "EXPLICIT_STOP": 20347
+    },
+    "model_forward_batch_count_with_replay": 1678,
+    "trajectory_forward_batch_size": 64,
+    "wall_time_seconds": 2586.6849126815796,
+    "peak_vram_mb": 83.8828125,
+    "parameter_update_count": 0,
+    "guided_critic_used": false,
+    "independent_evaluator_used": false,
+    "generated_candidates_grant_canonical_credit": false,
+    "biological_optimization_established": false
+  },
+  "interpretation": {
+    "set_marginal_objective_reached_recovery_thresholds": true,
+    "legacy_small_trunk_avoided_mode_concentration": false,
+    "f1_passed_complete_screen_gate": false,
+    "f1_retraining_authorized": false,
+    "threshold_changed": false,
+    "f2_or_f3_result_inferred_from_f1": false
+  },
+  "concurrent_status": {
+    "critic_c1_observed_at": "2026-08-23T08:45:08+08:00",
+    "critic_c1_elapsed_seconds": 23268,
+    "critic_c1_alive": true,
+    "critic_c1_terminal_summary_present": false,
+    "critic_c1_failure_artifact_present": false,
+    "critic_c1_error_marker_present": false,
+    "critic_c1_next_check_not_before": "2026-08-23T09:45:08+08:00",
+    "f2_next_check_not_before": "2026-08-23T09:15:25+08:00"
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "b9a6b0d"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
