@@ -1622,3 +1622,16 @@ C1 terminal `COMPLETED`：Spearman=0.1386460633119141、相对C0 margin=0.027828
 
 C2 full已在GPU5启动，PID3481436、seed20260830、control NONE；中央screen inventory仍缺C2 controls与
 C3 full/controls，不允许adjudicate。TEST/Evaluation read=0，A100 HEAD保持`22317ed`。
+
+## C2/F3/F2-validation scheduled health / C2 source-only launch（2026-08-23）
+
+C2 full在09:55:15启动后首次检查健康，中央CSV第107行为RUNNING；下次不早于10:25:15。F3 training与
+F2 validation在10:01:53仍健康、无terminal/failure artifact，下次均不早于10:31:53；没有读取active
+metric。
+
+GPU0释放33,368MiB后启动C2 `SOURCE_ONLY` control（PID3577060，seed20260830），启动前确认同名中央行、
+terminal与failure artifact均不存在；runner将创建唯一正式attempt，首次health检查等待至少5分钟。C3受
+current-HEAD singleton-ranking修复约束仍未启动。protected outcome read=0，A100 HEAD=`22317ed`。
+
+10:09:27首次检查确认实际Python PID3577062（3577060为launcher）、中央CSV第108行为RUNNING，
+device=`cuda:0`、precision=BF16；无terminal/failure/error，下一次不早于10:39:27。

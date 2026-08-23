@@ -1,0 +1,102 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_c2_f3_f2validation_health.v1",
+  "status": "ACTIVE_SCREENS_HEALTHY_C2_SOURCE_ONLY_LAUNCHED",
+  "observed_at": "2026-08-23T10:01:53+08:00",
+  "critic_c2_full": {
+    "python_pid": 3481436,
+    "status": "RUNNING_AT_INITIAL_CHECK",
+    "initial_check_observed_at": "2026-08-23T09:55:15+08:00",
+    "elapsed_seconds": 394,
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "physical_gpu_index": 5,
+    "gpu_free_memory_mib": 23155,
+    "gpu_utilization_percent": 99,
+    "central_ledger_line_number": 107,
+    "central_ledger_status": "RUNNING",
+    "next_check_not_before": "2026-08-23T10:25:15+08:00"
+  },
+  "setflow_f3_training": {
+    "python_pid": 3408897,
+    "elapsed_seconds": 2534,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "physical_gpu_index": 3,
+    "gpu_free_memory_mib": 34674,
+    "gpu_utilization_percent": 3,
+    "central_ledger_line_number": 106,
+    "central_ledger_status": "RUNNING",
+    "next_check_not_before": "2026-08-23T10:31:53+08:00"
+  },
+  "setflow_f2_unguided_validation": {
+    "python_pid": 3408905,
+    "elapsed_seconds": 2534,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "physical_gpu_index": 1,
+    "gpu_free_memory_mib": 7285,
+    "gpu_utilization_percent": 100,
+    "next_check_not_before": "2026-08-23T10:31:53+08:00"
+  },
+  "critic_c2_source_only_launch": {
+    "launcher_pid": 3577060,
+    "python_pid": 3577062,
+    "seed": 20260830,
+    "arm": "C2",
+    "control_mode": "SOURCE_ONLY",
+    "candidate_bundle_permutation": false,
+    "physical_gpu_index": 0,
+    "status": "RUNNING_AFTER_INITIAL_CHECK",
+    "initial_check_not_before": "2026-08-23T10:06:53+08:00",
+    "initial_check_observed_at": "2026-08-23T10:09:27+08:00",
+    "elapsed_seconds_at_initial_check": 401,
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "error_marker_present": false,
+    "gpu_free_memory_mib": 32072,
+    "gpu_utilization_percent": 93,
+    "central_ledger_line_number": 108,
+    "central_ledger_status": "RUNNING",
+    "ledger_device": "cuda:0",
+    "ledger_precision": "BF16",
+    "next_check_not_before": "2026-08-23T10:39:27+08:00",
+    "duplicate_terminal_artifact_before_launch": false,
+    "duplicate_failure_artifact_before_launch": false,
+    "duplicate_central_ledger_row_before_launch": false
+  },
+  "resource_snapshot": {
+    "observed_at": "2026-08-23T10:01:53+08:00",
+    "gpu_0_to_5_free_memory_mib": [33368, 7285, 3175, 34674, 4267, 36454],
+    "gpu_0_to_5_utilization_percent": [60, 100, 100, 3, 100, 3],
+    "control_launch_reason": "GPU0 had sufficient memory while avoiding the F3 GPU3 and C2-full GPU5 devices",
+    "c3_launch_blocked_by_repository_identity": true,
+    "c3_required_head_contains_singleton_ranking_fix": "b2b0478",
+    "a100_launch_head": "22317ed"
+  },
+  "monitoring_policy": {
+    "active_curves_or_performance_metrics_read": false,
+    "terminal_or_failure_existence_only": true,
+    "f3_and_f2_validation_interval_minutes": 30,
+    "c2_full_interval_minutes": 30,
+    "source_only_initial_check_after_at_least_five_minutes": true
+  },
+  "launch_policy": {
+    "capacity_reduced": false,
+    "batch_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false,
+    "formal_test_or_evaluation_authorization_changed": false
+  },
+  "repository": {
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "88cb7dd"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

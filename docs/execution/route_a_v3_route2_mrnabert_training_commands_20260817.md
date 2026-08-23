@@ -2433,3 +2433,24 @@ C1释放后GPU5 free约8.5GiB；C2使用冻结edit-site cache，已在GPU5启动
 seed20260830、control=NONE。输出/failure路径启动前均不存在；首次health检查等待至少5分钟。C2 controls与
 C3仍未启动，screen不可能提前adjudicate。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c1_terminal_c2_launch_v1.json`。
+
+## C2/F3/F2-validation scheduled health 与 C2 source-only launch（2026-08-23）
+
+C2 full 的启动后首次检查在09:55:15完成：PID3481436、elapsed394秒，仍为RUNNING；`run_summary.json`、
+failure artifact与error marker均不存在，GPU5 free=23,155MiB、utilization=99%，中央ledger第107行为
+RUNNING。没有读取active curve或performance metric，下一次C2 full检查不早于10:25:15。
+
+10:01:53的到点F-only检查中，F3 training PID3408897与F2 unguided validation PID3408905均已运行
+2,534秒，terminal/failure artifact均不存在；GPU3与GPU1分别free=34,674/7,285MiB。两者下一次检查均
+不早于10:31:53。本次资源快照显示GPU0 free=33,368MiB，因而在GPU0启动预注册C2 `SOURCE_ONLY`
+control，PID3577060；它保持seed20260830、full-model geometry、八passes/22,416 updates与冻结信息边界，
+且启动前没有同名ledger行或terminal/failure artifact。首次alive/CUDA/log检查严格等待至少5分钟。
+
+10:09:27首次检查确认3577060是后台launcher、实际Python PID3577062，elapsed401秒；中央ledger第108行
+为RUNNING，device=`cuda:0`、precision=BF16，GPU0 free=32,072MiB、utilization=93%。terminal/failure/
+error marker均不存在；下一次该control检查不早于10:39:27。
+
+C3没有从旧A100 launch HEAD启动，因为其final-pass singleton-microbatch修复只存在于后续commit；所有
+`22317ed` jobs terminal前不做current-HEAD sync。未降容量/batch、未CPU fallback、未用GPU6/7、未终止
+其他进程，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_c2_f3_f2validation_health_20260823_100153.json`。
