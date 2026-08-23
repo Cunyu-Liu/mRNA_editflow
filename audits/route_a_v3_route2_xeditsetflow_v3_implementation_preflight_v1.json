@@ -17,8 +17,8 @@
   "model_arms": {
     "F0": {"trainable_parameters": 817957, "role": "TERMINAL_READ_ONLY_REFERENCE", "retrained": false},
     "F1": {"role": "SET_MARGINAL_OBJECTIVE_DIAGNOSTIC_NOT_SELECTABLE", "hidden_width": 256, "depth": 2},
-    "F2": {"trainable_parameters": 16179014, "width": 384, "depth": 8, "ffn_width": 1536, "selectable": true},
-    "F3": {"trainable_parameters": 42197158, "width": 512, "depth": 12, "ffn_width": 2048, "selectable": true}
+    "F2": {"trainable_parameters": 16178790, "width": 384, "depth": 8, "ffn_width": 1536, "selectable": true},
+    "F3": {"trainable_parameters": 42196934, "width": 512, "depth": 12, "ffn_width": 2048, "selectable": true}
   },
   "implemented_boundaries": {
     "set_marginal_remaining_true_edit_mass": true,

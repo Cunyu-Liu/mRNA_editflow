@@ -5,8 +5,8 @@
   "failure_prevented": "A wrong-capacity or wrong-cohort unguided SetFlow artifact entering screen or confirmation adjudication without exactness and evidence-boundary proof",
   "gate_requirements": {
     "selectable_trainable_parameter_counts": {
-      "f2": 16179014,
-      "f3": 42197158
+      "f2": 16178790,
+      "f3": 42196934
     },
     "validation_source_count": 891,
     "validation_candidate_count": 28512,

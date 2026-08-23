@@ -36,8 +36,8 @@ def test_prospective_methods_addendum_records_realized_frozen_capacities() -> No
     for parameter_count in (
         "29,489,049",
         "30,472,089",
-        "16,179,014",
-        "42,197,158",
+        "16,178,790",
+        "42,196,934",
     ):
         assert parameter_count in text
     assert "no fourth seed is permitted" in text

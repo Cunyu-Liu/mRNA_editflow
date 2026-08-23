@@ -1,0 +1,57 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_frozen_vocab_capacity_correction.v1",
+  "status": "PROSPECTIVE_GATE_IDENTITY_CORRECTED_BEFORE_SCREEN_ADJUDICATION",
+  "observed_date": "2026-08-23",
+  "failure_prevented": "A correctly trained selectable SetFlow arm being rejected because a preflight count used different endpoint-vocabulary cardinalities",
+  "formal_frozen_vocab_cardinalities": {
+    "assay_count": 7,
+    "context_count": 28,
+    "denominator_count": 6,
+    "measurement_count": 5,
+    "numerator_count": 6,
+    "quantity_count": 6
+  },
+  "realized_trainable_parameter_counts": {
+    "f2": 16178790,
+    "f3": 42196934
+  },
+  "evidence": {
+    "f2_formal_training_summary_count": 16178790,
+    "f2_checkpoint_vocab_reinstantiated_f2_count": 16178790,
+    "f2_checkpoint_vocab_reinstantiated_f3_count": 42196934,
+    "previous_f2_preflight_count": 16179014,
+    "previous_f3_preflight_count": 42197158,
+    "count_difference_per_arm": -224
+  },
+  "scientific_invariants": {
+    "architecture_changed": false,
+    "vocabulary_changed": false,
+    "training_result_changed": false,
+    "performance_threshold_changed": false,
+    "seed_changed": false,
+    "baseline_changed": false,
+    "terminal_experiment_repeated": false,
+    "screen_adjudication_already_executed": false
+  },
+  "execution": {
+    "f2_training_status": "COMPLETED",
+    "f2_validation_status": "LAUNCHED",
+    "f3_training_status": "LAUNCHED",
+    "a100_launch_head": "22317ed",
+    "a100_current_head_sync_pending": true
+  },
+  "verification": {
+    "targeted_gate_and_methods_passed": 10,
+    "setflow_focused_passed": 28,
+    "local_exact_v332_passed": 96,
+    "failed": 0,
+    "python_compile_passed": true,
+    "json_validation_passed": true,
+    "git_diff_check_passed": true,
+    "a100_current_head_tests": "PENDING_ACTIVE_LAUNCH_HEAD_JOBS"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -1886,7 +1886,8 @@ XEditSetFlow V3 已实现 projection-only、outcome-free 的 set-marginal state/
 sampler、逐 source float16 mRNABERT token cache、F1 原 V2 两层 trunk 目标诊断、F2 8×384 与 F3 12×512
 hybrid local-attention+dilated-depthwise trunk、hard mask before rate normalization、独立 STOP head、common
 Validation set-NLL patience-2 早停、冻结 F0 epoch-1 common-NLL 只读回放、32-candidate unguided replay/G0/
-recovery validation 和严格 F2/F3 screen gate。真实容量为 F2=16,179,014、F3=42,197,158；F1 不可入选。
+recovery validation 和严格 F2/F3 screen gate。冻结 Development vocab 下的真实容量为 F2=16,178,790、
+F3=42,196,934；F1 不可入选。
 
 SetFlow eligible geometry 为 TRAIN 68,294、VALIDATION 15,924、over-budget 排除 21,286/2,369、19,303
 unique sources、2,817,781 source tokens、maximum length 837。source-token cache 与任何 F1/F2/F3 参数更新
@@ -2243,7 +2244,7 @@ PASS；protected outcome read=0，A100 sync/test 仍等待所有 `22317ed` activ
 ## XEditSetFlow V3 gate artifact-identity repair（2026-08-23）
 
 同类静态核查发现 SetFlow gate 原先未复核 selectable arm 精确容量、unguided validation cohort/method
-identity 和 small-graph exactness。现 screen/confirmation 共同要求 F2/F3 分别为 16,179,014/42,197,158
+identity 和 small-graph exactness。现 screen/confirmation 共同要求 F2/F3 分别为 16,178,790/42,196,934
 trainable parameters，validation 为 exact arm/seed/method、891 sources、28,512 trajectories、forward batch64，
 small-graph TV 不超过冻结 tolerance；同时强制 validation parameter update=0、无 critic/evaluator、protected
 read=0、generated candidate 不获 canonical credit、biological optimization=false。
@@ -2386,3 +2387,22 @@ set-marginal objective能恢复更多measured candidates，但旧817,957参数�
 08:45:08 C1-only检查显示elapsed=6:27:48、仍运行且无terminal/failure/error，下一次不早于09:45:08；
 F2下一次不早于09:15:25。A100 HEAD=`22317ed`，F3/C2/C3仍未启动。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`。
+
+## F2 training terminal、F3/F2-validation启动与capacity identity纠正（2026-08-23）
+
+09:17:57确认F2 training terminal `COMPLETED`、无failure/error。固定事实：seed20260903、4 passes后早停、
+selected pass2、17,076 updates、BF16、GPU3、peak VRAM=1,523.829MiB、TEST/Evaluation read=0。best common
+Validation set-NLL=2.0680908163671576，相对F0 5.397907635224613改善0.6168717665949648，训练侧10% NLL
+门槛通过；仍需unguided validation后才能判断recovery/unique/G0。
+
+F2 formal summary精确参数量为16,178,790，而早先preflight/gate写成16,179,014。用F2 best checkpoint的同一
+冻结endpoint vocab（assay7/context28/quantity6/measurement5/numerator6/denominator6）重新实例化F2/F3几何，
+得到F2=16,178,790、F3=42,196,934；两臂都比旧常量少224。该差异来自preflight使用了不同vocab cardinality，
+不是缩容。screen尚未adjudicate，因此前瞻纠正gate常量、tests、Methods/Experiments和preflight审计；不改
+architecture、vocab、training result、seed、阈值或baseline。
+
+基于F2正式peak与GPU3约7.6GiB free，已在GPU3启动冻结F3 screen；同时把F2 unguided validation运营device
+设为GPU1启动，不改变科学config。launcher PID分别3408896/3408903，首次health检查遵守5分钟。capacity
+修复定向=10/10、SetFlow focused=28/28、精确V3.3.2=96/96；A100 current-HEAD tests/sync仍等待`22317ed`
+active jobs terminal。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_frozen_vocab_capacity_correction_v1.json`。

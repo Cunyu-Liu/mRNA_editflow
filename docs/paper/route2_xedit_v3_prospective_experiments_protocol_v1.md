@@ -71,7 +71,7 @@ The C-Screen caption must state that seed 20260830 is a screen rather than an in
 
 ## RQ2: unguided set-flow comparison
 
-F0 is the terminal 817,957-parameter Base Flow V2 checkpoint replayed without training under the common set-marginal NLL. F1 changes the objective while retaining the small legacy trunk and is diagnostic only. F2 and F3 are the selectable 16,179,014- and 42,197,158-parameter hybrid models. The screen uses seed 20260903, at most twelve passes, and patience-two early stopping on the common Validation set-marginal NLL; it never selects on generated critic self-score.
+F0 is the terminal 817,957-parameter Base Flow V2 checkpoint replayed without training under the common set-marginal NLL. F1 changes the objective while retaining the small legacy trunk and is diagnostic only. With the frozen Development endpoint vocabularies, F2 and F3 are the selectable 16,178,790- and 42,196,934-parameter hybrid models. The screen uses seed 20260903, at most twelve passes, and patience-two early stopping on the common Validation set-marginal NLL; it never selects on generated critic self-score.
 
 The main comparison separates likelihood from generation behavior. Common set-marginal NLL tests the unordered target distribution under one definition. Source-macro candidate recovery, top-k recovery, and unique-candidate rate test open-support behavior. Hard legality, edit/candidate budget, STOP cause, replay, and numerical counters test engineering validity. An arm cannot trade a correctness failure for a better recovery value.
 

@@ -31,7 +31,7 @@ def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_
     for arm, nll, recovery, top in (
         ("f1", 8.0, 0.3, 0.2), ("f2", f2_nll, f2_recovery, f2_top), ("f3", f3_nll, f3_recovery, f3_top)
     ):
-        parameter_counts = {"f1": 818_021, "f2": 16_179_014, "f3": 42_197_158}
+        parameter_counts = {"f1": 818_021, "f2": 16_178_790, "f3": 42_196_934}
         training[arm] = {
             "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", "seed": 20260903, "arm": arm,
             "run_stage": "SCREEN", "selectable": arm in {"f2", "f3"},
@@ -106,7 +106,7 @@ def _confirmation_artifacts(arm: str = "f2"):
             "maximum_passes": 12,
             "training_precision": "BF16",
             "parameter_changed": True,
-            "trainable_parameter_count": 16_179_014 if arm == "f2" else 42_197_158,
+            "trainable_parameter_count": 16_178_790 if arm == "f2" else 42_196_934,
             "cpu_fallback_used": False,
             "critic_score_used": False,
             "independent_evaluator_used": False,

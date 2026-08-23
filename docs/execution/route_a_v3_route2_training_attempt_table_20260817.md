@@ -1278,7 +1278,8 @@ cache-online 三几何数值对齐在 current HEAD 同步后执行。
 
 SetFlow V3 的 F1/F2/F3、set-marginal loss、balanced sampler、source-token cache、common-NLL trainer、
 F0 epoch-1 read-only replay、unguided recovery/G0 validator 与 strict screen gate 已实现。F2/F3 精确
-trainable parameters 为 16,179,014 / 42,197,158；合法 cohort 为 TRAIN 68,294、VALIDATION 15,924。
+冻结 Development vocab 下 trainable parameters 为 16,178,790 / 42,196,934；合法 cohort 为 TRAIN 68,294、
+VALIDATION 15,924。
 source cache 与 formal training 尚未启动，Base Flow V2 terminal 不重跑；本机 focused/V3.3.2 为
 36/36、96/96。Development TEST/Evaluation read、model/generation success 与 submission-ready 均为 false。
 
@@ -1595,3 +1596,14 @@ measured recovery但旧小trunk严重mode concentration”的方法诊断，不�
 
 C1在08:45:08仍RUNNING、无terminal/failure/error，下一次不早于09:45:08；F2下一次不早于09:15:25。
 protected outcome read=0，A100 HEAD保持`22317ed`。
+
+## XEditSetFlow V3 F2 training terminal / F3 launch / capacity correction（2026-08-23）
+
+F2 seed20260903 training terminal `COMPLETED`：4 passes early-stop、selected pass2、17,076 updates、best common
+set-NLL=2.0680908163671576，相对F0改善61.687%，训练侧NLL check通过；validation仍待terminal，不能提前判
+screen PASS。F2 terminal不重训。
+
+formal frozen vocab的实际capacity为F2=16,178,790、F3=42,196,934；旧gate/preflight两者各高估224，已在
+screen adjudication前纠正。模型/数据/seed/threshold均未变。F3 training已在GPU3启动，F2 unguided
+validation已在GPU1启动；首次检查遵守5分钟。定向10/10、SetFlow focused28/28、V3.3.2 96/96，A100 HEAD
+仍为`22317ed`，protected outcome read=0。

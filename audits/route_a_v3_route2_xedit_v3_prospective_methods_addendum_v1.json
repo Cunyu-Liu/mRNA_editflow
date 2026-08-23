@@ -26,8 +26,8 @@
   "realized_trainable_parameter_counts": {
     "critic_c2": 29489049,
     "critic_c3": 30472089,
-    "setflow_f2": 16179014,
-    "setflow_f3": 42197158
+    "setflow_f2": 16178790,
+    "setflow_f3": 42196934
   },
   "tests": {
     "focused_passed": 3,

@@ -13,8 +13,8 @@ class XEditSetFlowGateV3Error(RuntimeError):
 
 
 SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3 = {
-    "f2": 16_179_014,
-    "f3": 42_197_158,
+    "f2": 16_178_790,
+    "f3": 42_196_934,
 }
 
 
