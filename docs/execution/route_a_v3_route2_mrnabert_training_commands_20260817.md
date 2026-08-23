@@ -2539,3 +2539,14 @@ GSE114002/mean-ribosome-load=0.6580713190184049（652）、ENCSR854RUF/allelic-s
 652/891 sources，因此总体source-macro对cohort组成敏感，论文需伴随domain-resolved报告。该诊断不改变
 冻结gate、F3或任何训练；无新attempt/代码/test，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f2_diversity_domain_diagnostic_v1.json`。
+
+## 12:31–12:41 scheduled screen health（2026-08-23）
+
+C2 full在12:31:11仍RUNNING：PID3481436、elapsed9,751秒、无terminal/failure，下一次不早于13:01:11。
+F3 training在12:35:16仍RUNNING：PID3408897、elapsed11,737秒、无terminal/failure，下一次不早于
+13:05:16。C2 source-only在12:41:59仍RUNNING：实际Python PID3577062、elapsed9,553秒、无terminal/
+failure/error，下一次不早于13:11:59。
+
+三项仍少于4小时并按30分钟节奏，未读active performance。GPU0/3/5已有正式job，C2资源快照中GPU1/2/4
+无安全显存，未新增control或叠加任务。无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected
+outcome read=0。审计：`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_124159.json`。

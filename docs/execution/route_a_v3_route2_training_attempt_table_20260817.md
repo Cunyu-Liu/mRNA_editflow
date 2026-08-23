@@ -1684,3 +1684,9 @@ F2终态mean unique在GSE269595/GSE114002/ENCSR854RUF/GSE217518分别为0.435937
 0.7063078704/0.8220720721，四域均低于0.90；study与endpoint在该cohort一一对应，不能独立归因。
 GSE114002占652/891 sources，总体source-macro需与domain-resolved值共同报告。本项不新增attempt，
 F2/F3与protected outcome状态不变。
+
+## 12:31–12:41 scheduled screen health（2026-08-23）
+
+C2 full/F3 training/C2 source-only分别在12:31:11/12:35:16/12:41:59保持RUNNING，elapsed分别为
+9,751/11,737/9,553秒，均无terminal/failure；下一窗口分别为13:01:11/13:05:16/13:11:59。未读active
+metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
