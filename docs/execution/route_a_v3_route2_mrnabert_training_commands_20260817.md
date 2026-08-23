@@ -2824,3 +2824,14 @@ permutation查询因本地/远端时钟偏移估计不足，比22:03:00边界早
 实际观测时间起算。未读active metric/log，未干预、叠加、降容量或启动C3。无代码变化，不重复Critic70/70
 或V3.3.2 96/96；A100 sync/tests pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_220902.json`。
+
+## 22:28–22:32 C2 controls enter long-interval monitoring（2026-08-23）
+
+no-candidate在22:28:23仍RUNNING（elapsed15,263秒、ledger110、GPU5 free35,295MiB/util33%），已超过
+四小时并切换60分钟，下一次≥23:28:23。permutation在22:32:40仍RUNNING（elapsed14,923秒、ledger111、
+GPU0 free33,164MiB/util35%），也切换60分钟，下一次≥23:32:40；本次严格在边界后观测，没有重复上一窗口
+的21秒偏差。edit-metadata未提前重查，仍保持下一次≥23:09:02。
+
+三项现均使用60分钟节奏。无terminal/failure、active metric/log读取、训练干预或C3叠加；无代码变化，不重复
+测试，A100 sync/tests pending，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_223240.json`。

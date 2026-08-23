@@ -1772,6 +1772,13 @@ no-candidate/permutation/edit-metadata分别在21:58:08/22:02:39/22:09:02保持R
 早于预定边界21秒，本轮未立即重查且后续改按实际观测时间起算。未新增attempt，未读active metric，
 protected read=0。
 
+## 22:28–22:32 C2 controls enter long-interval monitoring（2026-08-23）
+
+no-candidate/permutation分别在22:28:23/22:32:40保持RUNNING，elapsed为15,263/14,923秒，中央CSV
+第110/111行仍RUNNING且无terminal/failure；二者均超过四小时，后续切换60分钟，下一窗口为
+23:28:23/23:32:40。edit-metadata本轮未提前重查，下一窗口仍为23:09:02。三个control现均进入
+60分钟节奏；未新增attempt、未读active metric，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为
