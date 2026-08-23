@@ -89,6 +89,32 @@ def test_both_selectable_fail_is_terminal_no_go() -> None:
     assert result["additional_seed_authorized"] is False
 
 
+def test_screen_accepts_exact_terminal_v3_launch_head_summary_without_stage() -> None:
+    f0, training, validation = _artifacts()
+    for summary in training.values():
+        summary.pop("run_stage")
+        summary["schema_version"] = (
+            "route_a_v3_route2_xeditsetflow_training_summary.v3"
+        )
+        summary["history_is_terminal"] = True
+    result = adjudicate_setflow_screen_v3(f0, training, validation)
+    assert result["status"] == "XEDITSETFLOW_V3_SCREEN_PASS"
+    assert {
+        row["run_stage_identity_source"] for row in result["arms"].values()
+    } == {"DERIVED_FROM_TERMINAL_V3_SCREEN_SCHEMA_AND_SEED"}
+
+
+def test_screen_missing_stage_fails_outside_exact_terminal_v3_summary() -> None:
+    f0, training, validation = _artifacts()
+    training["f2"].pop("run_stage")
+    with pytest.raises(Exception, match="run stage is absent"):
+        adjudicate_setflow_screen_v3(f0, training, validation)
+    f0, training, validation = _artifacts()
+    training["f2"]["run_stage"] = "CONFIRMATION"
+    with pytest.raises(Exception, match="arm/role identity"):
+        adjudicate_setflow_screen_v3(f0, training, validation)
+
+
 def _confirmation_artifacts(arm: str = "f2"):
     training = {}
     validation = {}

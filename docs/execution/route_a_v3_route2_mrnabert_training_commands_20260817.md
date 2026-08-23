@@ -2635,3 +2635,20 @@ C2两项继续60分钟节奏，F3 validation继续30分钟节奏；未读active 
 free=8,627/3,155/4,305MiB且util均100%，GPU0/3/5已有正式任务，未新增control、未叠加或降容量。
 本项无代码变化，不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_screen_health_20260823_172222.json`。
+
+## SetFlow screen launch-HEAD stage identity repair（2026-08-23）
+
+等待F3 validation期间的current-HEAD gate preflight发现：正式F1/F2/F3 screen jobs从`22317ed`启动，该版本
+`route_a_v3_route2_xeditsetflow_training_summary.v3`尚未写`run_stage`；current HEAD随后为confirmation加入
+显式stage，并在screen gate中直接要求`run_stage=SCREEN`。因此若不修复，真实terminal screen artifact会在
+指标裁决前因后加schema字段被拒绝；使用旧gate又会丢失current HEAD新增的capacity/cohort/provenance检查。
+
+现做窄修复：仅当summary schema精确为上述v3、seed精确为20260903且`history_is_terminal=true`时，缺失
+`run_stage`才解释为`SCREEN`，并在gate output记录identity source；其他缺失stage或显式错误stage继续硬失败，
+confirmation仍必须显式`run_stage=CONFIRMATION`。不改写terminal artifact，不建立通用migration/compat层，
+不改变metric、threshold、selection、seed或arm。
+
+定向gate测试=9/9、完整SetFlow V3 focused=30/30、本机精确V3.3.2=96/96，Python compile与diff-check
+PASS。A100 current-HEAD测试/同步仍等待旧HEAD active jobs全部terminal。本项不新增optimizer attempt，
+不重跑训练/validation，不读取Development TEST/new Evaluation；F3 validation与Critic jobs继续原节奏。
+审计：`audits/route_a_v3_route2_xeditsetflow_v3_screen_stage_identity_repair_v1.json`。

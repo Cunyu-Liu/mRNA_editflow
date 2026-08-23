@@ -1685,6 +1685,13 @@ C2 full/F3 training/C2 source-only分别在13:01:35/13:05:49/13:13:04保持RUNNI
 F3下次若仍运行将切换60分钟节奏；未读active metric、未新增attempt或叠加GPU任务，protected outcome
 read=0，A100 HEAD=`22317ed`。
 
+## SetFlow screen launch-HEAD stage identity repair（2026-08-23）
+
+current-HEAD screen gate现可对`22317ed`生成的精确terminal v3 screen summary在缺少后加`run_stage`字段时，
+由schema+seed20260903+terminal identity唯一解释为SCREEN；其他缺失/错误stage仍硬失败，confirmation仍要求
+显式CONFIRMATION。terminal artifacts与所有metric/gate/selection不改。本项不新增中央optimizer attempt；
+focused=30/30、精确V3.3.2=96/96，A100 current-HEAD测试等待旧HEAD jobs terminal，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

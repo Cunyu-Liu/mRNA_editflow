@@ -17,6 +17,10 @@ SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3 = {
     "f3": 42_196_934,
 }
 
+SCREEN_TRAINING_SUMMARY_SCHEMA_V3 = (
+    "route_a_v3_route2_xeditsetflow_training_summary.v3"
+)
+
 
 def _require(condition: bool, message: str) -> None:
     if not condition:
@@ -28,6 +32,29 @@ def _finite(value: Any, label: str) -> float:
     result = float(value)
     _require(math.isfinite(result), f"{label} is nonfinite")
     return result
+
+
+def _screen_run_stage_identity_v3(
+    training: Mapping[str, Any], *, arm: str
+) -> tuple[str, str]:
+    """Resolve the stage of the frozen seed-20260903 screen artifact.
+
+    The formal screen jobs were launched at repository HEAD 22317ed, whose v3
+    terminal summary predates the explicit ``run_stage`` field.  The missing
+    field is unambiguous only for that exact terminal screen schema and seed.
+    Confirmation artifacts continue to require an explicit stage elsewhere.
+    """
+
+    explicit = training.get("run_stage")
+    if explicit is not None:
+        return str(explicit), "EXPLICIT_RUN_STAGE"
+    _require(
+        training.get("schema_version") == SCREEN_TRAINING_SUMMARY_SCHEMA_V3
+        and int(training.get("seed", -1)) == 20260903
+        and training.get("history_is_terminal") is True,
+        f"{arm} screen run stage is absent outside the exact terminal v3 screen summary",
+    )
+    return "SCREEN", "DERIVED_FROM_TERMINAL_V3_SCREEN_SCHEMA_AND_SEED"
 
 
 def _require_unguided_validation_identity_v3(
@@ -107,12 +134,15 @@ def adjudicate_setflow_screen_v3(
     for arm in ("f1", "f2", "f3"):
         train = training[arm]
         valid = validation[arm]
+        run_stage, run_stage_identity_source = _screen_run_stage_identity_v3(
+            train, arm=arm
+        )
         _require(train.get("status") == "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", f"{arm} training is not terminal")
         _require(valid.get("status") in {"FLOW_G0_READY", "FLOW_G0_VALIDATION_FAIL"}, f"{arm} validation is not terminal")
         _require(int(train.get("seed", -1)) == int(valid.get("seed", -2)) == 20260903, f"{arm} screen seed changed")
         _require(
             str(train.get("arm")) == str(valid.get("arm")) == arm
-            and train.get("run_stage") == "SCREEN"
+            and run_stage == "SCREEN"
             and train.get("selectable") is (arm in {"f2", "f3"}),
             f"{arm} screen arm/role identity differs",
         )
@@ -165,6 +195,8 @@ def adjudicate_setflow_screen_v3(
         selectable = arm in {"f2", "f3"}
         rows[arm] = {
             "selectable": selectable,
+            "run_stage": run_stage,
+            "run_stage_identity_source": run_stage_identity_source,
             "common_validation_set_marginal_nll": nll,
             "f0_common_validation_set_marginal_nll": f0_nll,
             "relative_common_nll_improvement": relative_nll_improvement,

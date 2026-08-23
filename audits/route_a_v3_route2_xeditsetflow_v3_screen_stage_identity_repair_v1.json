@@ -1,0 +1,55 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_screen_stage_identity_repair.v1",
+  "status": "CURRENT_HEAD_GATE_ACCEPTS_EXACT_LAUNCH_HEAD_SCREEN_SUMMARY_WITHOUT_WEAKENING_CONFIRMATION_IDENTITY",
+  "observed_at": "2026-08-23",
+  "failure_detected": "Current-HEAD screen adjudication required an explicit run_stage field that formal screen summaries produced by launch HEAD 22317ed do not contain.",
+  "failure_consequence_without_repair": "A terminal screen arm could be rejected for a post-launch schema addition before its frozen metrics were adjudicated.",
+  "launch_head": "22317ed",
+  "repair": {
+    "accepted_missing_field": "run_stage",
+    "accepted_only_when": {
+      "schema_version": "route_a_v3_route2_xeditsetflow_training_summary.v3",
+      "seed": 20260903,
+      "history_is_terminal": true,
+      "gate_context": "SCREEN"
+    },
+    "derived_stage": "SCREEN",
+    "gate_output_records_identity_source": true,
+    "terminal_artifact_rewritten": false,
+    "generic_migration_or_compatibility_layer_added": false
+  },
+  "fail_closed_boundaries": {
+    "missing_stage_outside_exact_terminal_screen_schema_rejected": true,
+    "explicit_wrong_screen_stage_rejected": true,
+    "confirmation_requires_explicit_confirmation_stage": true,
+    "capacity_checks_unchanged": true,
+    "cohort_checks_unchanged": true,
+    "protected_data_checks_unchanged": true,
+    "validation_identity_checks_unchanged": true,
+    "metric_thresholds_unchanged": true,
+    "selection_order_unchanged": true
+  },
+  "verification": {
+    "targeted_gate_tests_passed": 9,
+    "setflow_v3_focused_tests_passed": 30,
+    "exact_v332_tests_passed": 96,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_current_head_tests": "PENDING_LAUNCH_HEAD_ACTIVE_JOBS_TERMINAL"
+  },
+  "experiment_state": {
+    "optimizer_attempt_added": false,
+    "training_or_validation_repeated": false,
+    "f3_validation_status": "RUNNING",
+    "critic_screen_jobs_status": "RUNNING",
+    "screen_adjudication_executed": false
+  },
+  "repository": {
+    "local_and_github_head_before_repair_commit": "0806bc5",
+    "a100_synced_to_current_head": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
