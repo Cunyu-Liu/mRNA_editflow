@@ -2740,3 +2740,17 @@ elapsed2,492秒、GPU5 free37,259MiB/util33%），下一次不早于19:25:33；c
 相同current-HEAD test cohort；最近Critic focused=70/70、精确V3.3.2=96/96，A100 current-HEAD tests继续
 等待旧launch-HEAD controls全部terminal。Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_190331.json`。
+
+## F2/F3 terminal budget/domain recovery diagnostic（2026-08-23）
+
+等待C2 controls期间，只读F2/F3已terminal的outcome-free per-source recovery、top-k、unique与STOP-cause字段。
+F3在B1/B3/B5的recovery为0.4465/0.1689/0.0126，低于F2的0.4857/0.3783/0.0550；top-k为
+0.2356/0.0969/0.0063，低于F2的0.2600/0.2367/0.0296；unique为0.4588/0.6560/0.7650，亦低于
+F2的0.4832/0.7134/0.8066。F3在每个budget的三项生成指标都没有随更大容量改善，B5 recovery接近零。
+
+F3按domain recovery为GSE269595=0、ENCSR854RUF=0.0370、GSE217518=0.0405、GSE114002=0.2520，
+所有domain unique仍低于0.90；GSE114002占652/891 sources，aggregate具有composition sensitivity。
+诊断支持likelihood-to-generation misalignment/candidate concentration，不授权事后替换模型。未读取selected
+measured outcome、private trajectory、TEST或Evaluation，未新增attempt或修改A100 artifact。无代码变化，
+focused/V3.3.2 cohort不重复。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f2_f3_budget_domain_recovery_diagnostic_v1.json`。

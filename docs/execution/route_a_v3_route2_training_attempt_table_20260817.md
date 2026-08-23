@@ -1727,6 +1727,13 @@ control但仍不eligible。第109行edit-metadata保持RUNNING；第110/111行�
 仍为RUNNING。下一窗口分别为19:25:33/19:29:57/19:33:31。没有新optimizer attempt或主动停止；无代码
 变化，focused/V3.3.2 cohort不重复，最近为70/70与96/96；A100 current-HEAD tests pending，protected read=0。
 
+## F2/F3 terminal budget/domain recovery diagnostic（2026-08-23）
+
+只读终态outcome-free aggregation显示，F3相对F2在B1/B3/B5的recovery差值为-0.0393/-0.2094/-0.0424，
+top-k差值为-0.0244/-0.1399/-0.0234，unique差值为-0.0245/-0.0574/-0.0416；更大F3容量没有在任何
+budget修复生成指标。F3四个domain unique均低于0.90，三项minority-domain recovery为0–0.0405；总体受
+652/891-source GSE114002组成影响。该项不新增optimizer attempt、不改gate、不读protected outcome、不重复test。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为

@@ -1,0 +1,157 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f2_f3_budget_domain_recovery_diagnostic.v1",
+  "status": "F3_CAPACITY_DOES_NOT_RESCUE_BUDGET_OR_DOMAIN_RECOVERY",
+  "observed_at": "2026-08-23T19:08:51+08:00",
+  "analysis_scope": "TERMINAL_OUTCOME_FREE_RECOVERY_TOP_K_AND_UNIQUE_RATE_ONLY",
+  "source_artifacts": {
+    "F2": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f2/validation_summary.json",
+    "F3": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f3/validation_summary.json"
+  },
+  "source_count_per_arm": 891,
+  "budgets": {
+    "B1": {
+      "source_count": 263,
+      "F2": {
+        "mean_candidate_recovery_rate": 0.4857414448669202,
+        "mean_top_k_recovery_rate": 0.25996055064496126,
+        "mean_unique_candidate_rate": 0.4832461977186312
+      },
+      "F3": {
+        "mean_candidate_recovery_rate": 0.44645120405576677,
+        "mean_top_k_recovery_rate": 0.23560414026193496,
+        "mean_unique_candidate_rate": 0.4587690114068441,
+        "median_unique_candidate_rate": 0.46875,
+        "fraction_sources_unique_rate_at_least_0_90": 0.0,
+        "explicit_stop_count": 0,
+        "budget_exhausted_count": 8416
+      },
+      "F3_minus_F2": {
+        "candidate_recovery_rate": -0.039290240811153454,
+        "top_k_recovery_rate": -0.0243564103830263,
+        "unique_candidate_rate": -0.02447718631178708
+      }
+    },
+    "B3": {
+      "source_count": 304,
+      "F2": {
+        "mean_candidate_recovery_rate": 0.3782894736842102,
+        "mean_top_k_recovery_rate": 0.23673253144881445,
+        "mean_unique_candidate_rate": 0.7134046052631579
+      },
+      "F3": {
+        "mean_candidate_recovery_rate": 0.16885964912280702,
+        "mean_top_k_recovery_rate": 0.09686916017096932,
+        "mean_unique_candidate_rate": 0.6560444078947368,
+        "median_unique_candidate_rate": 0.59375,
+        "fraction_sources_unique_rate_at_least_0_90": 0.2532894736842105,
+        "explicit_stop_count": 7373,
+        "budget_exhausted_count": 2355
+      },
+      "F3_minus_F2": {
+        "candidate_recovery_rate": -0.20942982456140316,
+        "top_k_recovery_rate": -0.13986337127784515,
+        "unique_candidate_rate": -0.05736019736842102
+      }
+    },
+    "B5": {
+      "source_count": 324,
+      "F2": {
+        "mean_candidate_recovery_rate": 0.055041152263374506,
+        "mean_top_k_recovery_rate": 0.02962833296044797,
+        "mean_unique_candidate_rate": 0.806616512345679
+      },
+      "F3": {
+        "mean_candidate_recovery_rate": 0.012602880658436216,
+        "mean_top_k_recovery_rate": 0.006259868817739188,
+        "mean_unique_candidate_rate": 0.7650462962962963,
+        "median_unique_candidate_rate": 0.8125,
+        "fraction_sources_unique_rate_at_least_0_90": 0.3888888888888889,
+        "explicit_stop_count": 7765,
+        "budget_exhausted_count": 2603
+      },
+      "F3_minus_F2": {
+        "candidate_recovery_rate": -0.042438271604938294,
+        "top_k_recovery_rate": -0.023368464142708784,
+        "unique_candidate_rate": -0.04157021604938271
+      }
+    }
+  },
+  "F3_domains": [
+    {
+      "study": "GSE269595",
+      "endpoint": "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+      "source_count": 20,
+      "mean_candidate_recovery_rate": 0.0,
+      "mean_top_k_recovery_rate": 0.0,
+      "mean_unique_candidate_rate": 0.6296875
+    },
+    {
+      "study": "GSE114002",
+      "endpoint": "MEAN_RIBOSOME_LOAD",
+      "source_count": 652,
+      "mean_candidate_recovery_rate": 0.25204498977505113,
+      "mean_top_k_recovery_rate": 0.13947900472056912,
+      "mean_unique_candidate_rate": 0.582342791411043
+    },
+    {
+      "study": "ENCSR854RUF",
+      "endpoint": "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE",
+      "source_count": 108,
+      "mean_candidate_recovery_rate": 0.037037037037037035,
+      "mean_top_k_recovery_rate": 0.023148148148148147,
+      "mean_unique_candidate_rate": 0.7482638888888888
+    },
+    {
+      "study": "GSE217518",
+      "endpoint": "RNA_HALF_LIFE_MINUTES",
+      "source_count": 111,
+      "mean_candidate_recovery_rate": 0.04054054054054054,
+      "mean_top_k_recovery_rate": 0.0,
+      "mean_unique_candidate_rate": 0.8547297297297297
+    }
+  ],
+  "interpretation": {
+    "F3_recovery_below_F2_in_every_budget": true,
+    "F3_top_k_recovery_below_F2_in_every_budget": true,
+    "F3_unique_rate_below_F2_in_every_budget": true,
+    "all_F3_budget_mean_unique_rates_below_0_90": true,
+    "all_F3_domain_mean_unique_rates_below_0_90": true,
+    "F3_B5_recovery_is_near_zero": true,
+    "failure_is_single_budget_only": false,
+    "failure_is_single_study_only": false,
+    "study_and_endpoint_are_one_to_one_confounded_in_this_cohort": true,
+    "gse114002_source_fraction": 0.7317620650953984,
+    "overall_source_macro_is_composition_sensitive": true,
+    "capacity_only_explanation_supported": false,
+    "likelihood_generation_metric_misalignment_supported_as_diagnostic": true,
+    "frozen_gate_or_terminal_status_changed": false,
+    "new_architecture_hyperparameter_seed_or_threshold_authorized": false
+  },
+  "execution": {
+    "terminal_summary_fields_read": [
+      "generation_metrics.per_source.unique_candidate_rate",
+      "generation_metrics.per_source.terminal_causes",
+      "measured_neighborhood_metrics.per_source.candidate_recovery_rate",
+      "measured_neighborhood_metrics.per_source.measured_top_k_recovery_at_k"
+    ],
+    "selected_measured_outcome_field_read": false,
+    "private_trajectory_payload_read": false,
+    "artifact_written_or_modified_on_a100": false,
+    "optimizer_attempt_created": false
+  },
+  "verification": {
+    "code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Read-only aggregation of terminal outcome-free fields did not change executable behavior.",
+    "json_validation_required": true,
+    "git_diff_check_required": true
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "local_and_github_head_before_record_commit": "91c530e"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
