@@ -1635,3 +1635,9 @@ current-HEAD singleton-ranking修复约束仍未启动。protected outcome read=
 
 10:09:27首次检查确认实际Python PID3577062（3577060为launcher）、中央CSV第108行为RUNNING，
 device=`cuda:0`、precision=BF16；无terminal/failure/error，下一次不早于10:39:27。
+
+## XEdit V3 interim Development evidence note（2026-08-23）
+
+新增`docs/paper/route2_xedit_v3_interim_results_evidence_v1.md`，将C0/C1与F0/F1 terminal diagnostics及F2
+training-only事实从前瞻protocol中分离记录。没有新参数更新或metric read，本项不新增中央attempt；screen、
+guidance、TEST/Evaluation授权状态均不变。

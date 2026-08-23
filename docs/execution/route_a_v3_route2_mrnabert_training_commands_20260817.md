@@ -2454,3 +2454,14 @@ C3没有从旧A100 launch HEAD启动，因为其final-pass singleton-microbatch�
 `22317ed` jobs terminal前不做current-HEAD sync。未降容量/batch、未CPU fallback、未用GPU6/7、未终止
 其他进程，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xedit_v3_c2_f3_f2validation_health_20260823_100153.json`。
+
+## XEdit V3 interim Development evidence note（2026-08-23）
+
+等待screen期间新增独立observed-results companion，避免把已读terminal diagnostic写回前瞻冻结protocol。
+该note如实并列C0/C1、F0/F1与仅training-terminal的F2，明确C1不可选且未过0.25/1.70阈值，F1虽提升
+recovery/top-k但NLL恶化且unique严重失败，F2只有training-side NLL证据、validation仍pending。它不形成
+screen PASS、model advantage或submission-ready claim，也不开放critic guidance、TEST或Evaluation。
+
+文档：`docs/paper/route2_xedit_v3_interim_results_evidence_v1.md`。本项不运行新模型、不读取active metric、
+不创建中央optimizer attempt；引用证据路径存在性与diff-check PASS。没有代码变化，因此不重复本地/A100
+test cohort；Development TEST/new Evaluation read=0。
