@@ -2855,3 +2855,15 @@ permutation未提前重查，仍保持各自23:28:23/23:32:40窗口。
 仅检查该job的alive/terminal/failure/ledger/GPU，不读active curve/metric；未干预、叠加、降容量或启动C3。
 无代码变化，不重复测试；A100 sync/tests pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_230917.json`。
+
+## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
+
+no-candidate在23:28:53仍RUNNING（PID1136782、elapsed18,893秒、ledger110、GPU5 free31,229MiB/
+util64%），无terminal/failure，下一次≥2026-08-24 00:28:53。permutation在23:33:05仍RUNNING
+（PID1266566、elapsed18,547秒、ledger111、GPU0 free32,624MiB/util73%），无terminal/failure，下一次
+≥2026-08-24 00:33:05。edit-metadata未提前重查，下一次仍≥00:09:17。
+
+只读alive/terminal/failure/ledger/GPU，不读active curve/metric；未干预、叠加、降容量或启动C3。三个control
+继续60分钟节奏，由同一active Route 2 heartbeat续跑。无代码变化，不重复测试；A100 sync/tests pending，
+protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_233305.json`。
