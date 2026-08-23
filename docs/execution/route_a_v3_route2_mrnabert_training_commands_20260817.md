@@ -2727,3 +2727,16 @@ C2 controls不因full失败而选择性停止，必须全部terminal；C3及其c
 不重复test cohort；最近current-HEAD Critic focused=70/70、精确V3.3.2=96/96，A100 tests pending，
 protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_full_source_terminal_controls_running_v1.json`。
+
+## 18:55–19:03 C2 remaining-control health（2026-08-23）
+
+按各自30分钟窗口检查三个预注册C2 control：`NO_CANDIDATE_SEQUENCE`在18:55:33仍RUNNING（PID1136782、
+elapsed2,492秒、GPU5 free37,259MiB/util33%），下一次不早于19:25:33；candidate-bundle permutation在
+18:59:57仍RUNNING（PID1266566、elapsed2,159秒、ledger第111行RUNNING、GPU0 free31,207MiB/util98%），
+下一次不早于19:29:57；`EDIT_METADATA_ONLY`在19:03:31仍RUNNING（PID889042、elapsed3,972秒、ledger
+第109行RUNNING、GPU3 free30,913MiB/util68%），下一次不早于19:33:31。三项均无terminal/failure。
+
+未读取active curve/metric/stderr，未选择性停止control，未启动C3、未叠加或降容量。该记录不改代码，故不重复
+相同current-HEAD test cohort；最近Critic focused=70/70、精确V3.3.2=96/96，A100 current-HEAD tests继续
+等待旧launch-HEAD controls全部terminal。Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_190331.json`。

@@ -1720,6 +1720,13 @@ C2 full中央CSV第107行COMPLETED：Spearman0.1042656112、C0 margin-0.00655244
 control但仍不eligible。第109行edit-metadata保持RUNNING；第110/111行新增预注册no-candidate/permutation，
 5分钟初检均健康。controls继续到terminal，不因C2 full失败而删减；protected read=0，C3仍待current-HEAD sync。
 
+## 18:55–19:03 C2 remaining-control health（2026-08-23）
+
+`NO_CANDIDATE_SEQUENCE`、candidate-bundle permutation、`EDIT_METADATA_ONLY`分别在18:55:33、18:59:57、
+19:03:31保持RUNNING，elapsed为2,492/2,159/3,972秒，均无terminal/failure；后两项中央CSV第111/109行
+仍为RUNNING。下一窗口分别为19:25:33/19:29:57/19:33:31。没有新optimizer attempt或主动停止；无代码
+变化，focused/V3.3.2 cohort不重复，最近为70/70与96/96；A100 current-HEAD tests pending，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为
