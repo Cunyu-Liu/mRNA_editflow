@@ -1,0 +1,97 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c2_controls_health.v1",
+  "status": "C2_REMAINING_CONTROLS_HEALTHY_SEVENTH_SCHEDULED_WINDOW",
+  "critic_c2_no_candidate_sequence": {
+    "observed_at": "2026-08-23T21:58:08+08:00",
+    "python_pid": 1136782,
+    "elapsed_seconds": 13448,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 110,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 5,
+    "gpu_free_memory_mib": 32291,
+    "gpu_utilization_percent": 29,
+    "monitoring_interval_minutes": 30,
+    "next_check_not_before": "2026-08-23T22:28:08+08:00"
+  },
+  "critic_c2_candidate_bundle_permutation": {
+    "observed_at": "2026-08-23T22:02:39+08:00",
+    "python_pid": 1266566,
+    "elapsed_seconds": 13121,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 111,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 0,
+    "gpu_free_memory_mib": 25577,
+    "gpu_utilization_percent": 88,
+    "monitoring_interval_minutes": 30,
+    "next_check_not_before": "2026-08-23T22:32:39+08:00",
+    "cadence_deviation": {
+      "scheduled_not_before": "2026-08-23T22:03:00+08:00",
+      "observed_early_seconds": 21,
+      "cause": "LOCAL_REMOTE_CLOCK_OFFSET_WAS_UNDERESTIMATED",
+      "corrective_requery_performed": false,
+      "next_window_anchored_to_actual_observation": true
+    }
+  },
+  "critic_c2_edit_metadata_only": {
+    "observed_at": "2026-08-23T22:09:02+08:00",
+    "python_pid": 889042,
+    "elapsed_seconds": 15103,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 109,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 3,
+    "gpu_free_memory_mib": 31735,
+    "gpu_utilization_percent": 56,
+    "monitoring_interval_minutes": 60,
+    "next_check_not_before": "2026-08-23T23:09:02+08:00"
+  },
+  "screen_state": {
+    "c2_primary_eligible": false,
+    "c2_controls_still_required_for_complete_evidence": true,
+    "c2_controls_stopped_early": false,
+    "c3_and_controls_started": false,
+    "c3_requires_all_launch_head_jobs_terminal_then_current_head_sync": true,
+    "confirmation_authorized": false
+  },
+  "monitoring_policy": {
+    "task_specific_intervals_respected_without_deviation": false,
+    "candidate_bundle_permutation_early_observation_seconds": 21,
+    "early_observation_disclosed_and_not_repeated": true,
+    "active_training_curve_or_performance_metric_read": false,
+    "terminal_failure_alive_only": true,
+    "no_candidate_and_permutation_remain_on_thirty_minutes_until_next_observation": true,
+    "edit_metadata_switched_to_sixty_minutes_after_observed_elapsed_exceeded_four_hours": true,
+    "formal_jobs_stacked": false,
+    "capacity_or_batch_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "verification": {
+    "code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Only scheduled health evidence changed; no executable behavior changed.",
+    "most_recent_current_head_critic_focused_tests_passed": 70,
+    "most_recent_exact_v332_tests_passed": 96,
+    "json_validation_required": true,
+    "git_diff_check_required": true,
+    "a100_current_head_tests": "PENDING_LAUNCH_HEAD_C2_CONTROLS_TERMINAL"
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "8baab86"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

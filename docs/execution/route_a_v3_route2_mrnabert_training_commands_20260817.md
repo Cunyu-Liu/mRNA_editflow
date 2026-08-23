@@ -2811,3 +2811,16 @@ ledger109、GPU3 free30,263MiB/util77%），下一次≥22:08:51。三项无term
 各job下一次若观测elapsed超过四小时，则独立切换60分钟间隔。未读active metric/log，未干预、叠加、降容量或
 启动C3；无代码变化，不重复Critic70/70或V3.3.2 96/96；A100 sync/tests pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_213851.json`。
+
+## 21:58–22:09 C2 remaining-control health（2026-08-23）
+
+第七个健康窗口：no-candidate在21:58:08仍RUNNING（elapsed13,448秒、ledger110、GPU5 free32,291MiB/
+util29%），下一次≥22:28:08；permutation在22:02:39仍RUNNING（elapsed13,121秒、ledger111、GPU0
+free25,577MiB/util88%），下一次≥22:32:39；edit-metadata在22:09:02仍RUNNING（elapsed15,103秒、
+ledger109、GPU3 free31,735MiB/util56%），已超过四小时并切换60分钟，下一次≥23:09:02。三项均无
+terminal/failure。
+
+permutation查询因本地/远端时钟偏移估计不足，比22:03:00边界早21秒；未用立即重查掩盖偏差，下一窗口改按
+实际观测时间起算。未读active metric/log，未干预、叠加、降容量或启动C3。无代码变化，不重复Critic70/70
+或V3.3.2 96/96；A100 sync/tests pending，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_220902.json`。
