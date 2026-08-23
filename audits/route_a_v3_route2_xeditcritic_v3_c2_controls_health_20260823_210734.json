@@ -1,0 +1,87 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c2_controls_health.v1",
+  "status": "C2_REMAINING_CONTROLS_HEALTHY_FIFTH_SCHEDULED_WINDOW",
+  "critic_c2_no_candidate_sequence": {
+    "observed_at": "2026-08-23T20:56:59+08:00",
+    "python_pid": 1136782,
+    "elapsed_seconds": 9778,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 110,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 5,
+    "gpu_free_memory_mib": 31549,
+    "gpu_utilization_percent": 72,
+    "monitoring_interval_minutes": 30,
+    "next_check_not_before": "2026-08-23T21:26:59+08:00"
+  },
+  "critic_c2_candidate_bundle_permutation": {
+    "observed_at": "2026-08-23T21:02:13+08:00",
+    "python_pid": 1266566,
+    "elapsed_seconds": 9495,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 111,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 0,
+    "gpu_free_memory_mib": 25657,
+    "gpu_utilization_percent": 80,
+    "monitoring_interval_minutes": 30,
+    "next_check_not_before": "2026-08-23T21:32:13+08:00"
+  },
+  "critic_c2_edit_metadata_only": {
+    "observed_at": "2026-08-23T21:07:34+08:00",
+    "python_pid": 889042,
+    "elapsed_seconds": 11415,
+    "status": "RUNNING",
+    "terminal_summary_present": false,
+    "failure_artifact_present": false,
+    "central_ledger_line_number": 109,
+    "central_ledger_status": "RUNNING",
+    "physical_gpu_index": 3,
+    "gpu_free_memory_mib": 30973,
+    "gpu_utilization_percent": 79,
+    "monitoring_interval_minutes": 30,
+    "next_check_not_before": "2026-08-23T21:37:34+08:00"
+  },
+  "screen_state": {
+    "c2_primary_eligible": false,
+    "c2_controls_still_required_for_complete_evidence": true,
+    "c2_controls_stopped_early": false,
+    "c3_and_controls_started": false,
+    "c3_requires_all_launch_head_jobs_terminal_then_current_head_sync": true,
+    "confirmation_authorized": false
+  },
+  "monitoring_policy": {
+    "task_specific_intervals_respected": true,
+    "active_training_curve_or_performance_metric_read": false,
+    "terminal_failure_alive_only": true,
+    "all_three_jobs_under_four_hours_use_thirty_minutes": true,
+    "formal_jobs_stacked": false,
+    "capacity_or_batch_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "verification": {
+    "code_changed": false,
+    "test_cohort_repeated": false,
+    "test_skip_reason": "Only scheduled health evidence changed; no executable behavior changed.",
+    "most_recent_current_head_critic_focused_tests_passed": 70,
+    "most_recent_exact_v332_tests_passed": 96,
+    "json_validation_required": true,
+    "git_diff_check_required": true,
+    "a100_current_head_tests": "PENDING_LAUNCH_HEAD_C2_CONTROLS_TERMINAL"
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_head_before_record_commit": "e08a1a0"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}
