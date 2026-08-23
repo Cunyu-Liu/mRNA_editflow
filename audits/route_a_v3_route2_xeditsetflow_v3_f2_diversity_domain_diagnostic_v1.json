@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_f2_diversity_domain_diagnostic.v1",
+  "status": "F2_TERMINAL_DIVERSITY_FAILURE_PRESENT_IN_ALL_EVALUABLE_STUDY_ENDPOINT_DOMAINS",
+  "analysis_scope": "TERMINAL_OUTCOME_FREE_UNIQUE_RATE_ONLY",
+  "source_artifact": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f2/validation_summary.json",
+  "source_count": 891,
+  "domains": [
+    {
+      "study": "GSE269595",
+      "endpoint": "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+      "source_count": 20,
+      "mean_unique_candidate_rate": 0.4359375
+    },
+    {
+      "study": "GSE114002",
+      "endpoint": "MEAN_RIBOSOME_LOAD",
+      "source_count": 652,
+      "mean_unique_candidate_rate": 0.6580713190184049
+    },
+    {
+      "study": "ENCSR854RUF",
+      "endpoint": "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE",
+      "source_count": 108,
+      "mean_unique_candidate_rate": 0.7063078703703703
+    },
+    {
+      "study": "GSE217518",
+      "endpoint": "RNA_HALF_LIFE_MINUTES",
+      "source_count": 111,
+      "mean_unique_candidate_rate": 0.8220720720720721
+    }
+  ],
+  "interpretation": {
+    "all_domain_mean_unique_rates_below_0_90": true,
+    "failure_is_single_study_only": false,
+    "study_and_endpoint_are_one_to_one_confounded_in_this_cohort": true,
+    "independent_endpoint_semantics_attribution_authorized": false,
+    "gse114002_source_fraction": 0.7317620650953984,
+    "overall_source_macro_is_composition_sensitive": true,
+    "frozen_gate_changed": false,
+    "f3_or_other_experiment_changed": false
+  },
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "local_and_github_head_before_record_commit": "5c94cf4"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -2527,3 +2527,15 @@ failure/error，下一次不早于12:41:01。
 三次观察仍只检查terminal/failure/alive/CUDA，未读active performance。GPU0/3/5已有正式job，C2快照中
 GPU1/2/4无安全显存，因此未新增control或叠加任务。无代码变化，不重复test cohort；A100 HEAD=`22317ed`，
 protected outcome read=0。审计：`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_121101.json`。
+
+## F2 terminal diversity-by-domain diagnostic（2026-08-23）
+
+终态outcome-free unique rate按可评study/endpoint域分解为：GSE269595/poly(A)=0.4359375（20 sources）、
+GSE114002/mean-ribosome-load=0.6580713190184049（652）、ENCSR854RUF/allelic-skew=
+0.7063078703703703（108）、GSE217518/RNA-half-life=0.8220720720720721（111）。四个域均低于0.90，
+因此F2多样性失败不是单study特例。
+
+该cohort内study与endpoint一一对应，禁止把差异解释为独立endpoint semantic effect；GSE114002占
+652/891 sources，因此总体source-macro对cohort组成敏感，论文需伴随domain-resolved报告。该诊断不改变
+冻结gate、F3或任何训练；无新attempt/代码/test，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v3_f2_diversity_domain_diagnostic_v1.json`。
