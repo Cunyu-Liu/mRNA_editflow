@@ -2492,3 +2492,15 @@ C2 full的独立10:29:35窗口亦只检查一次：PID3481436、elapsed2,454秒�
 本项只改变终态论文解释，不改变F2 terminal状态、F3、threshold、seed或selection。没有optimizer attempt或
 代码变化，不重复test cohort；protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v3_f2_diversity_diagnostic_v1.json`。
+
+## 10:59–11:09 scheduled screen health（2026-08-23）
+
+C2 full在10:59:48仍RUNNING：PID3481436、elapsed4,267秒、无terminal/failure，下一次不早于11:29:48。
+F3 training在11:03:35仍RUNNING：PID3408897、elapsed6,236秒、无terminal/failure，下一次不早于
+11:33:35。C2 source-only在11:09:59仍RUNNING：实际Python PID3577062、elapsed4,033秒、无terminal/
+failure/error，下一次不早于11:39:59。
+
+三次观察均未读active curve/performance。10:59资源快照中GPU0/3/5已有正式job，GPU1/2/4无安全显存，
+所以不启动额外control；capacity/batch、seed和threshold不变，无CPU fallback/GPU6–7/进程终止。无代码
+变化，因此不重复test cohort；A100 HEAD=`22317ed`，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xedit_v3_screen_health_20260823_110959.json`。
