@@ -3023,3 +3023,14 @@ failure或screen gate。
 本轮不读stdout、stderr、curve或metric；下一统一窗口`>=07:40:42`。无代码变化，不重复测试；所有job
 terminal前继续不做A100 current-HEAD sync。protected read=0；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_064042.json`。
+
+## C3 screen 07:41:19 scheduled health（2026-08-24）
+
+连接前本地时钟07:38:51，远端07:41:19，距上次观察3,637秒且不早于冻结窗口。五个run全部超过4小时；
+full/source/edit/no-candidate/permutation PID存活，elapsed为17,140/17,140/17,140/16,712/16,330秒，
+GPU3/0/5/1/2进程显存为1,846/2,120/2,190/1,776/1,846 MiB，ledger均为`RUNNING/BF16`。
+source/edit的较高活动分配仍正常；无summary、failure或screen gate。
+
+下一统一窗口`>=08:41:19`。本轮不读stdout、stderr、curve或metric；无代码变化，不重复测试，不做A100
+current-HEAD sync。protected read=0；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_074119.json`。

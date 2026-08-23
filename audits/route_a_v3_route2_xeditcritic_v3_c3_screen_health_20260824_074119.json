@@ -1,0 +1,110 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_health.v1",
+  "status": "C3_FULL_AND_ALL_FOUR_CONTROLS_RUNNING_FOURTH_LONG_INTERVAL_HEALTH_PASS",
+  "observed_at": "2026-08-24T07:41:19+08:00",
+  "clock_discipline": {
+    "prior_remote_observation": "2026-08-24T06:40:42+08:00",
+    "prior_next_check_not_before": "2026-08-24T07:40:42+08:00",
+    "local_clock_immediately_before_ssh": "2026-08-24T07:38:51+08:00",
+    "remote_clock_at_observation": "2026-08-24T07:41:19+08:00",
+    "observed_remote_minus_pre_ssh_local_seconds": 148,
+    "difference_from_recent_offset_seconds": 0,
+    "seconds_since_prior_remote_observation": 3637,
+    "check_not_early": true
+  },
+  "runs": {
+    "c3": {
+      "pid": 2443206,
+      "physical_gpu_index": 3,
+      "alive": true,
+      "elapsed_seconds": 17140,
+      "gpu_process_memory_mib": 1846,
+      "central_ledger_status": "RUNNING",
+      "training_precision": "BF16",
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T08:41:19+08:00"
+    },
+    "c3_source_only": {
+      "pid": 2443207,
+      "physical_gpu_index": 0,
+      "alive": true,
+      "elapsed_seconds": 17140,
+      "gpu_process_memory_mib": 2120,
+      "central_ledger_status": "RUNNING",
+      "training_precision": "BF16",
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T08:41:19+08:00"
+    },
+    "c3_edit_metadata_only": {
+      "pid": 2443208,
+      "physical_gpu_index": 5,
+      "alive": true,
+      "elapsed_seconds": 17140,
+      "gpu_process_memory_mib": 2190,
+      "central_ledger_status": "RUNNING",
+      "training_precision": "BF16",
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T08:41:19+08:00"
+    },
+    "c3_no_candidate_sequence": {
+      "pid": 2529140,
+      "physical_gpu_index": 1,
+      "alive": true,
+      "elapsed_seconds": 16712,
+      "gpu_process_memory_mib": 1776,
+      "central_ledger_status": "RUNNING",
+      "training_precision": "BF16",
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T08:41:19+08:00"
+    },
+    "c3_candidate_bundle_permutation": {
+      "pid": 2592082,
+      "physical_gpu_index": 2,
+      "alive": true,
+      "elapsed_seconds": 16330,
+      "gpu_process_memory_mib": 1846,
+      "central_ledger_status": "RUNNING",
+      "training_precision": "BF16",
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "next_check_not_before": "2026-08-24T08:41:19+08:00"
+    }
+  },
+  "observation_boundary": {
+    "all_runs_exceeded_four_hours": true,
+    "monitoring_interval_minutes": 60,
+    "active_curve_or_metric_read": false,
+    "stdout_read": false,
+    "stderr_reread": false,
+    "terminal_summary_content_read": false,
+    "failure_content_read": false,
+    "screen_gate_present": false,
+    "critic_screen_adjudication_authorized": false,
+    "critic_confirmation_authorized": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "repository": {
+    "a100_launch_head": "4047f5503373f8e761f74b2e95bc717777560eb2",
+    "local_current_head_before_record_commit": "96e5f20",
+    "a100_current_head_sync_performed": false,
+    "sync_deferred_until_all_launch_head_jobs_terminal": true
+  },
+  "verification": {
+    "code_changed": false,
+    "tests_repeated": false,
+    "test_skip_reason": "Health-only observation; no code or frozen configuration changed.",
+    "last_a100_critic_focused_tests_passed": 70,
+    "last_a100_setflow_focused_tests_passed": 30,
+    "last_a100_exact_v332_tests_passed": 96
+  },
+  "experiment_tracking": {
+    "new_optimizer_attempt_added": false,
+    "five_existing_attempts_remain_running": true,
+    "central_ledger_modified_by_observer": false
+  }
+}
