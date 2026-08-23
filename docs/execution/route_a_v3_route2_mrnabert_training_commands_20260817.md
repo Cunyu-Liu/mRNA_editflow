@@ -2465,3 +2465,19 @@ screen PASS、model advantage或submission-ready claim，也不开放critic guid
 文档：`docs/paper/route2_xedit_v3_interim_results_evidence_v1.md`。本项不运行新模型、不读取active metric、
 不创建中央optimizer attempt；引用证据路径存在性与diff-check PASS。没有代码变化，因此不重复本地/A100
 test cohort；Development TEST/new Evaluation read=0。
+
+## XEditSetFlow V3 F2 terminal arm gate / F3 scheduled health（2026-08-23）
+
+10:32:43到点检查发现F2 unguided validation已经terminal，F3 training仍RUNNING。F2唯一一次冻结summary
+显示source-macro recovery=0.2924616535727647、top-k=0.168278220268518、unique=0.6793630751964085；
+hard legality=1，edit/candidate budget、trajectory replay和numerical failure均为0，small-graph TV=0。
+结合training common set-NLL=2.0680908163671576（相对F0改善61.687%），F2通过NLL、recovery、top-k与
+全部G0 correctness，但unique未达0.90，因此单臂gate明确失败、不可confirmation、不重训。
+
+F3 PID3408897、elapsed4,385秒，无terminal/failure；中央ledger第106行仍RUNNING，下一次检查不早于
+11:02:43。F3 validation未运行，所以总screen不能adjudicate；F3是唯一剩余可能eligible的arm。终态artifact
+自带schema、CUDA/G0 checks；本项无代码变化，不重复本地/A100 test cohort。Development TEST/new
+Evaluation read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v3_f2_terminal_f3_health_v1.json`。
+
+C2 full的独立10:29:35窗口亦只检查一次：PID3481436、elapsed2,454秒、无terminal/failure，下一次不早于
+10:59:35。GPU5虽有37,732MiB free但仍归该正式job使用，没有叠加新任务或提前读取metric。

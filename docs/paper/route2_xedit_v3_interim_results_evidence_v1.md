@@ -23,12 +23,12 @@ Primary repository evidence: `audits/route_a_v3_route2_xeditcritic_v3_c1_termina
 |---|---|---:|---:|---:|---:|---:|---|---|
 | F0 terminal Base Flow V2 replay | Frozen reference | 5.3979076352 | 0 | 0.203 | 0.098 | 0.883 | Historical G0 ready | Read-only comparator; not retrained. |
 | F1 small trunk + set-marginal objective | Terminal diagnostic | 5.4724267445 | -0.0138051842 | 0.2691732136 | 0.2131454877 | 0.4192269921 | Legality 1.0; budget, replay and numerical failures 0 | Recovery and top-k improve, but NLL worsens and diversity collapses. F1 is nonselectable and terminal. |
-| F2 eight-block hybrid, width 384 | Training terminal; validation pending | 2.0680908164 | +0.6168717666 | Pending | Pending | Pending | Pending validation | Training-side NLL gate is met. No screen PASS is inferable until the frozen validation artifact is terminal. |
+| F2 eight-block hybrid, width 384 | Terminal; arm gate failed | 2.0680908164 | +0.6168717666 | 0.2924616536 | 0.1682782203 | 0.6793630752 | Legality 1.0; budget, replay and numerical failures 0 | NLL, recovery, top-k and G0 checks pass, but unique rate misses 0.90. F2 is terminal and cannot enter confirmation. |
 | F3 twelve-block hybrid, width 512 | Training running | Pending | Pending | Pending | Pending | Pending | Pending | No result has been read. |
 
-F1 supplies useful mechanism evidence: an order-invariant set target can improve measured-candidate recovery even when the small legacy trunk remains severely mode-concentrated. That finding motivates the frozen F2/F3 capacity comparison, but it is not itself a model-advantage claim.
+F1 supplies useful mechanism evidence: an order-invariant set target can improve measured-candidate recovery even when the small legacy trunk remains severely mode-concentrated. F2 shows that the larger hybrid trunk can strongly improve common set-NLL and clear the recovery/top-k thresholds, but its source-macro unique rate remains only 0.6794. F3 is therefore the only remaining potentially eligible arm. Neither result is itself a model-advantage claim.
 
-Primary repository evidence: `audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`, and `docs/execution/route_a_v3_route2_training_attempt_table_20260817.md`.
+Primary repository evidence: `audits/route_a_v3_route2_xeditsetflow_v3_f1_terminal_diagnostic_v1.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f1_training_terminal_20260823_075027.json`, `audits/route_a_v3_route2_xeditsetflow_v3_f2_terminal_f3_health_v1.json`, and `docs/execution/route_a_v3_route2_training_attempt_table_20260817.md`.
 
 ## Current claim state
 

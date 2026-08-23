@@ -1641,3 +1641,15 @@ device=`cuda:0`、precision=BF16；无terminal/failure/error，下一次不早�
 新增`docs/paper/route2_xedit_v3_interim_results_evidence_v1.md`，将C0/C1与F0/F1 terminal diagnostics及F2
 training-only事实从前瞻protocol中分离记录。没有新参数更新或metric read，本项不新增中央attempt；screen、
 guidance、TEST/Evaluation授权状态均不变。
+
+## XEditSetFlow V3 F2 terminal arm gate / F3 health（2026-08-23）
+
+F2中央CSV第105行保持`COMPLETED`，训练NLL相对F0改善61.687%；唯一冻结validation已terminal：recovery=
+0.2924616535727647、top-k=0.168278220268518、unique=0.6793630751964085，G0 correctness全部通过。
+F2因unique<0.90单臂gate失败，terminal、不重训、不进入confirmation。
+
+F3中央CSV第106行仍RUNNING，PID3408897、elapsed4,385秒、无terminal/failure，下次不早于11:02:43。
+F3 validation未开始，总screen不adjudicate；protected outcome read=0，A100 HEAD=`22317ed`。
+
+C2 full在10:29:35仍RUNNING（中央CSV第107行、PID3481436、elapsed2,454秒），无terminal/failure，下一次
+不早于10:59:35；未因GPU5瞬时低utilization叠加任务。
