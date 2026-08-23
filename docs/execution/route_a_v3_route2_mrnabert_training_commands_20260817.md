@@ -2767,3 +2767,14 @@ RUNNING、GPU3 free30,771MiB/util21%），下一次≥20:03:56。三项均无ter
 无代码变化，故不重复current-HEAD Critic70/70或V3.3.2 96/96；A100 tests/sync继续等待旧HEAD control终止。
 Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_193356.json`。
+
+## 19:56–20:04 C2 remaining-control health（2026-08-23）
+
+第三个30分钟窗口：no-candidate在19:56:19仍RUNNING（elapsed6,138秒、ledger110、GPU5 free31,293MiB/
+util83%），下一次≥20:26:19；permutation在20:00:32仍RUNNING（elapsed5,794秒、ledger111、GPU0
+free25,997MiB/util93%），下一次≥20:30:32；edit-metadata在20:04:49仍RUNNING（elapsed7,651秒、
+ledger109、GPU3 free29,283MiB/util31%），下一次≥20:34:49。三项均无terminal/failure且仍低于四小时。
+
+只读alive/terminal/failure/ledger/GPU，没有active metric/log；未停止、叠加、降容量或启动C3。无代码变化，
+不重复Critic70/70与V3.3.2 96/96；A100 current-HEAD sync/tests仍pending。protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c2_controls_health_20260823_200449.json`。

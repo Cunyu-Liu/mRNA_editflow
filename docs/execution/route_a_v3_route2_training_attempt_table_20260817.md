@@ -1740,6 +1740,12 @@ C2 no-candidate/permutation/edit-metadata分别在19:25:57/19:30:13/19:33:56保�
 4,316/3,975/5,797秒，中央CSV第110/111/109行均仍RUNNING且无terminal/failure。下一窗口为
 19:55:57/20:00:13/20:03:56。未新增attempt或停止control；无代码变化，不重复测试，protected read=0。
 
+## 19:56–20:04 C2 remaining-control health（2026-08-23）
+
+no-candidate/permutation/edit-metadata分别在19:56:19/20:00:32/20:04:49保持RUNNING，elapsed为
+6,138/5,794/7,651秒，中央CSV第110/111/109行均RUNNING，无terminal/failure。下一窗口为
+20:26:19/20:30:32/20:34:49；未新增attempt、未停control、不重复测试，protected read=0。
+
 ## 13:31–13:43 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:31:47/13:36:46/13:43:58保持RUNNING，elapsed分别为
