@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_training_objective_implementation.v1",
+  "recorded_at_local": "2026-08-24T17:17:41+08:00",
+  "status": "XEDITCRITIC_V4_TRAINING_OBJECTIVE_CORE_IMPLEMENTED_NO_OPTIMIZER_ATTEMPT",
+  "git_head_before_delivery": "dcd669a",
+  "implementation": {
+    "core": "core/route2_xeditcritic_training_v4.py",
+    "focused_test": "tests/route_a_v3/test_route2_xeditcritic_training_v4.py",
+    "effective_batch": 32,
+    "physical_batch_candidates": [4, 8, 16, 32],
+    "minimum_physical_batch": 4,
+    "repeat_cap_per_pass": 4,
+    "pass_count": 8,
+    "soft_rank_temperature": 0.2
+  },
+  "verified_invariants": {
+    "task_homogeneous_effective_batch": true,
+    "exact_32_records_per_optimizer_update": true,
+    "source_group_balanced_fill_with_repeat_cap": true,
+    "singleton_or_sub_four_forward_possible": false,
+    "pairwise_pairs_cross_source_groups": true,
+    "target_ties_use_mid_rank": true,
+    "soft_spearman_direction_and_gradient": true,
+    "pass_1_2_loss": "HUBER+0.25_PAIRWISE",
+    "pass_3_8_loss": "HUBER+0.50_PAIRWISE+0.25_SOFT_SPEARMAN+0.01_ROUTER_BALANCE",
+    "full_effective_batch_prediction_gradient_available_for_rng_replay": true,
+    "memory_selector_uses_torch_cuda_max_memory_allocated": true,
+    "memory_target_gib": [20.0, 35.0]
+  },
+  "verification": {
+    "training_objective_focused": "8/8 PASS",
+    "complete_local_critic_v4_focused_cohort": "39/39 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "formal_rng_replay_runner": "PENDING_NEXT_LOGICAL_TASK",
+    "a100_current_head_tests_and_memory_preflight": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

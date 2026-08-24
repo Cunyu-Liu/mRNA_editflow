@@ -2020,6 +2020,19 @@ parameter/VRAM/BF16 preflight仍等待五个C3 launch-head jobs全部terminal；
 TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_architecture_implementation_v1.json`。
 
+## XEditCritic V4 training-objective core（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。已实现exact effective batch32、physical batch
+4/8/16/32、task-homogeneous/repeat-cap sampler、cross-source-group pairwise、temperature0.20 soft-Spearman
+mid-rank目标、冻结8-pass loss schedule和完整32-vector prediction-gradient接口。正式runner将以保存RNG状态
+重放物理batch，避免V3 C3逐成员singleton ranking；该runner尚未执行。20–35GiB选择器只接受进程内peak
+allocated memory，不以`nvidia-smi`瞬时快照替代。
+
+training-objective focused=8/8，完整本机Critic V4 focused=39/39、精确V3.3.2=96/96，compile/
+diff-check PASS。optimizer attempts=0，A100测试/显存preflight等待C3 barrier；Development TEST/new
+Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_training_objective_implementation_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

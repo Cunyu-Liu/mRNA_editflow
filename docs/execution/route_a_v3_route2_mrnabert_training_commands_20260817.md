@@ -3154,3 +3154,20 @@ C3 barrier解除后的A100 preflight确认。
 完整本机Critic V4 focused=31/31、精确V3.3.2=96/96，compile/JSON/diff-check PASS；无optimizer
 attempt或Validation metric read，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_architecture_implementation_v1.json`。
+
+## XEditCritic V4 effective-batch objectives（2026-08-24）
+
+已实现V4 fixed-effective-batch sampler、physical microbatch契约、target mid-rank、pairwise-sigmoid soft rank、
+soft-Spearman、8-pass loss schedule、完整32-record prediction-gradient接口及20–35GiB preflight选择器。每次
+optimizer update固定32条同task记录；task末尾不足32的batch只在同task、source-group balanced和每record每pass
+最多4次约束下补齐。物理batch只能为4/8/16/32且覆盖同一effective batch，不产生singleton/sub-four forward。
+
+Pass1–2固定为Huber+0.25 pairwise，Pass3–8固定为Huber+0.50 pairwise+0.25 soft-Spearman+0.01
+router balance；pair必须跨source group，soft rank temperature=0.20，target ties为mid-rank。接口返回完整
+32-vector prediction gradient，供正式runner按保存的RNG状态重放各物理batch，从而保留跨microbatch排序目标；
+RNG replay runner本身是下一逻辑任务，尚未启动optimizer。内存选择只接受进程内
+`torch.cuda.max_memory_allocated`为20–35GiB的最大物理batch，batch4>35或batch32仍<20均硬失败。
+
+training-objective focused=8/8，完整本机Critic V4 focused=39/39、精确V3.3.2=96/96，compile/
+diff-check PASS。Development TEST/new Evaluation outcome read=0，A100 preflight仍受C3 barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_training_objective_implementation_v1.json`。
