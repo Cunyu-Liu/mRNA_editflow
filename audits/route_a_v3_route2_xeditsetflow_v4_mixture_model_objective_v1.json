@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_mixture_model_objective.v1",
+  "recorded_at_local": "2026-08-24T18:21:29+08:00",
+  "status": "XEDITSETFLOW_V4_MIXTURE_MODEL_AND_OBJECTIVE_IMPLEMENTED_NO_ATTEMPT",
+  "git_head_before_delivery": "ac92e12",
+  "implementation": {
+    "core": "core/route2_xeditsetflow_v4.py",
+    "test": "tests/route_a_v3/test_route2_xeditsetflow_v4.py"
+  },
+  "formal_model": {
+    "depth": 18,
+    "width": 640,
+    "heads": 10,
+    "ffn_width": 2560,
+    "local_attention_window": 64,
+    "dilation_cycle": [1, 2, 4, 8],
+    "dropout": 0.1,
+    "mode_count": 8,
+    "mode_prior": "0.5*softmax(source_and_endpoint_router)+0.5/8",
+    "trajectory_mode_fixed": true,
+    "study_identity_input": false,
+    "trainable_parameter_count": 100098878,
+    "trainable_parameter_range_pass": true,
+    "design_target_95_to_110m_pass": true,
+    "single_mode_trainable_parameter_count": 98627597,
+    "full_vs_single_parameter_difference_fraction": 0.0147,
+    "full_vs_single_parameter_difference_below_two_percent": true,
+    "unused_parameter_padding": false
+  },
+  "module_parameter_counts": {
+    "endpoint": 91840,
+    "state_input": 599840,
+    "hybrid_trunk": 96560928,
+    "mode_router": 552328,
+    "mode_token_residuals": 660992,
+    "mode_substitution_heads": 20512,
+    "mode_stop_heads": 992272,
+    "remaining_count_head": 620166
+  },
+  "objective": {
+    "common_set_marginal_weight": 1.0,
+    "per_compatible_candidate_coverage_weight": 0.5,
+    "remaining_count_weight": 0.2,
+    "mode_information_weight": 0.05,
+    "candidate_positive_sets_kept_separate": true,
+    "structural_budget_exhaustion_excluded_from_action_nll": true,
+    "single_mode_information_loss_exact_zero": true,
+    "critic_used": false,
+    "independent_evaluator_used": false
+  },
+  "action_semantics": {
+    "action_space": "SUB+STOP",
+    "hard_legality_before_rate_use": true,
+    "edited_positions_not_reeditable": true,
+    "stop_disallowed_after_structural_budget_exhaustion": true,
+    "remaining_count_classes": 6
+  },
+  "verification": {
+    "mixture_model_focused_tests": "5/5 PASS",
+    "combined_setflow_v4_focused_tests": "10/10 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_generation_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -3321,3 +3321,17 @@ V4 target schema保留common set-marginal mask，同时按compatible candidate�
 count distribution；structural terminal没有伪STOP。source-data focused=5/5、精确V3.3.2=96/96、compile/
 diff-check PASS；optimizer attempts=0、critic/evaluator use=0、Development TEST/new Evaluation outcome read=0。
 审计：`audits/route_a_v3_route2_xeditsetflow_v4_source_level_data_v1.json`。
+
+## XEditSetFlow V4 mixture model and objective（2026-08-24）
+
+已实现`route2_xeditsetflow_v4.py`：正式模型固定为18×640 hybrid trunk、10 heads、FFN2560、window64与
+8个source-level modes；mode从source/outcome-free endpoint先验在trajectory开始时选定，trajectory内部不得
+重采样。full/single-mode准确可训练参数分别为100,098,878/98,627,597，差异1.470%，均来自真实使用模块。
+
+目标函数保留共同set-marginal可比NLL，同时对每个compatible measured candidate分别施加coverage NLL，增加
+remaining-edit-count校准及防止mode同质化的information项；权重固定为1/0.50/0.20/0.05。hard legality先于
+rate使用，structural terminal不伪造STOP。combined focused=10/10、精确V3.3.2 cohort=96/96、compile/
+JSON/diff-check PASS；尚未运行optimizer、checkpoint选择或
+Validation generation，Development TEST/new Evaluation outcome read=0。A100 current-HEAD验证仍受五项C3
+launch-head terminal屏障约束。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_mixture_model_objective_v1.json`。

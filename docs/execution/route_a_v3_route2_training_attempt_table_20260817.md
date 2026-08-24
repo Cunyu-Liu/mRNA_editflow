@@ -2169,6 +2169,24 @@ budget exhaustion。source-data focused=5/5、精确V3.3.2=96/96、compile/diff-
 critic/evaluator使用=0，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_source_level_data_v1.json`。
 
+## XEditSetFlow V4 mixture model and objective（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。已实现正式18层、width640、10 heads、FFN2560、local
+window64、dilation 1/2/4/8循环的V4 trunk，以及8个trajectory-fixed source-level latent modes。mode router只接收
+source与outcome-free endpoint descriptors，先验严格为`0.5*softmax(r)+0.5/8`；study identity不进入模型。
+
+正式full准确可训练参数为100,098,878，落在80–150M硬范围及95–110M设计目标内。single-mode control为
+98,627,597参数，差异1.470%，无未使用参数填充。每个mode有低秩token residual、substitution head与独立STOP
+head；remaining-count head共享。hard legality在rate交付给loss/sampler前应用，structural budget exhaustion下无
+SUB或STOP合法动作。
+
+总目标严格实现为common set marginal + 0.50×逐compatible-candidate coverage + 0.20×remaining-count +
+0.05×mode-information；各candidate positive set保持分离，不能以union mass替代。single-mode control的
+information loss严格为0。SetFlow V4 combined focused=10/10、精确V3.3.2 cohort=96/96、compile/JSON/
+diff-check PASS。
+尚未启动训练或读取Validation generation，critic/evaluator使用=0，Development TEST/new Evaluation outcome
+read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_mixture_model_objective_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
