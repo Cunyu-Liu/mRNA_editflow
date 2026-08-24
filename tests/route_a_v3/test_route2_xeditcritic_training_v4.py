@@ -9,6 +9,8 @@ from core.route2_xeditcritic_training_data_v3 import XEditCriticRecordV3
 from core.route2_xeditcritic_training_v4 import (
     FixedEffectiveTaskBatchSamplerV4,
     XEditCriticTrainingV4Error,
+    backward_replayed_prediction_gradient_v4,
+    collect_replayable_predictions_v4,
     critic_v4_loss_weights,
     effective_prediction_objective_v4,
     pairwise_sigmoid_soft_ranks_v4,
@@ -153,3 +155,51 @@ def test_memory_selection_chooses_largest_under_35_and_requires_20_to_35_target(
         select_physical_batch_from_memory_v4(
             {4: 36.0, 8: None, 16: None, 32: None}
         )
+
+
+def test_rng_replay_reproduces_dropout_predictions_and_backpropagates_full_gradient() -> None:
+    class DropoutModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.linear = torch.nn.Linear(3, 1)
+
+        def forward(self, batch):
+            hidden = torch.nn.functional.dropout(
+                batch["values"], p=0.3, training=True
+            )
+            mean = self.linear(hidden).squeeze(-1)
+            return {
+                "mean": mean,
+                "router_balance_loss": self.linear.weight.square().mean(),
+            }
+
+    torch.manual_seed(91)
+    model = DropoutModel()
+    batches = [
+        {
+            "source_tokens": torch.zeros((8, 1), dtype=torch.long),
+            "values": torch.randn(8, 3),
+        }
+        for _ in range(4)
+    ]
+    predictions, states, first = collect_replayable_predictions_v4(
+        batches,
+        device=torch.device("cpu"),
+        forward=model,
+    )
+    assert predictions.shape == (32,)
+    gradient = torch.linspace(-0.5, 0.5, 32)
+    replayed = backward_replayed_prediction_gradient_v4(
+        batches,
+        states,
+        first,
+        gradient,
+        device=torch.device("cpu"),
+        forward=model,
+        router_balance_weight=0.01,
+    )
+    assert torch.equal(torch.cat(replayed), predictions)
+    assert all(parameter.grad is not None for parameter in model.parameters())
+    assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters())
+    backward_replayed_prediction_gradient_v4,
+    collect_replayable_predictions_v4,

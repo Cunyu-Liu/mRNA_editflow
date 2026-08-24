@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_non_singleton_batch_replay.v1",
+  "recorded_at_local": "2026-08-24T17:22:01+08:00",
+  "status": "XEDITCRITIC_V4_NON_SINGLETON_BATCH_AND_RNG_REPLAY_IMPLEMENTED_NO_OPTIMIZER_ATTEMPT",
+  "git_head_before_delivery": "9759948",
+  "implementation": {
+    "batch_core": "core/route2_xeditcritic_batch_v4.py",
+    "replay_core": "core/route2_xeditcritic_training_v4.py",
+    "batch_test": "tests/route_a_v3/test_route2_xeditcritic_batch_v4.py",
+    "training_test": "tests/route_a_v3/test_route2_xeditcritic_training_v4.py"
+  },
+  "verified_invariants": {
+    "minimum_physical_batch": 4,
+    "effective_batch": 32,
+    "physical_batch_rng_state_captured_before_first_forward": true,
+    "first_forward_retains_no_activation_graph": true,
+    "replayed_dropout_prediction_bitwise_equal": true,
+    "full_32_vector_prediction_gradient_backpropagated": true,
+    "router_balance_backpropagated_per_physical_batch": true,
+    "singleton_ranking_forward": false,
+    "cache_donor_is_complete_candidate_bundle_donor": true,
+    "duplicate_chunk_loaded_once_per_physical_batch": true,
+    "ragged_cache_mapping_matches_candidate_edits": true,
+    "cache_exact_projection_coverage_required": true
+  },
+  "verification": {
+    "batch_and_replay_adjacent_tests": "13/13 PASS",
+    "complete_local_critic_v4_focused_cohort": "44/44 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "git_diff_check": "PASS",
+    "formal_eight_pass_runner": "PENDING_NEXT_LOGICAL_TASK",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 import torch
 from torch.nn import functional as F
@@ -201,6 +201,109 @@ class EffectivePredictionObjectiveV4:
     soft_spearman_loss: float
     pair_count: int
     prediction_gradient: torch.Tensor
+
+
+@dataclass(frozen=True)
+class ReplayRNGStateV4:
+    cpu_state: torch.Tensor
+    cuda_state: torch.Tensor | None
+
+
+def capture_replay_rng_state_v4(device: torch.device) -> ReplayRNGStateV4:
+    """Capture the stochastic state immediately before one physical forward."""
+
+    cuda_state = None
+    if device.type == "cuda":
+        _require(torch.cuda.is_available(), "CUDA RNG capture requested without CUDA")
+        cuda_state = torch.cuda.get_rng_state(device).cpu()
+    return ReplayRNGStateV4(
+        cpu_state=torch.random.get_rng_state().cpu(),
+        cuda_state=cuda_state,
+    )
+
+
+def restore_replay_rng_state_v4(
+    state: ReplayRNGStateV4, device: torch.device
+) -> None:
+    """Restore the exact dropout state for a physical-batch replay."""
+
+    torch.random.set_rng_state(state.cpu_state)
+    if device.type == "cuda":
+        _require(state.cuda_state is not None, "CUDA replay state is absent")
+        torch.cuda.set_rng_state(state.cuda_state, device)
+    else:
+        _require(state.cuda_state is None, "CPU replay unexpectedly carries CUDA state")
+
+
+def collect_replayable_predictions_v4(
+    physical_batches: Sequence[Mapping[str, torch.Tensor]],
+    *,
+    device: torch.device,
+    forward: Callable[[Mapping[str, torch.Tensor]], Mapping[str, torch.Tensor]],
+) -> tuple[torch.Tensor, list[ReplayRNGStateV4], list[torch.Tensor]]:
+    """Collect detached predictions and states without retaining activations."""
+
+    _require(bool(physical_batches), "Critic V4 has no physical batches to replay")
+    predictions: list[torch.Tensor] = []
+    states: list[ReplayRNGStateV4] = []
+    first_pass_predictions: list[torch.Tensor] = []
+    with torch.no_grad():
+        for batch in physical_batches:
+            batch_size = int(batch["source_tokens"].shape[0]) if "source_tokens" in batch else int(next(iter(batch.values())).shape[0])
+            _require(batch_size >= 4, "Critic V4 replay path received a sub-four physical batch")
+            states.append(capture_replay_rng_state_v4(device))
+            output = forward(batch)
+            prediction = output["mean"]
+            _require(prediction.shape == (batch_size,), "Critic V4 replay prediction geometry changed")
+            _require(torch.isfinite(prediction).all().item(), "Critic V4 replay prediction is nonfinite")
+            detached = prediction.detach()
+            predictions.append(detached)
+            first_pass_predictions.append(detached.clone())
+    combined = torch.cat(predictions)
+    _require(combined.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 replay did not collect 32 predictions")
+    return combined, states, first_pass_predictions
+
+
+def backward_replayed_prediction_gradient_v4(
+    physical_batches: Sequence[Mapping[str, torch.Tensor]],
+    states: Sequence[ReplayRNGStateV4],
+    first_pass_predictions: Sequence[torch.Tensor],
+    prediction_gradient: torch.Tensor,
+    *,
+    device: torch.device,
+    forward: Callable[[Mapping[str, torch.Tensor]], Mapping[str, torch.Tensor]],
+    router_balance_weight: float,
+) -> list[torch.Tensor]:
+    """Replay each >=4 batch and backpropagate the exact 32-vector gradient."""
+
+    _require(len(physical_batches) == len(states) == len(first_pass_predictions), "Critic V4 replay bundles are misaligned")
+    _require(prediction_gradient.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 replay gradient is not length 32")
+    _require(router_balance_weight >= 0, "Critic V4 router-balance weight is negative")
+    cursor = 0
+    replayed_predictions: list[torch.Tensor] = []
+    for batch, state, expected in zip(
+        physical_batches,
+        states,
+        first_pass_predictions,
+        strict=True,
+    ):
+        restore_replay_rng_state_v4(state, device)
+        output = forward(batch)
+        prediction = output["mean"]
+        _require(torch.equal(prediction.detach(), expected), "Critic V4 RNG replay changed a stochastic prediction")
+        end = cursor + prediction.numel()
+        prediction.backward(prediction_gradient[cursor:end])
+        if router_balance_weight > 0:
+            router_term = (
+                router_balance_weight
+                * output["router_balance_loss"]
+                / len(physical_batches)
+            )
+            router_term.backward()
+        replayed_predictions.append(prediction.detach())
+        cursor = end
+    _require(cursor == EFFECTIVE_BATCH_V4, "Critic V4 replay gradient did not cover 32 predictions")
+    return replayed_predictions
 
 
 def effective_prediction_objective_v4(

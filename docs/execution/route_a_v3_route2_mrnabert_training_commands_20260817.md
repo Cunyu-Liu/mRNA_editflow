@@ -3171,3 +3171,20 @@ RNG replay runner本身是下一逻辑任务，尚未启动optimizer。内存选
 training-objective focused=8/8，完整本机Critic V4 focused=39/39、精确V3.3.2=96/96，compile/
 diff-check PASS。Development TEST/new Evaluation outcome read=0，A100 preflight仍受C3 barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_training_objective_implementation_v1.json`。
+
+## XEditCritic V4 non-singleton batch and RNG replay（2026-08-24）
+
+已实现V4 projection/cache batch接口和正式runner所需的RNG replay primitive。第一次物理batch forward在
+model training/dropout状态下保存CPU/CUDA RNG state但不保留activation graph，收集完整32条detached
+predictions并计算跨物理batch的Huber/pairwise/soft-Spearman prediction gradient；第二次逐batch恢复相同RNG
+state，要求prediction bitwise一致，再反传对应gradient slice与router-balance项。由此physical batch为
+4/8/16时仍保留有效batch32目标，不使用C3的逐成员singleton forward。
+
+V4 collator从完整candidate donor record取得raw candidate/edit/cache bundle，严格核对flattened cache edit
+positions；每个物理batch只物化一次重复source/candidate chunk，并要求cache精确覆盖projection。collator和model
+均拒绝physical batch<4；V3 radius-16 pooled feature不进入V4 batch。
+
+batch/replay adjacent=13/13，完整本机Critic V4 focused=44/44、精确V3.3.2=96/96，diff-check PASS。
+formal八pass runner尚未实现/启动，optimizer attempts=0，Development TEST/new Evaluation outcome read=0；A100
+测试继续受C3 barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_non_singleton_batch_replay_v1.json`。

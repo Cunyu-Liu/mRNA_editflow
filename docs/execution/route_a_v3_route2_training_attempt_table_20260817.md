@@ -2033,6 +2033,17 @@ diff-check PASS。optimizer attempts=0，A100测试/显存preflight等待C3 barr
 Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_training_objective_implementation_v1.json`。
 
+## XEditCritic V4 non-singleton batch/replay core（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。V4 collator、complete candidate donor cache binding、物理
+batch chunk去重、CPU/CUDA RNG capture/restore和32-vector gradient replay已实现。第一次forward不保留graph，
+第二次恢复相同RNG后要求prediction bitwise一致再反传，因此跨physical batch的pairwise/soft-Spearman不退化成
+singleton。formal八pass runner仍pending。
+
+batch/replay adjacent=13/13，完整本机Critic V4 focused=44/44、精确V3.3.2=96/96，diff-check PASS。
+optimizer attempts=0，A100 tests等待C3 barrier；Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_non_singleton_batch_replay_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
