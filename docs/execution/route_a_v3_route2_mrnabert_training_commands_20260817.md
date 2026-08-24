@@ -4041,3 +4041,14 @@ C0/control/ablation margin、参数/显存约束或PASS/NO-GO语义。
 preflight、optimizer、inference或Validation metric；protected outcome read=0。A100 current-HEAD验证继续等待旧C3
 五项全部terminal，下一允许远端检查仍不早于本地02:45:28。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_screen_adjudication_v1.json`。
+
+## SetFlow V4 atomic post-training terminal chain focused record（2026-08-25）
+
+SetFlow V4 terminal training之后的8个固定checkpoint Validation和唯一screen裁决，现对成功summary、技术failure和
+screen gate全部使用partial加原子替换；任何既有final/partial均fail closed，不覆盖中断证据。这只闭合将由正式
+调度器调用的终态写点，不改变训练、Validation generation、checkpoint选择或gate。
+
+本地focused=17/17、SetFlow V4相关=67/67、精确V3.3.2=96/96、compile PASS。尚未启动checkpoint Validation、
+裁决、GPU或optimizer，未读取active/terminal metric、Development TEST或new Evaluation。A100 current-HEAD验证
+继续等待C3五项自然terminal，下一远端检查仍不早于本地02:45:28。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_atomic_terminal_validation_chain_v1.json`。

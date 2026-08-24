@@ -88,6 +88,21 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _write_atomic_terminal_v4(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _require(not path.exists(), f"terminal SetFlow V4 artifact already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    _require(
+        not partial.exists(),
+        f"partial SetFlow V4 terminal artifact already exists: {partial}",
+    )
+    partial.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
 def _git_head() -> str:
     import subprocess
 
@@ -693,8 +708,9 @@ def validate_checkpoint(
         "measured_neighborhood_metrics": measured,
         **cuda,
     }
-    (output_directory / "validation_summary.json").write_text(
-        json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    _write_atomic_terminal_v4(
+        output_directory / "validation_summary.json",
+        result,
     )
     return result
 
@@ -728,28 +744,22 @@ def main() -> int:
         failure_path = output_directory.with_name(
             output_directory.name + ".failed.json"
         )
-        failure_path.parent.mkdir(parents=True, exist_ok=True)
-        failure_path.write_text(
-            json.dumps(
-                {
-                    "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_failure.v1",
-                    "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
-                    "run_id": arguments.run_id,
-                    "run_stage": run_stage,
-                    "seed": training_seed,
-                    "checkpoint_pass": arguments.checkpoint_pass,
-                    "physical_gpu_index": arguments.physical_gpu_index,
-                    "cpu_fallback_used": False,
-                    "error_type": type(error).__name__,
-                    "error": str(error),
-                    "development_test_outcome_reads": 0,
-                    "new_final_evaluation_outcome_reads": 0,
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
+        _write_atomic_terminal_v4(
+            failure_path,
+            {
+                "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_failure.v1",
+                "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+                "run_id": arguments.run_id,
+                "run_stage": run_stage,
+                "seed": training_seed,
+                "checkpoint_pass": arguments.checkpoint_pass,
+                "physical_gpu_index": arguments.physical_gpu_index,
+                "cpu_fallback_used": False,
+                "error_type": type(error).__name__,
+                "error": str(error),
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
         )
         raise
     print(json.dumps(result, sort_keys=True))

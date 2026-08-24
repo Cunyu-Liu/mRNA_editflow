@@ -8,6 +8,7 @@ import pytest
 
 from scripts.route_a_v3.validate_route2_xeditsetflow_v4_checkpoint import (
     SetFlowCheckpointValidationV4Error,
+    _write_atomic_terminal_v4,
     require_training_package_terminal_v4,
     setflow_validation_stage_seed_v4,
 )
@@ -32,6 +33,23 @@ def test_validation_runner_loads_only_validation_projection_not_test() -> None:
     assert 'allowed_splits=("VALIDATION",)' in source
     assert "development_test_outcome_reads\": 0" in source
     assert "new_final_evaluation_outcome_reads\": 0" in source
+
+
+def test_validation_terminal_artifacts_are_atomically_published(tmp_path: Path) -> None:
+    output = tmp_path / "pass_4" / "validation_summary.json"
+    payload = {"status": "TERMINAL_XEDITSETFLOW_V4_CHECKPOINT_VALIDATION_COMPLETE"}
+    _write_atomic_terminal_v4(output, payload)
+    partial = output.with_suffix(output.suffix + ".partial")
+    assert json.loads(output.read_text(encoding="utf-8")) == payload
+    assert not partial.exists()
+
+    stale = tmp_path / "pass_6.failed.json"
+    stale_partial = stale.with_suffix(stale.suffix + ".partial")
+    stale_partial.write_text("interrupted", encoding="utf-8")
+    with pytest.raises(SetFlowCheckpointValidationV4Error, match="partial SetFlow V4"):
+        _write_atomic_terminal_v4(stale, payload)
+    assert not stale.exists()
+    assert stale_partial.read_text(encoding="utf-8") == "interrupted"
 
 
 def test_generation_budget_is_exact_without_retry_or_duplicate_rejection() -> None:

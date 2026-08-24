@@ -27,6 +27,20 @@ def _read(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _write_atomic_terminal(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        raise RuntimeError(f"terminal SetFlow V4 screen gate already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    if partial.exists():
+        raise RuntimeError(f"partial SetFlow V4 screen gate already exists: {partial}")
+    partial.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
@@ -35,6 +49,9 @@ def main() -> None:
     output = Path(config["screen_gate_output_path"])
     if output.exists():
         raise RuntimeError(f"terminal SetFlow V4 screen gate already exists: {output}")
+    partial = output.with_suffix(output.suffix + ".partial")
+    if partial.exists():
+        raise RuntimeError(f"partial SetFlow V4 screen gate already exists: {partial}")
     failures: list[dict[str, Any]] = []
     for run_id in ("v4_full", "v4_single_mode"):
         training_directory = Path(config["output_root"]) / run_id
@@ -49,12 +66,7 @@ def main() -> None:
             )
     if failures:
         result = technical_failure_gate_v4(failures)
-        output.parent.mkdir(parents=True, exist_ok=True)
-        partial = output.with_suffix(output.suffix + ".partial")
-        partial.write_text(
-            json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
-        os.replace(partial, output)
+        _write_atomic_terminal(output, result)
         print(json.dumps(result, sort_keys=True))
         return
     summaries: dict[str, dict[int, dict[str, Any]]] = {
@@ -87,12 +99,7 @@ def main() -> None:
             else:
                 summaries[run_id][checkpoint_pass] = _read(summary_path)
     result = technical_failure_gate_v4(failures) if failures else adjudicate_setflow_screen_v4(config, summaries)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    partial = output.with_suffix(output.suffix + ".partial")
-    partial.write_text(
-        json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    os.replace(partial, output)
+    _write_atomic_terminal(output, result)
     print(json.dumps(result, sort_keys=True))
 
 

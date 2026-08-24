@@ -3069,3 +3069,16 @@ fail closed，且不会自动删除、覆盖或把中断产物冒充正式结果
 没有执行screen裁决、cache、preflight、optimizer或Validation metric，Development TEST/new Evaluation read=0；
 A100 current-HEAD测试仍等待五项旧C3 launch-head作业全部terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_screen_adjudication_v1.json`。
+
+## SetFlow V4 atomic terminal Validation chain（2026-08-25）
+
+为接入full/single-mode训练后固定的8个checkpoint Validation作业，检查了该正式消费路径实际写出的终态。
+`validation_summary.json`、兄弟`pass_N.failed.json`和最终`screen_gate.json`原先仍存在直接写入或复用旧partial的
+可能；进程中断时可能留下不完整JSON，破坏“每个作业精确一个terminal artifact”的裁决前提。
+
+三个写点现统一为同目录partial加原子替换；已有final或partial均拒绝覆盖，保留中断证据供人工处置。没有改变
+891×32 Validation cohort、pass 4/6/8/10、NLL/recovery/top-k/unique选择规则、single-mode机制margin或terminal
+NO-GO语义。本地focused=17/17、SetFlow V4相关=67/67、精确V3.3.2=96/96、compile PASS。没有启动Validation、
+screen gate、optimizer或读取任何metric/outcome；Critic/independent evaluator使用仍为0。A100 current-HEAD测试等待
+五项旧C3作业terminal。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_atomic_terminal_validation_chain_v1.json`。
