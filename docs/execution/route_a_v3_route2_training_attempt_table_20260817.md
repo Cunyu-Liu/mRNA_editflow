@@ -1686,6 +1686,12 @@ metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HE
 Development TEST outcome追加读取=0、new Evaluation outcome read=0。完整XEditFlow focused=131/131、精确
 V3.3.2=96/96；A100 current-HEAD验证继续受五个旧C3 launch-head jobs terminal barrier约束。
 
+## C3→V4 terminal read-once producer implementation（2026-08-24）
+
+已实现五个旧C3 run自然terminal后的原子read-once producer，但尚未执行，因此没有读取任何active或terminal
+metric。producer不更新参数、不新增中央attempt；C3无论成功失败均不授权confirmation/TEST/refit/LOSO/guidance。
+定向12/12、完整Critic V4 86/86、精确V3.3.2 96/96；protected outcome read保持0。
+
 ## 13:01–13:13 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:01:35/13:05:49/13:13:04保持RUNNING，elapsed分别为

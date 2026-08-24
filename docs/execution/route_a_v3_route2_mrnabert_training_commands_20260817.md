@@ -3559,3 +3559,15 @@ trajectory内改mode。guided rate只复用单一scalar potential difference，�
 =131/131、精确V3.3.2=96/96，compile/JSON PASS。Development TEST在本阶段追加读取=0，new Evaluation
 outcome read=0；A100 current-HEAD测试仍等待五个旧C3 launch-head jobs自然terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_guidance_authorization_invariants_v1.json`。
+
+## C3 terminal read-once V4 reference producer（2026-08-24）
+
+已补齐`c3_v4_reference_read_once.json`的唯一正式producer。它先只检查五个冻结run各自是否恰有summary或failure，
+只有五项全部terminal后才打开payload；已有output会硬失败，写出采用partial→atomic replace。五项原始terminal
+artifact全部保留。C3 full有有效terminal Validation指标时直接作为V4历史参照；只有full明确技术失败时才读取
+预声明C2 full fallback，且单独记录该技术失败，不把它伪装为性能失败。
+
+输出无论C3性能如何都明确禁止C3 confirmation、Development TEST、refit、LOSO和guidance。当前producer仅实现、
+尚未执行，五个active job的terminal payload read仍为0。新增/相邻focused=12/12、完整本机Critic V4=86/86、
+精确V3.3.2=96/96，compile/diff-check PASS；A100 current-HEAD测试仍受五job terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_v4_reference_read_once_producer_v1.json`。

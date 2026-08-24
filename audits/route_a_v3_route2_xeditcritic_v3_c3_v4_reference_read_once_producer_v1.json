@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_v4_reference_read_once_producer.v1",
+  "recorded_at_local": "2026-08-24T20:16:21+08:00",
+  "status": "C3_V4_REFERENCE_READ_ONCE_PRODUCER_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "37783e5dbb0303032224d65a6626016a5ce55917",
+  "implementation": {
+    "producer": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v3_c3_v4_reference.py",
+    "consumer_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
+    "focused_test": "tests/route_a_v3/test_adjudicate_route2_xeditcritic_v3_c3_v4_reference.py"
+  },
+  "read_once_semantics": {
+    "required_run_count": 5,
+    "all_terminal_paths_resolved_before_any_payload_read": true,
+    "exactly_one_summary_or_failure_per_run": true,
+    "existing_output_blocks_reread": true,
+    "atomic_output_replace": true,
+    "original_terminal_artifacts_retained": true
+  },
+  "reference_policy": {
+    "preferred": "C3_FULL_TERMINAL_VALIDATION",
+    "fallback_only_after_c3_full_technical_failure": "PREDECLARED_C2_FULL_TERMINAL_VALIDATION",
+    "controls_retained_and_summarized": true,
+    "c3_confirmation_authorized": false,
+    "c3_development_test_authorized": false,
+    "c3_refit_loso_or_guidance_authorized": false
+  },
+  "verification": {
+    "new_and_adjacent_focused": "12/12 PASS",
+    "complete_local_critic_v4_focused_cohort": "86/86 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "producer_executed": false,
+    "terminal_payloads_read": 0,
+    "c3_reference_artifact_created": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
