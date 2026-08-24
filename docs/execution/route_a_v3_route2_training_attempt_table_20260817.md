@@ -1741,6 +1741,18 @@ Critic/SetFlow联合readiness，CUDA device只能为物理GPU0–5且使用BF16/
 checkpoint或protected read，A100测试继续受旧C3 barrier约束。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_trainer_v1.json`。
 
+## XEditFlow V4 formal mode-fixed value rollout runner（2026-08-24）
+
+正式rollout runner只接受联合readiness与对应20260912/13/14 seed的confirmation-selected V4 full checkpoint。
+它从TRAIN projection构造unique-source四state及平衡mode，每个state-mode生成K=8 trajectories；latent mode从root
+至terminal保持固定，structural terminal可直接保留。每批用完全相同seed再次运行，candidate sequence、terminal cause、
+edit set、actions或trajectory forward count任一不一致均在critic scoring前terminal failure。
+
+runner分别记录primary/replay的trunk batch/state和8-mode-head state forwards、wall time与进程内peak VRAM，要求
+GPU0–5 CUDA/BF16且无CPU fallback。本项没有materialize config/artifact或执行GPU。新增/相邻=6/6、完整
+XEditFlow/guidance=193/193、V3.3.2=96/96、compile/diff-check PASS；protected read=0，A100测试继续等待旧C3。
+审计：`audits/route_a_v3_route2_xeditflow_v4_value_rollout_runner_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

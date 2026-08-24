@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_value_rollout_runner_audit.v1",
+  "status": "IMPLEMENTED_NOT_AUTHORIZED_OR_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "runner": "scripts/route_a_v3/generate_route2_xeditflow_value_rollouts_v4.py",
+    "test": "tests/route_a_v3/test_generate_route2_xeditflow_value_rollouts_v4.py"
+  },
+  "runtime": {
+    "joint_readiness_required": true,
+    "setflow_seed_selected_checkpoint_required": true,
+    "split": "TRAIN_ONLY",
+    "states_per_unique_source": 4,
+    "rollouts_per_state_mode": 8,
+    "trajectory_mode_fixed": true,
+    "fixed_seed_full_replay": true,
+    "replay_identity_fields": [
+      "candidate_sequence",
+      "terminal_cause",
+      "source_relative_edits",
+      "trajectory_actions",
+      "trajectory_forward_count"
+    ],
+    "trunk_and_mode_compute_separate": true,
+    "cuda_bf16": true,
+    "allowed_gpu_indices": [0, 1, 2, 3, 4, 5],
+    "cpu_fallback": false
+  },
+  "verification": {
+    "new_and_adjacent_tests": "6/6 PASS",
+    "all_xeditflow_and_guidance_tests": "193/193 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "rollout_config_materialized": false,
+    "rollout_started": false,
+    "critic_scoring_performed": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

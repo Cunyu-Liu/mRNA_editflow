@@ -3649,3 +3649,14 @@ formal run将登记中央attempt、参数更新和进程内peak VRAM。当前未
 
 本地新增/相邻7/7，XEditFlow/guidance 190/190，精确V3.3.2 96/96，compile/diff-check PASS；A100 current-HEAD
 测试等待旧C3 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_trainer_v1.json`。
+
+## XEditFlow V4 formal mode-fixed value rollout runner（2026-08-24）
+
+`generate_route2_xeditflow_value_rollouts_v4.py`只在joint readiness后加载各seed冻结selected SetFlow checkpoint，
+对四个TRAIN source-level state分别生成同mode K=8 rollouts，并对每批执行固定seed完整replay。replay对terminal序列、
+cause、edit set、actions和forward count逐项严格比较；失败发生在Critic scoring之前。GPU限定0–5、CUDA/BF16，
+primary/replay trunk与mode compute及进程内VRAM均记录。
+
+本地新增/相邻6/6，XEditFlow/guidance 193/193，精确V3.3.2 96/96，compile/diff-check PASS。runner/config均
+未执行或materialize，protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_rollout_runner_v1.json`。
