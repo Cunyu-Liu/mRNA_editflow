@@ -2375,6 +2375,20 @@ bootstrap，技术failure永久保留并直接形成three-seed NO-GO。confirmat
 Development TEST/new Evaluation outcome read=0；A100 current-HEAD sync/tests仍等待五个旧C3 jobs terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_confirmation_runtime_v1.json`。
 
+## XEditCritic V4 atomic Development TEST protocol与gate freeze（2026-08-24）
+
+已在任何V4 confirmation/Test结果前冻结一次性Development TEST协议。只有精确20260908/09/10三seed gate
+完整PASS才可消费授权；C3永不参与。TEST canonical行只允许在授权runner内按ID先过滤后完整decode，投影rows、
+bottom-six encoded chunks和assembled cache均只在内存存在，不写通用TEST projection或TEST cache。
+
+V4 frozen TEST gate固定要求18,292 records、9 tasks、单次access event、task-macro Spearman≥0.30、相对matched
+C0-V4 margin≥0.10、standardized MAE≤1.70且不劣于C0、至少8/9 task为正、10,000次source-group paired
+bootstrap CI下界>0。PASS只授权固定8-pass all-Development refit；LOSO/guidance仍关闭，失败不得返调或重试。
+
+完整本机Critic V4 focused=73/73、精确V3.3.2=96/96、JSON/diff-check PASS。原子TEST runner尚未实现或
+执行，Development TEST/new Evaluation outcome read仍为0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_protocol_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

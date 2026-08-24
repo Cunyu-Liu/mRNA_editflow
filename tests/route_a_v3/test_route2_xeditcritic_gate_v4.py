@@ -8,6 +8,7 @@ import pytest
 
 from core.route2_xeditcritic_gate_v4 import (
     adjudicate_critic_confirmation_v4,
+    adjudicate_critic_frozen_test_v4,
     build_critic_confirmation_seed_payload_v4,
     evaluate_xeditcritic_v4_screen,
 )
@@ -307,3 +308,44 @@ def test_v4_confirmation_bootstrap_is_exact_source_group_pairing() -> None:
     )
     assert result["bootstrap"]["bootstrap_iterations"] == 10000
     assert result["bootstrap"]["task_macro_spearman_difference_ci_95"][0] > 0.0
+
+
+def test_v4_frozen_test_gate_requires_single_atomic_access_and_strict_metrics() -> None:
+    common = {
+        "status": "ATOMIC_FROZEN_DEVELOPMENT_TEST_EVALUATION_COMPLETE",
+        "test_record_count": 18292,
+        "development_test_outcomes_accessed": True,
+        "development_test_access_event_count": 1,
+        "general_test_projection_persisted": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+    candidate = {
+        **common,
+        "test_metrics": {
+            "task_count": 9,
+            "task_macro_spearman": 0.35,
+            "task_macro_standardized_mae": 1.2,
+            "positive_task_count": 9,
+        },
+    }
+    baseline = {
+        **common,
+        "test_metrics": {
+            "task_count": 9,
+            "task_macro_spearman": 0.20,
+            "task_macro_standardized_mae": 1.3,
+            "positive_task_count": 8,
+        },
+    }
+    bootstrap = {
+        "analysis_unit": "SOURCE_GROUP_WITHIN_TASK",
+        "bootstrap_iterations": 10000,
+        "point_task_macro_spearman_difference": 0.15,
+        "task_macro_spearman_difference_ci_95": [0.05, 0.25],
+    }
+    result = adjudicate_critic_frozen_test_v4(candidate, baseline, bootstrap)
+    assert result["status"] == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+    assert result["all_development_refit_authorized"] is True
+    candidate["general_test_projection_persisted"] = True
+    with pytest.raises(Exception, match="single and atomic"):
+        adjudicate_critic_frozen_test_v4(candidate, baseline, bootstrap)

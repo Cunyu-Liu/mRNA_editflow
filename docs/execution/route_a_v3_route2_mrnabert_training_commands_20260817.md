@@ -3476,3 +3476,14 @@ summary/predictions并构建固定10,000次source-group paired bootstrap；任�
 Critic V4 focused=71/71、精确V3.3.2=96/96、compile/diff-check PASS；当前未授权或启动screen/confirmation，
 Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_confirmation_runtime_v1.json`。
+
+## XEditCritic V4 atomic TEST pre-registration（2026-08-24）
+
+`route_a_v3_route2_xeditcritic_v4_frozen_test_protocol_v1.json`已冻结exact三seed授权、canonical inputs、18,292
+record count、GPU/CUDA policy、10,000次bootstrap与单一output directory。Test rows及online bottom-six结果均须
+ephemeral；禁止通用projection/cache持久化。`adjudicate_critic_frozen_test_v4`固定0.30 Spearman、0.10 matched
+C0 margin、MAE、8/9与CI gates；PASS也不直接授权LOSO/guidance。
+
+Critic V4 focused=73/73、精确V3.3.2=96/96、JSON/diff-check PASS。runner未实现、authorization未消费、
+Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_protocol_gate_v1.json`。

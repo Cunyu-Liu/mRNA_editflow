@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_protocol_gate.v1",
+  "recorded_at_local": "2026-08-24T19:31:49+08:00",
+  "status": "XEDITCRITIC_V4_ATOMIC_TEST_PROTOCOL_AND_GATE_FROZEN_RUNNER_NOT_IMPLEMENTED",
+  "git_head_before_delivery": "58fa3d2f475120a5ce606fa0e22ad4dca33ab45a",
+  "implementation": {
+    "protocol": "configs/route_a_v3_route2_xeditcritic_v4_frozen_test_protocol_v1.json",
+    "gate": "core/route2_xeditcritic_gate_v4.py",
+    "focused_protocol_test": "tests/route_a_v3/test_route2_xeditcritic_v4_frozen_test_protocol.py"
+  },
+  "atomic_boundary": {
+    "required_confirmation_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "expected_test_record_count": 18292,
+    "single_access_event": true,
+    "general_test_projection_persisted": false,
+    "test_bottom_six_cache_persisted": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "strict_gate": {
+    "minimum_task_macro_spearman": 0.3,
+    "minimum_margin_over_c0_v4": 0.1,
+    "maximum_standardized_mae": 1.7,
+    "mae_must_not_exceed_c0_v4": true,
+    "minimum_positive_tasks": 8,
+    "paired_bootstrap_iterations": 10000,
+    "paired_bootstrap_ci_lower_bound": "STRICTLY_GREATER_THAN_ZERO"
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "73/73 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "runner_implemented": false,
+    "authorization_consumed": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "all_development_refit_authorized": false,
+    "loso_authorized": false,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "PROSPECTIVE TEST ACCESS AND GATE ONLY; NO TEST OUTCOME",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

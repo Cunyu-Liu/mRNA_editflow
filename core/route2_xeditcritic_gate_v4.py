@@ -382,3 +382,86 @@ def adjudicate_critic_confirmation_v4(
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
+
+
+def adjudicate_critic_frozen_test_v4(
+    candidate: Mapping[str, Any],
+    baseline: Mapping[str, Any],
+    bootstrap: Mapping[str, Any],
+) -> dict[str, Any]:
+    for label, summary in (("candidate", candidate), ("baseline", baseline)):
+        _require(
+            summary.get("status")
+            == "ATOMIC_FROZEN_DEVELOPMENT_TEST_EVALUATION_COMPLETE"
+            and int(summary.get("test_record_count", -1)) == 18_292,
+            f"{label} Critic V4 frozen TEST summary is not exact terminal",
+        )
+        _require(
+            summary.get("development_test_outcomes_accessed") is True
+            and int(summary.get("development_test_access_event_count", -1)) == 1
+            and summary.get("general_test_projection_persisted") is False
+            and summary.get("new_final_evaluation_outcomes_accessed") is False,
+            f"{label} Critic V4 frozen TEST access was not single and atomic",
+        )
+    candidate_metrics = candidate.get("test_metrics")
+    baseline_metrics = baseline.get("test_metrics")
+    _require(
+        isinstance(candidate_metrics, Mapping)
+        and isinstance(baseline_metrics, Mapping)
+        and int(candidate_metrics.get("task_count", -1))
+        == int(baseline_metrics.get("task_count", -2))
+        == 9,
+        "Critic V4 frozen TEST metrics do not cover nine tasks",
+    )
+    candidate_rho = float(candidate_metrics["task_macro_spearman"])
+    baseline_rho = float(baseline_metrics["task_macro_spearman"])
+    candidate_mae = float(candidate_metrics["task_macro_standardized_mae"])
+    baseline_mae = float(baseline_metrics["task_macro_standardized_mae"])
+    ci = bootstrap.get("task_macro_spearman_difference_ci_95")
+    _require(
+        bootstrap.get("analysis_unit") == "SOURCE_GROUP_WITHIN_TASK"
+        and int(bootstrap.get("bootstrap_iterations", -1)) == 10_000
+        and isinstance(ci, list)
+        and len(ci) == 2,
+        "Critic V4 frozen TEST paired bootstrap identity changed",
+    )
+    margin = candidate_rho - baseline_rho
+    _require(
+        math.isclose(
+            float(bootstrap.get("point_task_macro_spearman_difference", float("nan"))),
+            margin,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ),
+        "Critic V4 frozen TEST bootstrap point differs from summaries",
+    )
+    checks = {
+        "task_macro_spearman_at_least_0_30": candidate_rho >= 0.30,
+        "margin_over_c0_v4_at_least_0_10": margin >= 0.10,
+        "task_macro_standardized_mae_at_most_1_70": candidate_mae <= 1.70,
+        "mae_not_worse_than_c0_v4": candidate_mae <= baseline_mae,
+        "positive_task_count_at_least_8": int(candidate_metrics["positive_task_count"]) >= 8,
+        "paired_bootstrap_ci_lower_bound_positive": math.isfinite(float(ci[0]))
+        and float(ci[0]) > 0.0,
+        "single_atomic_test_access": True,
+        "general_test_projection_not_persisted": True,
+        "new_final_evaluation_read_zero": True,
+    }
+    passed = all(checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_frozen_test_gate.v1",
+        "status": "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+        if passed
+        else "XEDITCRITIC_V4_FROZEN_TEST_NO_GO",
+        "candidate_task_macro_spearman": candidate_rho,
+        "baseline_task_macro_spearman": baseline_rho,
+        "margin_over_c0_v4": margin,
+        "candidate_task_macro_standardized_mae": candidate_mae,
+        "baseline_task_macro_standardized_mae": baseline_mae,
+        "paired_bootstrap_ci_95": [float(ci[0]), float(ci[1])],
+        "checks": checks,
+        "all_development_refit_authorized": passed,
+        "loso_authorized": False,
+        "guidance_authorized": False,
+        "new_final_evaluation_authorized": False,
+    }
