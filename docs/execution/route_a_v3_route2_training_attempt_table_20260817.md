@@ -3026,3 +3026,16 @@ device name、BF16 forward precision及`cpu_fallback=false`。preflight和screen
 本地cross-component focused 24/24、Critic V4 83/83、SetFlow V4 60/60、精确V3.3.2 96/96 PASS，
 compile/diff-check PASS。没有materialize authorization/cache/preflight或optimizer，protected read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_summary_provenance_consumption_v1.json`。
+
+## 01:47 C3 five-job scheduled health（2026-08-25）
+
+本地01:45:28已越过校准窗口后执行一次单包SSH；远端时间01:47:43。C3 full、source-only、
+edit-metadata-only、no-candidate-sequence与candidate-bundle-permutation五项PID仍均为活跃CUDA进程，
+elapsed为82,323/82,324/82,324/81,895/81,513秒；五个精确run summary/failure与screen gate均不存在。
+GPU3/0/5/1/2的登记CUDA占用为2,190/2,120/2,190/2,120/2,190 MiB。
+
+current-HEAD read-once producer因terminal_count=0未执行，没有打开terminal payload；未读stdout/stderr、
+active curve、Development TEST或new Evaluation outcome，未新增optimizer attempt，也未同步A100 worktree。
+监控任务没有仓库代码变化，因此没有重复已通过的focused/V3.3.2测试。远端偏移仍为+135秒；下一远端/本地
+窗口分别不早于02:47:43/02:45:28。科学claim保持NOT_ESTABLISHED。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_014743.json`。

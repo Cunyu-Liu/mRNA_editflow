@@ -4003,3 +4003,16 @@ cache builder写入的HEAD/authorization/GPU/BF16 provenance现在是preflight�
 本地focused 24/24、Critic V4 83/83、SetFlow V4 60/60、精确V3.3.2 96/96 PASS。尚未生成正式summary，
 cache/preflight/optimizer均未运行，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_summary_provenance_consumption_v1.json`。
+
+## 01:47 C3 long-interval health（2026-08-25）
+
+本地01:45:28越过最近校准窗口后只执行一次远端检查；远端01:47:43时五个C3 PID全部仍活跃，
+五个精确terminal summary、failure artifact及screen gate均不存在。CUDA进程仍位于登记的GPU0/1/2/3/5，
+每项占用2,120或2,190 MiB。随检查包发送的current-HEAD read-once producer仅在五项全部terminal时运行；
+本次terminal_count=0，因此没有读取任何terminal JSON，也没有生成C3 V4 reference。
+
+未读取stdout/stderr、active curve、Development TEST outcome或new Evaluation outcome。远端仍比本地快135秒；
+下一远端/本地窗口分别不早于02:47:43/02:45:28。没有V4 cache、preflight、optimizer或Validation generation
+执行，A100 current-HEAD Git sync继续受五项terminal barrier约束。监控任务没有代码变化，因此没有重复
+focused/V3.3.2测试。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_014743.json`。
