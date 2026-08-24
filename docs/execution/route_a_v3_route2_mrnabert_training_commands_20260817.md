@@ -3089,3 +3089,14 @@ full/source/edit/no-candidate/permutation五个PID仍存活，elapsed为44,679/4
 下一统一窗口`>=16:20:19`。不读stdout、stderr、curve或metric，不因墙钟时间单独判停滞；无代码变化，
 不重复测试，不做A100 current-HEAD sync。protected read=0；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_152019.json`。
+
+## C3 screen 16:43:26 long-interval health（2026-08-24）
+
+连接前本地时钟16:40:54，远端16:43:26，已越过16:20:19冻结窗口；距上次观察4,987秒。
+full/source/edit/no-candidate/permutation五个PID仍存活，elapsed为49,666/49,667/49,667/49,238/
+48,857秒；GPU3/0/5/1/2进程显存为2,190/2,120/2,190/2,120/1,846 MiB。无summary、failure或
+screen gate。
+
+下一统一窗口`>=17:43:26`。本轮只读terminal/failure/alive/CUDA字段，不读stdout、stderr、curve、metric或
+terminal payload；不做A100 current-HEAD sync。protected read=0；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_164326.json`。
