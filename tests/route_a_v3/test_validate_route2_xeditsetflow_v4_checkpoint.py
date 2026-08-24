@@ -3,9 +3,12 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+import torch
 
+from scripts.route_a_v3 import validate_route2_xeditsetflow_v4_checkpoint as validation
 from scripts.route_a_v3.validate_route2_xeditsetflow_v4_checkpoint import (
     SetFlowCheckpointValidationV4Error,
     _write_atomic_terminal_v4,
@@ -78,6 +81,38 @@ def test_compute_record_counts_prior_trunk_mode_heads_and_replay() -> None:
         '"independent_evaluator_forward_count": 0',
     ):
         assert token in source
+
+
+def test_small_graph_mixture_distribution_matches_independent_path_enumeration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fixed_priors(*_args, **_kwargs):
+        return [[0.25, 0.75]], SimpleNamespace(
+            prior_forward_count=1,
+            trunk_forward_count=1,
+            mode_head_forward_count=2,
+        )
+
+    def fixed_rates(_model, _state, _metadata, selected_mode, actions, **_kwargs):
+        ordered = list(actions)
+        weights = range(1, len(ordered) + 1)
+        if selected_mode == 1:
+            weights = reversed(tuple(weights))
+        return dict(zip(ordered, weights, strict=True))
+
+    monkeypatch.setattr(validation, "root_mode_priors_v4", fixed_priors)
+    monkeypatch.setattr(validation, "setflow_rate_map_v4", fixed_rates)
+    model = SimpleNamespace(mode_count=2)
+
+    result = validation.small_graph_exact_check_v4(
+        model, {}, torch.device("cpu")
+    )
+
+    assert result["status"] == "PASS"
+    assert result["mode_count"] == 2
+    assert result["dynamic_probability_sum"] == pytest.approx(1.0)
+    assert result["enumeration_probability_sum"] == pytest.approx(1.0)
+    assert result["total_variation"] <= result["tolerance"] == 1e-12
 
 
 def test_both_training_runs_must_be_terminal_before_any_checkpoint_validation(

@@ -1042,3 +1042,14 @@ archived version.
   and an immutable release tag or archive.
 - Reporting guideline, author list, contributions, declarations, funding,
   ethics applicability and AI-use disclosure.
+
+## Prospective V4 execution status（2026-08-25）
+
+The XEditSetFlow V4 small-graph correctness requirement now has a direct
+executable comparison between exact dynamic programming and independent complete
+path enumeration for a latent-mode mixture. This closes an implementation-test
+gap only. No V4 optimizer attempt, checkpoint validation metric, Development TEST
+outcome, or new Evaluation outcome has been read. Consequently, neither V4
+generator performance nor the paper's model-advantage claim is established; the
+manuscript remains not ready for submission under the frozen dual-advantage
+standard.

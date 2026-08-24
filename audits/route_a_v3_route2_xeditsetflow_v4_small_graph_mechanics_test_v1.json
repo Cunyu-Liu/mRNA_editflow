@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_small_graph_mechanics_test.v1",
+  "status": "XEDITSETFLOW_V4_SMALL_GRAPH_MECHANICS_TEST_COVERED",
+  "recorded_at": "2026-08-25T03:18:02+08:00",
+  "scope": {
+    "implementation_changed": false,
+    "test_changed": true,
+    "optimizer_attempt_added": false,
+    "validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "mechanics": {
+    "dynamic_programming_distribution": "core.route2_legal_xeditflow.exact_terminal_distribution",
+    "independent_reference": "recursive_complete_path_enumeration",
+    "mixture_mode_count": 2,
+    "mode_priors": [0.25, 0.75],
+    "formal_cuda_guard_preserved": true,
+    "formal_validation_uses_real_model": true,
+    "unit_test_uses_deterministic_injected_prior_and_rates": true,
+    "required_total_variation_tolerance": 1e-12
+  },
+  "focused_tests": {
+    "direct_validation_runner": {
+      "passed": 9,
+      "failed": 0
+    },
+    "setflow_v4_combined": {
+      "passed": 71,
+      "failed": 0
+    },
+    "exact_v3_3_2": {
+      "passed": 96,
+      "failed": 0
+    }
+  },
+  "project_state": {
+    "c3_terminal_read_once_complete": false,
+    "a100_current_head_sync_complete": false,
+    "v4_cache_or_preflight_executed": false,
+    "v4_optimizer_attempts": 0,
+    "next_c3_local_check_not_before": "2026-08-25T03:45:51+08:00"
+  },
+  "claim_effect": "NONE_MECHANICS_TEST_ONLY_V4_PERFORMANCE_AND_MODEL_ADVANTAGE_REMAIN_NOT_ESTABLISHED"
+}

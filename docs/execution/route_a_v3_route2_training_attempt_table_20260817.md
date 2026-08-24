@@ -3191,3 +3191,16 @@ post-TEST refit/LOSO协议此前引用不存在的`train_projection.jsonl`与`va
 
 定向=15/15、精确V3.3.2=96/96。此项仅更新测试合同，没有新增中央training attempt、参数更新、结果读取或
 scientific claim。审计：`audits/route_a_v3_route2_xeditflow_v4_readiness_fixture_integration_v1.json`。
+
+## XEditSetFlow V4 small-graph mechanics executable coverage（2026-08-25）
+
+对冻结必测项做有边界的覆盖核查时，确认正式checkpoint validation已实现八mode mixture终态分布的动态规划与
+独立完整路径枚举对照，并以total variation `≤1e-12`硬失败；但原测试只验证gate中的结果字段，没有直接执行
+这段mechanics。现新增一个确定性双mode机械测试，向同一正式检查函数注入outcome-free prior/rates，并实际比较
+两套独立算法。首次直接使用CPU调用真实formal inference因CUDA-only guard被正确拒绝；没有放宽该guard，A100
+正式validation仍必须用真实模型/CUDA执行同一检查。
+
+直接validation runner focused=9/9、完整SetFlow V4 focused=71/71、精确V3.3.2=96/96。没有修改模型、loss、
+checkpoint选择、gate、seed或compute budget，没有新增optimizer attempt、Validation metric或protected outcome读取。
+C3五项仍等待自然terminal，A100 current-HEAD sync/cache/preflight仍关闭；论文模型优势claim不变。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_small_graph_mechanics_test_v1.json`。

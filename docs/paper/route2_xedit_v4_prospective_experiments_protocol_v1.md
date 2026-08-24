@@ -201,3 +201,13 @@ trajectory-state, and matched-compute interfaces were already concrete and
 remain in use. This note records implementation conformance only and does not
 amend any architecture, seed, loss, threshold, gate, outcome-access boundary,
 or claim above.
+
+The SetFlow checkpoint validator's required small-graph evidence is now covered
+by an executable mechanics test rather than only by a gate-fixture field. The
+test runs the validator's mixture aggregation twice: once through exact dynamic
+programming and once through independent recursive enumeration of every complete
+path. It requires both distributions to normalize and their total variation to
+be at most (10^{-12}). Deterministic outcome-free priors and rates make this a
+local mechanics test; the formal A100 validation retains real model inference
+and its CUDA-only boundary. This adds no performance observation and therefore
+does not support a recovery, diversity, NLL, or model-advantage claim.
