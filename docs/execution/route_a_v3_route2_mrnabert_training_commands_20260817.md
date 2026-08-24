@@ -4030,3 +4030,14 @@ preflight仍会再次从实际payload生成identity receipt。focused 27/27、Se
 精确V3.3.2 96/96、compile/JSON/diff-check与项目外scheduler smoke均PASS。尚未执行A100 adoption、Critic cache、
 preflight或optimizer，Development TEST/new Evaluation read=0，下一C3检查仍不早于本地02:45:28。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_read_only_source_cache_adoption_v1.json`。
+
+## Critic V4 atomic screen-gate focused record（2026-08-25）
+
+Critic V4八项screen的唯一终态裁决现在使用同目录partial文件加原子替换发布最终gate；中断留下的partial会明确
+阻止裁决，不被覆盖或删除，已存在的正式gate仍不可重写。该改动只修复terminal artifact完整性，不改变C3参照、
+C0/control/ablation margin、参数/显存约束或PASS/NO-GO语义。
+
+本地gate focused=9/9、Critic V4相关=85/85、精确V3.3.2=96/96，Python compile PASS。尚未运行裁决、cache、
+preflight、optimizer、inference或Validation metric；protected outcome read=0。A100 current-HEAD验证继续等待旧C3
+五项全部terminal，下一允许远端检查仍不早于本地02:45:28。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_screen_adjudication_v1.json`。

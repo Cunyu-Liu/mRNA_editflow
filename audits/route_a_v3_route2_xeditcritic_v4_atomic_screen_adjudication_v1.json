@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_screen_adjudication_audit.v1",
+  "status": "XEDITCRITIC_V4_ATOMIC_SCREEN_ADJUDICATION_IMPLEMENTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:18:08+08:00",
+  "head_before_change": "2ce860cbbeac6435aa6e4ea1d58039ba35f8149e",
+  "failure_closed": {
+    "reachable_failure": "an interrupted direct screen-gate write could leave malformed terminal JSON while also blocking adjudication replay",
+    "write_protocol": "WRITE_SIBLING_PARTIAL_THEN_OS_REPLACE",
+    "existing_final_gate_rejected": true,
+    "existing_partial_gate_rejected": true,
+    "partial_gate_not_overwritten_or_deleted": true,
+    "screen_gate_semantics_changed": false
+  },
+  "verification": {
+    "focused_screen_gate_tests": "9 passed",
+    "critic_v4_related_tests": "85 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_gate_materialized": false,
+    "cache_or_preflight_materialized": false,
+    "optimizer_attempts_started": 0,
+    "validation_metric_reads": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_TERMINAL_ARTIFACT_CORRECTNESS_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

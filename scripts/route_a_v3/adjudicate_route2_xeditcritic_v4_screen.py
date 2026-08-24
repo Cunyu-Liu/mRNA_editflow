@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,8 @@ def _load(path: Path) -> dict[str, Any]:
 def run(config: dict[str, Any]) -> dict[str, Any]:
     output = Path(config["screen_gate_output"])
     _require(not output.exists(), "Critic V4 screen gate already exists")
+    partial = output.with_suffix(output.suffix + ".partial")
+    _require(not partial.exists(), "partial Critic V4 screen gate already exists")
     root = Path(config["output_root"])
     summaries: dict[str, dict[str, Any]] = {}
     technical_failures: dict[str, dict[str, Any]] = {}
@@ -73,7 +76,11 @@ def run(config: dict[str, Any]) -> dict[str, Any]:
         result["c3_reference_adjudication_path"] = config["c3_read_once_reference_adjudication"]
         result["c3_terminal_summaries_reread_by_v4_gate"] = False
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    partial.write_text(
+        json.dumps(result, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, output)
     return result
 
 

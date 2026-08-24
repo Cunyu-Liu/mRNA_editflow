@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ from core.route2_xeditcritic_gate_v4 import (
 from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_screen import (
     run as adjudicate_screen,
 )
+import scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_screen as critic_screen_adjudicator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -183,6 +185,7 @@ def test_v4_screen_gate_rejects_any_protected_read_or_parameter_drift() -> None:
 
 def test_adjudicator_turns_any_terminal_technical_failure_into_no_go(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = _config()
     config["output_root"] = str(tmp_path / "runs")
@@ -215,6 +218,14 @@ def test_adjudicator_turns_any_terminal_technical_failure_into_no_go(
         ),
         encoding="utf-8",
     )
+    replace_calls: list[tuple[Path, Path]] = []
+    original_replace = os.replace
+
+    def recording_replace(source: str | Path, destination: str | Path) -> None:
+        replace_calls.append((Path(source), Path(destination)))
+        original_replace(source, destination)
+
+    monkeypatch.setattr(critic_screen_adjudicator.os, "replace", recording_replace)
     result = adjudicate_screen(config)
     assert result["status"] == "XEDITCRITIC_V4_SCREEN_NO_GO"
     assert result["technical_failure_run_ids"] == sorted(
@@ -222,7 +233,27 @@ def test_adjudicator_turns_any_terminal_technical_failure_into_no_go(
     )
     assert result["confirmation_authorized"] is False
     assert result["development_test_authorized"] is False
-    assert Path(config["screen_gate_output"]).exists()
+    output = Path(config["screen_gate_output"])
+    partial = output.with_suffix(output.suffix + ".partial")
+    assert replace_calls == [(partial, output)]
+    assert output.exists()
+    assert not partial.exists()
+    assert json.loads(output.read_text(encoding="utf-8")) == result
+
+
+def test_adjudicator_refuses_a_stale_partial_gate(tmp_path: Path) -> None:
+    config = _config()
+    output = tmp_path / "runs" / "screen_gate.json"
+    config["screen_gate_output"] = str(output)
+    output.parent.mkdir(parents=True)
+    partial = output.with_suffix(output.suffix + ".partial")
+    partial.write_text("interrupted", encoding="utf-8")
+
+    with pytest.raises(Exception, match="partial Critic V4 screen gate already exists"):
+        adjudicate_screen(config)
+
+    assert not output.exists()
+    assert partial.read_text(encoding="utf-8") == "interrupted"
 
 
 def _confirmation_summary(run: dict, seed: int, rho: float, mae: float = 1.2) -> dict:

@@ -3056,3 +3056,16 @@ adoption/authorizer focused 27/27、SetFlow V4相关64/64、Critic V4相关83/83
 compile/JSON/diff-check及项目外screen scheduler smoke均PASS。正式receipt尚未materialize，cache/preflight/
 optimizer/Validation generation均未执行，protected read=0；科学claim不变。下一C3检查仍不早于本地02:45:28。
 审计：`audits/route_a_v3_route2_xeditsetflow_v4_read_only_source_cache_adoption_v1.json`。
+
+## Critic V4 atomic terminal screen adjudication（2026-08-25）
+
+正式screen裁决入口原先在确认八项screen run均为精确terminal并完成严格gate计算后，直接写最终
+`screen_gate.json`。若进程在写入期间中断，可能留下不可解析的半截终态文件；入口随后又会因最终路径已存在而
+拒绝重跑。这是正式执行链上可达的terminal-artifact故障，不涉及模型、threshold或结果选择。
+
+现改为先写同目录`screen_gate.json.partial`，写完后再用原子替换发布唯一最终gate；既有final或既有partial均
+fail closed，且不会自动删除、覆盖或把中断产物冒充正式结果。回归测试验证技术故障NO-GO也使用相同原子路径，
+最终JSON与返回裁决完全一致。focused gate=9/9、Critic V4相关=85/85、精确V3.3.2 cohort=96/96、compile PASS。
+没有执行screen裁决、cache、preflight、optimizer或Validation metric，Development TEST/new Evaluation read=0；
+A100 current-HEAD测试仍等待五项旧C3 launch-head作业全部terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_screen_adjudication_v1.json`。
