@@ -1,0 +1,71 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_cache_receipt_consumption.v1",
+  "status": "V4_PREFLIGHT_CACHE_RECEIPTS_REQUIRED_BY_ALL_DOWNSTREAM_RUNNERS",
+  "recorded_at_local": "2026-08-25T00:14:06+08:00",
+  "git_head_before_delivery": "0ab8969",
+  "critic_receipt_gate": {
+    "producer": "formal Critic V4 preflight after validation of the actual bottom-six tensor payload",
+    "consumers": [
+      "screen launch authorizer",
+      "screen trainer",
+      "three-seed confirmation trainer",
+      "all-Development refit and LOSO trainer"
+    ],
+    "frozen_identity": {
+      "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "record_count": 107873,
+      "unique_sequence_count": 43730,
+      "embedding_width": 768,
+      "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+      "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+      "chunk_length": 1000,
+      "chunk_overlap": 64,
+      "local_context_radius": 32,
+      "special_token_offset": 1
+    }
+  },
+  "setflow_receipt_gate": {
+    "producer": "formal SetFlow V4 preflight after validation of the actual source-token tensor payload",
+    "consumers": [
+      "screen launch authorizer",
+      "screen trainer",
+      "three-seed confirmation trainer"
+    ],
+    "frozen_identity": {
+      "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "record_count": 84218,
+      "unique_source_count": 19303,
+      "token_count": 2817781,
+      "maximum_source_length": 837,
+      "embedding_width": 768,
+      "tokenization_policy": "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+      "chunk_policy": "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES"
+    }
+  },
+  "regression_guarantee": {
+    "missing_receipt_rejected": true,
+    "drifted_receipt_rejected": true,
+    "preflight_pass_without_tensor_identity_is_not_sufficient": true
+  },
+  "verification": {
+    "supported_local_python": "3.13.5",
+    "receipt_focused": "43/43 PASS",
+    "critic_v4_related": "57/57 PASS",
+    "setflow_v4_related": "44/44 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "cache_materialized_or_rebuilt": false,
+    "preflight_executed": false,
+    "screen_executed": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "next_remote_c3_check_not_before_local": "2026-08-25T00:44:44+08:00",
+  "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

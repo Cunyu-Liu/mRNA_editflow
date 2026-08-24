@@ -132,7 +132,7 @@ def require_source_token_cache_identity_v3(
         payload.get("chunk_policy") == "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
         "source-token cache chunk policy changed",
     )
-    return {
+    receipt = {
         "model_id": str(payload["model_id"]),
         "record_count": len(payload["record_ids"]),
         "unique_source_count": int(lengths.numel()),
@@ -142,6 +142,46 @@ def require_source_token_cache_identity_v3(
         "tokenization_policy": str(payload["tokenization_policy"]),
         "chunk_policy": str(payload["chunk_policy"]),
     }
+    require_source_token_cache_identity_receipt_v3(
+        receipt,
+        expected_model_id=expected_model_id,
+        expected_record_count=expected_record_count,
+        expected_unique_source_count=expected_unique_source_count,
+        expected_token_count=expected_token_count,
+        expected_maximum_source_length=expected_maximum_source_length,
+        expected_embedding_width=expected_embedding_width,
+    )
+    return receipt
+
+
+def require_source_token_cache_identity_receipt_v3(
+    receipt: Mapping[str, Any],
+    *,
+    expected_model_id: str,
+    expected_record_count: int,
+    expected_unique_source_count: int,
+    expected_token_count: int,
+    expected_maximum_source_length: int,
+    expected_embedding_width: int = 768,
+) -> None:
+    """Require the preflight receipt produced from the frozen source payload."""
+
+    _require(isinstance(receipt, Mapping), "source-token cache identity receipt is absent")
+    _require(str(receipt.get("model_id")) == str(expected_model_id), "source-token cache identity receipt revision changed")
+    _require(int(receipt.get("record_count", -1)) == int(expected_record_count), "source-token cache identity receipt record count changed")
+    _require(int(receipt.get("unique_source_count", -1)) == int(expected_unique_source_count), "source-token cache identity receipt source count changed")
+    _require(int(receipt.get("token_count", -1)) == int(expected_token_count), "source-token cache identity receipt token count changed")
+    _require(int(receipt.get("maximum_source_length", -1)) == int(expected_maximum_source_length), "source-token cache identity receipt maximum length changed")
+    _require(int(receipt.get("embedding_width", -1)) == int(expected_embedding_width), "source-token cache identity receipt width changed")
+    _require(
+        receipt.get("tokenization_policy")
+        == "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+        "source-token cache identity receipt tokenization changed",
+    )
+    _require(
+        receipt.get("chunk_policy") == "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
+        "source-token cache identity receipt chunk policy changed",
+    )
 
 
 class SourceTokenCacheIndexV3:

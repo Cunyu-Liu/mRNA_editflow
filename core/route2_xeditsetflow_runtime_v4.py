@@ -7,6 +7,9 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from core.route2_source_token_cache_v3 import (
+    require_source_token_cache_identity_receipt_v3,
+)
 from core.route2_xeditsetflow_v4 import (
     XEditSetFlowV4,
     require_setflow_v4_trainable_parameter_range,
@@ -176,6 +179,22 @@ def setflow_v4_learning_rate_factor(
     return 0.1 + 0.9 * 0.5 * (1.0 + math.cos(math.pi * progress))
 
 
+def _require_source_token_preflight_identity_v4(
+    config: Mapping[str, Any], preflight: Mapping[str, Any]
+) -> None:
+    require_source_token_cache_identity_receipt_v3(
+        preflight.get("source_token_cache_identity"),
+        expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        expected_record_count=84218,
+        expected_unique_source_count=19303,
+        expected_token_count=2817781,
+        expected_maximum_source_length=837,
+        expected_embedding_width=int(
+            config["architecture"]["frozen_source_mrnabert_width"]
+        ),
+    )
+
+
 def require_setflow_v4_screen_launch_authorization(
     config: Mapping[str, Any],
     authorization: Mapping[str, Any],
@@ -234,6 +253,7 @@ def require_setflow_v4_screen_launch_authorization(
         == int(config["architecture"]["formal_single_mode_trainable_parameter_count"]),
         "SetFlow V4 single-mode preflight count changed",
     )
+    _require_source_token_preflight_identity_v4(config, preflight)
     _require(
         source_data_audit.get("status") == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
         "SetFlow V4 source-level data audit did not pass",
@@ -330,6 +350,7 @@ def require_setflow_v4_confirmation_launch_authorization(
         == int(config["architecture"]["formal_full_trainable_parameter_count"]),
         "SetFlow V4 confirmation preflight identity changed",
     )
+    _require_source_token_preflight_identity_v4(config, preflight)
     _require(
         source_data_audit.get("status")
         == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS"

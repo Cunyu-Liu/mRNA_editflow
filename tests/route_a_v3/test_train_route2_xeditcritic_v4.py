@@ -56,6 +56,18 @@ def _preflight() -> dict:
         "selected_physical_batch": 8,
         "trainable_parameter_count": 173_692_549,
         "selected_peak_allocated_gib": 29.0,
+        "bottom_six_cache_identity": {
+            "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+            "record_count": 107873,
+            "unique_sequence_count": 43730,
+            "embedding_width": 768,
+            "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+            "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+            "chunk_length": 1000,
+            "chunk_overlap": 64,
+            "local_context_radius": 32,
+            "special_token_offset": 1,
+        },
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -132,6 +144,18 @@ def test_launch_authorization_rejects_head_batch_memory_parameter_or_protected_r
     preflight = _preflight()
     preflight["development_test_outcome_reads"] = 1
     with pytest.raises(XEditCriticTrainingV4RunnerError, match="TEST read"):
+        require_screen_launch_authorization_v4(
+            config,
+            authorization,
+            preflight,
+            run_id="v4_full",
+            physical_batch_size=8,
+            current_git_head="head",
+        )
+
+    preflight = _preflight()
+    del preflight["bottom_six_cache_identity"]
+    with pytest.raises(Exception, match="cache identity receipt is absent"):
         require_screen_launch_authorization_v4(
             config,
             authorization,

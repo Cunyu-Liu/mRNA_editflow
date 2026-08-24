@@ -383,7 +383,7 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
         bool(torch.all(offsets == LEADING_SPECIAL_TOKENS).item()),
         "bottom-six cache special-token offset changed",
     )
-    return {
+    receipt = {
         "model_id": str(payload["model_id"]),
         "record_count": len(payload["record_ids"]),
         "unique_sequence_count": int(payload["sequence_lengths"].numel()),
@@ -395,6 +395,37 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
         "local_context_radius": int(payload["local_context_radius"]),
         "special_token_offset": LEADING_SPECIAL_TOKENS,
     }
+    require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
+        receipt,
+        expected_model_id=expected_model_id,
+        expected_record_count=expected_record_count,
+        expected_unique_sequence_count=expected_unique_sequence_count,
+        expected_embedding_width=expected_embedding_width,
+    )
+    return receipt
+
+
+def require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
+    receipt: Mapping[str, Any],
+    *,
+    expected_model_id: str,
+    expected_record_count: int,
+    expected_unique_sequence_count: int,
+    expected_embedding_width: int = 768,
+) -> None:
+    """Require the preflight receipt produced from the frozen tensor payload."""
+
+    _require(isinstance(receipt, Mapping), "bottom-six cache identity receipt is absent")
+    _require(str(receipt.get("model_id")) == str(expected_model_id), "bottom-six cache identity receipt revision changed")
+    _require(int(receipt.get("record_count", -1)) == int(expected_record_count), "bottom-six cache identity receipt record count changed")
+    _require(int(receipt.get("unique_sequence_count", -1)) == int(expected_unique_sequence_count), "bottom-six cache identity receipt sequence count changed")
+    _require(int(receipt.get("embedding_width", -1)) == int(expected_embedding_width), "bottom-six cache identity receipt width changed")
+    _require(receipt.get("frozen_encoder_blocks") == [0, 1, 2, 3, 4, 5], "bottom-six cache identity receipt frozen blocks changed")
+    _require(receipt.get("trainable_encoder_blocks") == [6, 7, 8, 9, 10, 11], "bottom-six cache identity receipt upper blocks changed")
+    _require(int(receipt.get("chunk_length", -1)) == CHUNK_NUCLEOTIDES, "bottom-six cache identity receipt chunk length changed")
+    _require(int(receipt.get("chunk_overlap", -1)) == CHUNK_OVERLAP, "bottom-six cache identity receipt overlap changed")
+    _require(int(receipt.get("local_context_radius", -1)) == V4_LOCAL_RADIUS, "bottom-six cache identity receipt radius changed")
+    _require(int(receipt.get("special_token_offset", -1)) == LEADING_SPECIAL_TOKENS, "bottom-six cache identity receipt special-token offset changed")
 
 
 def materialize_bottom_chunk_batch_v4(

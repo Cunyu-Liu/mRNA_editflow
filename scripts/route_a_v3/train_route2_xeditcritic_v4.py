@@ -24,6 +24,7 @@ if str(REPO_ROOT) not in sys.path:
 from core.route2_bottom_encoder_chunk_cache_v4 import (
     load_frozen_bottom_encoder_chunk_cache_v4,
     require_frozen_bottom_encoder_chunk_cache_identity_v4,
+    require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4,
 )
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_experiment_ledger import (
@@ -140,6 +141,18 @@ def evaluation_index_batches_v4(
     return result
 
 
+def _require_bottom_six_preflight_identity_v4(
+    config: Mapping[str, Any], preflight: Mapping[str, Any]
+) -> None:
+    require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
+        preflight.get("bottom_six_cache_identity"),
+        expected_model_id=str(config["model_id"]),
+        expected_record_count=int(config["data_geometry"]["expected_record_count"]),
+        expected_unique_sequence_count=43730,
+        expected_embedding_width=int(config["architecture"]["pretrained_width"]),
+    )
+
+
 def require_screen_launch_authorization_v4(
     config: Mapping[str, Any],
     authorization: Mapping[str, Any],
@@ -185,6 +198,7 @@ def require_screen_launch_authorization_v4(
     _require(20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0, "formal preflight peak memory is outside 20–35 GiB")
     _require(int(preflight.get("development_test_outcome_reads", -1)) == 0, "preflight reports a Development TEST read")
     _require(int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0, "preflight reports a new Evaluation read")
+    _require_bottom_six_preflight_identity_v4(config, preflight)
 
 
 def critic_v4_run_stage_seed(
@@ -323,6 +337,7 @@ def require_confirmation_launch_authorization_v4(
         and 20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0,
         "Critic V4 confirmation preflight identity changed",
     )
+    _require_bottom_six_preflight_identity_v4(config, preflight)
     for payload, label in (
         (authorization, "authorization"),
         (preflight, "preflight"),
@@ -417,6 +432,7 @@ def require_posttest_launch_authorization_v4(
         and int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0,
         "Critic V4 posttest preflight identity changed",
     )
+    _require_bottom_six_preflight_identity_v4(config, preflight)
 
 
 def _git_head() -> str:

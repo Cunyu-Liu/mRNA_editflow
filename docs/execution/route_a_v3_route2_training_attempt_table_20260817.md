@@ -2930,3 +2930,16 @@ Critic实际bottom-six payload的identity receipt进一步绑定`sequence_length
 summary核对unique sequence count；preflight和trainer使用同一断言并把该值写入receipt。定向25/25、精确
 V3.3.2 96/96、compile/diff-check PASS；未执行cache/preflight/optimizer或protected read。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_unique_sequence_identity_binding_v1.json`。
+
+## V4 preflight cache receipt downstream binding（2026-08-25）
+
+修复一个正式启动链缺口：此前preflight已经从实际tensor payload生成冻结cache identity receipt，但screen
+authorizer及后续trainer只核对preflight状态、参数量和显存，旧式preflight理论上可能不携带实际cache身份仍被消费。
+现在Critic screen/confirmation/post-TEST trainer与SetFlow screen/confirmation trainer都必须逐字段验证同一receipt；
+缺失、model revision、record/source/sequence/token count、width、block scope、chunk/token policy或radius漂移均在模型
+构建和参数更新前硬失败。
+
+本地receipt focused 43/43、Critic V4相关57/57、SetFlow V4相关44/44、精确V3.3.2 cohort 96/96、
+compile/diff-check PASS。未materialize/rebuild cache，未执行preflight、screen或optimizer，protected read=0；
+A100 current-HEAD tests仍等待五个旧C3 launch-head作业自然terminal，下一允许远端检查仍为本地00:44:44。
+审计：`audits/route_a_v3_route2_xedit_v4_preflight_cache_receipt_consumption_v1.json`。

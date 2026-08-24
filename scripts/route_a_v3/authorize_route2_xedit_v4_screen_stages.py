@@ -15,6 +15,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from core.route2_bottom_encoder_chunk_cache_v4 import (
+    require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4,
+)
+from core.route2_source_token_cache_v3 import (
+    require_source_token_cache_identity_receipt_v3,
+)
+
 
 class XEditV4ScreenAuthorizationError(RuntimeError):
     pass
@@ -204,6 +211,13 @@ def build_screen_launch_authorization_v4(
             and int(preflight.get("selected_physical_batch", -1)) in {4, 8, 16, 32},
             "Critic V4 formal parameter/memory preflight did not pass",
         )
+        require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
+            preflight.get("bottom_six_cache_identity"),
+            expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+            expected_record_count=107873,
+            expected_unique_sequence_count=43730,
+            expected_embedding_width=768,
+        )
         barriers = {
             **common,
             "bottom_six_cache_terminal_complete": True,
@@ -222,6 +236,15 @@ def build_screen_launch_authorization_v4(
             and int(preflight.get("single_mode_trainable_parameter_count", -1))
             == int(screen_config["architecture"]["formal_single_mode_trainable_parameter_count"]),
             "SetFlow V4 formal parameter preflight did not pass",
+        )
+        require_source_token_cache_identity_receipt_v3(
+            preflight.get("source_token_cache_identity"),
+            expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+            expected_record_count=84218,
+            expected_unique_source_count=19303,
+            expected_token_count=2817781,
+            expected_maximum_source_length=837,
+            expected_embedding_width=768,
         )
         _require(
             source_data_audit is not None

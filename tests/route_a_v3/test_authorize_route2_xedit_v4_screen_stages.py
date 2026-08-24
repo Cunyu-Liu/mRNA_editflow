@@ -90,6 +90,34 @@ def _flow_cache():
     }
 
 
+def _critic_cache_receipt():
+    return {
+        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        "record_count": 107873,
+        "unique_sequence_count": 43730,
+        "embedding_width": 768,
+        "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+        "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+        "chunk_length": 1000,
+        "chunk_overlap": 64,
+        "local_context_radius": 32,
+        "special_token_offset": 1,
+    }
+
+
+def _flow_cache_receipt():
+    return {
+        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        "record_count": 84218,
+        "unique_source_count": 19303,
+        "token_count": 2817781,
+        "maximum_source_length": 837,
+        "embedding_width": 768,
+        "tokenization_policy": "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+        "chunk_policy": "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
+    }
+
+
 def test_preflight_authorizations_supply_exact_runner_barriers() -> None:
     critic = build_preflight_authorization_v4(
         "critic", _c3(), _a100(), _critic_cache(), current_git_head=HEAD
@@ -165,6 +193,7 @@ def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
         "trainable_parameter_count": 170000000,
         "selected_peak_allocated_gib": 30.0,
         "selected_physical_batch": 8,
+        "bottom_six_cache_identity": _critic_cache_receipt(),
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -183,6 +212,7 @@ def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
         "git_head": HEAD,
         "full_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_full_trainable_parameter_count"],
         "single_mode_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_single_mode_trainable_parameter_count"],
+        "source_token_cache_identity": _flow_cache_receipt(),
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -208,6 +238,7 @@ def test_screen_authorization_rejects_preflight_or_source_data_drift() -> None:
         "trainable_parameter_count": 119999999,
         "selected_peak_allocated_gib": 30.0,
         "selected_physical_batch": 8,
+        "bottom_six_cache_identity": _critic_cache_receipt(),
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -215,4 +246,43 @@ def test_screen_authorization_rejects_preflight_or_source_data_drift() -> None:
         build_screen_launch_authorization_v4(
             "critic", CRITIC_CONFIG, _c3(), _a100(), _critic_cache(),
             preflight, None, current_git_head=HEAD,
+        )
+
+
+def test_screen_authorization_rejects_missing_tensor_cache_identity_receipt() -> None:
+    critic_preflight = {
+        "status": "XEDITCRITIC_V4_PREFLIGHT_PASS",
+        "passed": True,
+        "git_head": HEAD,
+        "trainable_parameter_count": 170000000,
+        "selected_peak_allocated_gib": 30.0,
+        "selected_physical_batch": 8,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    with pytest.raises(Exception, match="cache identity receipt is absent"):
+        build_screen_launch_authorization_v4(
+            "critic", CRITIC_CONFIG, _c3(), _a100(), _critic_cache(),
+            critic_preflight, None, current_git_head=HEAD,
+        )
+
+    flow_preflight = {
+        "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+        "passed": True,
+        "git_head": HEAD,
+        "full_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_full_trainable_parameter_count"],
+        "single_mode_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_single_mode_trainable_parameter_count"],
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    data = {
+        "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
+        "validation_source_count": 891,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    with pytest.raises(Exception, match="cache identity receipt is absent"):
+        build_screen_launch_authorization_v4(
+            "setflow", FLOW_CONFIG, _c3(), _a100(), _flow_cache(),
+            flow_preflight, data, current_git_head=HEAD,
         )

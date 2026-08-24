@@ -3922,3 +3922,14 @@ V3.3.2 96/96 PASS，compile/diff-check PASS。默认Python3.9不满足项目版�
 record count、width及chunk policy一起进入preflight/terminal identity receipt。正确Python3.13下focused25/25、
 V3.3.2 96/96 PASS；没有A100执行、optimizer或protected read。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_unique_sequence_identity_binding_v1.json`。
+
+## V4 preflight cache receipt consumption focused record（2026-08-25）
+
+正式V4消费者现在都必须验证由实际tensor payload产生的cache identity receipt。Critic覆盖screen authorizer、
+screen trainer、三个confirmation trainer以及all-Development refit/LOSO trainer；SetFlow覆盖screen authorizer、
+screen trainer和三个confirmation trainer。仅有PASS状态但不含receipt的旧式preflight，或revision、cohort geometry、
+representation width、encoder scope、token/chunk policy及local radius任一漂移，都会在模型构建和参数更新前被拒绝。
+
+本地receipt-focused 43/43、Critic V4相关57/57、SetFlow V4相关44/44、精确V3.3.2 96/96 PASS，
+compile/diff-check PASS。没有执行cache、preflight、optimizer、inference或outcome-bearing metric；protected read=0，
+A100 current-HEAD验证继续等待五个旧launch-head C3 jobs全部terminal。

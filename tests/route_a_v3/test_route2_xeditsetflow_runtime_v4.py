@@ -33,6 +33,19 @@ def _vocabs() -> dict[str, dict[str, int]]:
     }
 
 
+def _source_token_cache_receipt() -> dict:
+    return {
+        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        "record_count": 84218,
+        "unique_source_count": 19303,
+        "token_count": 2817781,
+        "maximum_source_length": 837,
+        "embedding_width": 768,
+        "tokenization_policy": "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+        "chunk_policy": "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
+    }
+
+
 def test_screen_specs_and_formal_models_use_exact_real_vocab_capacity() -> None:
     config = _config()
     full_spec = screen_run_spec_v4(config, "v4_full")
@@ -95,6 +108,7 @@ def _authorization(*, head: str = "abc") -> tuple[dict, dict, dict]:
         "passed": True,
         "full_trainable_parameter_count": 100_099_998,
         "single_mode_trainable_parameter_count": 98_628_717,
+        "source_token_cache_identity": _source_token_cache_receipt(),
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -146,6 +160,21 @@ def test_launch_authorization_rejects_protected_read_before_any_run() -> None:
         )
 
 
+def test_launch_authorization_rejects_missing_tensor_cache_identity_receipt() -> None:
+    config = _config()
+    authorization, preflight, data = _authorization()
+    del preflight["source_token_cache_identity"]
+    with pytest.raises(Exception, match="cache identity receipt is absent"):
+        require_setflow_v4_screen_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            data,
+            run_id="v4_full",
+            current_git_head="abc",
+        )
+
+
 def test_confirmation_authorization_is_full_only_three_seed_and_screen_gated() -> None:
     config = {
         **_config(),
@@ -175,6 +204,7 @@ def test_confirmation_authorization_is_full_only_three_seed_and_screen_gated() -
         "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
         "passed": True,
         "full_trainable_parameter_count": 100_099_998,
+        "source_token_cache_identity": _source_token_cache_receipt(),
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
