@@ -3095,3 +3095,15 @@ checkpoint、额外seed禁令或screen gate。本地focused=8/8、Critic+SetFlow
 compile PASS。未materialize config/authorization，未启动confirmation optimizer或读取protected outcome；A100
 current-HEAD测试仍等待五项旧C3 terminal。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_confirmation_config_packages_v1.json`。
+
+## Critic/SetFlow V4 atomic training terminal artifacts（2026-08-25）
+
+共用Critic与SetFlow V4训练入口原先直接写成功summary和technical failure；而Critic的ledger更新发生在summary
+发布之后，若ledger失败还可能再写failure，形成同一run同时存在summary与failure。现SCREEN/CONFIRMATION以及
+Critic REFIT/LOSO共用路径的成功与失败终态都使用partial加原子替换，既有final/partial均不覆盖；成功summary一旦
+存在，异常处理不得再发布failure，从而保持每个run精确一个terminal artifact。
+
+没有改变任何训练数据、loss、seed、update、metric或gate。本地训练入口focused=15/15、合并Critic/SetFlow V4
+相关=156/156、精确V3.3.2=96/96、compile PASS。V4 optimizer/summary均未materialize，protected read=0；A100
+current-HEAD测试仍等待C3五项terminal。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_training_terminal_artifacts_v1.json`。

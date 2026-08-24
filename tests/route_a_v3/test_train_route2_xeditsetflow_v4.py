@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.route_a_v3.train_route2_xeditsetflow_v4 import (
+    SetFlowTrainingV4Error,
+    _write_atomic_terminal_v4,
     derive_training_update_geometry_v4,
     pass_complete_alive_event_v4,
     record_failed_attempt_if_started_v4,
@@ -12,6 +16,23 @@ from scripts.route_a_v3.train_route2_xeditsetflow_v4 import (
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json"
+
+
+def test_setflow_training_terminal_artifact_is_atomic_and_exact(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "training_summary.json"
+    payload = {"status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION"}
+    _write_atomic_terminal_v4(output, payload)
+    assert json.loads(output.read_text(encoding="utf-8")) == payload
+    assert not output.with_suffix(output.suffix + ".partial").exists()
+
+    stale = tmp_path / "failure.json.partial"
+    stale.write_text("interrupted", encoding="utf-8")
+    with pytest.raises(SetFlowTrainingV4Error, match="partial terminal"):
+        _write_atomic_terminal_v4(tmp_path / "failure.json", payload)
+    source = (ROOT / "scripts/route_a_v3/train_route2_xeditsetflow_v4.py").read_text()
+    assert 'if not (output_directory / "training_summary.json").exists()' in source
 
 
 def test_update_budget_is_uniquely_derived_from_sources_and_ten_passes() -> None:

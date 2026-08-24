@@ -1,0 +1,29 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_atomic_training_terminal_artifacts_audit.v1",
+  "status": "XEDIT_V4_ATOMIC_TRAINING_TERMINAL_ARTIFACTS_IMPLEMENTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:38:00+08:00",
+  "head_before_change": "f005b698687b2dd91e3219310015ee2987758dbe",
+  "covered_stages": ["SCREEN", "CONFIRMATION", "REFIT", "LOSO"],
+  "components": ["XEDITCRITIC_V4", "XEDITSETFLOW_V4"],
+  "terminal_publication": {
+    "success_summary_atomic": true,
+    "technical_failure_atomic": true,
+    "failure_not_published_after_success_summary": true,
+    "existing_final_or_partial_rejected": true,
+    "training_or_gate_semantics_changed": false
+  },
+  "verification": {
+    "focused_training_entry_tests": "15 passed",
+    "combined_critic_setflow_v4_related_tests": "156 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "v4_optimizer_attempts_started": 0,
+    "v4_terminal_training_summaries_materialized": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_TERMINAL_ARTIFACT_CORRECTNESS_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

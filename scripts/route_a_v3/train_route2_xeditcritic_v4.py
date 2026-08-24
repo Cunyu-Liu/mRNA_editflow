@@ -88,6 +88,21 @@ def _require(condition: bool, message: str) -> None:
         raise XEditCriticTrainingV4RunnerError(message)
 
 
+def _write_atomic_terminal_v4(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _require(not path.exists(), f"Critic V4 terminal artifact already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    _require(
+        not partial.exists(),
+        f"Critic V4 partial terminal artifact already exists: {partial}",
+    )
+    partial.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
 @dataclass(frozen=True)
 class ScreenRunSpecV4:
     run_id: str
@@ -1115,10 +1130,7 @@ def run(
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
         }
-        (output_directory / "run_summary.json").write_text(
-            json.dumps(summary, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        _write_atomic_terminal_v4(output_directory / "run_summary.json", summary)
         record_training_attempt(
             ledger_path,
             attempt_path,
@@ -1156,10 +1168,8 @@ def run(
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
         }
-        (output_directory / "failure.json").write_text(
-            json.dumps(failure, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        if not (output_directory / "run_summary.json").exists():
+            _write_atomic_terminal_v4(output_directory / "failure.json", failure)
         record_training_attempt(
             ledger_path,
             attempt_path,

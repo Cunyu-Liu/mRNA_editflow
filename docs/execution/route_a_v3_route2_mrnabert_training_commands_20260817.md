@@ -4063,3 +4063,14 @@ seed/full-only组合保持冻结，Development TEST和guidance仍未授权。
 confirmation package、authorization或optimizer，protected read=0；A100 current-HEAD验证继续等待五项C3自然
 terminal，下一远端检查仍不早于本地02:45:28。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_confirmation_config_packages_v1.json`。
+
+## Critic/SetFlow V4 exact-one training terminal focused record（2026-08-25）
+
+Critic与SetFlow V4正式trainer现在原子发布成功summary和technical failure，且成功summary已存在时禁止再写failure；
+因此screen scheduler、confirmation collector及后续Critic refit/LOSO看到的每个run最多只有一个正式terminal。
+既有final或partial不覆盖，训练/selection/gate语义未变。
+
+本地focused=15/15、合并V4相关=156/156、精确V3.3.2=96/96、compile PASS。未运行V4 optimizer、inference或
+metric，Development TEST/new Evaluation read=0；A100 current-HEAD验证继续等待五项C3 terminal，下一远端检查
+仍不早于本地02:45:28。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_training_terminal_artifacts_v1.json`。

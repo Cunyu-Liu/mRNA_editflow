@@ -7,6 +7,7 @@ import pytest
 
 from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     XEditCriticTrainingV4RunnerError,
+    _write_atomic_terminal_v4,
     critic_v4_run_stage_seed,
     evaluation_index_batches_v4,
     require_confirmation_launch_authorization_v4,
@@ -25,6 +26,23 @@ CONFIG = ROOT / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
 
 def _config() -> dict:
     return json.loads(CONFIG.read_text(encoding="utf-8"))
+
+
+def test_critic_training_terminal_artifact_is_atomic_and_exact(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "run_summary.json"
+    payload = {"status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE"}
+    _write_atomic_terminal_v4(output, payload)
+    assert json.loads(output.read_text(encoding="utf-8")) == payload
+    assert not output.with_suffix(output.suffix + ".partial").exists()
+
+    stale = tmp_path / "failure.json.partial"
+    stale.write_text("interrupted", encoding="utf-8")
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="partial terminal"):
+        _write_atomic_terminal_v4(tmp_path / "failure.json", payload)
+    source = (ROOT / "scripts/route_a_v3/train_route2_xeditcritic_v4.py").read_text()
+    assert 'if not (output_directory / "run_summary.json").exists()' in source
 
 
 def _authorization(config: dict) -> dict:
