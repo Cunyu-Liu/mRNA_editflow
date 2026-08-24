@@ -2688,3 +2688,14 @@ root mode prior、32-particle SMC、完整fixed-seed replay和多轮matched-comp
 本地focused/相邻29/29，完整XEditFlow/guidance 218/218，精确V3.3.2 96/96 PASS。config未materialize、SMC/
 critic scoring/optimizer均未启动，protected read=0，claim不变；A100 current-HEAD测试等待五个旧C3作业terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。
+
+## 21:46 C3 five-job scheduled health（2026-08-24）
+
+本地21:43:35越过校准窗口后单次SSH；远端21:46:08。C3 full/source-only/edit-metadata-only/no-candidate/
+candidate-bundle-permutation五项均仍为活跃`Sl/Rl`进程，elapsed分别67,829/67,829/67,829/67,400/67,018秒；
+五个精确run_summary与failure路径均不存在，screen gate不存在，launch HEAD仍为`4047f55`。未读stdout/stderr、
+active curve、terminal content、Development TEST或Evaluation outcome。
+
+本轮CUDA query因输出列顺序与过滤假设不一致而没有捕获显存行；不得把空输出解释为CUDA缺失，也未立即补查。
+下一远端窗口不早于22:46:08，对应本地不早于22:43:35。A100 current-HEAD sync继续等待五项terminal。
+审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_214608.json`。

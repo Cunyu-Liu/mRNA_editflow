@@ -3730,3 +3730,10 @@ optimizer attempt、protected read=0。A100 current-HEAD测试仍等待旧C3全�
 本地focused/相邻29/29、完整XEditFlow/guidance 218/218、精确V3.3.2 96/96 PASS；formal configs和SMC均未
 执行，protected read=0。A100 current-HEAD测试等待旧C3全部terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。
+
+## 21:46 C3 long-interval health（2026-08-24）
+
+五个C3作业在远端21:46:08均无terminal/failure且PID仍活跃，screen gate不存在，launch HEAD=`4047f55`。
+本轮未读active metric或日志；CUDA显存过滤因列顺序错误未返回匹配行，未立即补查且不据此推断CUDA状态。
+下一远端/本地窗口分别为22:46:08/22:43:35。protected read=0，A100 current-HEAD sync仍受旧作业terminal
+barrier约束。审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_214608.json`。
