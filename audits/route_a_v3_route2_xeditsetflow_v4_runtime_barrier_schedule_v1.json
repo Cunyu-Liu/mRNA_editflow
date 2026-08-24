@@ -1,0 +1,62 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_runtime_barrier_schedule.v1",
+  "recorded_at_local": "2026-08-24T18:31:57+08:00",
+  "status": "XEDITSETFLOW_V4_RUNTIME_BARRIER_AND_SCHEDULE_IMPLEMENTED_NO_ATTEMPT",
+  "git_head_before_delivery": "63e7c77",
+  "implementation": {
+    "core": "core/route2_xeditsetflow_runtime_v4.py",
+    "test": "tests/route_a_v3/test_route2_xeditsetflow_runtime_v4.py"
+  },
+  "formal_runs": {
+    "v4_full": {
+      "mode_count": 8,
+      "selectable": true,
+      "trainable_parameter_count": 100099998
+    },
+    "v4_single_mode": {
+      "mode_count": 1,
+      "selectable": false,
+      "trainable_parameter_count": 98628717
+    }
+  },
+  "batch_semantics": {
+    "sources_per_optimizer_batch": 8,
+    "states_per_source": 4,
+    "effective_state_batch": 32,
+    "short_final_batch_deterministically_filled": true,
+    "source_repeat_cap": 4,
+    "source_boundary_never_split": true
+  },
+  "learning_rate_schedule": {
+    "warmup_fraction": 0.05,
+    "warmup_rounding": "CEIL",
+    "post_warmup": "COSINE",
+    "final_factor": 0.1,
+    "total_updates_derived_from_source_inventory_and_ten_passes": true
+  },
+  "launch_authorization": {
+    "checked_before_output_directory_or_attempt_row": true,
+    "same_git_head_required": true,
+    "exact_full_and_single_package_required": true,
+    "all_five_c3_terminal_and_read_once_required": true,
+    "a100_current_head_focused_and_v332_tests_required": true,
+    "source_cache_and_source_data_audit_required": true,
+    "formal_parameter_preflight_required": true,
+    "development_test_outcome_reads_required": 0,
+    "new_final_evaluation_outcome_reads_required": 0
+  },
+  "verification": {
+    "runtime_focused_tests": "5/5 PASS",
+    "combined_setflow_v4_focused_tests": "21/21 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_generation_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

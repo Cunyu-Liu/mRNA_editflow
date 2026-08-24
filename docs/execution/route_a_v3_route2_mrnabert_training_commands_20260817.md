@@ -3349,3 +3349,15 @@ recovery→top-k→NLL→earlier pass唯一选择；无eligible checkpoint直接
 的全部margin也已固化。focused=6/6、combined SetFlow V4=16/16、精确V3.3.2=96/96。launch屏障仍未解除，
 optimizer attempts=0、Validation generation/Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_screen_config_freeze_v1.json`。
+
+## XEditSetFlow V4 runtime barrier and schedule（2026-08-24）
+
+已实现formal model builder、screen role、32-state batch补齐、5% warmup/cosine-to-10% schedule与原子launch
+barrier。runtime仅允许full8-mode与single1-mode；按真实冻结vocab核对100,099,998/98,628,717参数。每update
+固定8 sources×4 states，不拆source，最后batch补齐仍受每source/pass最多4次约束。
+
+正式run创建任何目录或中央attempt前，必须有同一HEAD的C3五项terminal/read-once、A100 focused/V3.3.2、
+source cache/data audit与parameter preflight PASS，且protected reads均为0。runtime focused=5/5、combined
+SetFlow V4 focused=21/21、精确V3.3.2=96/96、compile/JSON/diff-check PASS；尚未启动optimizer或Validation
+generation。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_runtime_barrier_schedule_v1.json`。

@@ -2206,6 +2206,21 @@ screen config focused=6/6、combined SetFlow V4 focused=16/16、精确V3.3.2=96/
 解除，launch=false、optimizer attempts=0、Validation generation read=false、Development TEST/new
 Evaluation outcome read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_screen_config_freeze_v1.json`。
 
+## XEditSetFlow V4 runtime barrier and schedule（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。runtime现只接受冻结的V4-FULL或V4-SINGLE-MODE，使用真实
+endpoint vocab分别重建100,099,998/98,628,717参数模型并逐项核对。每个optimizer batch固定8 sources×4
+states=32；若最后source batch不足8，仅以确定性顺序补齐，且每source/pass总重复数仍不得超过4，不拆source。
+
+learning rate严格使用ceil(5% updates) warmup，随后cosine降到初始值10%；总updates由source inventory、8
+sources/update和10 passes唯一确定。launch authorization在创建run目录/中央RUNNING行前强制核对同一Git HEAD、
+full+single精确package、C3五项terminal/read-once、A100 current-HEAD两组测试、source cache/data audit、formal
+parameter preflight与protected reads=0。
+
+runtime focused=5/5、combined SetFlow V4 focused=21/21、精确V3.3.2=96/96、compile/JSON/diff-check PASS。
+尚未创建run目录或optimizer attempt，Validation generation read=false，Development TEST/new Evaluation
+outcome read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_runtime_barrier_schedule_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
