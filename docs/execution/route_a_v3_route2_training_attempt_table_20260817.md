@@ -2870,3 +2870,15 @@ Route 2 seed row；唯一adjudicator再调用冻结V4 gate，任何缺失、seed
 下一C3允许窗口23:44:01，未SSH。runtime configs、strongest timing、equal-wall、evidence和final gate均未materialize或
 执行，optimizer attempt和protected read保持0，论文claim不变。A100 current-HEAD tests继续等待旧C3五项terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_final_evidence_adjudication_chain_v1.json`。
+
+## XEditFlow V4 post-screen selected-combination runtime binding（2026-08-24）
+
+正式full soft-value SMC以及full/unguided两条closed exact runtime现不再只检查`κ/τ/βmax`是否属于18-cell网格；
+它们还必须读取一次已经terminal的guidance screen gate，并逐值等于唯一selected combination。screen阶段的自定义
+method IDs仍不要求一个尚不存在的post-screen gate，因此一次性18-cell screen不受影响。matched controls和Critic
+closed controls原有selected-gate约束保持不变。
+
+本地focused 38/38、XEditFlow/guidance 278/278、V3.3.2 96/96、diff-check PASS。未materialize config或执行
+generation/metric/optimizer，protected read=0，claim与attempt数不变。23:33仍早于C3下一允许窗口23:44:01，未SSH；
+A100 current-HEAD tests继续等待五项旧作业terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_postscreen_runtime_binding_v1.json`。

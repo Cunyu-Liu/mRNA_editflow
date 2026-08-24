@@ -39,7 +39,10 @@ from core.route2_source_token_cache_v3 import (
     SourceTokenCacheIndexV3,
     load_source_token_cache_v3,
 )
-from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
+from core.route2_xeditflow_gate_v4 import (
+    authorize_xeditflow_guidance_v4,
+    require_selected_guidance_combination_v4,
+)
 from core.route2_xeditflow_smc_runtime_v4 import (
     SetFlowModeRateProviderV4,
     SetFlowModeValueProvidersV4,
@@ -168,6 +171,13 @@ def validate_closed_run_config_v4(config: Mapping[str, Any]) -> None:
             "value_checkpoint_path" not in config,
             "V4 unguided closed benchmark received a value checkpoint",
         )
+    if config.get("method_id") in {"full_soft_value_smc", "unguided_setflow"}:
+        _require(
+            str(config.get("guidance_screen_gate_path", "")).startswith(
+                "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+            ),
+            "V4 final closed guidance screen path differs",
+        )
 
 
 def mode_marginal_terminal_probability_v4(
@@ -235,6 +245,10 @@ def mode_marginal_terminal_probability_v4(
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_closed_run_config_v4(config)
+    if config.get("method_id") in {"full_soft_value_smc", "unguided_setflow"}:
+        require_selected_guidance_combination_v4(
+            _json(Path(config["guidance_screen_gate_path"])), config
+        )
     _require(output_dir == Path(str(config["output_dir"])), "V4 closed output differs")
     _require(not output_dir.exists(), f"terminal V4 closed output exists: {output_dir}")
     critic_readiness = _json(Path(config["critic_readiness_path"]))

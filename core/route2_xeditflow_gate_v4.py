@@ -37,6 +37,34 @@ GUIDANCE_GRID_V4 = tuple(
 GUIDANCE_SCREEN_BASE_FLOW_SEED_V4 = 20260912
 
 
+def require_selected_guidance_combination_v4(
+    gate: Mapping[str, Any], config: Mapping[str, Any]
+) -> None:
+    """Bind a post-screen runtime to the one frozen V4 combination."""
+
+    _require(
+        gate.get("schema_version")
+        == "route_a_v3_route2_xeditflow_v4_guidance_screen_gate.v1"
+        and gate.get("status") == "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN"
+        and int(gate.get("base_flow_training_seed", -1))
+        == GUIDANCE_SCREEN_BASE_FLOW_SEED_V4
+        and int(gate.get("combination_count", -1)) == len(GUIDANCE_GRID_V4),
+        "V4 post-screen runtime requires the frozen guidance screen",
+    )
+    _require(
+        tuple(
+            float(config.get(key, -1))
+            for key in ("kappa", "temperature", "beta_max")
+        )
+        == (
+            float(gate["selected_kappa"]),
+            float(gate["selected_temperature"]),
+            float(gate["selected_beta_max"]),
+        ),
+        "V4 post-screen runtime differs from the selected guidance combination",
+    )
+
+
 def authorize_xeditflow_guidance_v4(
     critic_readiness: Mapping[str, Any],
     setflow_confirmation: Mapping[str, Any],

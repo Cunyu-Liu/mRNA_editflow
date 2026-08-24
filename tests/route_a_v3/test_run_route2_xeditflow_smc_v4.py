@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from core.route2_xeditflow_gate_v4 import require_selected_guidance_combination_v4
 from scripts.route_a_v3.run_route2_xeditflow_smc_v4 import (
     maximum_round_forward_equivalents_v4,
     terminal_critic_forward_reservation_v4,
@@ -54,6 +55,32 @@ def test_v4_smc_runner_freezes_grid_seed_replay_and_compute() -> None:
         ],
     }
     assert terminal_critic_forward_reservation_v4(refit) == (8, 4, 1)
+
+
+def test_v4_final_smc_requires_the_screen_selected_combination() -> None:
+    config = _config()
+    config["method_id"] = "full_soft_value_smc"
+    config["guidance_screen_gate_path"] = (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/guidance_gate.json"
+    )
+    validate_smc_run_config_v4(config)
+    gate = {
+        "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_screen_gate.v1",
+        "status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
+        "base_flow_training_seed": 20260912,
+        "combination_count": 18,
+        "selected_kappa": 0.5,
+        "selected_temperature": 1.0,
+        "selected_beta_max": 2.0,
+    }
+    require_selected_guidance_combination_v4(gate, config)
+    changed = dict(config)
+    changed["beta_max"] = 1.0
+    with pytest.raises(Exception, match="selected guidance combination"):
+        require_selected_guidance_combination_v4(gate, changed)
+    del config["guidance_screen_gate_path"]
+    with pytest.raises(Exception, match="guidance screen path differs"):
+        validate_smc_run_config_v4(config)
 
 
 def test_v4_smc_critic_reservation_requires_all_frozen_physical_batches() -> None:

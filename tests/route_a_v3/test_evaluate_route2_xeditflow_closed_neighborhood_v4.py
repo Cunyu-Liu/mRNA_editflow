@@ -38,6 +38,9 @@ def _config() -> dict:
         "validation_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/validation.jsonl",
         "measured_neighborhood_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/measured.jsonl",
         "value_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/value.pt",
+        "guidance_screen_gate_path": (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/guidance_gate.json"
+        ),
         "output_dir": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/closed",
         "physical_gpu_index": 2,
         "device": "cuda:2",

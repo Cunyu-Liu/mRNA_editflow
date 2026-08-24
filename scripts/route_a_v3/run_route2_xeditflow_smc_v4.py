@@ -29,7 +29,10 @@ from core.route2_source_token_cache_v3 import (
     load_source_token_cache_v3,
 )
 from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
-from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
+from core.route2_xeditflow_gate_v4 import (
+    authorize_xeditflow_guidance_v4,
+    require_selected_guidance_combination_v4,
+)
 from core.route2_xeditflow_smc_runtime_v4 import (
     SetFlowModeValueProvidersV4,
     combine_primary_and_replay_compute_v4,
@@ -119,6 +122,13 @@ def validate_smc_run_config_v4(config: Mapping[str, Any]) -> None:
         and config.get("new_final_evaluation_outcomes_accessed") is False,
         "V4 SMC config accessed a protected outcome or evaluator",
     )
+    if config.get("method_id") == "full_soft_value_smc":
+        _require(
+            str(config.get("guidance_screen_gate_path", "")).startswith(
+                "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+            ),
+            "V4 final SMC guidance screen path differs",
+        )
 
 
 def maximum_round_forward_equivalents_v4(edit_budget: int) -> int:
@@ -154,6 +164,10 @@ def terminal_critic_forward_reservation_v4(
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_smc_run_config_v4(config)
+    if config.get("method_id") == "full_soft_value_smc":
+        require_selected_guidance_combination_v4(
+            _json(Path(config["guidance_screen_gate_path"])), config
+        )
     _require(output_dir == Path(str(config["output_dir"])), "V4 SMC output differs from config")
     _require(not output_dir.exists(), f"terminal V4 SMC output exists: {output_dir}")
     critic_readiness = _json(Path(config["critic_readiness_path"]))

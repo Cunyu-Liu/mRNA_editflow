@@ -1,0 +1,32 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_postscreen_runtime_binding_audit.v1",
+  "status": "XEDITFLOW_V4_POSTSCREEN_SELECTED_COMBINATION_RUNTIME_BINDING_COMPLETE_NOT_EXECUTED",
+  "recorded_at": "2026-08-24T23:33:43+08:00",
+  "head_before_change": "92acdd20bc3bdb873337480d396b2f606d551a97",
+  "runtime_bindings": {
+    "full_soft_value_smc_requires_frozen_guidance_gate": true,
+    "full_closed_exact_requires_frozen_guidance_gate": true,
+    "unguided_closed_exact_requires_frozen_guidance_gate": true,
+    "screen_grid_jobs_require_nonexistent_postscreen_gate": false,
+    "required_gate_schema": "route_a_v3_route2_xeditflow_v4_guidance_screen_gate.v1",
+    "required_gate_status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
+    "required_screen_seed": 20260912,
+    "required_combination_count": 18,
+    "kappa_temperature_beta_max_must_equal_selected": true
+  },
+  "verification": {
+    "focused_tests": "38 passed",
+    "xeditflow_and_guidance_tests": "278 passed",
+    "v3_3_2_tests": "96 passed",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "generation_or_metric_executed": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "claim_effect": "SOFTWARE_RUNTIME_FREEZE_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

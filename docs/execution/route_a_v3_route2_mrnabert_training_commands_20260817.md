@@ -3876,3 +3876,10 @@ focused 11/11、完整XEditFlow/guidance 277/277、本地V3.3.2 96/96、compile/
 Validation metric、evidence assembly或gate，没有新增optimizer attempt；Development TEST post-atomic reopen=false，new
 Evaluation read=0。23:30尚未越过23:44:01低频检查窗口，未进行远端观测。A100 current-HEAD tests仍延后至五个旧
 C3 launch-head jobs全部自然terminal。
+
+## XEditFlow V4 post-screen runtime binding focused record（2026-08-24）
+
+`full_soft_value_smc`与正式full/unguided closed-exact configs现在必须携带Route 2 frozen guidance gate路径；runner在
+任何候选生成或closed outcome metric读取前核验gate schema/status、screen seed、18-cell count及selected
+`κ/τ/βmax`完全一致。screen-grid method IDs保持原行为。focused 38/38、XEditFlow/guidance 278/278、V3.3.2
+96/96 PASS；没有runtime materialization、GPU执行、optimizer或protected read。23:33未到23:44:01窗口，未SSH。
