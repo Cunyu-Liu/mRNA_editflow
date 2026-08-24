@@ -3335,3 +3335,15 @@ JSON/diff-check PASS；尚未运行optimizer、checkpoint选择或
 Validation generation，Development TEST/new Evaluation outcome read=0。A100 current-HEAD验证仍受五项C3
 launch-head terminal屏障约束。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_mixture_model_objective_v1.json`。
+
+## XEditSetFlow V4 screen config freeze（2026-08-24）
+
+已冻结seed20260911的full/single-mode screen：10 passes、batch32、LR2e-4，仅保存4/6/8/10 checkpoint；
+training terminal前禁止运行Validation generation。终态后四个checkpoint统一使用891 sources×32 trajectories、
+cap32和相同decoder streams；八mode先各占一条，再按平滑prior分配剩余24条，不允许重试或拒绝重复。
+
+eligible checkpoint必须同时满足NLL≤2.06809、recovery≥0.35、top-k≥0.20、unique≥0.90及G0全通过，按
+recovery→top-k→NLL→earlier pass唯一选择；无eligible checkpoint直接NO-GO。相对terminal F2及single-mode
+的全部margin也已固化。focused=6/6、combined SetFlow V4=16/16、精确V3.3.2=96/96。launch屏障仍未解除，
+optimizer attempts=0、Validation generation/Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_screen_config_freeze_v1.json`。

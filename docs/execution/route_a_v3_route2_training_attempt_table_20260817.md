@@ -2187,6 +2187,23 @@ diff-check PASS。
 尚未启动训练或读取Validation generation，critic/evaluator使用=0，Development TEST/new Evaluation outcome
 read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_mixture_model_objective_v1.json`。
 
+## XEditSetFlow V4 screen config freeze（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。screen固定为seed20260911，仅运行selectable V4-FULL与
+non-selectable V4-SINGLE-MODE；两者同为10 passes、batch32、AdamW LR2e-4、5% warmup、cosine至10%，
+仅保存pass4/6/8/10。训练过程不读取recovery/diversity曲线；四个checkpoint必须在training terminal后才以
+同一891-source、32 trajectories/source、cap32的outcome-free generation评测。
+
+full先为八mode各分配一条trajectory，再按平滑mode prior的largest remainder分配剩余24条；禁止重试或拒绝
+重复candidate。checkpoint eligibility固定为NLL≤2.06809、recovery≥0.35、top-k≥0.20、unique≥0.90及全部
+G0 correctness，选择顺序固定为recovery→top-k→NLL→更早pass。另冻结相对terminal F2的0.05/0.03/0.15
+margin与相对single-mode的recovery0.03/unique0.05机制margin。
+
+screen config focused=6/6、combined SetFlow V4 focused=16/16、精确V3.3.2=96/96、JSON/diff-check PASS。
+五项C3 terminal/read-once、A100 current-HEAD tests、source data/cache与formal parameter preflight屏障尚未全部
+解除，launch=false、optimizer attempts=0、Validation generation read=false、Development TEST/new
+Evaluation outcome read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_screen_config_freeze_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

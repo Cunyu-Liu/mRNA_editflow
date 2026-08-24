@@ -1,0 +1,75 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_screen_config_freeze.v1",
+  "recorded_at_local": "2026-08-24T18:26:17+08:00",
+  "status": "XEDITSETFLOW_V4_SCREEN_CONFIG_FROZEN_NO_ATTEMPT",
+  "git_head_before_delivery": "28d656e",
+  "config": "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json",
+  "screen": {
+    "seed": 20260911,
+    "required_runs": ["v4_full", "v4_single_mode"],
+    "selectable_runs": ["v4_full"],
+    "passes": 10,
+    "batch_size": 32,
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "validation_generation_during_training": false,
+    "early_stopping": false
+  },
+  "validation_generation": {
+    "eligible_source_count": 891,
+    "trajectories_per_source": 32,
+    "candidate_cap_per_source": 32,
+    "one_trajectory_per_full_mode_first": true,
+    "remaining_trajectory_count": 24,
+    "remaining_allocation": "SMOOTHED_MODE_PRIOR_LARGEST_REMAINDER",
+    "extra_retry_or_duplicate_rejection": false
+  },
+  "absolute_checkpoint_floors": {
+    "maximum_common_validation_nll": 2.06809,
+    "minimum_recovery": 0.35,
+    "minimum_top_k_recovery": 0.2,
+    "minimum_unique_candidate_rate": 0.9,
+    "hard_legality": 1.0,
+    "all_failure_counters_zero": true
+  },
+  "terminal_f2_reference": {
+    "common_validation_nll": 2.0680908163671576,
+    "recovery": 0.2924616535727647,
+    "top_k_recovery": 0.168278220268518,
+    "unique_candidate_rate": 0.6793630751964085,
+    "minimum_v4_margins": {
+      "recovery": 0.05,
+      "top_k_recovery": 0.03,
+      "unique_candidate_rate": 0.15
+    }
+  },
+  "single_mode_mechanism_margins": {
+    "recovery": 0.03,
+    "unique_candidate_rate": 0.05
+  },
+  "launch_barrier": {
+    "all_five_c3_jobs_terminal": false,
+    "c3_summaries_read_once": false,
+    "a100_current_head_tests_passed": false,
+    "source_cache_complete_required": true,
+    "source_level_data_audit_required": true,
+    "formal_parameter_preflight_required": true,
+    "critic_performance_result_required": false,
+    "launch_authorized_now": false
+  },
+  "verification": {
+    "screen_config_focused_tests": "6/6 PASS",
+    "combined_setflow_v4_focused_tests": "16/16 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "json_and_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_generation_read": false,
+    "critic_used": false,
+    "independent_evaluator_used": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
