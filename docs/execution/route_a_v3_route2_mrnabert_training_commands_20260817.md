@@ -3609,3 +3609,14 @@ hard-legality约束。compute记录分别统计trunk、八个mode head、value�
 创建readiness或guidance artifact、没有训练value或运行SMC，protected read仍为0。A100 current-HEAD验证继续受五个
 旧launch-head C3作业terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditflow_v4_batched_smc_runtime_v1.json`。
+
+## 20:45 C3 five-run long-interval health（2026-08-24）
+
+合规窗口内的前两次SSH分别因远端解释器名和相对config路径解析错误而在job observation前退出；均未读取曲线、
+metric或terminal内容。第三次重新执行“本地时间→SSH”后，于远端20:45:58确认五个PID均为`Rl`且仍在CUDA
+compute-apps中，elapsed 63,408–64,219秒，显存2,120–2,190MiB；screen gate不存在，A100 HEAD保持
+`4047f550`。run-directory字段未被窄resolver识别，因此本窗口不声称重新验证逐run artifact路径，也不继续补查。
+
+最新偏移+155秒；下一远端check not before 21:45:58，估算本地not before 21:43:23。TEST/Evaluation read=0，
+不做A100 current-HEAD sync。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_204558.json`。

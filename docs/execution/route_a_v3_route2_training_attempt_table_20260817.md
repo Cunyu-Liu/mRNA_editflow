@@ -1691,6 +1691,19 @@ member的独立计费槽及320 forward-equivalents/source硬上限。本项不�
 旧C3 launch-head jobs自然terminal。Development TEST本阶段追加读取=0，new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditflow_v4_batched_smc_runtime_v1.json`。
 
+## 20:45 C3 five-run long-interval health（2026-08-24）
+
+本地20:42:05已越过估算窗口后发起检查；前两次分别因远端无`python`命令和相对config路径解析错误，在读取
+任何job状态前退出。第三次在本地20:43:23重新校时后，于远端20:45:58完成窄健康观测。C3 full及四controls
+仍全部为`Rl`、elapsed 63,408–64,219秒，五个PID均在CUDA compute-apps中，显存2,120–2,190MiB；
+screen gate不存在，A100仍为launch HEAD `4047f550`。
+
+本轮没有读stdout/stderr、active curve、metric或terminal内容。最终resolver未识别config中的run-directory字段，
+因此没有重新验证逐run terminal/failure文件路径；该限制如实保留，不以额外SSH补查。五个PID本身仍为活跃CUDA
+训练进程。新远端偏移为+155秒，下一窗口≥远端21:45:58（估算本地≥21:43:23）。protected read=0，
+A100 current-HEAD sync继续禁止。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_204558.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此
