@@ -3883,3 +3883,14 @@ C3 launch-head jobs全部自然terminal。
 任何候选生成或closed outcome metric读取前核验gate schema/status、screen seed、18-cell count及selected
 `κ/τ/βmax`完全一致。screen-grid method IDs保持原行为。focused 38/38、XEditFlow/guidance 278/278、V3.3.2
 96/96 PASS；没有runtime materialization、GPU执行、optimizer或protected read。23:33未到23:44:01窗口，未SSH。
+
+## 23:47 C3 long-interval health（2026-08-24）
+
+本地23:44:44越过最近校准窗口后仅做一次远端检查；远端23:47:25时五个C3 PID全部仍活跃，
+五个精确terminal summary、failure artifact及screen gate均不存在。CUDA进程仍位于登记的GPU0/1/2/3/5，
+每项占用2,120或2,190 MiB；该观察只证明CUDA存活，不读取或推断active performance。
+
+未读取stdout/stderr、active curve、Development TEST或new Evaluation。新偏移为远端比本地快161秒；
+下一远端/本地窗口分别不早于2026-08-25 00:47:25/00:44:44。无代码变化，故不重复已通过的
+focused/V3.3.2测试；A100 current-HEAD sync仍受五项terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_234725.json`。

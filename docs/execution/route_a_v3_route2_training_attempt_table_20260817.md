@@ -2882,3 +2882,17 @@ closed controls原有selected-gate约束保持不变。
 generation/metric/optimizer，protected read=0，claim与attempt数不变。23:33仍早于C3下一允许窗口23:44:01，未SSH；
 A100 current-HEAD tests继续等待五项旧作业terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_postscreen_runtime_binding_v1.json`。
+
+## 23:47 C3 five-job scheduled health（2026-08-24）
+
+本地23:44:44已越过校准窗口后执行一次单包SSH，远端时间23:47:25。C3 full/source-only/
+edit-metadata-only/no-candidate/candidate-bundle-permutation五项PID均仍活跃，elapsed分别为
+75,105/75,105/75,105/74,676/74,295秒；精确run_summary、failure和screen gate均不存在。
+CUDA query确认五个PID仍分别位于登记的GPU3/0/5/1/2，显存占用为
+2,190/2,120/2,190/2,120/2,190 MiB。
+
+未读stdout/stderr、active curve、terminal content、Development TEST或new Evaluation outcome。最新远端相对
+本地偏移为+161秒；下一远端窗口不早于2026-08-25 00:47:25，对应本地不早于00:44:44。
+A100 current-HEAD sync继续等待五项自然terminal。没有代码变化，因此没有重复已通过的focused/V3.3.2 cohort；
+未新增optimizer attempt，论文claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_234725.json`。
