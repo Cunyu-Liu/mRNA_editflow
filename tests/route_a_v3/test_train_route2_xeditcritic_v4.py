@@ -7,7 +7,9 @@ import pytest
 
 from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     XEditCriticTrainingV4RunnerError,
+    critic_v4_run_stage_seed,
     evaluation_index_batches_v4,
+    require_confirmation_launch_authorization_v4,
     require_screen_launch_authorization_v4,
     screen_run_spec_v4,
 )
@@ -130,6 +132,70 @@ def test_launch_authorization_rejects_head_batch_memory_parameter_or_protected_r
             config,
             authorization,
             preflight,
+            run_id="v4_full",
+            physical_batch_size=8,
+            current_git_head="head",
+        )
+
+
+def test_confirmation_authorization_is_exact_three_seed_full_c0_scope() -> None:
+    config = _config()
+    config.update(
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_runtime.v1",
+            "run_stage": "CONFIRMATION",
+            "training_seed": 20260908,
+            "required_confirmation_run_ids": ["v4_full", "c0_v4"],
+        }
+    )
+    authorization = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_launch_authorization.v1",
+        "status": "XEDITCRITIC_V4_CONFIRMATION_LAUNCH_AUTHORIZED",
+        "authorized_git_head": "head",
+        "authorized_seeds": [20260908, 20260909, 20260910],
+        "authorized_run_ids": ["v4_full", "c0_v4"],
+        "barriers": {
+            "screen_gate_passed": True,
+            "a100_current_head_focused_tests_passed": True,
+            "a100_current_head_v332_tests_passed": True,
+            "bottom_six_cache_terminal_complete": True,
+            "formal_parameter_preflight_passed": True,
+            "formal_memory_preflight_passed": True,
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    screen_gate = {
+        "status": "XEDITCRITIC_V4_SCREEN_PASS",
+        "passed": True,
+        "confirmation_authorized": True,
+        "development_test_authorized": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    assert critic_v4_run_stage_seed(config, "v4_full") == (
+        "CONFIRMATION",
+        20260908,
+    )
+    require_confirmation_launch_authorization_v4(
+        config,
+        authorization,
+        _preflight(),
+        screen_gate,
+        run_id="v4_full",
+        physical_batch_size=8,
+        current_git_head="head",
+    )
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="scope"):
+        critic_v4_run_stage_seed(config, "v4_no_moe")
+    preflight = _preflight()
+    preflight["development_test_outcome_reads"] = 1
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="protected read"):
+        require_confirmation_launch_authorization_v4(
+            config,
+            authorization,
+            preflight,
+            screen_gate,
             run_id="v4_full",
             physical_batch_size=8,
             current_git_head="head",

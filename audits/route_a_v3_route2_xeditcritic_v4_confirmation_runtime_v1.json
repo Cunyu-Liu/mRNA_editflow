@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_runtime.v1",
+  "recorded_at_local": "2026-08-24T19:27:53+08:00",
+  "status": "XEDITCRITIC_V4_CONFIRMATION_RUNTIME_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "621c3482e9b3c22edb1b0081d54509973e02e96d",
+  "implementation": {
+    "ledger": "core/route2_xeditcritic_ledger_v4.py",
+    "dual_stage_trainer": "scripts/route_a_v3/train_route2_xeditcritic_v4.py",
+    "confirmation_authorizer": "scripts/route_a_v3/authorize_route2_xeditcritic_v4_confirmation.py",
+    "confirmation_adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_confirmation.py"
+  },
+  "runtime_scope": {
+    "screen_seed": 20260907,
+    "confirmation_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "confirmation_run_ids": [
+      "v4_full",
+      "c0_v4"
+    ],
+    "additional_seed_authorized": false,
+    "all_six_matched_runs_terminal_before_adjudication": true,
+    "technical_failure_is_terminal_no_go": true
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "71/71 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_optimizer_attempts_started": 0,
+    "confirmation_optimizer_attempts_started": 0,
+    "development_test_authorized": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "RUNTIME IMPLEMENTATION ONLY; NO CRITIC V4 PERFORMANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -2360,6 +2360,21 @@ Development TEST；不授权通用TEST loader、额外seed或guidance。
 五个旧launch-head C3 jobs terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_gate_v1.json`。
 
+## XEditCritic V4 confirmation runtime、authorization与terminal collector（2026-08-24）
+
+正式Critic trainer已扩展为显式`SCREEN`/`CONFIRMATION`双阶段；screen保持八项冻结package与seed20260907，
+confirmation只允许每seed的`v4_full`和matched `c0_v4`。真实stage/seed写入中央attempt、checkpoint、
+prediction summary与failure；sampler、candidate permutation seed、模型初始化和CUDA seed均使用当前声明training seed。
+
+confirmation authorization只能从同Git HEAD的合法screen launch证据、terminal screen PASS、A100 current-HEAD
+focused/V3.3.2、bottom-six cache和formal parameter/memory preflight生成。三seedterminal collector要求每seed两项
+matched run各自恰有一个terminal summary/failure；成功包从两个预测JSONL构建task-stratified source-group paired
+bootstrap，技术failure永久保留并直接形成three-seed NO-GO。confirmation本身仍不读TEST/Evaluation。
+
+完整本机Critic V4 focused=71/71、精确V3.3.2=96/96、compile/diff-check PASS。screen/confirmation attempts=0，
+Development TEST/new Evaluation outcome read=0；A100 current-HEAD sync/tests仍等待五个旧C3 jobs terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_confirmation_runtime_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

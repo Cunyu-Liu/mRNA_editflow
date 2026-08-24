@@ -3464,3 +3464,15 @@ updates、physical/effective batch与endpoint descriptors。三seed与bootstrap 
 仍不授权guidance。Critic V4 focused=67/67、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前
 screen/confirmation/TEST均未运行，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_gate_v1.json`。
+
+## XEditCritic V4 confirmation runtime stack（2026-08-24）
+
+`authorize_route2_xeditcritic_v4_confirmation.py`只在screen PASS、同HEAD A100/cache/preflight barriers与protected
+reads=0时生成三seed×`v4_full+c0_v4`授权。`train_route2_xeditcritic_v4.py`按runtime `run_stage`切换screen或
+confirmation，并将seed20260908/09/10贯穿初始化、sampler、checkpoint、summary和中央attempt。
+
+`adjudicate_route2_xeditcritic_v4_confirmation.py`等待六个matched runs全部各自terminal后一次性读取Validation终态
+summary/predictions并构建固定10,000次source-group paired bootstrap；任一failure保留且NO-GO，不补seed。
+Critic V4 focused=71/71、精确V3.3.2=96/96、compile/diff-check PASS；当前未授权或启动screen/confirmation，
+Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_confirmation_runtime_v1.json`。

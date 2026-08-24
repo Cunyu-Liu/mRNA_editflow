@@ -82,3 +82,30 @@ def test_v4_attempt_details_keep_protected_counts_and_zero_reads() -> None:
         Path(_config()["experiment_ledger_path"]),
         Path("/mnt/run/training_attempt.json"),
     )
+
+
+def test_confirmation_attempt_identity_is_seed_specific_and_full_c0_only() -> None:
+    config = _config()
+    config.update(
+        {
+            "run_stage": "CONFIRMATION",
+            "training_seed": 20260909,
+            "required_confirmation_run_ids": ["v4_full", "c0_v4"],
+        }
+    )
+    result = critic_v4_attempt_config(
+        config,
+        run_id="v4_full",
+        physical_gpu_index=3,
+        physical_batch_size=8,
+    )
+    assert result["attempt_id"] == "xeditcritic_v4_confirmation_seed20260909::v4_full"
+    assert result["attempt_purpose"] == "XEDITCRITIC_V4_CONFIRMATION"
+    assert result["seed"] == 20260909
+    with pytest.raises(XEditCriticLedgerV4Error, match="undeclared run"):
+        critic_v4_attempt_config(
+            config,
+            run_id="v4_no_moe",
+            physical_gpu_index=3,
+            physical_batch_size=8,
+        )

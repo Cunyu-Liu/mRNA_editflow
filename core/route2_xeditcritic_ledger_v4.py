@@ -33,7 +33,26 @@ def critic_v4_attempt_config(
     physical_batch_size: int,
 ) -> dict[str, Any]:
     run = _screen_run(config, run_id)
-    _require(int(config["training"]["screen_seed"]) == 20260907, "Critic V4 screen seed changed")
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "Critic V4 run stage changed")
+    seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
+    _require(
+        seed == 20260907
+        if run_stage == "SCREEN"
+        else seed in {20260908, 20260909, 20260910},
+        "Critic V4 run seed changed",
+    )
+    if run_stage == "CONFIRMATION":
+        _require(
+            run_id in {"v4_full", "c0_v4"}
+            and config.get("required_confirmation_run_ids")
+            == ["v4_full", "c0_v4"],
+            "Critic V4 confirmation attempted an undeclared run",
+        )
     _require(int(physical_gpu_index) in config["gpu_policy"]["physical_gpu_scope"], "Critic V4 physical GPU is outside 0–5")
     _require(int(physical_batch_size) in config["memory_preflight"]["physical_batch_candidates"], "Critic V4 physical batch is undeclared")
     is_full_geometry = str(run["model"]) == "V4-FULL"
@@ -43,12 +62,12 @@ def critic_v4_attempt_config(
     learning_rates = config["training"]["learning_rates"]
     return {
         **dict(config),
-        "attempt_id": f"xeditcritic_v4_screen_seed20260907::{run_id}",
-        "baseline_id": f"xeditcritic_v4_{run_id}_seed20260907",
-        "attempt_purpose": "XEDITCRITIC_V4_SCREEN",
-        "scientific_role": f"XEDITCRITIC_V4_SCREEN_{run['model']}_{control}_{mechanism}",
+        "attempt_id": f"xeditcritic_v4_{run_stage.lower()}_seed{seed}::{run_id}",
+        "baseline_id": f"xeditcritic_v4_{run_id}_seed{seed}",
+        "attempt_purpose": f"XEDITCRITIC_V4_{run_stage}",
+        "scientific_role": f"XEDITCRITIC_V4_{run_stage}_{run['model']}_{control}_{mechanism}",
         "result_stage": "DEVELOPMENT_VALIDATION",
-        "run_mode": "FROZEN_SCREEN",
+        "run_mode": f"FROZEN_{run_stage}",
         "model_kind": str(run["model"]),
         "pretrained_model_id": config["model_id"] if is_full_geometry else "",
         "pretrained_feature_cache_path": config["bottom_six_cache"] if is_full_geometry else "",
@@ -63,7 +82,7 @@ def critic_v4_attempt_config(
         "loss_aggregation_mode": "TASK_ROBUST_STANDARDIZED_EFFECTIVE_TASK_BATCH",
         "target_scaling_mode": "TRAIN_TASK_ROBUST_WITH_REGION_GLOBAL_FALLBACK",
         "candidate_control": control,
-        "seed": 20260907,
+        "seed": seed,
         "physical_gpu_index": int(physical_gpu_index),
         "device": f"cuda:{physical_gpu_index}",
         "optimizer_name": "AdamW",
@@ -74,7 +93,7 @@ def critic_v4_attempt_config(
         "batch_size": 32,
         "weight_decay": float(config["training"]["weight_decay"]),
         "huber_delta": float(config["training"]["huber_delta"]),
-        "notes": f"physical_batch={physical_batch_size}; mechanism={mechanism}; final_pass_8_fixed; no TEST/Evaluation access",
+        "notes": f"stage={run_stage}; physical_batch={physical_batch_size}; mechanism={mechanism}; final_pass_8_fixed; no TEST/Evaluation access",
     }
 
 

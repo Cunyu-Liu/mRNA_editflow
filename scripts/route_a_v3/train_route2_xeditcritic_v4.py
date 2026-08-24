@@ -182,6 +182,96 @@ def require_screen_launch_authorization_v4(
     _require(int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0, "preflight reports a new Evaluation read")
 
 
+def critic_v4_run_stage_seed(
+    config: Mapping[str, Any], run_id: str
+) -> tuple[str, int]:
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "unknown Critic V4 run stage")
+    seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
+    _require(
+        seed == 20260907
+        if run_stage == "SCREEN"
+        else seed in {20260908, 20260909, 20260910},
+        "Critic V4 seed is undeclared",
+    )
+    if run_stage == "CONFIRMATION":
+        _require(
+            config.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v4_confirmation_runtime.v1"
+            and config.get("required_confirmation_run_ids")
+            == ["v4_full", "c0_v4"]
+            and run_id in {"v4_full", "c0_v4"},
+            "Critic V4 confirmation run scope changed",
+        )
+    return run_stage, seed
+
+
+def require_confirmation_launch_authorization_v4(
+    config: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    preflight: Mapping[str, Any],
+    screen_gate: Mapping[str, Any],
+    *,
+    run_id: str,
+    physical_batch_size: int,
+    current_git_head: str,
+) -> None:
+    run_stage, seed = critic_v4_run_stage_seed(config, run_id)
+    _require(run_stage == "CONFIRMATION", "Critic V4 confirmation authorization used outside confirmation")
+    _require(
+        authorization.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_confirmation_launch_authorization.v1"
+        and authorization.get("status")
+        == "XEDITCRITIC_V4_CONFIRMATION_LAUNCH_AUTHORIZED"
+        and str(authorization.get("authorized_git_head")) == str(current_git_head)
+        and authorization.get("authorized_seeds")
+        == [20260908, 20260909, 20260910]
+        and authorization.get("authorized_run_ids") == ["v4_full", "c0_v4"]
+        and seed in authorization.get("authorized_seeds", [])
+        and run_id in authorization.get("authorized_run_ids", []),
+        "Critic V4 confirmation launch authorization scope changed",
+    )
+    _require(
+        screen_gate.get("status") == "XEDITCRITIC_V4_SCREEN_PASS"
+        and screen_gate.get("passed") is True
+        and screen_gate.get("confirmation_authorized") is True
+        and screen_gate.get("development_test_authorized") is False,
+        "Critic V4 screen gate does not authorize confirmation",
+    )
+    barriers = authorization.get("barriers", {})
+    required = (
+        "screen_gate_passed",
+        "a100_current_head_focused_tests_passed",
+        "a100_current_head_v332_tests_passed",
+        "bottom_six_cache_terminal_complete",
+        "formal_parameter_preflight_passed",
+        "formal_memory_preflight_passed",
+    )
+    _require(all(barriers.get(key) is True for key in required), "a Critic V4 confirmation barrier is not satisfied")
+    _require(
+        preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
+        and preflight.get("passed") is True
+        and int(preflight.get("selected_physical_batch", -1)) == physical_batch_size
+        and 165_000_000 <= int(preflight.get("trainable_parameter_count", -1)) <= 175_000_000
+        and 20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0,
+        "Critic V4 confirmation preflight identity changed",
+    )
+    for payload, label in (
+        (authorization, "authorization"),
+        (preflight, "preflight"),
+        (screen_gate, "screen gate"),
+    ):
+        _require(
+            int(payload.get("development_test_outcome_reads", -1)) == 0
+            and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            f"Critic V4 confirmation {label} reports a protected read",
+        )
+
+
 def _git_head() -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -450,20 +540,32 @@ def run(
     launch_authorization_path: Path,
 ) -> dict[str, Any]:
     spec = screen_run_spec_v4(config, run_id)
+    run_stage, training_seed = critic_v4_run_stage_seed(config, run_id)
     current_head = _git_head()
     authorization = _load_json(launch_authorization_path)
     preflight = _load_json(Path(config["preflight_output"]))
     physical_batch_size = int(preflight.get("selected_physical_batch", -1))
-    require_screen_launch_authorization_v4(
-        config,
-        authorization,
-        preflight,
-        run_id=run_id,
-        physical_batch_size=physical_batch_size,
-        current_git_head=current_head,
-    )
+    if run_stage == "SCREEN":
+        require_screen_launch_authorization_v4(
+            config,
+            authorization,
+            preflight,
+            run_id=run_id,
+            physical_batch_size=physical_batch_size,
+            current_git_head=current_head,
+        )
+    else:
+        require_confirmation_launch_authorization_v4(
+            config,
+            authorization,
+            preflight,
+            _load_json(Path(config["screen_gate_path"])),
+            run_id=run_id,
+            physical_batch_size=physical_batch_size,
+            current_git_head=current_head,
+        )
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
-    _set_seed(int(config["training"]["screen_seed"]))
+    _set_seed(training_seed)
     device = require_cuda(physical_gpu_index)
     output_directory = Path(config["output_root"]) / run_id
     _require(not output_directory.exists(), f"Critic V4 run directory already exists: {output_directory}")
@@ -510,7 +612,7 @@ def run(
         train_overrides, validation_overrides, permutation_summary = _permutation_overrides(
             train_records,
             validation_records,
-            seed=int(config["training"]["screen_seed"]),
+            seed=training_seed,
             enabled=spec.candidate_bundle_permutation,
         )
         if spec.model_kind == "C0-V4":
@@ -587,7 +689,7 @@ def run(
         )
         sampler = FixedEffectiveTaskBatchSamplerV4(
             train_records,
-            seed=int(config["training"]["screen_seed"]),
+            seed=training_seed,
             repeat_cap=int(geometry["maximum_record_repeats_per_pass"]),
             effective_batch=int(geometry["effective_batch_size"]),
         )
@@ -720,13 +822,14 @@ def run(
         checkpoint_path = output_directory / "final_pass_8_checkpoint.pt"
         torch.save(
             {
-                "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_checkpoint.v1",
+                "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_checkpoint.v1",
+                "run_stage": run_stage,
                 "run_id": run_id,
                 "model_kind": spec.model_kind,
                 "control_mode": spec.control_mode,
                 "mechanism_mode": spec.mechanism_mode,
                 "candidate_bundle_permutation": spec.candidate_bundle_permutation,
-                "seed": int(config["training"]["screen_seed"]),
+                "seed": training_seed,
                 "selected_pass": 8,
                 "selection_policy": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
                 "model_state_dict": model.state_dict(),
@@ -742,8 +845,9 @@ def run(
             checkpoint_path,
         )
         summary = {
-            "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
-            "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+            "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_run.v1",
+            "status": f"TERMINAL_XEDITCRITIC_V4_{run_stage}_RUN_COMPLETE",
+            "run_stage": run_stage,
             "run_id": run_id,
             "model_kind": spec.model_kind,
             "control_mode": spec.control_mode,
@@ -751,7 +855,7 @@ def run(
             "candidate_bundle_permutation": spec.candidate_bundle_permutation,
             "candidate_permutation_summary": permutation_summary,
             "selectable": spec.selectable,
-            "seed": int(config["training"]["screen_seed"]),
+            "seed": training_seed,
             "physical_gpu_index": physical_gpu_index,
             "cuda_device_name": torch.cuda.get_device_name(device),
             "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
@@ -803,21 +907,22 @@ def run(
                     "validation_metrics": final_metrics,
                     "wall_time_seconds": summary["elapsed_seconds"],
                     "peak_vram_mb": summary["peak_vram_bytes"] / 1024**2,
-                    "notes": "terminal prospective Critic V4 screen run; final-pass-8 fixed; no TEST or Evaluation access",
+                    "notes": f"terminal prospective Critic V4 {run_stage.lower()} run; final-pass-8 fixed; no TEST or Evaluation access",
                 },
             ),
         )
         return summary
     except Exception as exc:
         failure = {
-            "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_run_failure.v1",
+            "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_run_failure.v1",
             "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+            "run_stage": run_stage,
             "run_id": run_id,
             "model_kind": spec.model_kind,
             "control_mode": spec.control_mode,
             "mechanism_mode": spec.mechanism_mode,
             "candidate_bundle_permutation": spec.candidate_bundle_permutation,
-            "seed": int(config["training"]["screen_seed"]),
+            "seed": training_seed,
             "error_type": type(exc).__name__,
             "error": str(exc),
             "elapsed_seconds": time.time() - started,
