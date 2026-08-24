@@ -58,6 +58,19 @@ def test_v4_closed_config_freezes_mode_marginalization_and_enumeration() -> None
         validate_closed_run_config_v4(changed)
 
 
+def test_v4_unguided_closed_config_uses_zero_potential_without_value_checkpoint() -> None:
+    config = _config()
+    config["method_id"] = "unguided_setflow"
+    config["potential_kind"] = "ZERO"
+    del config["value_checkpoint_path"]
+    validate_closed_run_config_v4(config)
+    config["value_checkpoint_path"] = (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/value.pt"
+    )
+    with pytest.raises(Exception, match="received a value checkpoint"):
+        validate_closed_run_config_v4(config)
+
+
 @pytest.mark.parametrize("candidate", ["A", "C"])
 def test_v4_closed_probability_marginalizes_all_modes_and_supports_identity(
     candidate: str,

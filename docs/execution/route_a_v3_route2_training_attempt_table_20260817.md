@@ -2816,3 +2816,19 @@ candidates。未知generated outcome仍保持unknown而非填0。
 final configs，未执行generation/metric/evaluator/optimizer，protected read=0；A100 current-HEAD测试仍等待旧C3
 五项terminal。论文claim不变。审计：
 `audits/route_a_v3_route2_xeditflow_v4_final_seed_runtime_boundary_v1.json`。
+
+## XEditFlow V4 closed matched-control chain（2026-08-24）
+
+closed benchmark现覆盖全部六个final methods并保持共同source-level measured support。full soft-value继续在每个固定
+latent mode内精确枚举最多5 edits的全部permutations，再按outcome-free root prior边缘化；unguided新增相同SetFlow/
+mode prior下的零势函数exact probability路径，明确不加载value checkpoint。
+
+first-order/simple-rate/generate-then-rerank新增study-neutral三成员Critic closed scorer。first-order严格复现开放采样时的
+source-anchored additive single-edit potential；simple-rate/rerank使用exact terminal uncertainty-penalized reward。若共同
+measured set或单编辑系数超过32，scorer按32分块而不截断。score构造不读取measured outcome数值，independent evaluator
+不参与。strongest baseline只复用V4 candidate generation之前冻结的score table，不为V4重新选baseline。
+
+统一V4 metric wrapper对六方法使用source-level NDCG、normalized regret和top-1 recall，undefined source排除不填0。
+本地closed-focused 14/14、完整XEditFlow/guidance 260/260、精确V3.3.2 96/96、compile/diff-check PASS。未materialize
+config，未执行Critic inference、closed Validation metric或optimizer，protected read=0，claim不变；A100 current-HEAD
+tests等待旧C3 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_closed_matched_controls_v1.json`。

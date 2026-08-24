@@ -3833,3 +3833,14 @@ V4 SMC、closed/open评测、candidate Critic scorer和independent-evaluator com
 focused 38/38、XEditFlow/guidance 252/252、V3.3.2 96/96、compile/diff-check PASS。未生成final runtime config、
 未执行GPU或metric、protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_final_seed_runtime_boundary_v1.json`。
+
+## XEditFlow V4 closed matched controls（2026-08-24）
+
+closed exact runner现支持`SOFT_VALUE`与`ZERO`两类scalar potential，后者为unguided SetFlow且禁止value checkpoint。
+新增Critic closed scorer分别实现source-anchored first-order与exact-terminal simple/rerank scores，并按member physical
+batch记录calls；共同measured candidates超过32时分块不截断。V4 closed metric wrapper再把这些score与pre-V4 frozen
+strongest baseline统一转换为source-level NDCG/regret/top-1，undefined不填0。
+
+closed-focused 14/14、XEditFlow/guidance 260/260、V3.3.2 96/96、compile/diff-check PASS。未执行scoring/metric或
+optimizer，protected read=0；A100 current-HEAD tests仍等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_closed_matched_controls_v1.json`。

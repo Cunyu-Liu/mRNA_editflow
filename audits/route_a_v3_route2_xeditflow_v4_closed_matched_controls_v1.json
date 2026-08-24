@@ -1,0 +1,52 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_closed_matched_controls_audit.v1",
+  "status": "XEDITFLOW_V4_CLOSED_MATCHED_CONTROL_CHAIN_IMPLEMENTED_NOT_RUN",
+  "date": "2026-08-24",
+  "predecessor_head": "12e1b24",
+  "closed_method_semantics": {
+    "full_soft_value_smc": "ROOT_PRIOR_MARGINALIZED_EIGHT_MODE_EXACT_PATH_PROBABILITY_WITH_SCALAR_VALUE",
+    "unguided_setflow": "ROOT_PRIOR_MARGINALIZED_EIGHT_MODE_EXACT_PATH_PROBABILITY_WITH_ZERO_POTENTIAL",
+    "first_order_guidance": "SOURCE_ANCHORED_ADDITIVE_SINGLE_EDIT_CRITIC_POTENTIAL",
+    "simple_rate_guidance": "EXACT_TERMINAL_FROZEN_THREE_MEMBER_CRITIC_REWARD",
+    "generate_then_rerank": "EXACT_TERMINAL_FROZEN_THREE_MEMBER_CRITIC_REWARD",
+    "strongest_matched_baseline": "PRE_V4_FROZEN_BASELINE_SCORE_TABLE"
+  },
+  "common_metric": {
+    "analysis_unit": "SOURCE",
+    "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+    "score_transform_for_frozen_scores": "SOURCEWISE_EXP_SHIFTED_MAX",
+    "metrics": [
+      "NDCG",
+      "NORMALIZED_REGRET",
+      "TOP_1_RECALL"
+    ],
+    "maximum_edit_permutation_count": 120,
+    "candidate_or_edit_order_changes_score": false
+  },
+  "isolation": {
+    "measured_outcome_used_to_construct_control_score": false,
+    "independent_evaluator_used_to_construct_control_score": false,
+    "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "tests": {
+    "focused_passed": 14,
+    "focused_failed": 0,
+    "xeditflow_guidance_passed": 260,
+    "xeditflow_guidance_failed": 0,
+    "v332_passed": 96,
+    "v332_failed": 0,
+    "compile_passed": true,
+    "diff_check_passed": true
+  },
+  "execution": {
+    "runtime_config_materialized": false,
+    "critic_inference_run": false,
+    "closed_validation_outcome_metric_run": false,
+    "optimizer_attempt_created": false,
+    "a100_current_head_tests_run": false,
+    "a100_current_head_blocker": "FIVE_OLD_C3_LAUNCH_HEAD_JOBS_NOT_ALL_TERMINAL"
+  },
+  "claim_status": "NOT_ESTABLISHED_SOFTWARE_ONLY"
+}

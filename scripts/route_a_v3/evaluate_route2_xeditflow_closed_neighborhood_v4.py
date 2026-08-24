@@ -29,16 +29,23 @@ from core.route2_gpu_failure_evidence import (
     cuda_device_observation,
     write_gpu_failure_evidence,
 )
-from core.route2_legal_xeditflow import FlowState, LegalAction, initial_state
+from core.route2_legal_xeditflow import (
+    FlowState,
+    LegalAction,
+    initial_state,
+    legal_actions,
+)
 from core.route2_source_token_cache_v3 import (
     SourceTokenCacheIndexV3,
     load_source_token_cache_v3,
 )
 from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
 from core.route2_xeditflow_smc_runtime_v4 import (
+    SetFlowModeRateProviderV4,
     SetFlowModeValueProvidersV4,
     scalar_potential_mode_rate_maps_v4,
 )
+from core.route2_xeditflow_guidance_v4 import SetFlowMixtureStateV4
 from core.route2_xeditflow_value_training_v4 import (
     BASE_FLOW_SEEDS_V4,
     load_value_checkpoint_v4,
@@ -102,7 +109,7 @@ def validate_closed_run_config_v4(config: Mapping[str, Any]) -> None:
         "V4 closed benchmark enumeration policy differs",
     )
     _require(
-        config.get("potential_kind") == "SOFT_VALUE"
+        config.get("potential_kind") in {"SOFT_VALUE", "ZERO"}
         and config.get("latent_mode_policy")
         == "ROOT_PRIOR_WEIGHTED_SUM_OF_EIGHT_FIXED_MODE_TERMINAL_PROBABILITIES",
         "V4 closed benchmark potential or mode marginalization differs",
@@ -141,7 +148,6 @@ def validate_closed_run_config_v4(config: Mapping[str, Any]) -> None:
         "source_eligibility_manifest",
         "validation_projection_path",
         "measured_neighborhood_path",
-        "value_checkpoint_path",
         "output_dir",
     ):
         _require(
@@ -149,6 +155,18 @@ def validate_closed_run_config_v4(config: Mapping[str, Any]) -> None:
                 "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
             ),
             f"V4 closed benchmark {field} left Route 2 /mnt",
+        )
+    if config.get("potential_kind") == "SOFT_VALUE":
+        _require(
+            str(config.get("value_checkpoint_path", "")).startswith(
+                "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+            ),
+            "V4 closed benchmark value checkpoint left Route 2 /mnt",
+        )
+    else:
+        _require(
+            "value_checkpoint_path" not in config,
+            "V4 unguided closed benchmark received a value checkpoint",
         )
 
 
@@ -249,12 +267,16 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         checkpoint_pass=selected_pass,
         device=device,
     )
-    value = load_value_checkpoint_v4(
-        Path(config["value_checkpoint_path"]),
-        base_flow_training_seed=seed,
-        kappa=float(config["kappa"]),
-        temperature=float(config["temperature"]),
-        device=device,
+    value = (
+        load_value_checkpoint_v4(
+            Path(config["value_checkpoint_path"]),
+            base_flow_training_seed=seed,
+            kappa=float(config["kappa"]),
+            temperature=float(config["temperature"]),
+            device=device,
+        )
+        if config["potential_kind"] == "SOFT_VALUE"
+        else None
     )
     cache = SourceTokenCacheIndexV3(
         load_source_token_cache_v3(Path(config["source_token_cache_path"]))
@@ -318,28 +340,54 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     unique_state_count = 0
     for source_index, source in enumerate(sources):
         source_key = str(source["source_key"])
-        providers = SetFlowModeValueProvidersV4(
-            setflow_model=setflow,
-            value_model=value,
-            metadata=metadata_by_key[source_key],
-            source_cache=cache,
-            device=device,
-        )
+        if value is None:
+            providers = SetFlowModeRateProviderV4(
+                setflow_model=setflow,
+                metadata=metadata_by_key[source_key],
+                source_cache=cache,
+                device=device,
+            )
+        else:
+            providers = SetFlowModeValueProvidersV4(
+                setflow_model=setflow,
+                value_model=value,
+                metadata=metadata_by_key[source_key],
+                source_cache=cache,
+                device=device,
+            )
         rate_cache: dict[FlowState, tuple[dict[LegalAction, float], ...]] = {}
 
         def build_rate_maps(
             state: FlowState,
         ) -> tuple[dict[LegalAction, float], ...]:
             nonlocal exact_trunk_calls, exact_mode_calls, value_calls
-            result, child_value_calls = scalar_potential_mode_rate_maps_v4(
-                state,
-                providers.rates,
-                providers.values,
-                beta_max=float(config["beta_max"]),
-                value_forward_batch_size=int(
-                    config["value_child_forward_batch_size"]
-                ),
-            )
+            if value is None:
+                mode_states = [
+                    SetFlowMixtureStateV4(state, mode_id)
+                    for mode_id in range(8)
+                ]
+                rows = providers.rates(mode_states)
+                actions = tuple(legal_actions(state))
+                _require(
+                    len(rows) == 8
+                    and all(row.actions == actions for row in rows),
+                    "V4 unguided closed mode-rate bundle differs",
+                )
+                result = tuple(
+                    dict(zip(row.actions, row.rates, strict=True))
+                    for row in rows
+                )
+                child_value_calls = 0
+            else:
+                result, child_value_calls = scalar_potential_mode_rate_maps_v4(
+                    state,
+                    providers.rates,
+                    providers.values,
+                    beta_max=float(config["beta_max"]),
+                    value_forward_batch_size=int(
+                        config["value_child_forward_batch_size"]
+                    ),
+                )
             exact_trunk_calls += 1
             exact_mode_calls += 8
             value_calls += child_value_calls
@@ -375,7 +423,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood.v4",
         "status": "XEDITFLOW_V4_CLOSED_NEIGHBORHOOD_COMPLETE",
         "method_id": str(config["method_id"]),
-        "potential_kind": "SOFT_VALUE",
+        "potential_kind": str(config["potential_kind"]),
         "base_flow_training_seed": seed,
         "kappa": float(config["kappa"]),
         "temperature": float(config["temperature"]),
