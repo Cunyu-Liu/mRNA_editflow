@@ -10,9 +10,13 @@ from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     critic_v4_run_stage_seed,
     evaluation_index_batches_v4,
     require_confirmation_launch_authorization_v4,
+    require_posttest_launch_authorization_v4,
     require_screen_launch_authorization_v4,
     screen_run_spec_v4,
+    split_posttest_records_v4,
+    posttest_selection_policy_v4,
 )
+from core.route2_xeditcritic_training_data_v3 import XEditCriticRecordV3
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -196,6 +200,119 @@ def test_confirmation_authorization_is_exact_three_seed_full_c0_scope() -> None:
             authorization,
             preflight,
             screen_gate,
+            run_id="v4_full",
+            physical_batch_size=8,
+            current_git_head="head",
+        )
+
+
+def _record(record_id: str, study: str, split: str) -> XEditCriticRecordV3:
+    return XEditCriticRecordV3(
+        record_id=record_id,
+        split=split,
+        source="AAAA",
+        candidate="ACAA",
+        edits=((1, "A", "C"),),
+        target=1.0,
+        task="task",
+        study=study,
+        source_group=f"source::{record_id}",
+        assay="assay",
+        context="context",
+        region=0,
+        quantity="quantity",
+        measurement="measurement",
+        numerator="numerator",
+        denominator="denominator",
+    )
+
+
+def test_posttest_record_splits_refit_all_and_loso_by_study() -> None:
+    records = [
+        _record("a", "GSE200304", "TRAIN"),
+        _record("b", "GSE269595", "VALIDATION"),
+        _record("c", "GSE269595", "TRAIN"),
+    ]
+    train, validation = split_posttest_records_v4(
+        records, run_stage="REFIT", held_out_study=None
+    )
+    assert len(train) == 3 and validation == []
+    assert {record.split for record in train} == {"TRAIN"}
+    train, validation = split_posttest_records_v4(
+        records, run_stage="LOSO", held_out_study="GSE269595"
+    )
+    assert [record.record_id for record in train] == ["a"]
+    assert [record.record_id for record in validation] == ["b", "c"]
+    assert {record.split for record in validation} == {"VALIDATION"}
+    assert (
+        posttest_selection_policy_v4("LOSO")
+        == "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION"
+    )
+
+
+def test_posttest_launch_authorization_requires_atomic_test_and_exact_scope(
+    tmp_path: Path,
+) -> None:
+    config = _config()
+    config.update(
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1",
+            "run_stage": "REFIT",
+            "training_seed": 20260908,
+            "required_posttest_run_ids": ["v4_full"],
+            "held_out_study": None,
+        }
+    )
+    authorization = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_launch_authorization.v1",
+        "status": "XEDITCRITIC_V4_REFIT_LAUNCH_AUTHORIZED",
+        "authorized_stage": "REFIT",
+        "authorized_git_head": "head",
+        "authorized_seeds": [20260908, 20260909, 20260910],
+        "authorized_run_ids": ["v4_full"],
+        "authorized_held_out_studies": [],
+        "atomic_frozen_test_passed": True,
+        "all_three_refits_complete": False,
+        "development_test_access_event_count_before_posttest": 1,
+        "development_test_outcome_reads_during_posttest": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    three = {
+        "status": "XEDITCRITIC_V4_THREE_SEED_PASS",
+        "required_seeds": [20260908, 20260909, 20260910],
+        "development_test_authorized": True,
+        "atomic_development_test_only": True,
+    }
+    receipt = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
+        "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED",
+        "required_seeds": [20260908, 20260909, 20260910],
+        "frozen_test_gate_status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
+        "all_development_refit_authorized": True,
+        "development_test_access_event_count": 1,
+        "general_test_projection_persisted": False,
+        "test_bottom_six_cache_persisted": False,
+        "development_test_metrics_in_receipt": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+    require_posttest_launch_authorization_v4(
+        config,
+        authorization,
+        _preflight(),
+        three,
+        receipt,
+        run_id="v4_full",
+        physical_batch_size=8,
+        current_git_head="head",
+    )
+    receipt["test_bottom_six_cache_persisted"] = True
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="receipt"):
+        require_posttest_launch_authorization_v4(
+            config,
+            authorization,
+            _preflight(),
+            three,
+            receipt,
             run_id="v4_full",
             physical_batch_size=8,
             current_git_head="head",

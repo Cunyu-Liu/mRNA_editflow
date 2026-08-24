@@ -423,6 +423,25 @@ def run(protocol: Mapping[str, Any]) -> dict[str, Any]:
         (output_directory / "atomic_frozen_test.json").write_text(
             json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
+        receipt = {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
+            "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED"
+            if gate["status"] == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+            else "XEDITCRITIC_V4_POSTTEST_NOT_AUTHORIZED",
+            "required_seeds": list(seeds),
+            "frozen_test_gate_status": gate["status"],
+            "all_development_refit_authorized": bool(
+                gate["all_development_refit_authorized"]
+            ),
+            "development_test_access_event_count": 1,
+            "general_test_projection_persisted": False,
+            "test_bottom_six_cache_persisted": False,
+            "development_test_metrics_in_receipt": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
+        (output_directory / "posttest_authorization_receipt.json").write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         return result
     except Exception as exc:
         failure = {

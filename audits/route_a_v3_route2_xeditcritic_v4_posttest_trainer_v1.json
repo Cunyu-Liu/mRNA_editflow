@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_trainer.v1",
+  "recorded_at_local": "2026-08-24T20:01:35+08:00",
+  "status": "XEDITCRITIC_V4_POSTTEST_TRAINER_AND_OUTCOME_FREE_RECEIPT_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "65d3f78f988a4f9278c10f50d18acc8435953385",
+  "implementation": {
+    "posttest_authorizer": "scripts/route_a_v3/authorize_route2_xeditcritic_v4_posttest.py",
+    "dual_pre_and_posttest_trainer": "scripts/route_a_v3/train_route2_xeditcritic_v4.py",
+    "attempt_ledger": "core/route2_xeditcritic_ledger_v4.py",
+    "atomic_receipt_producer": "scripts/route_a_v3/run_route2_xeditcritic_v4_atomic_frozen_test.py"
+  },
+  "training_semantics": {
+    "refit_train_count": 107873,
+    "refit_validation_count": 0,
+    "refit_run_ids": ["v4_full"],
+    "loso_run_ids": ["v4_full", "c0_v4"],
+    "loso_split_by_held_out_study": true,
+    "held_out_study_scale_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "passes": 8,
+    "selection_policy": "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION",
+    "effective_batch_size": 32,
+    "physical_batch_minimum": 4,
+    "cpu_fallback_allowed": false
+  },
+  "protected_read_repair": {
+    "atomic_test_writes_outcome_free_posttest_receipt": true,
+    "receipt_contains_test_metrics": false,
+    "posttest_protocol_contains_atomic_test_result_path": false,
+    "posttest_config_authorizer_trainer_and_readiness_read_receipt_only": true,
+    "development_test_access_event_count_carried_forward": 1,
+    "development_test_outcome_reads_during_refit_or_loso": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "verification": {
+    "posttest_trainer_authorization_ledger_focused": "25/25 PASS",
+    "complete_local_critic_v4_focused_cohort": "85/85 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "posttest_trainer_integrated": true,
+    "posttest_authorizations_created": false,
+    "runtime_configs_materialized": false,
+    "refit_or_loso_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "POSTTEST TRAINING SOFTWARE ONLY; NO TEST, REFIT, LOSO, GUIDANCE, OR PERFORMANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

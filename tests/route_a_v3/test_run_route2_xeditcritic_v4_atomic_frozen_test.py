@@ -118,3 +118,5 @@ def test_v4_atomic_runner_has_no_persistent_test_projection_or_cache_path() -> N
     assert '"general_test_projection_persisted": False' in source
     assert '"test_bottom_six_cache_persisted": False' in source
     assert "authorization_consumed.json" in source
+    assert "posttest_authorization_receipt.json" in source
+    assert '"development_test_metrics_in_receipt": False' in source

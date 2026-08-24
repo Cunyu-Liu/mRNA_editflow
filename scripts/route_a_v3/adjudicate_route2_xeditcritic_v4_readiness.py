@@ -30,14 +30,15 @@ def _read(path: Path) -> dict[str, Any]:
 
 def compose_readiness_v4(
     three_seed: Mapping[str, Any],
-    atomic_test: Mapping[str, Any],
+    posttest_receipt: Mapping[str, Any],
     refit: Mapping[str, Any],
     loso: Mapping[str, Any],
 ) -> dict[str, Any]:
     _require(
-        atomic_test.get("status") == "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL"
-        and isinstance(atomic_test.get("frozen_test_gate"), Mapping),
-        "Critic V4 atomic frozen TEST gate is absent",
+        posttest_receipt.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1"
+        and posttest_receipt.get("development_test_metrics_in_receipt") is False,
+        "Critic V4 outcome-free posttest receipt is absent",
     )
     _require(
         loso.get("status") == "XEDITCRITIC_V4_LOSO_TERMINAL"
@@ -46,7 +47,12 @@ def compose_readiness_v4(
     )
     return adjudicate_critic_readiness_v4(
         three_seed,
-        atomic_test["frozen_test_gate"],
+        {
+            "status": posttest_receipt.get("frozen_test_gate_status"),
+            "all_development_refit_authorized": posttest_receipt.get(
+                "all_development_refit_authorized"
+            ),
+        },
         refit,
         loso["loso_gate"],
     )
@@ -56,7 +62,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", required=True, type=Path)
     parser.add_argument("--three-seed-gate", required=True, type=Path)
-    parser.add_argument("--atomic-frozen-test", required=True, type=Path)
+    parser.add_argument("--posttest-authorization-receipt", required=True, type=Path)
     parser.add_argument("--refit-manifest", required=True, type=Path)
     parser.add_argument("--loso-adjudication", required=True, type=Path)
     arguments = parser.parse_args()
@@ -65,7 +71,7 @@ def main() -> None:
     _require(not output.exists(), f"Critic V4 readiness output exists: {output}")
     result = compose_readiness_v4(
         _read(arguments.three_seed_gate),
-        _read(arguments.atomic_frozen_test),
+        _read(arguments.posttest_authorization_receipt),
         _read(arguments.refit_manifest),
         _read(arguments.loso_adjudication),
     )

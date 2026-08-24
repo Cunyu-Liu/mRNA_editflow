@@ -2,7 +2,7 @@
   "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_protocol.v1",
   "status": "FROZEN_PROSPECTIVE_BEFORE_V4_POSTTEST_EXECUTION",
   "three_seed_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/confirmation_v1/three_seed_gate.json",
-  "atomic_frozen_test_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/frozen_test_v1/atomic_frozen_test.json",
+  "posttest_authorization_receipt_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/frozen_test_v1/posttest_authorization_receipt.json",
   "screen_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
   "formal_preflight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/preflight/xeditcritic_v4/formal_preflight.json",
   "projection_paths": [
@@ -21,6 +21,7 @@
     "selected_model": "V4-FULL",
     "job_count": 3,
     "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION",
+    "authorization_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1/launch_authorization.json",
     "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1",
     "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1"
   },
@@ -39,6 +40,7 @@
     "paired_job_count": 42,
     "passes": 8,
     "unknown_held_out_study_scale": 1.0,
+    "authorization_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/test_preserving_loso_v1/launch_authorization.json",
     "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/test_preserving_loso_v1",
     "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/test_preserving_loso_v1",
     "adjudication_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/test_preserving_loso_v1/loso_adjudication.json"

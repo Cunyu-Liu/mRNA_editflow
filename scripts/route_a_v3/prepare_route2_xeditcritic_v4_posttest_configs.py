@@ -50,8 +50,7 @@ def require_v4_posttest_authority(protocol: Mapping[str, Any]) -> None:
         "Critic V4 posttest protocol changed",
     )
     three = _read(Path(protocol["three_seed_gate_path"]))
-    atomic = _read(Path(protocol["atomic_frozen_test_path"]))
-    frozen_gate = atomic.get("frozen_test_gate")
+    receipt = _read(Path(protocol["posttest_authorization_receipt_path"]))
     _require(
         three.get("status") == "XEDITCRITIC_V4_THREE_SEED_PASS"
         and three.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
@@ -60,14 +59,19 @@ def require_v4_posttest_authority(protocol: Mapping[str, Any]) -> None:
         "Critic V4 posttest lacks exact three-seed PASS",
     )
     _require(
-        atomic.get("status") == "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL"
-        and isinstance(frozen_gate, Mapping)
-        and frozen_gate.get("status") == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
-        and frozen_gate.get("all_development_refit_authorized") is True
-        and atomic.get("general_test_projection_persisted") is False
-        and atomic.get("test_bottom_six_cache_persisted") is False
-        and atomic.get("new_final_evaluation_outcomes_accessed") is False,
-        "Critic V4 posttest lacks exact frozen TEST PASS",
+        receipt.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1"
+        and receipt.get("status") == "XEDITCRITIC_V4_POSTTEST_AUTHORIZED"
+        and receipt.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and receipt.get("frozen_test_gate_status")
+        == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+        and receipt.get("all_development_refit_authorized") is True
+        and int(receipt.get("development_test_access_event_count", -1)) == 1
+        and receipt.get("general_test_projection_persisted") is False
+        and receipt.get("test_bottom_six_cache_persisted") is False
+        and receipt.get("development_test_metrics_in_receipt") is False
+        and receipt.get("new_final_evaluation_outcomes_accessed") is False,
+        "Critic V4 posttest lacks outcome-free frozen TEST authorization receipt",
     )
 
 
@@ -111,6 +115,7 @@ def _runtime(
     validation_count: int,
     updates_per_pass: int,
     held_out_study: str | None = None,
+    refit_manifest_path: str | None = None,
 ) -> dict[str, Any]:
     run_ids = ["v4_full"] if stage == "REFIT" else ["v4_full", "c0_v4"]
     geometry = {
@@ -134,7 +139,9 @@ def _runtime(
             / "configs/route_a_v3_route2_xeditcritic_v4_posttest_protocol_v1.json"
         ),
         "three_seed_gate_path": str(protocol["three_seed_gate_path"]),
-        "atomic_frozen_test_path": str(protocol["atomic_frozen_test_path"]),
+        "posttest_authorization_receipt_path": str(
+            protocol["posttest_authorization_receipt_path"]
+        ),
         "projection_paths": list(protocol["projection_paths"]),
         "bottom_six_cache": str(protocol["bottom_six_cache"]),
         "preflight_output": str(protocol["formal_preflight_path"]),
@@ -142,6 +149,12 @@ def _runtime(
         "data_geometry": geometry,
         "selected_model": "V4-FULL",
         "held_out_study": held_out_study,
+        "refit_manifest_path": refit_manifest_path,
+        "posttest_launch_authorization_path": str(
+            protocol[
+                "all_development_refit" if stage == "REFIT" else "test_preserving_loso"
+            ]["authorization_output"]
+        ),
         "held_out_study_scale_policy": (
             "NOT_APPLICABLE_ALL_DEVELOPMENT_REFIT"
             if held_out_study is None
@@ -211,6 +224,7 @@ def prepare_loso_configs_v4(
         and refit.get("loso_authorized") is True,
         "Critic V4 LOSO requires all three refits",
     )
+    _require(bool(refit.get("manifest_path")), "Critic V4 refit manifest path is absent")
     records = _load_records(protocol)
     study_counts = Counter(record.study for record in records)
     root = Path(protocol["test_preserving_loso"]["run_root"])
@@ -230,6 +244,7 @@ def prepare_loso_configs_v4(
                 validation_count=study_counts[study],
                 updates_per_pass=updates,
                 held_out_study=study,
+                refit_manifest_path=str(refit["manifest_path"]),
             )
             for run_id in ("v4_full", "c0_v4"):
                 jobs.append(
@@ -302,9 +317,9 @@ def main() -> None:
         output = Path(protocol["all_development_refit"]["runtime_config_root"])
     else:
         _require(arguments.refit_manifest is not None, "LOSO refit manifest is absent")
-        payload = prepare_loso_configs_v4(
-            protocol, base, _read(arguments.refit_manifest)
-        )
+        refit = _read(arguments.refit_manifest)
+        refit["manifest_path"] = str(arguments.refit_manifest)
+        payload = prepare_loso_configs_v4(protocol, base, refit)
         output = Path(protocol["test_preserving_loso"]["runtime_config_root"])
     write_manifest_v4(payload, output)
     print(json.dumps({key: value for key, value in payload.items() if key != "jobs"}, sort_keys=True))

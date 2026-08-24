@@ -2438,6 +2438,20 @@ terminal collector要求每项summary/failure恰有一个；任一技术failure�
 PASS。trainer的REFIT/LOSO stage尚未接入，configs未materialize，protected read=0，guidance关闭。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_runtime_v1.json`。
 
+## XEditCritic V4 post-TEST trainer与outcome-free receipt（2026-08-24）
+
+Critic trainer现支持`REFIT`与`LOSO`。REFIT将隔离projection的107,873条TRAIN+VALIDATION统一设为TRAIN，
+不构造Validation dataset、不读取指标；LOSO按七个held-out study重建train/validation，`v4_full`与`c0_v4`
+使用相同fold budget，held-out study统一映射到unknown scale=1。两阶段均固定8 passes/final checkpoint，selection
+policy为`FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION`，CUDA/BF16、effective batch32、无singleton/CPU fallback。
+
+实现审阅发现并修复了一处protected-read风险：post-TEST代码不得为检查PASS而重复打开含TEST metrics的atomic
+result。原子runner现同时写不含任何TEST指标的authorization receipt；posttest protocol不再包含atomic result
+路径，config preparer、authorizer、trainer与readiness只读receipt，并携带单次access count=1。本项不新增attempt；
+focused=25/25、完整Critic V4=85/85、V3.3.2=96/96、compile/JSON/diff-check PASS。未创建authorization/
+runtime config，未启动refit/LOSO，当前protected read=0、guidance关闭。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_trainer_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

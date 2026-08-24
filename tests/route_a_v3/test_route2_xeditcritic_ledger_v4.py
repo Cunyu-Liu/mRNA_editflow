@@ -109,3 +109,36 @@ def test_confirmation_attempt_identity_is_seed_specific_and_full_c0_only() -> No
             physical_gpu_index=3,
             physical_batch_size=8,
         )
+
+
+def test_posttest_attempt_identity_distinguishes_refit_and_loso_folds() -> None:
+    config = _config()
+    config.update(
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1",
+            "run_stage": "REFIT",
+            "training_seed": 20260908,
+            "required_posttest_run_ids": ["v4_full"],
+            "held_out_study": None,
+        }
+    )
+    refit = critic_v4_attempt_config(
+        config, run_id="v4_full", physical_gpu_index=0, physical_batch_size=8
+    )
+    assert refit["attempt_id"] == "xeditcritic_v4_refit_seed20260908::v4_full"
+    assert refit["result_stage"] == "ALL_DEVELOPMENT_REFIT"
+
+    config.update(
+        {
+            "run_stage": "LOSO",
+            "required_posttest_run_ids": ["v4_full", "c0_v4"],
+            "held_out_study": "GSE269595",
+        }
+    )
+    loso = critic_v4_attempt_config(
+        config, run_id="c0_v4", physical_gpu_index=1, physical_batch_size=8
+    )
+    assert loso["attempt_id"] == (
+        "xeditcritic_v4_loso_seed20260908_gse269595::c0_v4"
+    )
+    assert loso["result_stage"] == "DEVELOPMENT_TEST_PRESERVING_LOSO"

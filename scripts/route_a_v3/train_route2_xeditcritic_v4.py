@@ -10,7 +10,7 @@ import random
 import subprocess
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -59,6 +59,10 @@ from core.route2_xeditcritic_v3 import XEditCriticV3
 from core.route2_xeditcritic_v4 import (
     XEditCriticV4,
     require_v4_trainable_parameter_range,
+)
+from core.route2_xeditcritic_gate_v4 import (
+    CONFIRMATION_SEEDS_V4,
+    LOSO_STUDIES_V4,
 )
 from scripts.route_a_v3.route2_mrnabert_upper_six_encoder_v4 import (
     TrainableMRNABERTUpperSixEncoderV4,
@@ -186,7 +190,10 @@ def critic_v4_run_stage_seed(
     config: Mapping[str, Any], run_id: str
 ) -> tuple[str, int]:
     run_stage = str(config.get("run_stage", "SCREEN"))
-    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "unknown Critic V4 run stage")
+    _require(
+        run_stage in {"SCREEN", "CONFIRMATION", "REFIT", "LOSO"},
+        "unknown Critic V4 run stage",
+    )
     seed = (
         int(config["training"]["screen_seed"])
         if run_stage == "SCREEN"
@@ -195,7 +202,7 @@ def critic_v4_run_stage_seed(
     _require(
         seed == 20260907
         if run_stage == "SCREEN"
-        else seed in {20260908, 20260909, 20260910},
+        else seed in set(CONFIRMATION_SEEDS_V4),
         "Critic V4 seed is undeclared",
     )
     if run_stage == "CONFIRMATION":
@@ -207,7 +214,62 @@ def critic_v4_run_stage_seed(
             and run_id in {"v4_full", "c0_v4"},
             "Critic V4 confirmation run scope changed",
         )
+    if run_stage in {"REFIT", "LOSO"}:
+        expected = ["v4_full"] if run_stage == "REFIT" else ["v4_full", "c0_v4"]
+        _require(
+            config.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1"
+            and config.get("required_posttest_run_ids") == expected
+            and run_id in expected,
+            "Critic V4 posttest run scope changed",
+        )
+        if run_stage == "LOSO":
+            _require(
+                config.get("held_out_study") in LOSO_STUDIES_V4
+                and config.get("held_out_study_scale_policy")
+                == "UNKNOWN_STUDY_SCALE_FIXED_1",
+                "Critic V4 LOSO holdout identity changed",
+            )
     return run_stage, seed
+
+
+def split_posttest_records_v4(
+    records: Sequence[XEditCriticRecordV3],
+    *,
+    run_stage: str,
+    held_out_study: str | None,
+) -> tuple[list[XEditCriticRecordV3], list[XEditCriticRecordV3]]:
+    _require(
+        all(record.split in {"TRAIN", "VALIDATION"} for record in records),
+        "Critic V4 posttest received a protected split",
+    )
+    if run_stage == "REFIT":
+        _require(held_out_study is None, "Critic V4 refit unexpectedly declares a holdout")
+        return [replace(record, split="TRAIN") for record in records], []
+    _require(
+        run_stage == "LOSO" and held_out_study in LOSO_STUDIES_V4,
+        "Critic V4 posttest split stage or holdout changed",
+    )
+    train = [
+        replace(record, split="TRAIN")
+        for record in records
+        if record.study != held_out_study
+    ]
+    validation = [
+        replace(record, split="VALIDATION")
+        for record in records
+        if record.study == held_out_study
+    ]
+    _require(train and validation, "Critic V4 LOSO train or holdout records are empty")
+    return train, validation
+
+
+def posttest_selection_policy_v4(run_stage: str) -> str:
+    return (
+        "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION"
+        if run_stage in {"REFIT", "LOSO"}
+        else "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION"
+    )
 
 
 def require_confirmation_launch_authorization_v4(
@@ -270,6 +332,90 @@ def require_confirmation_launch_authorization_v4(
             and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
             f"Critic V4 confirmation {label} reports a protected read",
         )
+
+
+def require_posttest_launch_authorization_v4(
+    config: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    preflight: Mapping[str, Any],
+    three_seed_gate: Mapping[str, Any],
+    posttest_receipt: Mapping[str, Any],
+    *,
+    run_id: str,
+    physical_batch_size: int,
+    current_git_head: str,
+) -> None:
+    run_stage, seed = critic_v4_run_stage_seed(config, run_id)
+    _require(run_stage in {"REFIT", "LOSO"}, "Critic V4 posttest authorization used outside posttest")
+    expected_runs = ["v4_full"] if run_stage == "REFIT" else ["v4_full", "c0_v4"]
+    _require(
+        authorization.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_posttest_launch_authorization.v1"
+        and authorization.get("status")
+        == f"XEDITCRITIC_V4_{run_stage}_LAUNCH_AUTHORIZED"
+        and authorization.get("authorized_stage") == run_stage
+        and str(authorization.get("authorized_git_head")) == str(current_git_head)
+        and authorization.get("authorized_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and authorization.get("authorized_run_ids") == expected_runs
+        and seed in authorization.get("authorized_seeds", [])
+        and run_id in expected_runs
+        and authorization.get("atomic_frozen_test_passed") is True
+        and int(authorization.get("development_test_access_event_count_before_posttest", -1)) == 1
+        and int(authorization.get("development_test_outcome_reads_during_posttest", -1)) == 0
+        and int(authorization.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "Critic V4 posttest launch authorization scope changed",
+    )
+    _require(
+        three_seed_gate.get("status") == "XEDITCRITIC_V4_THREE_SEED_PASS"
+        and three_seed_gate.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and three_seed_gate.get("development_test_authorized") is True
+        and three_seed_gate.get("atomic_development_test_only") is True,
+        "Critic V4 posttest three-seed authority changed",
+    )
+    _require(
+        posttest_receipt.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1"
+        and posttest_receipt.get("status") == "XEDITCRITIC_V4_POSTTEST_AUTHORIZED"
+        and posttest_receipt.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and posttest_receipt.get("frozen_test_gate_status")
+        == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+        and posttest_receipt.get("all_development_refit_authorized") is True
+        and int(posttest_receipt.get("development_test_access_event_count", -1)) == 1
+        and posttest_receipt.get("development_test_metrics_in_receipt") is False
+        and posttest_receipt.get("general_test_projection_persisted") is False
+        and posttest_receipt.get("test_bottom_six_cache_persisted") is False
+        and posttest_receipt.get("new_final_evaluation_outcomes_accessed") is False,
+        "Critic V4 posttest frozen TEST outcome-free receipt changed",
+    )
+    if run_stage == "LOSO":
+        _require(
+            authorization.get("authorized_held_out_studies") == list(LOSO_STUDIES_V4)
+            and config.get("held_out_study")
+            in authorization.get("authorized_held_out_studies", [])
+            and authorization.get("all_three_refits_complete") is True,
+            "Critic V4 LOSO authorization lacks the exact holdout/refit scope",
+        )
+        refit = _load_json(Path(config["refit_manifest_path"]))
+        _require(
+            refit.get("status") == "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE"
+            and refit.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+            and int(refit.get("completed_refit_count", -1)) == 3
+            and int(refit.get("refit_pass_count", -1)) == 8
+            and refit.get("loso_authorized") is True,
+            "Critic V4 LOSO refit predecessor changed",
+        )
+    _require(
+        preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
+        and preflight.get("passed") is True
+        and int(preflight.get("selected_physical_batch", -1)) == physical_batch_size
+        and 165_000_000
+        <= int(preflight.get("trainable_parameter_count", -1))
+        <= 175_000_000
+        and 20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0
+        and int(preflight.get("development_test_outcome_reads", -1)) == 0
+        and int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "Critic V4 posttest preflight identity changed",
+    )
 
 
 def _git_head() -> str:
@@ -554,12 +700,23 @@ def run(
             physical_batch_size=physical_batch_size,
             current_git_head=current_head,
         )
-    else:
+    elif run_stage == "CONFIRMATION":
         require_confirmation_launch_authorization_v4(
             config,
             authorization,
             preflight,
             _load_json(Path(config["screen_gate_path"])),
+            run_id=run_id,
+            physical_batch_size=physical_batch_size,
+            current_git_head=current_head,
+        )
+    else:
+        require_posttest_launch_authorization_v4(
+            config,
+            authorization,
+            preflight,
+            _load_json(Path(config["three_seed_gate_path"])),
+            _load_json(Path(config["posttest_authorization_receipt_path"])),
             run_id=run_id,
             physical_batch_size=physical_batch_size,
             current_git_head=current_head,
@@ -599,8 +756,15 @@ def run(
         records = records_from_projection_rows(projection_rows)
         geometry = config["data_geometry"]
         _require(len(records) == int(geometry["expected_record_count"]), "projection record count changed")
-        train_records = [record for record in records if record.split == "TRAIN"]
-        validation_records = [record for record in records if record.split == "VALIDATION"]
+        if run_stage in {"REFIT", "LOSO"}:
+            train_records, validation_records = split_posttest_records_v4(
+                records,
+                run_stage=run_stage,
+                held_out_study=config.get("held_out_study"),
+            )
+        else:
+            train_records = [record for record in records if record.split == "TRAIN"]
+            validation_records = [record for record in records if record.split == "VALIDATION"]
         _require(len(train_records) == int(geometry["expected_train_count"]), "TRAIN count changed")
         _require(len(validation_records) == int(geometry["expected_validation_count"]), "VALIDATION count changed")
         record_by_id = {record.record_id: record for record in records}
@@ -615,6 +779,9 @@ def run(
             seed=training_seed,
             enabled=spec.candidate_bundle_permutation,
         )
+        neutral_studies = (
+            {str(config["held_out_study"])} if run_stage == "LOSO" else set()
+        )
         if spec.model_kind == "C0-V4":
             train_dataset: XEditCriticDatasetV3 = XEditCriticDatasetV3(
                 train_records,
@@ -622,13 +789,19 @@ def run(
                 vocabs=vocabs,
                 target_scaler=scaler,
                 cache=None,
+                neutral_studies=neutral_studies,
             )
-            validation_dataset: XEditCriticDatasetV3 = XEditCriticDatasetV3(
-                validation_records,
-                all_records=record_by_id,
-                vocabs=vocabs,
-                target_scaler=scaler,
-                cache=None,
+            validation_dataset: XEditCriticDatasetV3 | None = (
+                XEditCriticDatasetV3(
+                    validation_records,
+                    all_records=record_by_id,
+                    vocabs=vocabs,
+                    target_scaler=scaler,
+                    cache=None,
+                    neutral_studies=neutral_studies,
+                )
+                if validation_records
+                else None
             )
             collator: Any = XEditCriticCollatorV3(
                 pretrained_width=int(config["architecture"]["pretrained_width"])
@@ -647,14 +820,20 @@ def run(
                 target_scaler=scaler,
                 cache=None,
                 candidate_bundle_overrides=train_overrides,
+                neutral_studies=neutral_studies,
             )
-            validation_dataset = XEditCriticDatasetV4(
-                validation_records,
-                all_records=record_by_id,
-                vocabs=vocabs,
-                target_scaler=scaler,
-                cache=None,
-                candidate_bundle_overrides=validation_overrides,
+            validation_dataset = (
+                XEditCriticDatasetV4(
+                    validation_records,
+                    all_records=record_by_id,
+                    vocabs=vocabs,
+                    target_scaler=scaler,
+                    cache=None,
+                    candidate_bundle_overrides=validation_overrides,
+                    neutral_studies=neutral_studies,
+                )
+                if validation_records
+                else None
             )
             collator = XEditCriticCollatorV4(
                 cache,
@@ -810,16 +989,25 @@ def run(
             initial_parameter, next(model.parameters()).detach()
         )
         _require(parameter_changed, "Critic V4 performed no learned parameter update")
-        prediction_path = output_directory / "final_validation_predictions.jsonl"
-        final_metrics = _evaluate(
-            model,
-            validation_dataset,
-            collator,
-            physical_batch_size=physical_batch_size,
-            device=device,
-            prediction_path=prediction_path,
+        prediction_path = (
+            output_directory / "final_validation_predictions.jsonl"
+            if validation_dataset is not None
+            else None
+        )
+        final_metrics = (
+            _evaluate(
+                model,
+                validation_dataset,
+                collator,
+                physical_batch_size=physical_batch_size,
+                device=device,
+                prediction_path=prediction_path,
+            )
+            if validation_dataset is not None and prediction_path is not None
+            else None
         )
         checkpoint_path = output_directory / "final_pass_8_checkpoint.pt"
+        selection_policy = posttest_selection_policy_v4(run_stage)
         torch.save(
             {
                 "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_checkpoint.v1",
@@ -831,7 +1019,7 @@ def run(
                 "candidate_bundle_permutation": spec.candidate_bundle_permutation,
                 "seed": training_seed,
                 "selected_pass": 8,
-                "selection_policy": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
+                "selection_policy": selection_policy,
                 "model_state_dict": model.state_dict(),
                 "vocabs": vocabs,
                 "target_scaler": scaler.to_dict(),
@@ -856,6 +1044,10 @@ def run(
             "candidate_permutation_summary": permutation_summary,
             "selectable": spec.selectable,
             "seed": training_seed,
+            "held_out_study": config.get("held_out_study"),
+            "held_out_study_scale_policy": config.get(
+                "held_out_study_scale_policy"
+            ),
             "physical_gpu_index": physical_gpu_index,
             "cuda_device_name": torch.cuda.get_device_name(device),
             "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
@@ -870,7 +1062,7 @@ def run(
             "parameter_changed": parameter_changed,
             "singleton_forward_count": 0,
             "cpu_fallback_used": False,
-            "selection_policy": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
+            "selection_policy": selection_policy,
             "sampler": {
                 "policy": "SQRT_TASK_SIZE_TASK_HOMOGENEOUS_SOURCE_GROUP_BALANCED",
                 "repeat_cap": 4,
@@ -880,7 +1072,9 @@ def run(
             "passes": pass_rows,
             "final_validation": final_metrics,
             "checkpoint_path": str(checkpoint_path),
-            "validation_prediction_path": str(prediction_path),
+            "validation_prediction_path": (
+                str(prediction_path) if prediction_path is not None else None
+            ),
             "launch_authorization_path": str(launch_authorization_path),
             "preflight_path": str(config["preflight_output"]),
             "elapsed_seconds": time.time() - started,

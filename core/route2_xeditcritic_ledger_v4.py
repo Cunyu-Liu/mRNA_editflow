@@ -34,16 +34,17 @@ def critic_v4_attempt_config(
 ) -> dict[str, Any]:
     run = _screen_run(config, run_id)
     run_stage = str(config.get("run_stage", "SCREEN"))
-    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "Critic V4 run stage changed")
+    _require(
+        run_stage in {"SCREEN", "CONFIRMATION", "REFIT", "LOSO"},
+        "Critic V4 run stage changed",
+    )
     seed = (
         int(config["training"]["screen_seed"])
-        if run_stage == "SCREEN"
-        else int(config["training_seed"])
+        if run_stage == "SCREEN" else int(config["training_seed"])
     )
     _require(
         seed == 20260907
-        if run_stage == "SCREEN"
-        else seed in {20260908, 20260909, 20260910},
+        if run_stage == "SCREEN" else seed in {20260908, 20260909, 20260910},
         "Critic V4 run seed changed",
     )
     if run_stage == "CONFIRMATION":
@@ -53,6 +54,15 @@ def critic_v4_attempt_config(
             == ["v4_full", "c0_v4"],
             "Critic V4 confirmation attempted an undeclared run",
         )
+    if run_stage in {"REFIT", "LOSO"}:
+        expected = ["v4_full"] if run_stage == "REFIT" else ["v4_full", "c0_v4"]
+        _require(
+            config.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1"
+            and config.get("required_posttest_run_ids") == expected
+            and run_id in expected,
+            "Critic V4 posttest attempted an undeclared run",
+        )
     _require(int(physical_gpu_index) in config["gpu_policy"]["physical_gpu_scope"], "Critic V4 physical GPU is outside 0–5")
     _require(int(physical_batch_size) in config["memory_preflight"]["physical_batch_candidates"], "Critic V4 physical batch is undeclared")
     is_full_geometry = str(run["model"]) == "V4-FULL"
@@ -60,13 +70,24 @@ def critic_v4_attempt_config(
     control = "CANDIDATE_BUNDLE_PERMUTATION" if permutation else str(run["control"])
     mechanism = str(run["mechanism"])
     learning_rates = config["training"]["learning_rates"]
+    attempt_label = f"xeditcritic_v4_{run_stage.lower()}_seed{seed}"
+    if run_stage == "LOSO":
+        held_out = str(config.get("held_out_study", ""))
+        _require(bool(held_out), "Critic V4 LOSO held-out study is absent")
+        attempt_label += f"_{held_out.lower()}"
+    result_stage = {
+        "SCREEN": "DEVELOPMENT_VALIDATION",
+        "CONFIRMATION": "DEVELOPMENT_VALIDATION",
+        "REFIT": "ALL_DEVELOPMENT_REFIT",
+        "LOSO": "DEVELOPMENT_TEST_PRESERVING_LOSO",
+    }[run_stage]
     return {
         **dict(config),
-        "attempt_id": f"xeditcritic_v4_{run_stage.lower()}_seed{seed}::{run_id}",
+        "attempt_id": f"{attempt_label}::{run_id}",
         "baseline_id": f"xeditcritic_v4_{run_id}_seed{seed}",
         "attempt_purpose": f"XEDITCRITIC_V4_{run_stage}",
         "scientific_role": f"XEDITCRITIC_V4_{run_stage}_{run['model']}_{control}_{mechanism}",
-        "result_stage": "DEVELOPMENT_VALIDATION",
+        "result_stage": result_stage,
         "run_mode": f"FROZEN_{run_stage}",
         "model_kind": str(run["model"]),
         "pretrained_model_id": config["model_id"] if is_full_geometry else "",
@@ -93,7 +114,7 @@ def critic_v4_attempt_config(
         "batch_size": 32,
         "weight_decay": float(config["training"]["weight_decay"]),
         "huber_delta": float(config["training"]["huber_delta"]),
-        "notes": f"stage={run_stage}; physical_batch={physical_batch_size}; mechanism={mechanism}; final_pass_8_fixed; no TEST/Evaluation access",
+        "notes": f"stage={run_stage}; held_out_study={config.get('held_out_study')}; physical_batch={physical_batch_size}; mechanism={mechanism}; final_pass_8_fixed; no TEST/Evaluation access during this stage",
     }
 
 

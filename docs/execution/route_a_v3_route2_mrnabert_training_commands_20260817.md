@@ -3531,3 +3531,15 @@ runtime仍未实现或执行，当前protected read=0。审计：
 posttest protocol/runtime focused=7/7、完整Critic V4=81/81、精确V3.3.2=96/96、compile/diff-check PASS。
 这些入口尚未获授权或执行；trainer REFIT/LOSO stage仍pending，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_runtime_v1.json`。
+
+## XEditCritic V4 post-TEST trainer integration（2026-08-24）
+
+`authorize_route2_xeditcritic_v4_posttest.py`分别生成exact REFIT或LOSO launch authorization；LOSO授权额外要求
+三refit complete。`train_route2_xeditcritic_v4.py`现按stage执行all-Development refit或held-study LOSO，复用
+同一V4/C0构建、冻结sampler、8-pass objective与进程内VRAM记录；REFIT不进行Validation，LOSO unknown study
+scale严格为1，checkpoint不按TEST/Validation选择。
+
+atomic TEST runner新增不含metrics的`posttest_authorization_receipt.json`。所有post-TEST入口只读receipt，protocol
+中不保留atomic TEST result路径，从而避免refit/LOSO重复读取TEST outcome。posttest focused=25/25、完整Critic
+V4=85/85、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前全部post-TEST入口未执行，protected read=0。
+审计：`audits/route_a_v3_route2_xeditcritic_v4_posttest_trainer_v1.json`。

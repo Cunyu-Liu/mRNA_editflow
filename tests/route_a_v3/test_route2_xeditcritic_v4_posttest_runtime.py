@@ -16,6 +16,9 @@ from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_readiness import (
     compose_readiness_v4,
 )
 from scripts.route_a_v3 import prepare_route2_xeditcritic_v4_posttest_configs as prepare
+from scripts.route_a_v3.authorize_route2_xeditcritic_v4_posttest import (
+    build_posttest_authorization_v4,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +37,7 @@ def _protocol(tmp_path: Path) -> dict:
         ).read_text(encoding="utf-8")
     )
     three = tmp_path / "three.json"
-    atomic = tmp_path / "atomic.json"
+    receipt = tmp_path / "receipt.json"
     _write(
         three,
         {
@@ -45,20 +48,22 @@ def _protocol(tmp_path: Path) -> dict:
         },
     )
     _write(
-        atomic,
+        receipt,
         {
-            "status": "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL",
-            "frozen_test_gate": {
-                "status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
-                "all_development_refit_authorized": True,
-            },
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
+            "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED",
+            "required_seeds": list(CONFIRMATION_SEEDS_V4),
+            "frozen_test_gate_status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
+            "all_development_refit_authorized": True,
+            "development_test_access_event_count": 1,
             "general_test_projection_persisted": False,
             "test_bottom_six_cache_persisted": False,
+            "development_test_metrics_in_receipt": False,
             "new_final_evaluation_outcomes_accessed": False,
         },
     )
     protocol["three_seed_gate_path"] = str(three)
-    protocol["atomic_frozen_test_path"] = str(atomic)
+    protocol["posttest_authorization_receipt_path"] = str(receipt)
     protocol["all_development_refit"]["run_root"] = str(tmp_path / "refit-runs")
     protocol["test_preserving_loso"]["run_root"] = str(tmp_path / "loso-runs")
     return protocol
@@ -121,6 +126,7 @@ def test_v4_posttest_preparers_emit_three_refits_and_42_paired_loso(
         "completed_refit_count": 3,
         "refit_pass_count": 8,
         "loso_authorized": True,
+        "manifest_path": str(tmp_path / "refit-manifest.json"),
     }
     loso = prepare.prepare_loso_configs_v4(protocol, _base(), completed_refit)
     assert loso["job_count"] == 42
@@ -134,6 +140,29 @@ def test_v4_posttest_preparers_emit_three_refits_and_42_paired_loso(
         == "UNKNOWN_STUDY_SCALE_FIXED_1"
         for job in loso["jobs"]
     )
+
+
+def test_v4_posttest_authorizer_keeps_stage_seed_and_holdout_scope(tmp_path: Path) -> None:
+    protocol = _protocol(tmp_path)
+    refit = {
+        "status": "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE",
+        "required_seeds": list(CONFIRMATION_SEEDS_V4),
+        "completed_refit_count": 3,
+        "refit_pass_count": 8,
+        "loso_authorized": True,
+        "development_test_outcomes_accessed_during_refit": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+    result = build_posttest_authorization_v4(
+        protocol,
+        stage="LOSO",
+        current_git_head="head",
+        refit_manifest=refit,
+    )
+    assert result["authorized_seeds"] == list(CONFIRMATION_SEEDS_V4)
+    assert result["authorized_run_ids"] == ["v4_full", "c0_v4"]
+    assert result["authorized_held_out_studies"] == list(LOSO_STUDIES_V4)
+    assert result["development_test_outcome_reads_during_posttest"] == 0
 
 
 def test_v4_refit_adjudicator_requires_exact_three_terminal_jobs(tmp_path: Path) -> None:
@@ -225,12 +254,12 @@ def test_v4_loso_collector_and_readiness_close_exact_terminal_package(tmp_path: 
         "atomic_development_test_only": True,
         "required_seeds": list(CONFIRMATION_SEEDS_V4),
     }
-    atomic = {
-        "status": "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL",
-        "frozen_test_gate": {
-            "status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
-            "all_development_refit_authorized": True,
-        },
+    receipt = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
+        "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED",
+        "frozen_test_gate_status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
+        "all_development_refit_authorized": True,
+        "development_test_metrics_in_receipt": False,
     }
     refit = {
         "status": "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE",
@@ -240,7 +269,7 @@ def test_v4_loso_collector_and_readiness_close_exact_terminal_package(tmp_path: 
         "development_test_outcomes_accessed_during_refit": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
-    readiness = compose_readiness_v4(three, atomic, refit, loso)
+    readiness = compose_readiness_v4(three, receipt, refit, loso)
     assert readiness["status"] == "CRITIC_V4_READY_FOR_GUIDANCE"
     assert readiness["guidance_authorized"] is True
 

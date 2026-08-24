@@ -69,6 +69,10 @@ def test_v4_posttest_protocol_freezes_refit_loso_and_protected_boundaries() -> N
     assert protocol["development_test_outcomes_accessed_during_refit_or_loso"] is False
     assert protocol["new_final_evaluation_outcomes_accessed"] is False
     assert protocol["additional_seed_authorized"] is False
+    assert protocol["posttest_authorization_receipt_path"].endswith(
+        "/posttest_authorization_receipt.json"
+    )
+    assert "atomic_frozen_test_path" not in protocol
 
 
 def test_v4_loso_gate_requires_all_three_strict_seed_results() -> None:
