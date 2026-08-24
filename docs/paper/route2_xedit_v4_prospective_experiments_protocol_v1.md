@@ -211,3 +211,10 @@ be at most (10^{-12}). Deterministic outcome-free priors and rates make this a
 local mechanics test; the formal A100 validation retains real model inference
 and its CUDA-only boundary. This adds no performance observation and therefore
 does not support a recovery, diversity, NLL, or model-advantage claim.
+
+SetFlow gradient isolation is also bound by an executable test of the formal
+training entry point. The only backward source is the frozen mixture SetFlow
+objective, whose inputs are the SetFlow output, the source-level target batch,
+and the three preregistered component weights. The runner has no critic
+prediction, critic reward, independent-evaluator, or outcome dependency in that
+graph. This verifies method separation but adds no performance evidence.

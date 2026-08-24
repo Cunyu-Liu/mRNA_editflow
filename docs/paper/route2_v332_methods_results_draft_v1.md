@@ -1053,3 +1053,10 @@ outcome, or new Evaluation outcome has been read. Consequently, neither V4
 generator performance nor the paper's model-advantage claim is established; the
 manuscript remains not ready for submission under the frozen dual-advantage
 standard.
+
+The formal SetFlow V4 backward graph is now covered by a direct interface and
+runner-dependency regression test: its sole loss is the preregistered mixture
+SetFlow objective, with no critic prediction, critic reward, independent
+evaluator, or outcome input. This strengthens the prospective separation
+evidence only. It does not change the unexecuted status of V4 or establish any
+ranking or generation advantage.

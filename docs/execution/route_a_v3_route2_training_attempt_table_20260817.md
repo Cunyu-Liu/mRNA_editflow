@@ -3204,3 +3204,15 @@ scientific claim。审计：`audits/route_a_v3_route2_xeditflow_v4_readiness_fix
 checkpoint选择、gate、seed或compute budget，没有新增optimizer attempt、Validation metric或protected outcome读取。
 C3五项仍等待自然terminal，A100 current-HEAD sync/cache/preflight仍关闭；论文模型优势claim不变。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_small_graph_mechanics_test_v1.json`。
+
+## XEditSetFlow V4 gradient isolation executable coverage（2026-08-25）
+
+冻结协议要求critic与independent evaluator不能进入SetFlow梯度。生产入口原本已正确地只以
+`mixture_setflow_loss_v4(output, batch)`形成唯一`objective.total.backward()`，且loss接口仅含SetFlow输出、
+source-level target及三项冻结权重；但测试此前只检查config中的`false`声明。现新增窄回归测试，直接锁定正式runner
+的依赖集合、唯一backward源与loss参数接口，禁止接入critic prediction/reward、independent evaluator或outcome。
+
+定向及相邻focused=19/19、完整SetFlow V4 focused=72/72、精确V3.3.2=96/96。生产模型、loss值、seed、训练预算
+和gate均未修改；没有新增optimizer attempt或读取Validation/protected outcome。C3仍等待自然terminal，A100
+current-HEAD sync与V4正式运行保持关闭，科学claim不变。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_gradient_isolation_test_v1.json`。

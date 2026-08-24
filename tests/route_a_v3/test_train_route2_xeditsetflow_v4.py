@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import json
 from pathlib import Path
 
 import pytest
 
+from core.route2_xeditsetflow_v4 import mixture_setflow_loss_v4
 from scripts.route_a_v3.train_route2_xeditsetflow_v4 import (
     SetFlowTrainingV4Error,
     _write_atomic_terminal_v4,
@@ -72,6 +75,49 @@ def test_training_runner_dispatches_screen_and_confirmation_authorization() -> N
     assert "require_setflow_v4_screen_launch_authorization" in source
     assert "require_setflow_v4_confirmation_launch_authorization" in source
     assert 'attempt_purpose": f"XEDITSETFLOW_V4_{run_stage}"' in source
+
+
+def test_formal_setflow_gradient_has_no_critic_reward_or_evaluator_input() -> None:
+    script = ROOT / "scripts/route_a_v3/train_route2_xeditsetflow_v4.py"
+    source = script.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported_modules = {
+        node.module or ""
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+    } | {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    forbidden_modules = (
+        "independent_evaluator",
+        "xeditcritic_v4",
+        "critic_prediction",
+        "critic_reward",
+    )
+    assert not any(
+        forbidden in module
+        for module in imported_modules
+        for forbidden in forbidden_modules
+    )
+    assert source.count("objective = mixture_setflow_loss_v4(") == 1
+    assert source.count("objective.total.backward()") == 1
+
+    loss_parameters = tuple(inspect.signature(mixture_setflow_loss_v4).parameters)
+    assert loss_parameters == (
+        "output",
+        "batch",
+        "coverage_weight",
+        "remaining_count_weight",
+        "mode_information_weight",
+    )
+    assert not any(
+        token in parameter
+        for parameter in loss_parameters
+        for token in ("critic", "reward", "evaluator", "outcome")
+    )
 
 
 def test_failure_updates_existing_attempt_in_place_without_adding_a_row(

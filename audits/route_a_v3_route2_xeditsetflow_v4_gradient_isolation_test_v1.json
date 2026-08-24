@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_gradient_isolation_test.v1",
+  "status": "XEDITSETFLOW_V4_GRADIENT_ISOLATION_EXECUTABLY_COVERED",
+  "recorded_at": "2026-08-25T03:23:06+08:00",
+  "scope": {
+    "production_implementation_changed": false,
+    "test_changed": true,
+    "optimizer_attempt_added": false,
+    "development_validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "enforced_training_graph": {
+    "formal_loss": "core.route2_xeditsetflow_v4.mixture_setflow_loss_v4",
+    "formal_backward_expression": "objective.total.backward()",
+    "backward_expression_count": 1,
+    "allowed_loss_inputs": [
+      "output",
+      "batch",
+      "coverage_weight",
+      "remaining_count_weight",
+      "mode_information_weight"
+    ],
+    "critic_prediction_input": false,
+    "critic_reward_input": false,
+    "independent_evaluator_input": false,
+    "outcome_input": false,
+    "formal_runner_forbidden_dependency_check": true
+  },
+  "focused_tests": {
+    "gradient_and_adjacent": {
+      "passed": 19,
+      "failed": 0
+    },
+    "setflow_v4_combined": {
+      "passed": 72,
+      "failed": 0
+    },
+    "exact_v3_3_2": {
+      "passed": 96,
+      "failed": 0
+    }
+  },
+  "project_state": {
+    "c3_terminal_read_once_complete": false,
+    "a100_current_head_sync_complete": false,
+    "v4_optimizer_attempts": 0,
+    "next_c3_local_check_not_before": "2026-08-25T03:45:51+08:00"
+  },
+  "claim_effect": "NONE_GRADIENT_ISOLATION_TEST_ONLY_V4_PERFORMANCE_REMAINS_NOT_ESTABLISHED"
+}
