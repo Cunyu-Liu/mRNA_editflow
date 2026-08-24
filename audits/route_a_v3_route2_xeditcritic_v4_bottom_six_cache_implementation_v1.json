@@ -1,0 +1,48 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_bottom_six_cache_implementation.v1",
+  "recorded_at_local": "2026-08-24T17:02:26+08:00",
+  "status": "XEDITCRITIC_V4_BOTTOM_SIX_CACHE_INTERFACE_IMPLEMENTED_NOT_MATERIALIZED",
+  "git_head_before_delivery": "f238843",
+  "implementation": {
+    "cache_core": "core/route2_bottom_encoder_chunk_cache_v4.py",
+    "shared_cache_online_encoder": "scripts/route_a_v3/route2_mrnabert_bottom_six_encoder_v4.py",
+    "cache_builder": "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py",
+    "frozen_config": "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json",
+    "cache_materialized": false,
+    "optimizer_attempt_started": false
+  },
+  "verified_invariants": {
+    "train_validation_projection_only": true,
+    "development_test_rejected_before_assembly": true,
+    "raw_sequence_payload_written": 0,
+    "label_or_outcome_payload_written": 0,
+    "ragged_edits_not_truncated": true,
+    "most_centered_radius_32_mapping": true,
+    "special_token_offset": 1,
+    "duplicate_chunk_encoded_or_loaded_once_per_physical_batch": true,
+    "record_ragged_boundaries_preserved": true,
+    "shared_cache_online_bottom_six_forward": true,
+    "encoder_blocks_executed": [0, 1, 2, 3, 4, 5],
+    "encoder_blocks_not_executed_by_bottom_path": [6, 7, 8, 9, 10, 11]
+  },
+  "verification": {
+    "focused_tests": "11/11 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL",
+    "cache_online_cuda_numeric_alignment": "PENDING_LAWFUL_A100_MATERIALIZATION"
+  },
+  "protected_reads": {
+    "development_test_outcome": 0,
+    "new_final_evaluation_outcome": 0
+  },
+  "c3_barrier": {
+    "all_five_jobs_terminal": false,
+    "a100_current_head_sync_performed": false,
+    "next_remote_check_not_before_remote": "2026-08-24T17:43:26+08:00"
+  },
+  "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

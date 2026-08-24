@@ -3121,3 +3121,17 @@ three-seed gate。任何NO-GO均不得追加seed、降阈值或读取TEST返调�
 V3.3.2=96/96、JSON parse与diff-check均PASS。Development TEST/new Evaluation outcome read=0。
 A100 current-HEAD测试继续等待C3五项全部terminal。审计：
 `audits/route_a_v3_route2_xedit_v4_prospective_protocol_freeze_v1.json`。
+
+## XEditCritic V4 bottom-six cache interface（2026-08-24）
+
+已实现`FrozenBottomEncoderChunkCacheV4`的核心cache、共享cache/online bottom-six encoder、CUDA-only
+materialization builder和冻结config。新cache只接受现有DevelopmentProjectionV3 TRAIN/VALIDATION；TEST在
+tensor组装前硬失败；artifact只保存float16 bottom-six per-token hidden、attention/chunk/special-token metadata、
+radius-32 most-centered edit mapping、ragged offsets和outcome-free global residual，不复制raw sequence、label或
+outcome。block0–5由cache/online同一函数执行，block6–11不进入bottom path；物理batch materialization对重复
+source/candidate chunk去重且不截断或串接多edit record。
+
+本机focused=11/11、精确V3.3.2=96/96，Python compile、JSON parse、diff-check均PASS。大型cache尚未
+materialize，A100 cache/online数值对齐及current-HEAD测试继续等待五个C3 launch-head jobs全部terminal；无
+optimizer attempt，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_implementation_v1.json`。

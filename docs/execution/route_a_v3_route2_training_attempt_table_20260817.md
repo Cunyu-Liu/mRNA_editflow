@@ -1996,6 +1996,17 @@ focused协议测试=8/8、本地精确V3.3.2 cohort=96/96，JSON parse与diff-ch
 `configs/route_a_v3_route2_xedit_v4_method_repair_protocol_v1.json`；审计：
 `audits/route_a_v3_route2_xedit_v4_prospective_protocol_freeze_v1.json`。
 
+## XEditCritic V4 bottom-six cache implementation（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。cache schema、ragged edit/chunk materialization、共享
+cache/online block0–5 forward、CUDA builder及`configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json`
+已实现；大型cache仍为NOT MATERIALIZED。TRAIN/VALIDATION-only、TEST pre-assembly hard fail、raw/label/
+outcome payload=0、radius-32 most-centered、special-token offset、跨chunk edit与物理batch chunk去重均有回归测试。
+
+本机focused=11/11、精确V3.3.2=96/96，compile/JSON/diff-check PASS；A100 current-HEAD与cache-online
+数值验证等待五个C3 launch-head jobs全部terminal。Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_implementation_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
