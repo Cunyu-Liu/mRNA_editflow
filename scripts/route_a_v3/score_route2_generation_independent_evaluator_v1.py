@@ -70,6 +70,58 @@ def guiding_checkpoint_paths(config: Mapping[str, Any]) -> list[Path]:
     return [] if singular is None else [Path(str(singular)).resolve()]
 
 
+def validate_v4_evaluator_job(config: Mapping[str, Any]) -> None:
+    """Enforce the prospective V4 evaluator boundary before loading a model."""
+
+    if config.get("schema_version") != (
+        "route_a_v3_route2_xeditflow_independent_evaluator_job.v4"
+    ):
+        return
+    guiding_paths = guiding_checkpoint_paths(config)
+    _require(len(guiding_paths) == 3, "V4 evaluator requires three guiding critics")
+    _require(
+        config.get("evaluator_frozen_before_candidate_generation") is True
+        and config.get("independent_evaluator_in_gradient") is False
+        and int(config.get("evaluation_outcomes_used_to_select_evaluator", -1)) == 0
+        and config.get("development_test_outcomes_accessed_after_atomic_test")
+        is False
+        and int(config.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "V4 evaluator protected-input policy differs",
+    )
+    _require(
+        int(config.get("expected_source_count", -1)) == 891,
+        "V4 evaluator source cohort differs",
+    )
+    for field in (
+        "evaluator_checkpoint_path",
+        "evaluator_adjudication_path",
+        "source_manifest_path",
+        "candidate_path",
+        "output_path",
+    ):
+        _require(
+            str(config.get(field, "")).startswith(
+                "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+            ),
+            f"V4 evaluator {field} left Route 2 /mnt",
+        )
+    adjudication = json.loads(
+        Path(str(config["evaluator_adjudication_path"])).read_text(
+            encoding="utf-8"
+        )
+    )
+    _require(
+        adjudication.get("schema_version")
+        == "route_a_v3_route2_independent_generation_evaluator_adjudication.v1"
+        and adjudication.get("status")
+        == "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED"
+        and adjudication.get("candidate_rerun_authorized") is True
+        and adjudication.get("development_test_outcomes_accessed") is False
+        and adjudication.get("evaluation_outcomes_accessed") is False,
+        "V4 evaluator qualification provenance is absent or invalid",
+    )
+
+
 def _normalize(value: Any) -> str:
     sequence = str(value).upper().replace("T", "U")
     _require(sequence and set(sequence) <= set(TOKEN), "sequence is outside the RNA alphabet")
@@ -287,6 +339,14 @@ def augment_candidates(
 
 
 def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
+    validate_v4_evaluator_job(config)
+    if config.get("schema_version") == (
+        "route_a_v3_route2_xeditflow_independent_evaluator_job.v4"
+    ):
+        _require(
+            output_path == Path(str(config["output_path"])),
+            "V4 evaluator output path differs from its frozen config",
+        )
     _require(not output_path.exists(), f"output already exists: {output_path}")
     summary_path = output_path.with_suffix(output_path.suffix + ".summary.json")
     _require(not summary_path.exists(), f"summary output already exists: {summary_path}")
@@ -336,6 +396,9 @@ def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
         "evaluator_frozen_before_candidate_generation": True,
         "guiding_checkpoint_distinct": all(evaluator_path != path for path in guiding_paths),
         "evaluation_outcomes_used_to_select_evaluator": 0,
+        "independent_evaluator_in_gradient": False,
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcome_reads": 0,
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
         "cpu_fallback_used": False,

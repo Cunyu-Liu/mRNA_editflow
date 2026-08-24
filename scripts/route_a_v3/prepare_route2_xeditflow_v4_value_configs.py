@@ -139,6 +139,19 @@ def build_value_configs_v4(
         == list(CRITIC_SEEDS_V4),
         "V4 critic refit checkpoint seeds differ",
     )
+    checkpoint_by_seed = {
+        int(row["seed"]): _require_route2_path(
+            row["checkpoint_path"], f"V4 critic refit checkpoint {row['seed']}"
+        )
+        for row in checkpoints
+    }
+    guiding_checkpoint_paths = [
+        checkpoint_by_seed[seed] for seed in CRITIC_SEEDS_V4
+    ]
+    _require(
+        len(set(guiding_checkpoint_paths)) == 3,
+        "V4 guiding critic checkpoint paths are not distinct",
+    )
     critic_forwards_by_member = list(
         terminal_critic_forward_reservation_v4(critic_refit_manifest)
     )
@@ -180,6 +193,39 @@ def build_value_configs_v4(
             ),
         },
         "V4 value runtime policy changed",
+    )
+    evaluator_checkpoint = _require_route2_path(
+        protocol["independent_evaluator_checkpoint_path"],
+        "V4 independent evaluator checkpoint",
+    )
+    evaluator_adjudication = _require_route2_path(
+        protocol["independent_evaluator_adjudication_path"],
+        "V4 independent evaluator adjudication",
+    )
+    strongest_baseline = _require_route2_path(
+        protocol["strongest_generation_baseline_path"],
+        "V4 strongest generation baseline",
+    )
+    baseline_selection = _require_route2_path(
+        protocol["baseline_selection_input_path"],
+        "V4 baseline selection input",
+    )
+    _require(
+        protocol.get("independent_evaluator_frozen_before_v4_candidate_generation")
+        is True
+        and protocol.get("independent_evaluator_in_gradient") is False
+        and int(
+            protocol.get(
+                "evaluation_outcomes_used_to_select_independent_evaluator", -1
+            )
+        )
+        == 0
+        and int(protocol.get("independent_evaluator_bootstrap_iterations", -1))
+        == 10_000
+        and protocol.get("strongest_baseline_frozen_before_v4_candidate_generation")
+        is True
+        and evaluator_checkpoint not in guiding_checkpoint_paths,
+        "V4 independent evaluator or strongest-baseline freeze differs",
     )
     output_root = Path(
         _require_route2_path(
@@ -497,6 +543,56 @@ def build_value_configs_v4(
             "output_path": str(open_metric_output),
         }
         validate_open_generation_config_v4(open_metric_config)
+        evaluator_output = (
+            smc_output / "independent_evaluator_scored_candidates.private.jsonl"
+        )
+        evaluator_summary = Path(str(evaluator_output) + ".summary.json")
+        evaluator_metric_output = (
+            smc_output / "independent_evaluator_metrics.json"
+        )
+        evaluator_config = {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_independent_evaluator_job.v4"
+            ),
+            "method_id": smc_config["method_id"],
+            "evaluator_checkpoint_path": evaluator_checkpoint,
+            "evaluator_adjudication_path": evaluator_adjudication,
+            "guiding_checkpoint_paths": list(guiding_checkpoint_paths),
+            "source_manifest_path": str(protocol["source_eligibility_manifest"]),
+            "candidate_path": str(
+                critic_output / "critic_scored_candidates.private.jsonl"
+            ),
+            "output_path": str(evaluator_output),
+            "expected_source_count": 891,
+            "evaluator_frozen_before_candidate_generation": True,
+            "independent_evaluator_in_gradient": False,
+            "evaluation_outcomes_used_to_select_evaluator": 0,
+            "physical_gpu_index": critic_gpu,
+            "device": f"cuda:{critic_gpu}",
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcome_reads": 0,
+        }
+        evaluator_comparison_config = {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_independent_evaluator_comparison_config.v4"
+            ),
+            "method_id": smc_config["method_id"],
+            "base_flow_training_seed": 20260912,
+            "combination": [kappa, temperature, beta_max],
+            "strongest_baseline_path": strongest_baseline,
+            "baseline_selection_input_path": baseline_selection,
+            "source_eligibility_manifest": str(
+                protocol["source_eligibility_manifest"]
+            ),
+            "guided_scored_candidate_path": str(evaluator_output),
+            "guided_scoring_summary_path": str(evaluator_summary),
+            "bootstrap_iterations": 10_000,
+            "bootstrap_seed": 20261001 + len(guidance_jobs),
+            "independent_evaluator_in_gradient": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcome_reads": 0,
+            "output_path": str(evaluator_metric_output),
+        }
         guidance_jobs.append(
             {
                 "combination_id": combination_id,
@@ -506,6 +602,16 @@ def build_value_configs_v4(
                 "critic_ensemble_config": critic_config,
                 "closed_config": closed_config,
                 "open_metric_config": open_metric_config,
+                "independent_evaluator_config": evaluator_config,
+                "independent_evaluator_comparison_config": (
+                    evaluator_comparison_config
+                ),
+                "independent_evaluator_scored_candidate_path": str(
+                    evaluator_output
+                ),
+                "independent_evaluator_metric_path": str(
+                    evaluator_metric_output
+                ),
             }
         )
     _require(len(guidance_jobs) == 18, "V4 guidance SMC job count differs")
@@ -565,6 +671,9 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     critic_paths = []
     closed_paths = []
     open_metric_paths = []
+    evaluator_paths = []
+    evaluator_comparison_paths = []
+    result_paths = []
     for job in payload["guidance_jobs"]:
         path = output_dir / f"smc_{job['combination_id']}.json"
         path.write_text(
@@ -594,6 +703,62 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             encoding="utf-8",
         )
         open_metric_paths.append(str(open_path))
+        evaluator_path = (
+            output_dir / f"independent_evaluator_{job['combination_id']}.json"
+        )
+        evaluator_path.write_text(
+            json.dumps(
+                job["independent_evaluator_config"], indent=2, sort_keys=True
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        evaluator_paths.append(str(evaluator_path))
+        comparison_path = (
+            output_dir
+            / f"independent_evaluator_comparison_{job['combination_id']}.json"
+        )
+        comparison_path.write_text(
+            json.dumps(
+                job["independent_evaluator_comparison_config"],
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        evaluator_comparison_paths.append(str(comparison_path))
+        result_paths.append(
+            {
+                "combination_id": job["combination_id"],
+                "combination": list(job["combination"]),
+                "smc_summary_path": str(
+                    Path(job["smc_config"]["output_dir"]) / "run_summary.json"
+                ),
+                "critic_summary_path": str(
+                    Path(job["critic_ensemble_config"]["output_dir"])
+                    / "run_summary.json"
+                ),
+                "matched_compute_path": str(
+                    Path(job["critic_ensemble_config"]["output_dir"])
+                    / "matched_compute.scored.jsonl"
+                ),
+                "closed_summary_path": str(
+                    Path(job["closed_config"]["output_dir"])
+                    / "run_summary.json"
+                ),
+                "open_metric_path": str(
+                    job["open_metric_config"]["output_path"]
+                ),
+                "independent_evaluator_summary_path": str(
+                    job["independent_evaluator_scored_candidate_path"]
+                )
+                + ".summary.json",
+                "independent_evaluator_metric_path": str(
+                    job["independent_evaluator_metric_path"]
+                ),
+            }
+        )
     manifest = {
         key: value
         for key, value in payload.items()
@@ -612,6 +777,11 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     manifest["guidance_critic_config_paths"] = critic_paths
     manifest["guidance_closed_config_paths"] = closed_paths
     manifest["guidance_open_metric_config_paths"] = open_metric_paths
+    manifest["guidance_independent_evaluator_config_paths"] = evaluator_paths
+    manifest["guidance_independent_evaluator_comparison_config_paths"] = (
+        evaluator_comparison_paths
+    )
+    manifest["guidance_result_paths"] = result_paths
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

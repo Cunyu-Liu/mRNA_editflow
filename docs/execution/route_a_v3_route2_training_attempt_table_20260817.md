@@ -2736,3 +2736,22 @@ score，不让diagnostic critic self-score接管。18-cell configs均已接线�
 guidance 228/228、精确V3.3.2 96/96 PASS。未materialize config、未读取closed Validation outcome、未执行
 metric/optimizer，protected TEST/Evaluation read=0，claim不变；A100 current-HEAD测试等待旧C3 terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_closed_open_metrics_v1.json`。
+
+## XEditFlow V4 frozen independent-evaluator chain与one-shot screen adjudicator（2026-08-24）
+
+V4 guidance protocol现精确继承在任何V4 candidate generation之前已冻结的Development-only Siamese CNN
+independent evaluator、其`INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED` adjudication，以及既有matched-compute
+strongest baseline与selection input。18个screen cells各自绑定相同的三名V4 refit critic checkpoint清单；正式
+evaluator scorer会在加载前要求三条guiding path互异、与evaluator checkpoint不同，并再次验证TRAIN-only GPU
+checkpoint provenance。evaluator只在候选生成和terminal critic诊断之后推理，不进入SetFlow/value/critic梯度。
+
+新增V4 source-paired comparator和一次性screen adjudicator。后者只接受完整18-cell terminal链，逐cell核对
+method/seed/`kappa×temperature×beta_max`、closed/open/evaluator状态、891-source matched-compute闭合、三名critic
+forward分别计费、320/source ceiling、零failure counter与protected-read=0，然后严格按预注册的closed NDCG→
+regret→independent-evaluator margin→open recovery→compute顺序冻结唯一组合。任何缺项、串线、未结清reservation
+或受保护读取均硬失败。
+
+本地focused 25/25、完整XEditFlow/guidance 234/234、精确V3.3.2 96/96 PASS。runtime configs未materialize，
+independent evaluator没有执行新推理，Validation generation/closed metrics、optimizer和protected outcome均未读取；
+attempt数与论文claim不变。A100 current-HEAD测试仍等待五个旧C3作业自然terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_independent_evaluator_screen_chain_v1.json`。

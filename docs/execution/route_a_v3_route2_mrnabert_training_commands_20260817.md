@@ -3769,3 +3769,21 @@ order-invariant probability，再按root mode prior精确边缘化；最多5 edi
 recovery/top-k/unique/G0，不使用critic self-score排序。本地focused/相邻20/20、XEditFlow/guidance 228/228、
 V3.3.2 96/96 PASS；未执行Validation metric或protected read。审计：
 `audits/route_a_v3_route2_xeditflow_v4_closed_open_metrics_v1.json`。
+
+## XEditFlow V4 independent evaluator与18-cell一次性裁决（2026-08-24）
+
+V4 guidance配置生产器现在为每个预注册组合额外生成两份只读评测配置：一份使用历史上已冻结且qualified的
+Development independent evaluator对terminal candidates评分，另一份与在V4之前已冻结的strongest matched-compute
+baseline做source-paired比较。每份评分配置都绑定20260908/09/10三条all-Development refit critic checkpoint，
+禁止与evaluator checkpoint同一，并保留`independent_evaluator_in_gradient=false`、TEST post-atomic reopen=false、
+new Evaluation read=0。
+
+正式screen裁决入口只读取18条完整terminal结果链，不读active curve。它同时要求SMC、terminal critic、closed、
+open、evaluator scorer和paired comparison均完成，并从scored matched-compute逐source确认shared trunk、latent mode、
+value和三名critic member分别计费、reservation已闭合、所有failure counters为0且最大总量不超过320。裁决仍按
+冻结顺序选择，不给critic self-score或未知generated outcome投票权。
+
+本地focused 25/25、XEditFlow/guidance 234/234、V3.3.2 96/96 PASS。当前只完成前瞻接口和回归测试；没有
+materialize config、运行evaluator/metric/optimizer或读取Development TEST/new Evaluation。A100 current-HEAD测试
+仍受五个旧C3 launch-head作业terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditflow_v4_independent_evaluator_screen_chain_v1.json`。

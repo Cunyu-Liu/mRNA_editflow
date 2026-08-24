@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -132,3 +133,52 @@ def test_independent_evaluator_accepts_exact_three_member_guiding_ensemble() -> 
                 "guiding_checkpoint_paths": ["/mnt/a.pt", "/mnt/b.pt", "/mnt/c.pt"],
             }
         )
+
+
+def test_v4_evaluator_requires_qualified_prefrozen_non_gradient_provenance(
+    monkeypatch,
+) -> None:
+    module = _load()
+    root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2"
+    adjudication_path = f"{root}/comparisons/evaluator.json"
+    real_read_text = Path.read_text
+
+    def read_text(path, *args, **kwargs):
+        if str(path) == adjudication_path:
+            return json.dumps(
+                {
+                    "schema_version": (
+                        "route_a_v3_route2_independent_generation_evaluator_adjudication.v1"
+                    ),
+                    "status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+                    "candidate_rerun_authorized": True,
+                    "development_test_outcomes_accessed": False,
+                    "evaluation_outcomes_accessed": False,
+                }
+            )
+        return real_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", read_text)
+    config = {
+        "schema_version": (
+            "route_a_v3_route2_xeditflow_independent_evaluator_job.v4"
+        ),
+        "guiding_checkpoint_paths": [
+            f"{root}/critic-{seed}.pt" for seed in (20260908, 20260909, 20260910)
+        ],
+        "evaluator_checkpoint_path": f"{root}/evaluator.pt",
+        "evaluator_adjudication_path": adjudication_path,
+        "source_manifest_path": f"{root}/sources.jsonl",
+        "candidate_path": f"{root}/candidates.jsonl",
+        "output_path": f"{root}/scored.jsonl",
+        "expected_source_count": 891,
+        "evaluator_frozen_before_candidate_generation": True,
+        "independent_evaluator_in_gradient": False,
+        "evaluation_outcomes_used_to_select_evaluator": 0,
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    module.validate_v4_evaluator_job(config)
+    config["independent_evaluator_in_gradient"] = True
+    with pytest.raises(module.IndependentEvaluatorError, match="protected-input"):
+        module.validate_v4_evaluator_job(config)
