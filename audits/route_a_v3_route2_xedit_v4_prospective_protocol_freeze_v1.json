@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_prospective_protocol_freeze.v1",
+  "recorded_at_local": "2026-08-24T16:45:43+08:00",
+  "status": "XEDIT_V4_PROSPECTIVE_PROTOCOL_FROZEN_C3_COHORT_STILL_RUNNING_NO_PARAMETER_UPDATE",
+  "git_head_before_delivery": "8d1c33e",
+  "protocol_config": "configs/route_a_v3_route2_xedit_v4_method_repair_protocol_v1.json",
+  "paper_protocol": "docs/paper/route2_xedit_v4_prospective_experiments_protocol_v1.md",
+  "focused_test": "tests/route_a_v3/test_route2_xedit_v4_method_repair_protocol_v1.py",
+  "c3_barrier": {
+    "job_count": 5,
+    "all_jobs_terminal": false,
+    "must_finish_naturally": true,
+    "terminal_summaries_read": 0,
+    "active_performance_curve_reads": 0,
+    "c3_downstream_authorized": false,
+    "next_remote_check_not_before_remote": "2026-08-24T17:43:26+08:00",
+    "last_remote_clock_offset_seconds": 152
+  },
+  "v4_execution_state": {
+    "optimizer_attempts_started": 0,
+    "a100_current_head_synced": false,
+    "a100_current_head_tests_run": false,
+    "critic_preflight_run": false,
+    "setflow_preflight_run": false,
+    "screen_runs_started": 0
+  },
+  "verification": {
+    "focused_protocol_tests": "8/8 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "protected_reads": {
+    "development_test_outcome": 0,
+    "new_final_evaluation_outcome": 0
+  },
+  "history_policy": {
+    "v3_artifacts_read_only": true,
+    "terminal_experiment_repeated": false,
+    "formal_tag_or_release_created": false,
+    "shared_git_history_rewritten": false
+  },
+  "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

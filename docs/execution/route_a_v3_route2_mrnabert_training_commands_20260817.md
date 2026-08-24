@@ -3100,3 +3100,24 @@ screen gate。
 下一统一窗口`>=17:43:26`。本轮只读terminal/failure/alive/CUDA字段，不读stdout、stderr、curve、metric或
 terminal payload；不做A100 current-HEAD sync。protected read=0；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_164326.json`。
+
+## XEdit V4 prospective method-repair protocol freeze（2026-08-24）
+
+用户批准的V4方法修复已在任何V4参数更新、Validation outcome读取或A100 current-HEAD同步前写入
+`configs/route_a_v3_route2_xedit_v4_method_repair_protocol_v1.json`。协议明确：当前C3 full及四controls继续
+自然terminal，终态摘要只读一次；无论C3结果如何，均不触发C3 confirmation、Development TEST、refit、
+LOSO或guidance，V3 artifacts保持只读。全部五项terminal前，V4 optimizer attempt与A100 current-HEAD
+sync/tests均为0/deferred。
+
+Critic V4冻结为120–180M trainable（目标165–175M）、20–35GiB进程内峰值显存、physical batch候选
+4/8/16/32且最小4、effective batch32；bottom-six cache/top-six训练、12层交替edit self-attention与radius-32
+source/candidate local cross-attention、四个top-2 endpoint semantic experts、soft-Spearman目标、C0/四controls/
+两机制消融及严格screen/three-seed/atomic TEST/LOSO gate均前瞻固定。SetFlow V4冻结为80–150M
+trainable（目标95–110M）、18层width640 trunk、八个trajectory-fixed latent modes、source-level candidate
+coverage/count/mode-information目标、pass4/6/8/10终态后一次性generation选择、single-mode control及严格
+three-seed gate。任何NO-GO均不得追加seed、降阈值或读取TEST返调。
+
+本任务只新增协议、论文方法记录、审计和focused回归测试，不启动训练；focused protocol=8/8、本地精确
+V3.3.2=96/96、JSON parse与diff-check均PASS。Development TEST/new Evaluation outcome read=0。
+A100 current-HEAD测试继续等待C3五项全部terminal。审计：
+`audits/route_a_v3_route2_xedit_v4_prospective_protocol_freeze_v1.json`。

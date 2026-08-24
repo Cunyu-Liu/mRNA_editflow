@@ -1,0 +1,482 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_method_repair_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_XEDIT_V4_PARAMETER_UPDATE_OR_VALIDATION_OUTCOME_READ",
+  "authorized_by_user": true,
+  "frozen_at_local": "2026-08-24T16:45:43+08:00",
+  "authority_order": [
+    "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "THIS_PROSPECTIVE_XEDIT_V4_METHOD_REPAIR_PROTOCOL"
+  ],
+  "takeover": {
+    "v4_supersedes_v3_downstream_method_route": true,
+    "v3_artifacts_read_only": true,
+    "terminal_v3_experiments_not_retrained_or_overwritten": true,
+    "c3_screen_jobs": [
+      "C3_FULL",
+      "C3_SOURCE_ONLY",
+      "C3_EDIT_METADATA_ONLY",
+      "C3_NO_CANDIDATE_SEQUENCE",
+      "C3_COMPLETE_CANDIDATE_BUNDLE_PERMUTATION"
+    ],
+    "c3_jobs_must_finish_naturally": true,
+    "c3_active_performance_curve_read_allowed": false,
+    "c3_terminal_summaries_read_exactly_once": true,
+    "c3_terminal_results_retained": true,
+    "c3_can_trigger_confirmation": false,
+    "c3_can_trigger_development_test": false,
+    "c3_can_trigger_all_development_refit": false,
+    "c3_can_trigger_loso": false,
+    "c3_can_trigger_guidance": false,
+    "v4_parameter_update_blocked_until_all_c3_jobs_terminal": true,
+    "a100_current_head_sync_blocked_until_all_c3_jobs_terminal": true,
+    "a100_current_head_tests_required_before_v4_parameter_update": true
+  },
+  "protected_outcomes": {
+    "development_test": "CLOSED_UNTIL_CRITIC_V4_THREE_SEED_CONFIRMATION_PASS",
+    "development_test_projection": "ATOMIC_TEMPORARY_RUNNER_ONLY_AFTER_AUTHORIZATION",
+    "new_final_evaluation": "CLOSED_UNTIL_V4_PREDICTOR_GENERATOR_BASELINES_METRICS_AND_POLICY_FROZEN",
+    "historical_gse232572": "OUTCOME_EXPOSED_DIAGNOSTIC_ONLY",
+    "emtab10902": "UNCONVERTIBLE_DO_NOT_READ_OUTCOME",
+    "critic_training_input": "DEVELOPMENT_PROJECTION_V3_TRAIN_VALIDATION_ONLY",
+    "setflow_training_input": "DEVELOPMENT_TRAIN_VALIDATION_ONLY_NO_CRITIC_OR_EVALUATOR_TARGET"
+  },
+  "freeze_state": {
+    "c3_cohort_terminal": false,
+    "v4_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_evaluation_outcome_reads": 0,
+    "a100_current_head_sync_deferred": true
+  },
+  "critic_v4": {
+    "screen_seed": 20260907,
+    "confirmation_seeds": [20260908, 20260909, 20260910],
+    "additional_screen_or_confirmation_seed_authorized": false,
+    "selectable_model": "V4-FULL",
+    "trainable_parameter_range": {
+      "minimum": 120000000,
+      "maximum": 180000000,
+      "design_target_minimum": 165000000,
+      "design_target_maximum": 175000000,
+      "out_of_range_action": "HARD_FAIL_BEFORE_TRAINING"
+    },
+    "representation": {
+      "encoder_revision": "CURRENT_FROZEN_MRNABERT_REVISION",
+      "chunk_length": 1000,
+      "chunk_overlap": 64,
+      "chunk_selection": "MOST_CENTERED_EDIT_CONTAINING_CHUNK",
+      "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+      "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+      "embedding_layer_trainable": false,
+      "cache_dtype": "FLOAT16",
+      "cache_split_allowlist": ["TRAIN", "VALIDATION"],
+      "cache_contains_raw_sequence": false,
+      "cache_contains_label_or_outcome": false,
+      "cache_contains_test_or_evaluation": false,
+      "cache_fields": [
+        "BOTTOM_SIX_PER_TOKEN_HIDDEN",
+        "CHUNK_OFFSET",
+        "ATTENTION_MASK",
+        "SPECIAL_TOKEN_OFFSET",
+        "EDIT_TO_CHUNK_MAPPING",
+        "RAGGED_EDIT_OFFSETS"
+      ],
+      "local_context_radius": 32,
+      "cache_online_equivalence_required": true,
+      "duplicate_chunk_encoding_within_physical_batch": false,
+      "singleton_cache_anchor_forward": false
+    },
+    "architecture": {
+      "raw_antisymmetric_branch": {"hidden": 65, "depth": 2},
+      "edit_trunk": {
+        "block_count": 12,
+        "width": 768,
+        "attention_heads": 12,
+        "ffn_width": 3072,
+        "dropout": 0.1,
+        "strict_alternation": [
+          "EDIT_SET_SELF_ATTENTION",
+          "LOCAL_SOURCE_CANDIDATE_CROSS_ATTENTION"
+        ],
+        "self_attention_block_count": 6,
+        "cross_attention_block_count": 6,
+        "source_candidate_cross_attention_parameters_shared": true,
+        "cross_attention_fusion": "DIRECTIONAL_DELTA_AND_SYMMETRIC_MEAN"
+      },
+      "global_whole_sequence_mean_role": "INDEPENDENT_RESIDUAL_ONLY",
+      "endpoint_semantic_mixture": {
+        "shared_ffn_always_enabled": true,
+        "semantic_expert_count": 4,
+        "expert_bottleneck_width": 256,
+        "top_k": 2,
+        "normalized_router_weights": true,
+        "router_inputs": [
+          "QUANTITY_FAMILY",
+          "MEASUREMENT_FORM",
+          "RATIO_NUMERATOR_FAMILY",
+          "RATIO_DENOMINATOR_FAMILY",
+          "REGION",
+          "ASSAY",
+          "CONTEXT"
+        ],
+        "router_receives_study_identity": false,
+        "router_receives_outcome": false
+      },
+      "study_calibration": {
+        "multiplicative_log_scale_only": true,
+        "study_specific_intercept": false,
+        "unknown_study_scale": 1.0
+      },
+      "shared_source_candidate_parameters": true,
+      "shared_source_candidate_dropout_mask": true,
+      "directed_output_combination": "HALF_DIFFERENCE",
+      "strict_swap_antisymmetry": true,
+      "identity_pair_prediction": 0.0,
+      "single_model_uncertainty_head": false,
+      "ensemble_uncertainty": "THREE_SEED_PREDICTION_SD"
+    },
+    "memory_preflight": {
+      "outcome_free_train_geometry_only": true,
+      "gpu_model": "A100_40GB",
+      "physical_batch_candidates": [4, 8, 16, 32],
+      "choose_largest_within_maximum": true,
+      "minimum_physical_batch": 4,
+      "effective_batch": 32,
+      "peak_allocated_memory_gib_minimum": 20,
+      "peak_allocated_memory_gib_maximum": 35,
+      "measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
+      "precision": "BF16",
+      "activation_checkpointing": true,
+      "attention_backend": "PYTORCH_SDPA_OR_VERIFIED_EQUIVALENT",
+      "cpu_fallback": false,
+      "artificial_padding_or_unused_tensor_allowed": false,
+      "below_minimum_at_physical_batch_32_action": "PAUSE_AND_REPORT",
+      "above_maximum_at_physical_batch_4_action": "PAUSE_AND_REPORT"
+    },
+    "training": {
+      "passes": 8,
+      "effective_batch": 32,
+      "task_homogeneous_optimizer_update": true,
+      "task_sampling": "SQRT_TASK_SIZE_WITH_SOURCE_GROUP_BALANCE",
+      "maximum_record_repeats_per_pass": 4,
+      "target_scaling": "FROZEN_TASK_ROBUST_STANDARDIZED",
+      "optimizer": "AdamW",
+      "weight_decay": 0.0001,
+      "gradient_clip_norm": 1.0,
+      "learning_rates": {
+        "new_head": 0.0002,
+        "semantic_experts_and_router": 0.0001,
+        "mrnabert_top_six": 0.00001
+      },
+      "warmup_fraction": 0.05,
+      "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+      "pass_1_2_loss": {
+        "huber": 1.0,
+        "same_task_cross_source_group_pairwise_logistic": 0.25
+      },
+      "pass_3_8_loss": {
+        "huber": 1.0,
+        "same_task_cross_source_group_pairwise_logistic": 0.5,
+        "effective_task_batch_soft_spearman": 0.25,
+        "semantic_router_balance": 0.01
+      },
+      "soft_spearman": {
+        "rank_method": "PAIRWISE_SIGMOID_SOFT_RANK",
+        "temperature": 0.2,
+        "target_ties": "MID_RANK"
+      },
+      "checkpoint": "FINAL_PASS_8",
+      "validation_peak_reselection": false,
+      "update_budget_changes_with_physical_batch_or_gpu": false
+    },
+    "screen_package": {
+      "matched_baseline": "C0-V4",
+      "candidate_controls": [
+        "V4-SOURCE-ONLY",
+        "V4-EDIT-METADATA-ONLY",
+        "V4-NO-CANDIDATE-SEQUENCE",
+        "V4-COMPLETE-CANDIDATE-BUNDLE-PERMUTATION"
+      ],
+      "mechanism_ablations": ["V4-NO-CROSS", "V4-NO-MOE"],
+      "controls_and_ablations_selectable": false,
+      "all_runs_same_projection_sampler_passes_updates_losses_and_endpoint_descriptors": true,
+      "all_runs_finish_naturally_unless_technical_failure": true,
+      "no_cross_parameter_matched_replacement": "LOCAL_POOLED_RESIDUAL_BLOCK",
+      "no_moe_parameter_matched_replacement": "GENERAL_RESIDUAL_ADAPTERS_WITH_ENDPOINT_VISIBLE"
+    },
+    "screen_gate": {
+      "spearman_threshold_formula": "MAX(0.30,C3_REFERENCE+0.05,C0_V4+0.10)",
+      "minimum_absolute_task_macro_spearman": 0.3,
+      "minimum_margin_over_c3_reference": 0.05,
+      "minimum_margin_over_c0_v4": 0.1,
+      "c3_reference_fallback": "HIGHEST_VALID_TERMINAL_V3_FULL_OR_DIAGNOSTIC_IF_C3_HAS_TECHNICAL_FAILURE",
+      "maximum_task_macro_standardized_mae": 1.7,
+      "mae_must_not_exceed_c0_v4": true,
+      "minimum_positive_tasks": 8,
+      "minimum_tasks_won_over_c0_v4": 6,
+      "must_beat_source_only": true,
+      "must_beat_edit_metadata_only": true,
+      "must_beat_no_candidate_sequence": true,
+      "minimum_aggregate_margin_over_complete_candidate_bundle_permutation": 0.05,
+      "permutation_applicable_task_count": 6,
+      "minimum_permutation_task_wins": 5,
+      "minimum_margin_over_no_cross": 0.02,
+      "minimum_margin_over_no_moe": 0.02,
+      "prediction_spread_finite_nonzero": true,
+      "parameter_batch_memory_update_scope_compliance_required": true,
+      "maximum_development_test_outcome_reads": 0,
+      "maximum_new_evaluation_outcome_reads": 0,
+      "any_failure_status": "XEDITCRITIC_V4_SCREEN_NO_GO"
+    },
+    "confirmation_gate": {
+      "minimum_each_seed_task_macro_spearman": 0.3,
+      "minimum_median_task_macro_spearman": 0.35,
+      "minimum_each_seed_margin_over_c0_v4": 0.1,
+      "minimum_median_margin_over_c0_v4": 0.12,
+      "maximum_each_seed_task_macro_standardized_mae": 1.7,
+      "each_seed_mae_must_not_exceed_matched_c0_v4": true,
+      "minimum_positive_tasks_each_seed": 8,
+      "minimum_tasks_won_over_c0_v4_each_seed": 6,
+      "paired_source_group_bootstrap_margin_ci_lower_bound": ">0",
+      "maximum_protected_outcome_reads": 0,
+      "all_three_seeds_required": true
+    },
+    "atomic_development_test_gate": {
+      "authorized_only_after_confirmation_pass": true,
+      "model_member_count": 3,
+      "matched_c0_member_count": 3,
+      "temporary_projection_not_retained_for_hpo": true,
+      "minimum_task_macro_spearman": 0.3,
+      "minimum_margin_over_c0_v4": 0.1,
+      "maximum_task_macro_standardized_mae": 1.7,
+      "mae_must_not_exceed_c0_v4": true,
+      "minimum_positive_tasks": 8,
+      "paired_source_group_bootstrap_margin_ci_lower_bound": ">0",
+      "failure_allows_retraining_or_retuning": false
+    },
+    "readiness": {
+      "all_development_refit_passes": 8,
+      "refit_seed_count": 3,
+      "loso_study_count": 7,
+      "loso_seed_count": 3,
+      "minimum_each_seed_study_macro_spearman": 0.25,
+      "minimum_median_study_macro_spearman": 0.3,
+      "minimum_each_seed_margin_over_c0_v4": 0.07,
+      "minimum_positive_fold_margins": 6,
+      "median_fold_margin": ">0",
+      "leave_gse269595_out_margin": ">0",
+      "pass_status": "CRITIC_V4_READY_FOR_GUIDANCE"
+    }
+  },
+  "setflow_v4": {
+    "screen_seed": 20260911,
+    "confirmation_seeds": [20260912, 20260913, 20260914],
+    "additional_screen_or_confirmation_seed_authorized": false,
+    "selectable_model": "XEDITSETFLOW_V4_FULL",
+    "trainable_parameter_range": {
+      "minimum": 80000000,
+      "maximum": 150000000,
+      "design_target_minimum": 95000000,
+      "design_target_maximum": 110000000,
+      "out_of_range_action": "HARD_FAIL_BEFORE_TRAINING"
+    },
+    "action_space": ["SUB", "STOP"],
+    "excluded_actions": ["INS", "DEL"],
+    "architecture": {
+      "source_mrnabert_embedding": "FROZEN_CACHE_ONCE_PER_SOURCE",
+      "block_count": 18,
+      "width": 640,
+      "attention_heads": 10,
+      "ffn_width": 2560,
+      "local_attention_window": 64,
+      "dilation_cycle": [1, 2, 4, 8],
+      "dropout": 0.1,
+      "study_identity_input": false,
+      "latent_mode_count": 8,
+      "mode_prior": "0.5*SOFTMAX(ROUTER_LOGITS)+0.5/8",
+      "mode_fixed_for_entire_trajectory": true,
+      "mode_specific_components": [
+        "LOW_RANK_TOKEN_RESIDUAL",
+        "SUBSTITUTION_HEAD",
+        "STOP_HEAD"
+      ],
+      "remaining_edit_count_head": true,
+      "hard_legality_mask_before_normalization": true
+    },
+    "source_level_training": {
+      "unique_terminal_edit_sets_per_source": true,
+      "duplicate_candidate_rows_removed": true,
+      "terminal_candidates_equal_weight_within_source": true,
+      "states_per_source_per_pass": 4,
+      "state_composition": [
+        "EMPTY_EDIT_SET",
+        "PARTIAL_SUBSET_FROM_COMPATIBLE_TERMINAL_SET_A",
+        "PARTIAL_SUBSET_FROM_DIFFERENT_COMPATIBLE_TERMINAL_SET_B",
+        "COMPLETED_TERMINAL_SET_OR_STRUCTURAL_BUDGET_EXHAUSTED"
+      ],
+      "incomplete_positive_actions": "ALL_REMAINING_TRUE_EDITS_PER_COMPATIBLE_CANDIDATE",
+      "completed_positive_action": "STOP_IF_BUDGET_REMAINS",
+      "budget_exhausted_positive_action": "STRUCTURAL_TERMINAL_NO_FAKE_STOP",
+      "critic_target_used": false,
+      "independent_evaluator_used": false,
+      "development_test_outcome_used": false,
+      "evaluation_outcome_used": false
+    },
+    "loss": {
+      "common_set_marginal": 1.0,
+      "source_candidate_coverage": 0.5,
+      "remaining_count": 0.2,
+      "mode_information": 0.05,
+      "coverage_applies_per_compatible_candidate_before_source_mean": true,
+      "mode_information_prevents_identical_modes_and_aggregate_collapse": true,
+      "unconditional_action_entropy_bonus": 0.0
+    },
+    "training": {
+      "batch_size": 32,
+      "precision": "BF16",
+      "optimizer": "AdamW",
+      "learning_rate": 0.0002,
+      "weight_decay": 0.0001,
+      "gradient_clip_norm": 1.0,
+      "dropout": 0.1,
+      "warmup_fraction": 0.05,
+      "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+      "sampling": "SOURCE_GROUP_AND_TASK_BALANCED",
+      "maximum_source_repeats_per_pass": 4,
+      "passes": 10,
+      "early_stopping": false,
+      "saved_checkpoint_passes": [4, 6, 8, 10],
+      "active_generation_metric_read_during_training": false
+    },
+    "validation_generation": {
+      "runs_only_after_terminal_training_summary": true,
+      "eligible_source_count": 891,
+      "candidate_cap_per_source": 32,
+      "trajectories_per_source": 32,
+      "same_decoder_seed_streams_across_checkpoints_and_controls": true,
+      "minimum_trajectory_allocation_per_mode": 1,
+      "remaining_trajectory_allocation": "SMOOTHED_MODE_PRIOR_LARGEST_REMAINDER",
+      "retry_or_duplicate_rejection": false,
+      "trunk_and_mode_forwards_recorded": true,
+      "wall_time_and_peak_vram_recorded": true
+    },
+    "checkpoint_selection": {
+      "eligible_checkpoint_requirements": {
+        "maximum_common_validation_nll": 2.06809,
+        "minimum_source_macro_recovery": 0.35,
+        "minimum_source_macro_top_k_recovery": 0.2,
+        "minimum_source_macro_unique_candidate_rate": 0.9,
+        "all_g0_correctness_required": true
+      },
+      "tie_break_order": [
+        "HIGHER_RECOVERY",
+        "HIGHER_TOP_K_RECOVERY",
+        "LOWER_COMMON_NLL",
+        "EARLIER_PASS"
+      ],
+      "no_eligible_checkpoint_status": "XEDITSETFLOW_V4_SCREEN_NO_GO",
+      "nll_selected_checkpoint_diagnostic": "LOWEST_COMMON_NLL_AMONG_PASSES_4_6_8_10_READ_ONLY",
+      "generation_constrained_checkpoint": "FORMAL_FROZEN_SELECTION_RULE_SAME_TRAINING_RUN"
+    },
+    "mechanism_control": {
+      "control_id": "V4-SINGLE-MODE",
+      "selectable": false,
+      "mode_count": 1,
+      "mode_information_loss": false,
+      "same_trunk_data_coverage_count_passes_and_checkpoint_rule": true,
+      "unused_parameter_padding_allowed": false,
+      "maximum_expected_parameter_difference_fraction": 0.02,
+      "minimum_full_recovery_margin": 0.03,
+      "minimum_full_unique_candidate_rate_margin": 0.05
+    },
+    "screen_gate": {
+      "maximum_common_validation_nll": 2.06809,
+      "minimum_source_macro_recovery": 0.35,
+      "minimum_recovery_margin_over_terminal_f2": 0.05,
+      "minimum_source_macro_top_k_recovery": 0.2,
+      "minimum_top_k_margin_over_terminal_f2": 0.03,
+      "minimum_source_macro_unique_candidate_rate": 0.9,
+      "minimum_unique_rate_margin_over_terminal_f2": 0.15,
+      "minimum_recovery_margin_over_single_mode": 0.03,
+      "minimum_unique_rate_margin_over_single_mode": 0.05,
+      "hard_legality_rate": 1.0,
+      "maximum_edit_budget_violations": 0,
+      "maximum_candidate_budget_violations": 0,
+      "maximum_trajectory_replay_failures": 0,
+      "maximum_numerical_failures": 0,
+      "small_graph_exact_distribution_required": true,
+      "maximum_critic_independent_evaluator_test_evaluation_uses": 0,
+      "any_failure_status": "XEDITSETFLOW_V4_SCREEN_NO_GO"
+    },
+    "confirmation_gate": {
+      "each_seed_must_meet_all_absolute_screen_thresholds": true,
+      "each_seed_must_meet_all_terminal_f2_relative_margins": true,
+      "paired_source_bootstrap_recovery_improvement_ci_lower_bound": ">0",
+      "all_three_seeds_required": true,
+      "pass_status": "XEDITSETFLOW_V4_G0_READY"
+    }
+  },
+  "guided_v4": {
+    "status": "BLOCKED_UNTIL_CRITIC_V4_READY_FOR_GUIDANCE_AND_XEDITSETFLOW_V4_G0_READY",
+    "potential_form": "UQ=UP*EXP(BETA_T*(V_NEXT-V_CURRENT))",
+    "free_action_ratio_head_allowed": false,
+    "setflow_latent_mode_is_fixed_trajectory_state": true,
+    "critic_ensemble_frozen": true,
+    "independent_evaluator_in_gradient": false,
+    "guidance_grid": {
+      "kappa": [0.0, 0.5, 1.0],
+      "tau": [0.5, 1.0],
+      "beta_max": [0.5, 1.0, 2.0],
+      "combination_count": 18,
+      "additional_combinations_authorized": false
+    },
+    "smc": {
+      "particles": 32,
+      "ess_resample_threshold": 16,
+      "candidate_cap_per_source": 32,
+      "edit_budgets": [1, 3, 5],
+      "forward_equivalent_ceiling_per_source": 320,
+      "base_value_each_critic_member_and_mode_forwards_charged": true
+    },
+    "external_evaluation_authorized_only_after_all_internal_components_frozen": true
+  },
+  "interfaces": [
+    "FrozenBottomEncoderChunkCacheV4",
+    "CriticStateBatchV4",
+    "EndpointSemanticMixtureV4",
+    "CriticPredictionV4",
+    "SetFlowSourceBatchV4",
+    "MixtureSetMarginalTargetV4",
+    "SetFlowMixtureStateV4",
+    "SetFlowCheckpointDecisionV4",
+    "MatchedComputeRecordV4"
+  ],
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "parameter_updates": "CUDA_BF16_ONLY",
+    "cpu_fallback": "FORBIDDEN",
+    "first_check_minutes": 5,
+    "under_four_hours_check_minutes": 30,
+    "over_four_hours_check_minutes": 60,
+    "active_performance_curve_read": false,
+    "remote_check_requires_local_time_as_immediately_preceding_step": true,
+    "remote_check_not_before_recorded_window": true
+  },
+  "artifact_policy": {
+    "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+    "large_artifacts_committed_to_git": false,
+    "formal_tag_or_release_allowed": false,
+    "shared_history_rewrite_allowed": false
+  },
+  "terminal_failure_policy": {
+    "lower_threshold_after_result": false,
+    "add_seed_after_result": false,
+    "drop_control_or_baseline_after_result": false,
+    "modify_task_after_result": false,
+    "repeat_terminal_experiment": false,
+    "read_test_to_retune": false,
+    "invent_v5_without_user_discussion": false,
+    "new_method_requires_new_user_discussion_and_prospective_freeze": true,
+    "paper_model_advantage_ready_after_any_required_no_go": false
+  }
+}
