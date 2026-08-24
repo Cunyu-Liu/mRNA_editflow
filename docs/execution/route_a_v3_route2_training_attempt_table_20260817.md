@@ -2389,6 +2389,19 @@ bootstrap CI下界>0。PASS只授权固定8-pass all-Development refit；LOSO/gu
 执行，Development TEST/new Evaluation outcome read仍为0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_test_protocol_gate_v1.json`。
 
+## XEditCritic V4 atomic Development TEST runner（2026-08-24）
+
+一次性runner现已实现但未获授权、未执行。它在任何canonical TEST decode前先核验精确three-seed PASS、三份
+confirmation runtime config和六个final-pass-8 checkpoint，并先写不可重试的authorization-consumed marker。
+随后只在内存构造18,292条TEST rows及bottom-six token表示，依次评测三名V4-FULL和三名matched C0-V4；
+不会保存通用TEST projection或bottom-six cache。三seed ensemble要求record、source-group、task和target逐项
+完全对齐，最后一次性计算10,000次paired bootstrap和冻结TEST gate；访问后技术失败也不会自动重试。
+
+本项只实现软件路径，不新增optimizer attempt。runner focused=4/4、完整本机Critic V4 focused=74/74、精确
+V3.3.2=96/96、compile/diff-check PASS；authorization未消费，Development TEST/new Evaluation outcome read=0，
+refit/LOSO/guidance继续关闭。A100 current-HEAD测试仍等待五个旧C3 launch-head jobs自然terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

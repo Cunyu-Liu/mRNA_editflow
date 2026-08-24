@@ -3487,3 +3487,15 @@ C0 margin、MAE、8/9与CI gates；PASS也不直接授权LOSO/guidance。
 Critic V4 focused=73/73、精确V3.3.2=96/96、JSON/diff-check PASS。runner未实现、authorization未消费、
 Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_test_protocol_gate_v1.json`。
+
+## XEditCritic V4 atomic TEST execution stack（2026-08-24）
+
+`run_route2_xeditcritic_v4_atomic_frozen_test.py`已实现唯一一次TEST execution path，但当前three-seed PASS不存在，
+因此禁止运行。runner先检查三份confirmation config与六个final-pass-8 checkpoint，再写authorization-consumed
+marker，之后才通过ID-first canonical scan解码18,292条TEST记录。V4 bottom-six表示与assembled record mapping
+只驻留内存，不写通用TEST projection/cache；封闭输出仅含per-seed/ensemble predictions、bootstrap与terminal gate。
+
+三seed prediction bundle若record、source-group、task或target任一不一致会terminal failure且不得自动重试。
+本地runner focused=4/4、完整Critic V4 focused=74/74、精确V3.3.2=96/96、compile/diff-check PASS；runner
+从未执行，authorization未消费，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_runner_v1.json`。

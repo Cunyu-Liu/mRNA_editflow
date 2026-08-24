@@ -1,0 +1,50 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_runner.v1",
+  "recorded_at_local": "2026-08-24T19:39:13+08:00",
+  "status": "XEDITCRITIC_V4_ATOMIC_TEST_RUNNER_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "762e5831f01241989a05d395579800a34b8b2795",
+  "implementation": {
+    "runner": "scripts/route_a_v3/run_route2_xeditcritic_v4_atomic_frozen_test.py",
+    "focused_test": "tests/route_a_v3/test_run_route2_xeditcritic_v4_atomic_frozen_test.py",
+    "protocol": "configs/route_a_v3_route2_xeditcritic_v4_frozen_test_protocol_v1.json",
+    "gate": "core/route2_xeditcritic_gate_v4.py"
+  },
+  "atomic_boundary": {
+    "exact_three_seed_pass_required": true,
+    "six_final_pass_8_checkpoints_preflighted_before_access": true,
+    "authorization_marker_written_before_canonical_test_decode": true,
+    "train_validation_rows_receive_id_only_scan": true,
+    "authorized_test_rows_decoded_once": true,
+    "test_bottom_six_representation_is_in_memory_only": true,
+    "general_test_projection_persisted": false,
+    "test_bottom_six_cache_persisted": false,
+    "automatic_retry_after_access_failure": false
+  },
+  "terminal_evaluation": {
+    "candidate_members": 3,
+    "matched_c0_members": 3,
+    "ensemble_alignment_requires_identical_record_target_task_and_source_group": true,
+    "paired_bootstrap_iterations": 10000,
+    "single_frozen_gate_call": true
+  },
+  "verification": {
+    "runner_focused_cohort": "4/4 PASS",
+    "complete_local_critic_v4_focused_cohort": "74/74 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "runner_implemented": true,
+    "authorization_consumed": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "all_development_refit_authorized": false,
+    "loso_authorized": false,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "ATOMIC TEST SOFTWARE ONLY; NO TEST OUTCOME OR PERFORMANCE CLAIM",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
