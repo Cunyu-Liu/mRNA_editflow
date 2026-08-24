@@ -1,0 +1,58 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_formal_preflight_runner.v1",
+  "recorded_at_local": "2026-08-24T18:02:50+08:00",
+  "status": "XEDITCRITIC_V4_FORMAL_PREFLIGHT_RUNNER_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "30a18f7",
+  "implementation": {
+    "runner": "scripts/route_a_v3/preflight_route2_xeditcritic_v4.py",
+    "test": "tests/route_a_v3/test_preflight_route2_xeditcritic_v4.py"
+  },
+  "authorization_barrier": {
+    "all_five_c3_terminal": true,
+    "c3_terminal_summaries_read_exactly_once": true,
+    "a100_current_head_focused_and_v332_tests": true,
+    "bottom_six_cache_terminal": true,
+    "exact_git_head": true,
+    "checked_before_preflight_output": true
+  },
+  "geometry": {
+    "selected_split": "TRAIN",
+    "selected_record_count": 32,
+    "selection_order": "DESCENDING_EDIT_COUNT_THEN_SEQUENCE_LENGTH_THEN_RECORD_ID",
+    "vocab_source": "TRAIN_VALIDATION_OUTCOME_FREE_ENDPOINT_DESCRIPTORS",
+    "target_field_indexed": false,
+    "structural_placeholder_target_used_by_loss": false,
+    "validation_metric_read": false
+  },
+  "measurement": {
+    "physical_batch_candidates": [4, 8, 16, 32],
+    "model": "FORMAL_PRETRAINED_UPPER_SIX_PLUS_XEDITCRITIC_V4_FULL",
+    "forward_precision": "BF16",
+    "activation_checkpointing": true,
+    "backward_measured": true,
+    "adamw_state_materialized": true,
+    "peak_source": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
+    "selection": "LARGEST_BATCH_AT_OR_BELOW_35_GIB",
+    "minimum_selected_peak_gib": 20.0,
+    "maximum_selected_peak_gib": 35.0,
+    "batch_four_oom_or_above_35": "TERMINAL_PAUSE",
+    "largest_eligible_below_20": "TERMINAL_PAUSE",
+    "artificial_padding_or_unused_tensor": false,
+    "cpu_fallback": false
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "67/67 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "formal_a100_measurement": "DEFERRED_UNTIL_C3_BARRIER"
+  },
+  "execution_state": {
+    "preflight_executed": false,
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

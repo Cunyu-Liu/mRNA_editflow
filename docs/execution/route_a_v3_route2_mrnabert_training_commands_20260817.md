@@ -3271,3 +3271,20 @@ Validation性能；第8 pass后一次评测并固定final checkpoint。
 完整本机Critic V4 focused=63/63、精确V3.3.2=96/96、compile/diff-check PASS。当前launch barrier未解除，
 runner未启动，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation outcome
 read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_runner_v1.json`。
+
+## XEditCritic V4 formal capacity/memory preflight runner（2026-08-24）
+
+已实现`preflight_route2_xeditcritic_v4.py`，但因C3五项仍RUNNING而没有执行。入口首先验证同一current HEAD的
+preflight authorization，其中五项C3 terminal/read-once、A100 current-HEAD focused/V3.3.2 tests和完整
+bottom-six cache必须全部成立。只按TRAIN的edit count→sequence length→record ID固定32条高几何负荷记录；
+模型endpoint vocab由TRAIN/VALIDATION outcome-free descriptors构成，代码不索引target，preflight loss仅为
+prediction平方与router balance构成的几何占位scalar。
+
+对4/8/16/32四个物理batch各自重新实例化formal模型，真实执行BF16 forward、activation-checkpointed
+backward、clip与一次AdamW step以物化optimizer state，再记录进程内部峰值。不得以`nvidia-smi`快照、无用
+tensor或CPU fallback替代。formal exact parameter count必须为165–175M；最大≤35GiB batch的峰值必须同时
+≥20GiB，否则输出`XEDITCRITIC_V4_PREFLIGHT_PAUSE`并阻断screen。
+
+完整本机Critic V4 focused=67/67、精确V3.3.2=96/96、compile/diff-check PASS；preflight executed=false、
+optimizer attempts=0、Validation metric read=false、Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_formal_preflight_runner_v1.json`。

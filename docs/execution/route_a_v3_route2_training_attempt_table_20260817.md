@@ -2116,6 +2116,22 @@ update count；全部8 passes terminal后才一次读取Validation并保存final
 authorization且未启动，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation
 outcome read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_runner_v1.json`。
 
+## XEditCritic V4 formal capacity/memory preflight runner（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。preflight runner已实现但未执行；运行前必须具备C3五项
+terminal/read-once、A100 current-HEAD focused/V3.3.2 tests、bottom-six cache terminal及相同Git HEAD的原子
+authorization。内存cohort只从TRAIN按edit数、sequence length、record ID的outcome-free顺序固定选择32条；
+formal vocab只读取TRAIN/VALIDATION outcome-free descriptors，不索引target字段或Validation metric。
+
+runner分别实例化formal pretrained upper-six + V4-FULL，在physical batch 4/8/16/32上执行真实BF16 forward、
+checkpointed backward、gradient clipping与AdamW state materialization，并仅用进程内
+`torch.cuda.max_memory_allocated`记录峰值。选择≤35GiB的最大batch且其峰值必须≥20GiB；batch4 OOM/>35GiB
+或最大可行batch仍<20GiB均写入terminal PAUSE，不缩模、不加无用tensor、不CPU fallback。
+
+完整本机Critic V4 focused=67/67、精确V3.3.2=96/96、compile/diff-check PASS。A100 preflight仍受
+C3 barrier约束，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation outcome
+read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_preflight_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
