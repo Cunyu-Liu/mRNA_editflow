@@ -232,3 +232,8 @@ cadence for jobs older than four hours. This is execution-governance evidence:
 it preserves terminal-only observation, the C3 read-only boundary, protected
 outcomes, and the current-HEAD synchronization barrier, but provides no model
 performance evidence.
+
+The hourly heartbeat is aligned to local minute 46, immediately after the
+current calibrated not-before boundary and every 60 minutes thereafter. Each
+run must still perform its own final local-time and remote-offset check; the
+wall-clock alignment is not permission to bypass that guard.

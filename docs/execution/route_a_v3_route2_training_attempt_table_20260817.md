@@ -3238,3 +3238,7 @@ XEditCritic V4 + XEditSetFlow V4前瞻协议为权威，并明确C3只读且永�
 持久化配置复读确认automation id=`route2`、interval=60、V4/C3/A100/protected-read/NO-GO纪律均存在。本项没有
 SSH、训练、metric/outcome读取或模型/gate变更，不新增training attempt，论文claim不变。审计：
 `audits/route_a_v3_route2_v4_heartbeat_migration_v1.json`。
+
+首次更新使用60分钟interval，但应用层未暴露下一运行锚点，无法证明会在当前`03:45:51`窗口后及时唤醒。调度因此
+进一步等价冻结为每小时本地`:46`：首轮`03:46:00`晚于not-before 9秒，此后仍严格每60分钟；prompt、线程、状态和
+通知策略不变。该对齐只防止过早或漏掉当前窗口，不放宽远端检查前的独立本地时间复核。
