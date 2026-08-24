@@ -2852,3 +2852,21 @@ base `20261001`、candidate cap 32和320 forward-equivalents/source；只有gene
 generation、Critic inference或Validation metrics；Development TEST post-atomic reopen和new Evaluation outcome read均为0，
 attempt数及论文claim不变。A100 current-HEAD tests仍等待五个旧launch-head jobs自然terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_final_three_seed_config_chain_v1.json`。
+
+## XEditFlow V4 terminal evidence、equal-wall与three-seed adjudication（2026-08-24）
+
+新增V4专用终态证据链。pre-V4 frozen strongest genetic baseline只做schema adapter和一次A100 timing-only重放，不重新
+选择baseline；五种V4方法则必须先完成terminal Critic scoring，使每个source的reservation闭合为actual calls。equal-wall
+入口逐row要求`MatchedComputeRecordV4`、trunk/mode/value/三名Critic member分项计费、replay/预算/数值failure为0且
+总forward-equivalents不超过320；未闭合的generation compute不能进入equal-wall结果。
+
+每个SetFlow seed的evidence assembler要求六方法共享完全相同的closed measured source support，undefined source不填0；
+从source-level NDCG和independent-evaluator paired margin各构造10,000次bootstrap CI，并同时携带regret、top-1、open
+recovery/top-k/unique、G0、peak VRAM和equal-wall sensitivity。随后manifest composer只接受20260912/13/14三条完整
+Route 2 seed row；唯一adjudicator再调用冻结V4 gate，任何缺失、seed/组合错配、旧compute schema或protected read均硬失败，
+不填补、不追加seed。Development gate即使PASS也保持`submission_ready=false`并只授权协议中的下一步external Evaluation。
+
+本地focused 11/11、完整XEditFlow/guidance 277/277、精确V3.3.2 96/96、compile/diff-check PASS。23:30仍早于
+下一C3允许窗口23:44:01，未SSH。runtime configs、strongest timing、equal-wall、evidence和final gate均未materialize或
+执行，optimizer attempt和protected read保持0，论文claim不变。A100 current-HEAD tests继续等待旧C3五项terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_final_evidence_adjudication_chain_v1.json`。

@@ -3863,3 +3863,16 @@ focused命令覆盖final target、final config producer、value rollout scorer�
 `py_compile`与`git diff --check`均PASS。当前仅有代码、测试和审计文件；正式runtime config尚未materialize，GPU job、
 optimizer attempt与metric read均未发生，protected read保持0。23:12尚未到下一C3检查窗口，本轮没有SSH或提前补查。
 A100 current-HEAD focused/V3.3.2仍受五个旧launch-head jobs terminal barrier约束。
+
+## XEditFlow V4 terminal evidence/adjudication focused record（2026-08-24）
+
+新增并验证的只读终态顺序为：frozen strongest adapter及A100 timing-only → 五种V4方法terminal-scored compute闭合 →
+六方法equal-wall common-prefix sensitivity → 每seed共同closed-support与paired-bootstrap evidence → exact three-seed
+manifest → terminal V4 adjudication。五种V4方法的equal-wall输入必须来自`matched_compute.scored.jsonl`，不能使用仍带
+pending reservation的generation compute；strongest baseline只能使用pre-V4 frozen genetic search和同一A100 cohort timing，
+不能为V4重新选择。
+
+focused 11/11、完整XEditFlow/guidance 277/277、本地V3.3.2 96/96、compile/diff-check均PASS。没有执行timing、
+Validation metric、evidence assembly或gate，没有新增optimizer attempt；Development TEST post-atomic reopen=false，new
+Evaluation read=0。23:30尚未越过23:44:01低频检查窗口，未进行远端观测。A100 current-HEAD tests仍延后至五个旧
+C3 launch-head jobs全部自然terminal。

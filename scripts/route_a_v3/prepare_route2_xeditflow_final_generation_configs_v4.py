@@ -24,6 +24,9 @@ from core.route2_xeditflow_value_training_v4 import (
 from scripts.route_a_v3.build_route2_xeditflow_final_value_target_v4 import (
     validate_final_value_target_config_v4,
 )
+from scripts.route_a_v3.adapt_route2_xeditflow_strongest_baseline_v4 import (
+    validate_strongest_adapter_config_v4,
+)
 from scripts.route_a_v3.evaluate_route2_xeditflow_closed_neighborhood_v4 import (
     validate_closed_run_config_v4,
 )
@@ -51,6 +54,9 @@ from scripts.route_a_v3.score_route2_xeditflow_closed_controls_v4 import (
 )
 from scripts.route_a_v3.score_route2_xeditflow_value_rollouts_v4 import (
     validate_value_critic_score_config_v4,
+)
+from scripts.route_a_v3.run_route2_xeditflow_strongest_timing_v4 import (
+    validate_strongest_timing_config_v4,
 )
 
 
@@ -250,10 +256,13 @@ def build_final_generation_configs_v4(
     critic_refit_manifest: Mapping[str, Any],
     source_data_audit: Mapping[str, Any],
     guidance_gate: Mapping[str, Any],
+    strongest_generation_baseline: Mapping[str, Any],
+    baseline_selection_input: Mapping[str, Any],
     *,
     generation_gpus: Mapping[int, int],
     critic_gpus: Mapping[int, int],
     value_gpus: Mapping[int, int],
+    strongest_timing_gpu: int,
     guidance_screen_gate_path: str,
     strongest_closed_score_table_path: str,
 ) -> dict[str, Any]:
@@ -274,12 +283,34 @@ def build_final_generation_configs_v4(
     value_gpu = _gpu_map(
         value_gpus, seeds=(20260913, 20260914), label="final value training"
     )
+    _require(
+        int(strongest_timing_gpu) in range(6),
+        "V4 strongest timing GPU is outside 0-5",
+    )
     strongest_score_path = _route2(
         strongest_closed_score_table_path,
         "V4 pre-frozen strongest closed score table",
     )
     frozen_screen_gate_path = _route2(
         guidance_screen_gate_path, "V4 frozen guidance screen gate"
+    )
+    _require(
+        strongest_generation_baseline.get("status")
+        == "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY"
+        and strongest_generation_baseline.get("strongest_generation_baseline_id")
+        == "genetic"
+        and strongest_generation_baseline.get("evaluation_outcomes_accessed")
+        is False
+        and int(
+            strongest_generation_baseline.get(
+                "forward_equivalent_budget_per_source", -1
+            )
+        )
+        == 320
+        and baseline_selection_input.get("selection_pool")
+        == "DEVELOPMENT_MEASURED_NEIGHBORHOOD"
+        and baseline_selection_input.get("evaluation_release_state") == "CLOSED",
+        "V4 final strongest baseline inputs differ",
     )
     runtime_paths = protocol.get("setflow_confirmation_runtime_config_paths")
     _require(
@@ -324,6 +355,43 @@ def build_final_generation_configs_v4(
         / "value_checkpoint.pt"
     )
     screen_gate_path = Path(frozen_screen_gate_path)
+    strongest_timing_root = (
+        output_root / "benchmark_resources" / "strongest_matched_baseline_timing"
+    )
+    strongest_timing_candidate_path = (
+        strongest_timing_root / "timed_genetic_candidates.private.jsonl"
+    )
+    strongest_timing_config = {
+        "schema_version": "route_a_v3_route2_xeditflow_strongest_timing_config.v4",
+        "method_id": "genetic",
+        "strongest_generation_baseline_path": str(
+            protocol["strongest_generation_baseline_path"]
+        ),
+        "baseline_selection_input_path": str(protocol["baseline_selection_input_path"]),
+        "source_manifest_path": str(protocol["source_eligibility_manifest"]),
+        "guiding_checkpoint_path": str(
+            strongest_generation_baseline["guiding_checkpoint_path"]
+        ),
+        "critic_forward_budget_per_source": int(
+            strongest_generation_baseline["critic_forward_budget_per_source"]
+        ),
+        "beam_width": 16,
+        "genetic_population_size": 32,
+        "oversample_factor": 8,
+        "exhaustive_space_limit": 4096,
+        "seed": 20260816,
+        "physical_gpu_index": int(strongest_timing_gpu),
+        "device": f"cuda:{int(strongest_timing_gpu)}",
+        "output_dir": str(strongest_timing_root),
+        "timing_only_no_baseline_reselection": True,
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+    validate_strongest_timing_config_v4(
+        strongest_timing_config,
+        strongest_generation_baseline,
+        baseline_selection_input,
+    )
     seed_jobs: list[dict[str, Any]] = []
     for seed in BASE_FLOW_SEEDS_V4:
         seed_root = output_root / f"seed_{seed}"
@@ -746,6 +814,143 @@ def build_final_generation_configs_v4(
                 seed_root / "metrics" / "independent_evaluator_full_vs_strongest.json"
             ),
         }
+        strongest_adapter_root = (
+            seed_root / "generation" / "strongest_matched_baseline"
+        )
+        strongest_adapter_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_strongest_baseline_adapter_config.v4",
+            "strongest_generation_baseline_path": str(
+                protocol["strongest_generation_baseline_path"]
+            ),
+            "baseline_selection_input_path": str(
+                protocol["baseline_selection_input_path"]
+            ),
+            "base_flow_training_seed": seed,
+            "output_dir": str(strongest_adapter_root),
+            "strongest_baseline_reselected_for_v4": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
+        validate_strongest_adapter_config_v4(strongest_adapter_config)
+        closed_summary_paths = {
+            "full_soft_value_smc": str(
+                seed_root / "closed" / "full_soft_value_smc" / "run_summary.json"
+            ),
+            "unguided_setflow": str(
+                seed_root / "closed" / "unguided_setflow" / "run_summary.json"
+            ),
+            **{
+                method: str(closed_metric_configs[method]["output_path"])
+                for method in (
+                    "first_order_guidance",
+                    "simple_rate_guidance",
+                    "generate_then_rerank",
+                    "strongest_matched_baseline",
+                )
+            },
+        }
+        equal_wall_output = seed_root / "metrics" / "equal_wall_time_sensitivity.json"
+        equal_wall_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_equal_wall_time_config.v4",
+            "base_flow_training_seed": seed,
+            "source_manifest_path": str(protocol["source_eligibility_manifest"]),
+            "methods": {
+                method: {
+                    "timing_path": (
+                        str(strongest_timing_candidate_path)
+                        if method == "strongest_matched_baseline"
+                        else str(
+                            seed_root
+                            / "generation"
+                            / method
+                            / "terminal_critic"
+                            / "matched_compute.scored.jsonl"
+                        )
+                    ),
+                    "timing_format": (
+                        "SEARCH_CANDIDATE_JSONL"
+                        if method == "strongest_matched_baseline"
+                        else "MATCHED_COMPUTE_SCORED_JSONL"
+                    ),
+                    "closed_summary_path": closed_summary_paths[method],
+                }
+                for method in (
+                    "full_soft_value_smc",
+                    "unguided_setflow",
+                    "first_order_guidance",
+                    "simple_rate_guidance",
+                    "generate_then_rerank",
+                    "strongest_matched_baseline",
+                )
+            },
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+            "output_path": str(equal_wall_output),
+        }
+        method_evidence_paths = {
+            method: {
+                "closed_summary_path": closed_summary_paths[method],
+                "open_summary_path": (
+                    str(strongest_adapter_root / "open.json")
+                    if method == "strongest_matched_baseline"
+                    else str(open_metric_configs[method]["output_path"])
+                ),
+                "generation_summary_path": (
+                    str(strongest_adapter_root / "generation.json")
+                    if method == "strongest_matched_baseline"
+                    else str(seed_root / "generation" / method / "run_summary.json")
+                ),
+                **(
+                    {}
+                    if method == "strongest_matched_baseline"
+                    else {
+                        "terminal_critic_summary_path": str(
+                            seed_root
+                            / "generation"
+                            / method
+                            / "terminal_critic"
+                            / "run_summary.json"
+                        )
+                    }
+                ),
+            }
+            for method in (
+                "full_soft_value_smc",
+                "unguided_setflow",
+                "first_order_guidance",
+                "simple_rate_guidance",
+                "generate_then_rerank",
+                "strongest_matched_baseline",
+            )
+        }
+        final_evidence_output = seed_root / "final_evidence"
+        final_evidence_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_final_seed_evidence_config.v4",
+            "base_flow_training_seed": seed,
+            "selected_combination": [kappa, temperature, beta_max],
+            "methods": method_evidence_paths,
+            "equal_wall_time_sensitivity_path": str(equal_wall_output),
+            "full_independent_evaluator_path": str(
+                evaluator_comparison_config["output_path"]
+            ),
+            "full_candidate_path": str(
+                full_output
+                / "terminal_critic"
+                / "critic_scored_candidates.private.jsonl"
+            ),
+            "unguided_candidate_path": str(
+                seed_root
+                / "generation"
+                / "unguided_setflow"
+                / "terminal_critic"
+                / "critic_scored_candidates.private.jsonl"
+            ),
+            "bootstrap_iterations": 10_000,
+            "bootstrap_seed": 20261001 + seed + 100_000,
+            "output_dir": str(final_evidence_output),
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
         seed_jobs.append(
             {
                 "base_flow_training_seed": seed,
@@ -767,6 +972,11 @@ def build_final_generation_configs_v4(
                 "independent_evaluator_comparison_config": (
                     evaluator_comparison_config
                 ),
+                "strongest_adapter_config": strongest_adapter_config,
+                "equal_wall_time_config": equal_wall_config,
+                "equal_wall_time_output_path": str(equal_wall_output),
+                "final_seed_evidence_config": final_evidence_config,
+                "final_seed_evidence_output_dir": str(final_evidence_output),
             }
         )
     _require(
@@ -775,6 +985,23 @@ def build_final_generation_configs_v4(
         and sum(job["value_training_config"] is not None for job in seed_jobs) == 2,
         "V4 final seed job inventory differs",
     )
+    final_comparison_manifest_path = output_root / "final_comparison_manifest.json"
+    final_comparison_compose_config = {
+        "schema_version": "route_a_v3_route2_xeditflow_final_comparison_compose_config.v4",
+        "guidance_screen_gate_path": str(screen_gate_path),
+        "seed_manifest_row_paths": {
+            str(seed): str(
+                output_root
+                / f"seed_{seed}"
+                / "final_evidence"
+                / "seed_manifest_row.json"
+            )
+            for seed in BASE_FLOW_SEEDS_V4
+        },
+        "output_path": str(final_comparison_manifest_path),
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
     return {
         "schema_version": "route_a_v3_route2_xeditflow_final_generation_manifest.v4",
         "status": "XEDITFLOW_V4_FINAL_GENERATION_CONFIGS_PREPARED_NOT_STARTED",
@@ -790,6 +1017,13 @@ def build_final_generation_configs_v4(
         "terminal_critic_forwards_by_member": reservations,
         "strongest_closed_score_table_path": strongest_score_path,
         "strongest_baseline_reselected_for_v4": False,
+        "strongest_timing_config": strongest_timing_config,
+        "strongest_timing_candidate_path": str(strongest_timing_candidate_path),
+        "final_comparison_compose_config": final_comparison_compose_config,
+        "final_comparison_manifest_path": str(final_comparison_manifest_path),
+        "final_adjudication_output_path": str(
+            output_root / "final_adjudication.json"
+        ),
         "output_root": str(output_root),
         "runtime_config_root": str(config_root),
         "seed_jobs": seed_jobs,
@@ -817,6 +1051,9 @@ def write_final_generation_configs_v4(
             "independent_evaluator_comparison": job[
                 "independent_evaluator_comparison_config"
             ],
+            "strongest_adapter": job["strongest_adapter_config"],
+            "equal_wall_time": job["equal_wall_time_config"],
+            "final_seed_evidence": job["final_seed_evidence_config"],
         }
         for name, config in fixed.items():
             path = output_dir / f"seed_{seed}_{name}.json"
@@ -856,6 +1093,22 @@ def write_final_generation_configs_v4(
                     encoding="utf-8",
                 )
                 written.append(str(path))
+    timing_path = output_dir / "strongest_matched_baseline_timing.json"
+    timing_path.write_text(
+        json.dumps(payload["strongest_timing_config"], indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
+    written.append(str(timing_path))
+    compose_path = output_dir / "final_comparison_compose.json"
+    compose_path.write_text(
+        json.dumps(
+            payload["final_comparison_compose_config"], indent=2, sort_keys=True
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    written.append(str(compose_path))
     manifest = dict(payload)
     manifest["written_runtime_config_paths"] = written
     manifest["written_runtime_config_count"] = len(written)
@@ -882,21 +1135,28 @@ def main() -> None:
     parser.add_argument("--generation-gpus", nargs=3, required=True, type=int)
     parser.add_argument("--critic-gpus", nargs=3, required=True, type=int)
     parser.add_argument("--value-gpus", nargs=2, required=True, type=int)
+    parser.add_argument("--strongest-timing-gpu", required=True, type=int)
     parser.add_argument("--output-dir", required=True, type=Path)
     arguments = parser.parse_args()
+    protocol = _json(arguments.protocol)
+    strongest = _json(Path(str(protocol["strongest_generation_baseline_path"])))
+    baseline_selection = _json(Path(str(protocol["baseline_selection_input_path"])))
     payload = build_final_generation_configs_v4(
-        _json(arguments.protocol),
+        protocol,
         _json(arguments.critic_readiness),
         _json(arguments.setflow_confirmation),
         _json(arguments.critic_refit_manifest),
         _json(arguments.source_data_audit),
         _json(arguments.guidance_screen_gate),
+        strongest,
+        baseline_selection,
         generation_gpus=_three_gpu_map(arguments.generation_gpus),
         critic_gpus=_three_gpu_map(arguments.critic_gpus),
         value_gpus={
             20260913: int(arguments.value_gpus[0]),
             20260914: int(arguments.value_gpus[1]),
         },
+        strongest_timing_gpu=int(arguments.strongest_timing_gpu),
         guidance_screen_gate_path=str(arguments.guidance_screen_gate),
         strongest_closed_score_table_path=arguments.strongest_closed_score_table,
     )

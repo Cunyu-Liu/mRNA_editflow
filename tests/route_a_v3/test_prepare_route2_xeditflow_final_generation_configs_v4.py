@@ -92,6 +92,25 @@ def _gate() -> dict:
     }
 
 
+def _strongest() -> dict:
+    return {
+        "status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY",
+        "strongest_generation_baseline_id": "genetic",
+        "evaluation_outcomes_accessed": False,
+        "forward_equivalent_budget_per_source": 320,
+        "critic_forward_budget_per_source": 320,
+        "guiding_checkpoint_path": f"{ROUTE2}/baselines/guiding.pt",
+        "independent_evaluator_checkpoint_path": f"{ROUTE2}/baselines/evaluator.pt",
+    }
+
+
+def _baseline_selection() -> dict:
+    return {
+        "selection_pool": "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
+        "evaluation_release_state": "CLOSED",
+    }
+
+
 def _payload() -> dict:
     return build_final_generation_configs_v4(
         json.loads(PROTOCOL.read_text(encoding="utf-8")),
@@ -100,9 +119,12 @@ def _payload() -> dict:
         _refit(),
         _source_audit(),
         _gate(),
+        _strongest(),
+        _baseline_selection(),
         generation_gpus={20260912: 0, 20260913: 1, 20260914: 2},
         critic_gpus={20260912: 3, 20260913: 4, 20260914: 5},
         value_gpus={20260913: 0, 20260914: 1},
+        strongest_timing_gpu=2,
         guidance_screen_gate_path=f"{ROUTE2}/guidance/gate.json",
         strongest_closed_score_table_path=(
             f"{ROUTE2}/baselines/strongest_closed_scores.private.jsonl"
@@ -119,6 +141,7 @@ def test_v4_final_configs_freeze_one_screen_value_and_two_seed_local_values() ->
     ]
     assert payload["selected_combination"] == [0.5, 1.0, 2.0]
     assert payload["terminal_critic_forwards_by_member"] == [8, 4, 2]
+    assert payload["strongest_timing_config"]["seed"] == 20260816
     jobs = {row["base_flow_training_seed"]: row for row in payload["seed_jobs"]}
     assert jobs[20260912]["screen_value_checkpoint_reused"] is True
     assert jobs[20260912]["value_training_config"] is None
@@ -194,6 +217,12 @@ def test_v4_final_configs_close_exact_and_frozen_score_benchmarks() -> None:
         strongest_paths.add(strongest["score_table_path"])
         assert strongest["strongest_baseline_frozen_before_v4_candidate_generation"]
         assert strongest["baseline_reselected_for_v4"] is False
+        assert job["equal_wall_time_config"]["methods"][
+            "full_soft_value_smc"
+        ]["timing_path"].endswith("terminal_critic/matched_compute.scored.jsonl")
+        assert job["final_seed_evidence_config"]["methods"][
+            "strongest_matched_baseline"
+        ].get("terminal_critic_summary_path") is None
     assert strongest_paths == {
         f"{ROUTE2}/baselines/strongest_closed_scores.private.jsonl"
     }
@@ -208,8 +237,8 @@ def test_v4_final_config_writer_emits_exact_non_overwriting_inventory(
     manifest = json.loads(
         (tmp_path / "configs" / "manifest.json").read_text(encoding="utf-8")
     )
-    assert manifest["written_runtime_config_count"] == 86
-    assert len(manifest["written_runtime_config_paths"]) == 86
+    assert manifest["written_runtime_config_count"] == 97
+    assert len(manifest["written_runtime_config_paths"]) == 97
     assert not (tmp_path / "configs" / "seed_20260912_value_training.json").exists()
     assert (tmp_path / "configs" / "seed_20260913_value_training.json").exists()
     with pytest.raises(Exception, match="config root exists"):
@@ -224,9 +253,12 @@ def test_v4_final_configs_reject_gate_or_seed_inventory_drift() -> None:
         "critic_refit_manifest": _refit(),
         "source_data_audit": _source_audit(),
         "guidance_gate": _gate(),
+        "strongest_generation_baseline": _strongest(),
+        "baseline_selection_input": _baseline_selection(),
         "generation_gpus": {20260912: 0, 20260913: 1, 20260914: 2},
         "critic_gpus": {20260912: 3, 20260913: 4, 20260914: 5},
         "value_gpus": {20260913: 0, 20260914: 1},
+        "strongest_timing_gpu": 2,
         "guidance_screen_gate_path": f"{ROUTE2}/guidance/gate.json",
         "strongest_closed_score_table_path": (
             f"{ROUTE2}/baselines/strongest_closed_scores.private.jsonl"

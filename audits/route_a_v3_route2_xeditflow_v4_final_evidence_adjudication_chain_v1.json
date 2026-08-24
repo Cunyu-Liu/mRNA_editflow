@@ -1,0 +1,69 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_final_evidence_adjudication_chain_audit.v1",
+  "status": "XEDITFLOW_V4_FINAL_EVIDENCE_AND_ADJUDICATION_SOFTWARE_COMPLETE_NOT_EXECUTED",
+  "recorded_at": "2026-08-24T23:30:41+08:00",
+  "head_before_change": "ecb40a1a4da3c73ecc087b347db109e6cf704eec",
+  "implemented_components": [
+    "pre_v4_frozen_strongest_baseline_v4_adapter",
+    "frozen_strongest_genetic_a100_timing_only_runner",
+    "v4_terminal_scoring_reconciled_equal_wall_sensitivity",
+    "per_seed_six_method_terminal_evidence_assembler",
+    "exact_three_seed_manifest_composer",
+    "strict_v4_three_seed_final_adjudicator"
+  ],
+  "evidence_requirements": {
+    "required_base_flow_training_seeds": [
+      20260912,
+      20260913,
+      20260914
+    ],
+    "required_methods": [
+      "full_soft_value_smc",
+      "unguided_setflow",
+      "first_order_guidance",
+      "simple_rate_guidance",
+      "generate_then_rerank",
+      "strongest_matched_baseline"
+    ],
+    "v4_generated_methods_require_terminal_critic_summary": true,
+    "terminal_critic_reservation_reconciled_for_every_source": true,
+    "matched_compute_schema": "MatchedComputeRecordV4",
+    "trunk_mode_value_and_each_critic_member_separately_charged": true,
+    "forward_equivalent_ceiling_per_source": 320,
+    "closed_source_support_exactly_shared": true,
+    "undefined_closed_source_zero_fill": false,
+    "source_paired_ndcg_bootstrap_iterations": 10000,
+    "source_paired_independent_evaluator_bootstrap_iterations": 10000,
+    "equal_wall_accelerator": "A100_COMMON_COHORT",
+    "strongest_baseline_reselected_for_v4": false,
+    "independent_evaluator_in_gradient": false
+  },
+  "terminal_gate_behavior": {
+    "requires_all_three_seed_rows": true,
+    "requires_all_six_methods_per_seed": true,
+    "requires_screen_selected_combination_identity": true,
+    "missing_or_mismatched_artifact_filled_or_imputed": false,
+    "additional_training_seed_authorized": false,
+    "failed_gate_status": "XEDITFLOW_V4_NO_GO",
+    "submission_ready_even_after_development_pass": false
+  },
+  "verification": {
+    "focused_tests": "11 passed",
+    "xeditflow_and_guidance_tests": "277 passed",
+    "v3_3_2_tests": "96 passed",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "strongest_timing_run_executed": false,
+    "equal_wall_metric_executed": false,
+    "final_evidence_assembled": false,
+    "final_three_seed_gate_executed": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "claim_effect": "SOFTWARE_ONLY_NO_MODEL_PERFORMANCE_OR_PUBLICATION_CLAIM_CHANGE"
+}
