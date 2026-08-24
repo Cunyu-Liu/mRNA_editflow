@@ -3815,3 +3815,11 @@ Critic actual calls，只闭合terminal reservation。focused 35/35、XEditFlow/
 compile/diff-check PASS。runner/scorer均未执行，runtime artifacts与optimizer attempts不变，protected read=0；A100
 current-HEAD tests等待五个旧C3作业terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_matched_control_runner_v1.json`。
+
+## 22:46 C3 long-interval health（2026-08-24）
+
+五个C3 PID在远端22:46:30仍活跃，五个精确terminal/failure路径及screen gate均不存在。修正CUDA字段过滤后，
+五个PID在登记GPU0/1/2/3/5上的显存占用均为2,120或2,190 MiB；这只证明CUDA进程仍存在，不读取或推断active
+performance。未读日志、Development TEST或new Evaluation。下一远端/本地窗口分别为23:46:30/23:44:01，
+A100 current-HEAD sync继续受五项terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_224630.json`。

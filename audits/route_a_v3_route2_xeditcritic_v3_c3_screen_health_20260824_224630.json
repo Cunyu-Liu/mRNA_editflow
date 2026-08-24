@@ -1,0 +1,92 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_health.v1",
+  "status": "ALL_FIVE_C3_SCREEN_JOBS_ALIVE_CUDA_CONFIRMED_TERMINAL_ABSENT",
+  "local_time_immediately_before_ssh": "2026-08-24T22:44:01+08:00",
+  "remote_observed_at": "2026-08-24T22:46:30+08:00",
+  "observed_remote_minus_local_seconds": 149,
+  "previous_remote_next_check_not_before": "2026-08-24T22:46:08+08:00",
+  "previous_window_crossed_before_ssh": true,
+  "repository": {
+    "a100_launch_head": "4047f5503373f8e761f74b2e95bc717777560eb2",
+    "local_head_before_record_commit": "da4391d"
+  },
+  "jobs": [
+    {
+      "run_id": "c3",
+      "pid": 2443206,
+      "physical_gpu_index": 3,
+      "process_state": "Sl",
+      "elapsed_seconds": 71452,
+      "cuda_used_memory_mib": 2190,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_present": false
+    },
+    {
+      "run_id": "c3_source_only",
+      "pid": 2443207,
+      "physical_gpu_index": 0,
+      "process_state": "Rl",
+      "elapsed_seconds": 71452,
+      "cuda_used_memory_mib": 2120,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_present": false
+    },
+    {
+      "run_id": "c3_edit_metadata_only",
+      "pid": 2443208,
+      "physical_gpu_index": 5,
+      "process_state": "Rl",
+      "elapsed_seconds": 71452,
+      "cuda_used_memory_mib": 2190,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_present": false
+    },
+    {
+      "run_id": "c3_no_candidate_sequence",
+      "pid": 2529140,
+      "physical_gpu_index": 1,
+      "process_state": "Rl",
+      "elapsed_seconds": 71024,
+      "cuda_used_memory_mib": 2120,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_present": false
+    },
+    {
+      "run_id": "c3_candidate_bundle_permutation",
+      "pid": 2592082,
+      "physical_gpu_index": 2,
+      "process_state": "Rl",
+      "elapsed_seconds": 70642,
+      "cuda_used_memory_mib": 2190,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_present": false
+    }
+  ],
+  "cuda_observation": {
+    "captured": true,
+    "query": "nvidia-smi gpu_uuid,pid,used_memory",
+    "pid_column_filter_corrected": true,
+    "all_five_registered_pids_present": true,
+    "all_five_uuid_to_physical_gpu_assignments_match": true
+  },
+  "terminal_artifact_check": {
+    "all_exact_run_summary_paths_absent": true,
+    "all_exact_failure_paths_absent": true,
+    "screen_gate_present": false,
+    "terminal_or_failure_content_read": false
+  },
+  "monitoring_policy": {
+    "active_curve_or_metric_read": false,
+    "stdout_or_stderr_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0,
+    "next_remote_check_not_before": "2026-08-24T23:46:30+08:00",
+    "estimated_next_local_check_not_before_using_latest_offset": "2026-08-24T23:44:01+08:00",
+    "a100_current_head_sync_performed": false
+  }
+}

@@ -2789,3 +2789,15 @@ uncertainty-penalized Critic reward重排，候选集合不得改变；其余方
 runtime config，未执行GPU generation、Critic inference或optimizer update，Development TEST/new Evaluation read均为0，
 论文claim不变；A100 current-HEAD测试仍等待五个旧C3 launch-head jobs全部terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_matched_control_runner_v1.json`。
+
+## 22:46 C3 five-job scheduled health（2026-08-24）
+
+本地22:44:01已越过校准窗口后单次SSH，远端时间22:46:30。C3 full/source-only/edit-metadata-only/
+no-candidate/candidate-bundle-permutation五项PID均仍活跃，elapsed分别71,452/71,452/71,452/71,024/70,642秒；
+精确run_summary、failure和screen gate均不存在。修正后的CUDA query确认五个PID仍分别位于登记的GPU3/0/5/1/2，
+显存占用为2,190/2,120/2,190/2,120/2,190 MiB。
+
+未读stdout/stderr、active curve、terminal content、Development TEST或new Evaluation outcome。最新远端相对本地
+偏移为+149秒；下一远端窗口不早于23:46:30，对应本地不早于23:44:01。A100 current-HEAD sync继续等待
+五项自然terminal。未新增optimizer attempt，论文claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_224630.json`。
