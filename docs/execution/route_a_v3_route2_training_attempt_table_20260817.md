@@ -3015,3 +3015,14 @@ Validation metric、Development TEST或Evaluation outcome。
 本地定向/相邻39/39、完整Critic V4 82/82、精确V3.3.2 96/96、compile/JSON/diff-check PASS。正式CUDA
 alignment尚未执行，cache/preflight/optimizer仍为0，screen未授权，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_cache_online_preflight_binding_v1.json`。
+
+## V4 cache summary provenance downstream consumption（2026-08-25）
+
+闭合cache-launch授权的消费端：Critic/SetFlow cache summary除冻结几何与protected-read字段外，现在还必须包含
+与授权current HEAD完全相同的`git_head`、组件特定cache-launch authorization status、物理GPU0–5、非空CUDA
+device name、BF16 forward precision及`cpu_fallback=false`。preflight和screen authorizer都消费这些字段；缺失
+授权provenance的旧式summary或旧HEAD summary不能再进入preflight，即使其tensor geometry表面合法。
+
+本地cross-component focused 24/24、Critic V4 83/83、SetFlow V4 60/60、精确V3.3.2 96/96 PASS，
+compile/diff-check PASS。没有materialize authorization/cache/preflight或optimizer，protected read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_summary_provenance_consumption_v1.json`。

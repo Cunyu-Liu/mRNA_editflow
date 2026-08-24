@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_summary_provenance_consumption.v1",
+  "status": "XEDIT_V4_CACHE_SUMMARY_PROVENANCE_REQUIRED_DOWNSTREAM",
+  "recorded_at": "2026-08-25T01:30:53+08:00",
+  "implementation_parent_git_head": "cee784dc76d5a830491a659780e973dc54d5b609",
+  "required_for_both_cache_summaries": {
+    "git_head_equals_authorizing_current_head": true,
+    "component_specific_cache_launch_authorization_status": true,
+    "physical_gpu_index_in_zero_through_five": true,
+    "cuda_device_name_nonempty": true,
+    "forward_precision_bf16": true,
+    "cpu_fallback_false": true,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "rejected_inputs": [
+    "legacy summary without cache-launch authorization provenance",
+    "summary produced at a stale Git HEAD",
+    "summary reporting GPU outside 0-5",
+    "summary without BF16 provenance",
+    "summary reporting CPU fallback"
+  ],
+  "downstream_consumers": [
+    "Critic V4 preflight authorizer",
+    "SetFlow V4 preflight authorizer",
+    "Critic V4 screen authorizer",
+    "SetFlow V4 screen authorizer"
+  ],
+  "verification": {
+    "focused_cross_component_tests": "24/24 PASS",
+    "complete_critic_v4_related_tests": "83/83 PASS",
+    "complete_setflow_v4_related_tests": "60/60 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_state": {
+    "cache_authorization_materialized": false,
+    "cache_builder_executed": false,
+    "preflight_executed": false,
+    "optimizer_attempt_created": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "CACHE_PROVENANCE_GATE_ONLY_NO_EMPIRICAL_MODEL_CLAIM"
+}

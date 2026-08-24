@@ -3995,3 +3995,11 @@ preflight PAUSE并禁止screen授权，不会为了进入显存测量而忽略�
 本项尚未在A100执行；cache、preflight、optimizer和outcome metric均未产生，protected read=0，下一C3检查仍
 不早于本地01:44:53。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_cache_online_preflight_binding_v1.json`。
+
+## V4 cache summary provenance consumption focused record（2026-08-25）
+
+cache builder写入的HEAD/authorization/GPU/BF16 provenance现在是preflight与screen authorizer的强制输入，
+不再只是未消费的sidecar记录。旧式summary、旧HEAD、GPU6/7、非BF16或CPU fallback provenance均fail closed。
+本地focused 24/24、Critic V4 83/83、SetFlow V4 60/60、精确V3.3.2 96/96 PASS。尚未生成正式summary，
+cache/preflight/optimizer均未运行，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_summary_provenance_consumption_v1.json`。

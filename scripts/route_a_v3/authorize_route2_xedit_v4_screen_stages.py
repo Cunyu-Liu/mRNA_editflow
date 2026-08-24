@@ -205,6 +205,8 @@ def require_cache_runtime_policy_v4(config: Mapping[str, Any]) -> int:
 def _require_cache(
     component: str,
     cache: Mapping[str, Any],
+    *,
+    current_git_head: str,
 ) -> None:
     if component == "critic":
         _require(
@@ -247,6 +249,23 @@ def _require_cache(
         and cache.get("evaluation_outcomes_accessed") is False,
         f"{component} cache reports a protected outcome read",
     )
+    expected_authorization_status = (
+        "XEDITCRITIC_V4_CACHE_LAUNCH_AUTHORIZED"
+        if component == "critic"
+        else "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED"
+    )
+    _require(
+        str(cache.get("git_head")) == str(current_git_head)
+        and cache.get("cache_launch_authorization_status")
+        == expected_authorization_status
+        and isinstance(cache.get("physical_gpu_index"), int)
+        and not isinstance(cache.get("physical_gpu_index"), bool)
+        and int(cache["physical_gpu_index"]) in {0, 1, 2, 3, 4, 5}
+        and bool(str(cache.get("cuda_device_name", "")))
+        and cache.get("forward_precision") == "BF16"
+        and cache.get("cpu_fallback") is False,
+        f"{component} cache launch provenance is absent or stale",
+    )
 
 
 def build_preflight_authorization_v4(
@@ -261,7 +280,7 @@ def build_preflight_authorization_v4(
     _require_common_barriers(
         c3_reference, a100_audit, current_git_head=current_git_head
     )
-    _require_cache(component, cache)
+    _require_cache(component, cache, current_git_head=current_git_head)
     prefix = "XEDITCRITIC" if component == "critic" else "XEDITSETFLOW"
     cache_barrier = (
         "bottom_six_cache_terminal_complete"
@@ -299,7 +318,7 @@ def build_screen_launch_authorization_v4(
     _require_common_barriers(
         c3_reference, a100_audit, current_git_head=current_git_head
     )
-    _require_cache(component, cache)
+    _require_cache(component, cache, current_git_head=current_git_head)
     run_ids = [str(row["run_id"]) for row in screen_config["required_screen_runs"]]
     common = {
         "all_five_c3_jobs_terminal": True,

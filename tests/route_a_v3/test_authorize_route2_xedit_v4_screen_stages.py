@@ -72,6 +72,12 @@ def _critic_cache():
         "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
         "raw_sequence_payload_written": 0,
         "label_or_outcome_payload_written": 0,
+        "git_head": HEAD,
+        "cache_launch_authorization_status": "XEDITCRITIC_V4_CACHE_LAUNCH_AUTHORIZED",
+        "physical_gpu_index": 0,
+        "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+        "forward_precision": "BF16",
+        "cpu_fallback": False,
         "development_test_outcomes_accessed": False,
         "evaluation_outcomes_accessed": False,
     }
@@ -90,6 +96,12 @@ def _flow_cache():
         "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
         "raw_sequence_payload_written": 0,
         "outcome_value_access_count": 0,
+        "git_head": HEAD,
+        "cache_launch_authorization_status": "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED",
+        "physical_gpu_index": 0,
+        "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+        "forward_precision": "BF16",
+        "cpu_fallback": False,
         "development_test_outcomes_accessed": False,
         "evaluation_outcomes_accessed": False,
     }
@@ -300,6 +312,22 @@ def test_preflight_authorization_rejects_wrong_cache_identity() -> None:
     with pytest.raises(Exception, match="not terminal and isolated"):
         build_preflight_authorization_v4(
             "setflow", _c3(), _a100(), flow_cache, current_git_head=HEAD
+        )
+
+
+def test_preflight_authorization_rejects_cache_without_current_launch_provenance() -> None:
+    legacy = _critic_cache()
+    del legacy["cache_launch_authorization_status"]
+    with pytest.raises(Exception, match="launch provenance"):
+        build_preflight_authorization_v4(
+            "critic", _c3(), _a100(), legacy, current_git_head=HEAD
+        )
+
+    stale = _flow_cache()
+    stale["git_head"] = "b" * 40
+    with pytest.raises(Exception, match="launch provenance"):
+        build_preflight_authorization_v4(
+            "setflow", _c3(), _a100(), stale, current_git_head=HEAD
         )
 
 
