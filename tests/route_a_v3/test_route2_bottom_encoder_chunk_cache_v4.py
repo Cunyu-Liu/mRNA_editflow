@@ -112,11 +112,22 @@ def test_v4_cache_identity_binds_encoder_revision_width_and_local_policy() -> No
         payload,
         expected_model_id="fixed-mrnabert",
         expected_record_count=1,
+        expected_unique_sequence_count=2,
         expected_embedding_width=4,
     )
     assert identity["chunk_length"] == 1000
     assert identity["chunk_overlap"] == 64
     assert identity["local_context_radius"] == 32
+    assert identity["unique_sequence_count"] == 2
+
+    with pytest.raises(FrozenBottomEncoderChunkCacheV4Error, match="unique sequence"):
+        require_frozen_bottom_encoder_chunk_cache_identity_v4(
+            payload,
+            expected_model_id="fixed-mrnabert",
+            expected_record_count=1,
+            expected_unique_sequence_count=3,
+            expected_embedding_width=4,
+        )
 
     wrong_revision = copy.deepcopy(payload)
     wrong_revision["model_id"] = "another-model"
@@ -125,6 +136,7 @@ def test_v4_cache_identity_binds_encoder_revision_width_and_local_policy() -> No
             wrong_revision,
             expected_model_id="fixed-mrnabert",
             expected_record_count=1,
+            expected_unique_sequence_count=2,
             expected_embedding_width=4,
         )
     wrong_radius = copy.deepcopy(payload)
@@ -134,6 +146,7 @@ def test_v4_cache_identity_binds_encoder_revision_width_and_local_policy() -> No
             wrong_radius,
             expected_model_id="fixed-mrnabert",
             expected_record_count=1,
+            expected_unique_sequence_count=2,
             expected_embedding_width=4,
         )
 

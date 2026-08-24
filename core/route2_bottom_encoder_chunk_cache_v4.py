@@ -354,6 +354,7 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
     *,
     expected_model_id: str,
     expected_record_count: int,
+    expected_unique_sequence_count: int,
     expected_embedding_width: int = 768,
 ) -> dict[str, Any]:
     """Bind a valid tensor cache to the frozen V4 encoder and chunk policy."""
@@ -361,6 +362,11 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
     validate_frozen_bottom_encoder_chunk_cache_v4(payload)
     _require(str(payload.get("model_id")) == str(expected_model_id), "bottom-six cache mRNABERT revision changed")
     _require(len(payload["record_ids"]) == int(expected_record_count), "bottom-six cache record count changed")
+    _require(
+        int(payload["sequence_lengths"].numel())
+        == int(expected_unique_sequence_count),
+        "bottom-six cache unique sequence count changed",
+    )
     _require(int(payload.get("embedding_width", -1)) == int(expected_embedding_width), "bottom-six cache embedding width changed")
     _require(payload.get("frozen_encoder_blocks") == [0, 1, 2, 3, 4, 5], "bottom-six cache frozen block scope changed")
     _require(payload.get("trainable_encoder_blocks") == [6, 7, 8, 9, 10, 11], "bottom-six cache upper block scope changed")
@@ -380,6 +386,7 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
     return {
         "model_id": str(payload["model_id"]),
         "record_count": len(payload["record_ids"]),
+        "unique_sequence_count": int(payload["sequence_lengths"].numel()),
         "embedding_width": int(payload["embedding_width"]),
         "frozen_encoder_blocks": list(payload["frozen_encoder_blocks"]),
         "trainable_encoder_blocks": list(payload["trainable_encoder_blocks"]),

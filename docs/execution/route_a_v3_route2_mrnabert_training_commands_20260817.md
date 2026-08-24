@@ -3917,3 +3917,8 @@ V3.3.2 96/96 PASS，compile/diff-check PASS。默认Python3.9不满足项目版�
 计作正式路径失败、也未触发兼容性改写。没有GPU/cache/preflight/optimizer执行，protected read=0；A100验证与
 下一C3检查仍分别等待terminal barrier和本地00:44:44窗口。审计：
 `audits/route_a_v3_route2_xedit_v4_frozen_cache_identity_binding_v1.json`。
+
+补充核验：Critic bottom-six实际payload必须包含精确43,730个unique sequence entries；该值与model revision、
+record count、width及chunk policy一起进入preflight/terminal identity receipt。正确Python3.13下focused25/25、
+V3.3.2 96/96 PASS；没有A100执行、optimizer或protected read。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_unique_sequence_identity_binding_v1.json`。

@@ -355,6 +355,7 @@ def run(
         cache_payload,
         expected_model_id=str(config["model_id"]),
         expected_record_count=int(config["data_geometry"]["expected_record_count"]),
+        expected_unique_sequence_count=43730,
         expected_embedding_width=int(config["architecture"]["pretrained_width"]),
     )
     cache = FrozenBottomEncoderChunkCacheViewV4(

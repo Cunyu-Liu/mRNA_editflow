@@ -2925,3 +2925,8 @@ training summary保留identity。错误model revision或radius会在formal prefl
 正确Python3.13下双cache focused35/35、完整Critic V4 108/108、完整SetFlow V4 67/67、精确V3.3.2
 96/96、compile/diff-check PASS。未materialize cache、preflight、screen或optimizer，protected read=0。
 审计：`audits/route_a_v3_route2_xedit_v4_frozen_cache_identity_binding_v1.json`。
+
+Critic实际bottom-six payload的identity receipt进一步绑定`sequence_lengths.numel()==43,730`，不再只在sidecar
+summary核对unique sequence count；preflight和trainer使用同一断言并把该值写入receipt。定向25/25、精确
+V3.3.2 96/96、compile/diff-check PASS；未执行cache/preflight/optimizer或protected read。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_unique_sequence_identity_binding_v1.json`。
