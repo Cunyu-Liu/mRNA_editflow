@@ -3373,3 +3373,11 @@ clip和fused AdamW step，记录进程内peak allocation，并精确核对full/s
 barrier。focused=3/3、combined SetFlow V4=24/24、精确V3.3.2=96/96、compile/JSON/diff-check PASS；尚未
 执行preflight或启动screen，Validation metric/Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_preflight_runner_v1.json`。
+
+## 18:44 C3 five-run long-interval health（2026-08-24）
+
+本地18:41:39按既有时钟偏移确认越过窗口后，远端18:44:05只读alive/terminal/failure：五项C3作业均
+alive，elapsed 56,096–56,906秒，无terminal/failure且无screen gate。本轮CUDA子查询发生awk引号语法失败，
+因此不报告新的CUDA快照，也不立即补查；最近有效CUDA证据仍为17:43:42。未读stdout/stderr或active metric，
+A100 current-HEAD sync继续等待。下一远端窗口≥19:44:05，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_184405.json`。

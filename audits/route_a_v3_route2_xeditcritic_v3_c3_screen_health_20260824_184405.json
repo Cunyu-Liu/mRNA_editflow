@@ -1,0 +1,84 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_health.v1",
+  "status": "ALL_FIVE_C3_SCREEN_JOBS_ALIVE_NO_TERMINAL_ARTIFACT_CUDA_SUBQUERY_FAILED",
+  "local_time_immediately_before_ssh": "2026-08-24T18:41:39+08:00",
+  "remote_observed_at": "2026-08-24T18:44:05+08:00",
+  "observed_remote_minus_local_seconds": 146,
+  "previous_remote_next_check_not_before": "2026-08-24T18:43:42+08:00",
+  "previous_window_crossed_before_ssh": true,
+  "jobs": [
+    {
+      "run_id": "c3",
+      "pid": 2443206,
+      "physical_gpu_index": 3,
+      "alive": true,
+      "process_state": "S",
+      "elapsed_seconds": 56906,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false
+    },
+    {
+      "run_id": "c3_source_only",
+      "pid": 2443207,
+      "physical_gpu_index": 0,
+      "alive": true,
+      "process_state": "R",
+      "elapsed_seconds": 56906,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false
+    },
+    {
+      "run_id": "c3_edit_metadata_only",
+      "pid": 2443208,
+      "physical_gpu_index": 5,
+      "alive": true,
+      "process_state": "R",
+      "elapsed_seconds": 56906,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false
+    },
+    {
+      "run_id": "c3_no_candidate_sequence",
+      "pid": 2529140,
+      "physical_gpu_index": 1,
+      "alive": true,
+      "process_state": "R",
+      "elapsed_seconds": 56478,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false
+    },
+    {
+      "run_id": "c3_candidate_bundle_permutation",
+      "pid": 2592082,
+      "physical_gpu_index": 2,
+      "alive": true,
+      "process_state": "R",
+      "elapsed_seconds": 56096,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false
+    }
+  ],
+  "screen_gate_present": false,
+  "cuda_observation": {
+    "new_snapshot_obtained": false,
+    "reason": "REMOTE_AWK_QUOTING_SYNTAX_FAILURE_AFTER_ALIVE_TERMINAL_CHECK",
+    "immediate_recheck_performed": false,
+    "last_valid_cuda_snapshot_remote_time": "2026-08-24T17:43:42+08:00",
+    "last_valid_cuda_snapshot_memory_mib_range": [2120, 2190],
+    "inference": "NO_NEW_CUDA_CLAIM_FROM_THIS_WINDOW"
+  },
+  "monitoring_policy": {
+    "stdout_or_stderr_read": false,
+    "active_curve_or_metric_read": false,
+    "terminal_or_failure_content_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0,
+    "a100_current_head_sync_performed": false,
+    "next_remote_check_not_before": "2026-08-24T19:44:05+08:00",
+    "estimated_next_local_check_not_before_using_latest_offset": "2026-08-24T19:41:39+08:00"
+  },
+  "repository": {
+    "a100_launch_head": "4047f550",
+    "local_head_before_record_commit": "cd89804"
+  }
+}

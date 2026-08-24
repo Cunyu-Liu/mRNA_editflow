@@ -2236,6 +2236,17 @@ preflight focused=3/3、combined SetFlow V4 focused=24/24、精确V3.3.2=96/96�
 preflight executed=false、screen optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_preflight_runner_v1.json`。
 
+## 18:44 C3 five-run long-interval health（2026-08-24）
+
+本轮SSH前最后一步本地时间18:41:39，按上一轮远端快152秒校准已越过18:43:42；远端实际时间18:44:05，
+最新偏移为146秒。C3 full和四controls全部alive，elapsed 56,096–56,906秒，五项均无terminal/failure，
+screen gate不存在。未读取stdout/stderr、active curve、metric或terminal内容。
+
+本轮CUDA子查询因远端awk引号语法失败，未取得新的显存快照；不立即补查、不从进程alive推断CUDA residency。
+最近一次有效CUDA证据仍是17:43:42的2,120–2,190MiB。A100 current-HEAD sync继续禁止，下一统一远端窗口
+不早于19:44:05（按最新偏移估算本地19:41:39）。optimizer attempts不变，Development TEST/new Evaluation
+outcome read=0。审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_184405.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
