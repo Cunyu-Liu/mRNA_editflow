@@ -1718,6 +1718,18 @@ lr3e-4/weight decay1e-4、clip1.0，final pass8固定checkpoint。本项不新�
 旧C3 barrier约束。protected outcome追加读取=0。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_target_contract_v1.json`。
 
+## XEditFlow V4 source-level value state/rollout schema（2026-08-24）
+
+已将value target合同接到V4 source-level TRAIN数据：每个按词典序排列的unique source复用SetFlow V4的EMPTY、
+两个PARTIAL及COMPLETED_OR_STRUCTURAL四state；mode固定为`(source_index*4+state_slot)%8`，全局八mode计数差
+不超过1。每个row显式携带mode、budget、endpoint与cache identity，不读取label/outcome。
+
+rollout/critic score schema要求state至terminal全程保持mode，保留structural exhaustion，不伪造STOP；trunk/mode
+forward分别记录，三critic seeds固定为20260908/09/10且study-neutral。mode drift、seed、state/rollout对齐或受保护
+字段污染均硬失败。本项未materialize state或rollout，未加载critic，未新增attempt。新增/相邻=7/7、完整
+XEditFlow/guidance=187/187、V3.3.2=96/96、compile/diff-check PASS；A100测试仍受C3 barrier约束，
+protected read=0。审计：`audits/route_a_v3_route2_xeditflow_v4_value_state_rollout_schema_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

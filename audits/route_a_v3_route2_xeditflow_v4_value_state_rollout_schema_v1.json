@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_value_state_rollout_schema_audit.v1",
+  "status": "IMPLEMENTED_NOT_MATERIALIZED_OR_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "core": "core/route2_xeditflow_value_rollouts_v4.py",
+    "test": "tests/route_a_v3/test_route2_xeditflow_value_rollouts_v4.py"
+  },
+  "state_cohort": {
+    "split": "TRAIN_ONLY",
+    "unit": "UNIQUE_XEDITSETFLOW_V4_SOURCE",
+    "states_per_source": 4,
+    "state_pass_index": 0,
+    "source_order": "LEXICOGRAPHIC_SOURCE_ID",
+    "trajectory_mode_assignment": "(SOURCE_INDEX*4+STATE_SLOT)%8",
+    "global_mode_count_difference_maximum": 1,
+    "outcome_values_used": false
+  },
+  "rollout_contract": {
+    "rollouts_per_state_mode": 8,
+    "mode_fixed_from_state_to_terminal": true,
+    "structural_budget_exhaustion_preserved": true,
+    "trunk_and_mode_forward_counts_separate": true,
+    "critic_seeds": [20260908, 20260909, 20260910],
+    "study_neutral": true,
+    "independent_evaluator_used": false
+  },
+  "verification": {
+    "new_and_adjacent_tests": "7/7 PASS",
+    "all_xeditflow_and_guidance_tests": "187/187 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "state_artifact_materialized": false,
+    "rollout_started": false,
+    "critic_scoring_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

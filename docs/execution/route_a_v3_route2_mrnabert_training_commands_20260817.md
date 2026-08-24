@@ -3630,3 +3630,13 @@ guidance protocol现固定source-level四state的平衡mode assignment，以及8
 本地新增/相邻15/15，XEditFlow/guidance 184/184，精确V3.3.2 cohort 96/96，compile/JSON/diff-check PASS。
 没有materialize target、没有训练value、没有授权guidance，protected read=0；A100 current-HEAD测试等待五个旧C3
 作业terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_target_contract_v1.json`。
+
+## XEditFlow V4 source-level value state/rollout schema（2026-08-24）
+
+`route2_xeditflow_value_rollouts_v4.py`现从每个unique TRAIN source的四个SetFlow V4 state生成显式state-mode rows，
+mode按冻结词典序公式平衡分配。K=8 rollout的seed、budget、structural cause、endpoint和mode provenance均可重放；
+terminal critic bundle只接受20260908/09/10三名study-neutral成员并拒绝mode drift。
+
+本地新增/相邻7/7，XEditFlow/guidance 187/187，精确V3.3.2 96/96，compile/diff-check PASS。未materialize
+大artifact或执行GPU/critic/optimizer，protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_state_rollout_schema_v1.json`。
