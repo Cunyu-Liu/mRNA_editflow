@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_preflight_runner.v1",
+  "recorded_at_local": "2026-08-24T18:36:14+08:00",
+  "status": "XEDITSETFLOW_V4_PREFLIGHT_RUNNER_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "00443f8",
+  "implementation": {
+    "script": "scripts/route_a_v3/preflight_route2_xeditsetflow_v4.py",
+    "test": "tests/route_a_v3/test_preflight_route2_xeditsetflow_v4.py",
+    "config": "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json"
+  },
+  "preflight_scope": {
+    "train_and_validation_projection_identity_and_counts": true,
+    "source_level_unique_terminal_inventory": true,
+    "expected_validation_source_count": 891,
+    "source_cache_coverage_and_length_alignment": true,
+    "frozen_outcome_free_endpoint_vocab": true,
+    "formal_full_and_single_parameter_counts": true,
+    "train_geometry_selection": "TOP_EIGHT_BY_SEQUENCE_LENGTH_EDIT_COUNT_SOURCE_ID",
+    "physical_and_effective_state_batch": 32,
+    "full_model_bf16_forward_backward_clip_and_fused_adamw_step": true,
+    "peak_memory_measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
+    "cpu_fallback": false
+  },
+  "authorization": {
+    "same_git_head_required": true,
+    "all_five_c3_terminal_and_read_once_required": true,
+    "a100_current_head_focused_and_v332_tests_required": true,
+    "source_token_cache_terminal_required": true,
+    "checked_before_output_artifact_creation": true
+  },
+  "verification": {
+    "preflight_focused_tests": "3/3 PASS",
+    "combined_setflow_v4_focused_tests": "24/24 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_execution_and_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "preflight_executed": false,
+    "screen_optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -3361,3 +3361,15 @@ source cache/data audit与parameter preflight PASS，且protected reads均为0�
 SetFlow V4 focused=21/21、精确V3.3.2=96/96、compile/JSON/diff-check PASS；尚未启动optimizer或Validation
 generation。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_runtime_barrier_schedule_v1.json`。
+
+## XEditSetFlow V4 source/capacity/BF16 preflight runner（2026-08-24）
+
+已实现`preflight_route2_xeditsetflow_v4.py`，但C3 barrier解除前不执行。runner核对TRAIN/VALIDATION
+projection、891-source Validation cohort、source-level candidate inventory、冻结endpoint vocab及source cache；
+从TRAIN按length/edit-count/ID选八个高几何source形成32 states，正式full执行CUDA/BF16 forward/backward、
+clip和fused AdamW step，记录进程内peak allocation，并精确核对full/single容量。
+
+入口在写preflight/data-audit artifact前要求同一HEAD的C3 terminal/read-once、A100 focused/V3.3.2及cache
+barrier。focused=3/3、combined SetFlow V4=24/24、精确V3.3.2=96/96、compile/JSON/diff-check PASS；尚未
+执行preflight或启动screen，Validation metric/Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_preflight_runner_v1.json`。

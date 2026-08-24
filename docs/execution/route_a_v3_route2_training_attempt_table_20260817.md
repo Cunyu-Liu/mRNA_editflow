@@ -2221,6 +2221,21 @@ runtime focused=5/5、combined SetFlow V4 focused=21/21、精确V3.3.2=96/96、c
 尚未创建run目录或optimizer attempt，Validation generation read=false，Development TEST/new Evaluation
 outcome read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_runtime_barrier_schedule_v1.json`。
 
+## XEditSetFlow V4 source/capacity/BF16 preflight runner（2026-08-24）
+
+本项不是screen optimizer attempt，不新增中央训练尝试行。preflight runner已实现但受C3五项terminal/read-once与
+A100 current-HEAD tests屏障约束，尚未执行。它只读取TRAIN/VALIDATION projection，生成逐source terminal-set
+inventory并核对Validation恰为891 sources、冻结outcome-free vocab及source-token cache覆盖/长度。
+
+内存cohort仅按TRAIN source的sequence length、最大edit count和source ID选择八个高几何负荷source，构造
+8×4=32 states。正式full执行真实CUDA/BF16 forward、checkpointed backward、gradient clipping及fused AdamW
+step以物化optimizer state，并用进程内`max_memory_allocated`记录峰值；同时精确实例化single-mode容量。该过程
+不读取Validation生成指标，不使用critic/evaluator，不CPU fallback。
+
+preflight focused=3/3、combined SetFlow V4 focused=24/24、精确V3.3.2=96/96、compile/JSON/diff-check PASS。
+preflight executed=false、screen optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_preflight_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
