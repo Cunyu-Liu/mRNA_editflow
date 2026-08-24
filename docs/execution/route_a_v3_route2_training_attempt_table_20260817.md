@@ -1730,6 +1730,17 @@ forward分别记录，三critic seeds固定为20260908/09/10且study-neutral。m
 XEditFlow/guidance=187/187、V3.3.2=96/96、compile/diff-check PASS；A100测试仍受C3 barrier约束，
 protected read=0。审计：`audits/route_a_v3_route2_xeditflow_v4_value_state_rollout_schema_v1.json`。
 
+## XEditFlow V4 formal value trainer（2026-08-24）
+
+正式value trainer现只接受V4 target schema、精确base-flow seeds 20260912/13/14及完整八mode覆盖；必须先通过
+Critic/SetFlow联合readiness，CUDA device只能为物理GPU0–5且使用BF16/fused AdamW，无CPU fallback。训练预算固定
+8 passes、batch32、lr3e-4、weight decay1e-4、clip1.0，checkpoint只能取final pass8，不读任何Validation curve
+选epoch。运行时会写中央attempt、参数确实变化证据和进程内`max_memory_allocated`，但本项未调用runner。
+
+新增/相邻=7/7、完整XEditFlow/guidance=190/190、V3.3.2=96/96、compile/diff-check PASS；没有target、attempt、
+checkpoint或protected read，A100测试继续受旧C3 barrier约束。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_trainer_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

@@ -3640,3 +3640,12 @@ terminal critic bundle只接受20260908/09/10三名study-neutral成员并拒绝m
 本地新增/相邻7/7，XEditFlow/guidance 187/187，精确V3.3.2 96/96，compile/diff-check PASS。未materialize
 大artifact或执行GPU/critic/optimizer，protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_state_rollout_schema_v1.json`。
+
+## XEditFlow V4 formal value trainer（2026-08-24）
+
+`train_route2_xeditflow_value_v4.py`已实现联合readiness后的CUDA/BF16 mode-conditioned scalar-value训练。
+config硬锁八mode target覆盖、seeds20260912/13/14、8 passes、batch32、AdamW 3e-4、final-pass-8及GPU0–5；
+formal run将登记中央attempt、参数更新和进程内peak VRAM。当前未授权、未执行、无CPU fallback或protected read。
+
+本地新增/相邻7/7，XEditFlow/guidance 190/190，精确V3.3.2 96/96，compile/diff-check PASS；A100 current-HEAD
+测试等待旧C3 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_trainer_v1.json`。
