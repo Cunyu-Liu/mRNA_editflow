@@ -3543,3 +3543,19 @@ atomic TEST runner新增不含metrics的`posttest_authorization_receipt.json`。
 中不保留atomic TEST result路径，从而避免refit/LOSO重复读取TEST outcome。posttest focused=25/25、完整Critic
 V4=85/85、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前全部post-TEST入口未执行，protected read=0。
 审计：`audits/route_a_v3_route2_xeditcritic_v4_posttest_trainer_v1.json`。
+
+## XEditFlow V4 guidance authorization与fixed-mode势函数边界（2026-08-24）
+
+已实现V4 guidance的联合授权、一次性18组合screen选择门和trajectory-mode-aware势函数核心。授权只接受
+`CRITIC_V4_READY_FOR_GUIDANCE`与`XEDITSETFLOW_V4_G0_READY`的精确合取；Critic原子TEST access count只向前
+携带为1，guidance阶段不重开TEST，不授权new final Evaluation。screen seed前瞻固定为首个SetFlow confirmation
+seed `20260912`，选择顺序继续严格为closed NDCG→regret→independent evaluator margin→open recovery→compute。
+
+`SetFlowMixtureStateV4`将8-mode ID纳入SMC state；每个action及stratified resampling都复制完整mode state，禁止
+trajectory内改mode。guided rate只复用单一scalar potential difference，不存在free action-ratio head。
+`MatchedComputeRecordV4`分别计费trunk、mode、value与三名critic member并执行320 forward-equivalents/source硬上限。
+
+本项不新增optimizer attempt、不创建guidance授权或运行组合。新增/相邻focused=24/24、完整本机XEditFlow focused
+=131/131、精确V3.3.2=96/96，compile/JSON PASS。Development TEST在本阶段追加读取=0，new Evaluation
+outcome read=0；A100 current-HEAD测试仍等待五个旧C3 launch-head jobs自然terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_guidance_authorization_invariants_v1.json`。

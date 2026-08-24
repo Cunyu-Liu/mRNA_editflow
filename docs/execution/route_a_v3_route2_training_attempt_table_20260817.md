@@ -1678,6 +1678,14 @@ C2 full/F3 training/C2 source-only分别在12:00:54/12:04:56/12:11:01保持RUNNI
 7,933/9,917/7,695秒，均无terminal/failure；下一窗口分别为12:30:54/12:34:56/12:41:01。未读active
 metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
 
+## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
+
+本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此
+中央optimizer attempt行数不变。只有`CRITIC_V4_READY_FOR_GUIDANCE`和`XEDITSETFLOW_V4_G0_READY`同时成立才可
+生成authorization；screen固定使用seed20260912与18个预注册组合。当前authorization不存在、screen executed=0，
+Development TEST outcome追加读取=0、new Evaluation outcome read=0。完整XEditFlow focused=131/131、精确
+V3.3.2=96/96；A100 current-HEAD验证继续受五个旧C3 launch-head jobs terminal barrier约束。
+
 ## 13:01–13:13 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:01:35/13:05:49/13:13:04保持RUNNING，elapsed分别为

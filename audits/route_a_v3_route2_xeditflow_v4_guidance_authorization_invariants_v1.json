@@ -1,0 +1,57 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_authorization_invariants.v1",
+  "recorded_at_local": "2026-08-24T20:09:46+08:00",
+  "status": "XEDITFLOW_V4_GUIDANCE_AUTHORIZATION_AND_MODE_INVARIANTS_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "8679c0fa123c0495a36b7a4f98b7d4959ecc417c",
+  "implementation": {
+    "protocol": "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json",
+    "gate": "core/route2_xeditflow_gate_v4.py",
+    "mode_guidance_core": "core/route2_xeditflow_guidance_v4.py",
+    "authorization_runner": "scripts/route_a_v3/authorize_route2_xeditflow_v4_guidance.py",
+    "focused_test": "tests/route_a_v3/test_route2_xeditflow_guidance_v4.py"
+  },
+  "authorization": {
+    "required_critic_status": "CRITIC_V4_READY_FOR_GUIDANCE",
+    "required_setflow_status": "XEDITSETFLOW_V4_G0_READY",
+    "joint_conjunction_required": true,
+    "base_flow_screen_seed": 20260912,
+    "guidance_grid_combination_count": 18,
+    "development_test_reopened": false,
+    "new_final_evaluation_authorized": false
+  },
+  "guidance_invariants": {
+    "single_scalar_potential_difference_only": true,
+    "free_action_ratio_head_allowed": false,
+    "setflow_mode_count": 8,
+    "mode_selected_at_root": true,
+    "mode_fixed_within_trajectory": true,
+    "resampling_copies_complete_mode_state": true,
+    "particles": 32,
+    "candidate_cap": 32,
+    "forward_equivalent_ceiling_per_source": 320
+  },
+  "compute_accounting": {
+    "trunk_forwards_separate": true,
+    "mode_forwards_separate": true,
+    "value_forwards_separate": true,
+    "each_of_three_critic_members_separate": true,
+    "wall_time_and_peak_vram_recorded": true
+  },
+  "verification": {
+    "new_and_adjacent_guidance_focused": "24/24 PASS",
+    "complete_local_xeditflow_focused_cohort": "131/131 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "guidance_authorization_created": false,
+    "value_or_guidance_optimizer_attempts_started": 0,
+    "guidance_screen_combinations_executed": 0,
+    "development_test_outcome_reads_after_atomic_test": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_boundary": "GUIDANCE AUTHORIZATION AND STATE/COMPUTE INVARIANTS ONLY; NO V4 GUIDANCE OR PERFORMANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
