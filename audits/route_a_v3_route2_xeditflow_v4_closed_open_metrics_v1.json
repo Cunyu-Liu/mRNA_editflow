@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_closed_open_metrics_audit.v1",
+  "status": "IMPLEMENTED_NOT_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "exact_mode_rate_map": "core/route2_xeditflow_smc_runtime_v4.py::scalar_potential_mode_rate_maps_v4",
+    "closed_runner": "scripts/route_a_v3/evaluate_route2_xeditflow_closed_neighborhood_v4.py",
+    "open_metrics": "scripts/route_a_v3/evaluate_route2_xeditflow_open_generation_v4.py",
+    "config_producer": "scripts/route_a_v3/prepare_route2_xeditflow_v4_value_configs.py"
+  },
+  "closed_benchmark": {
+    "pool": "DEVELOPMENT_VALIDATION",
+    "analysis_unit": "SOURCE",
+    "maximum_edit_count": 5,
+    "maximum_permutation_paths_per_mode": 120,
+    "all_edit_permutations_exact": true,
+    "fixed_latent_mode_count": 8,
+    "terminal_probability": "SUM_MODE ROOT_MODE_PRIOR TIMES SUM_EDIT_PERMUTATION PATH_PROBABILITY_GIVEN_MODE",
+    "identity_candidate_supported": true,
+    "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+    "root_mode_prior_in_wall_time_and_vram": true,
+    "value_child_forward_batch_size": 32,
+    "all_value_child_batches_counted": true,
+    "critic_used": false
+  },
+  "open_benchmark": {
+    "candidate_support": "OPEN_GENERATED_SUPPORT",
+    "unknown_outcome_policy": "UNKNOWN_NOT_ZERO",
+    "ranking_input": "GENERATION_SCORE_NOT_CRITIC_SELF_SCORE",
+    "measured_top_k": 10,
+    "metrics": [
+      "SOURCE_MACRO_CANDIDATE_RECOVERY",
+      "SOURCE_MACRO_TOP_K_RECOVERY",
+      "SOURCE_MACRO_UNIQUE_CANDIDATE_RATE",
+      "HARD_LEGALITY_AND_BUDGET_FAILURES"
+    ]
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "20/20 PASS",
+    "all_xeditflow_and_guidance_tests": "228/228 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "closed_validation_outcomes_read": false,
+    "formal_open_or_closed_evaluation_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

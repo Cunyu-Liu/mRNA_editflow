@@ -3758,3 +3758,14 @@ outcome。审计：`audits/route_a_v3_route2_xeditflow_v4_candidate_critic_score
 本轮未读active metric或日志；CUDA显存过滤因列顺序错误未返回匹配行，未立即补查且不据此推断CUDA状态。
 下一远端/本地窗口分别为22:46:08/22:43:35。protected read=0，A100 current-HEAD sync仍受旧作业terminal
 barrier约束。审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_214608.json`。
+
+## XEditFlow V4 exact closed与open-support metrics（2026-08-24）
+
+`evaluate_route2_xeditflow_closed_neighborhood_v4.py`对每个measured terminal candidate计算8个固定mode内的
+order-invariant probability，再按root mode prior精确边缘化；最多5 edits/120 permutations per mode，source为统计
+单位，undefined不填0。所有legal child potentials按batch32分块，避免长序列OOM并逐forward计费。
+
+`evaluate_route2_xeditflow_open_generation_v4.py`保持unknown generated outcome为unknown，使用generation score报告
+recovery/top-k/unique/G0，不使用critic self-score排序。本地focused/相邻20/20、XEditFlow/guidance 228/228、
+V3.3.2 96/96 PASS；未执行Validation metric或protected read。审计：
+`audits/route_a_v3_route2_xeditflow_v4_closed_open_metrics_v1.json`。

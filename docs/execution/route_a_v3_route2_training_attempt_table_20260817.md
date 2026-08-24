@@ -2723,3 +2723,16 @@ active curve、terminal content、Development TEST或Evaluation outcome。
 本轮CUDA query因输出列顺序与过滤假设不一致而没有捕获显存行；不得把空输出解释为CUDA缺失，也未立即补查。
 下一远端窗口不早于22:46:08，对应本地不早于22:43:35。A100 current-HEAD sync继续等待五项terminal。
 审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_214608.json`。
+
+## XEditFlow V4 closed-mode marginalization与open metrics（2026-08-24）
+
+V4 closed runner现对每个合法measured candidate先在每个固定latent mode内精确枚举最多5 edits的全部permutations，
+再用outcome-free root mode prior对8个conditional terminal probabilities加权求和。undefined source排除而不填0；
+identity STOP candidate可定义。为避免长序列数千legal children造成OOM，value children固定batch32并逐批计费；
+root prior也纳入wall/VRAM与forward记录。
+
+open metrics沿用unknown-not-zero语义，报告source-macro recovery/top-k/unique及G0 failures，排序只用generation
+score，不让diagnostic critic self-score接管。18-cell configs均已接线。本地focused/相邻20/20、完整XEditFlow/
+guidance 228/228、精确V3.3.2 96/96 PASS。未materialize config、未读取closed Validation outcome、未执行
+metric/optimizer，protected TEST/Evaluation read=0，claim不变；A100 current-HEAD测试等待旧C3 terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_closed_open_metrics_v1.json`。

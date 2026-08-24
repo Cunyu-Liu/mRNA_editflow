@@ -282,6 +282,98 @@ def sample_mode_base_proposal_v4(
     return choices
 
 
+def scalar_potential_mode_rate_maps_v4(
+    state: FlowState,
+    rate_provider: Callable[
+        [Sequence[SetFlowMixtureStateV4]], Sequence[BatchedModeRateRowV4]
+    ],
+    value_provider: Callable[[Sequence[SetFlowMixtureStateV4]], Sequence[float]],
+    *,
+    beta_max: float,
+    mode_head_count: int = 8,
+    value_forward_batch_size: int = 32,
+) -> tuple[tuple[dict[LegalAction, float], ...], int]:
+    """Evaluate exact guided rates for all modes in one shared state batch."""
+
+    _require(state.terminal_cause is None, "V4 exact rate-map state is terminal")
+    _require(mode_head_count == 8, "V4 exact rate-map mode count differs")
+    _require(
+        value_forward_batch_size == 32,
+        "V4 exact rate-map value batch size differs",
+    )
+    hard_legal = tuple(legal_actions(state))
+    _require(bool(hard_legal), "V4 exact rate-map has no legal action")
+    current_states = [
+        SetFlowMixtureStateV4(state, mode_id)
+        for mode_id in range(mode_head_count)
+    ]
+    rows = list(rate_provider(current_states))
+    _require(
+        len(rows) == mode_head_count,
+        "V4 exact rate-map provider count differs",
+    )
+    value_states: list[SetFlowMixtureStateV4] = []
+    for mode_id, (current, row) in enumerate(
+        zip(current_states, rows, strict=True)
+    ):
+        _require(
+            row.trajectory_mode_id == mode_id
+            and row.actions == hard_legal
+            and len(row.rates) == len(hard_legal),
+            "V4 exact rate-map action or mode bundle differs",
+        )
+        value_states.append(current)
+        value_states.extend(
+            SetFlowMixtureStateV4(
+                apply_action(state, action), mode_id
+            )
+            for action in hard_legal
+        )
+    values: list[float] = []
+    value_forward_calls = 0
+    for start in range(0, len(value_states), value_forward_batch_size):
+        values.extend(
+            float(value)
+            for value in value_provider(
+                value_states[start : start + value_forward_batch_size]
+            )
+        )
+        value_forward_calls += 1
+    stride = len(hard_legal) + 1
+    _require(
+        len(values) == mode_head_count * stride
+        and all(math.isfinite(float(value)) for value in values),
+        "V4 exact rate-map scalar values differ",
+    )
+    budget = state.edit_count + state.remaining_budget
+    _require(budget in {1, 3, 5}, "V4 exact rate-map budget differs")
+    beta = float(
+        beta_schedule_v3(
+            torch.tensor(state.edit_count / budget, dtype=torch.float64),
+            beta_max=beta_max,
+        )
+    )
+    result = []
+    for mode_id, row in enumerate(rows):
+        offset = mode_id * stride
+        current_value = float(values[offset])
+        child_values = values[offset + 1 : offset + stride]
+        rates = {}
+        for action, base_rate, child_value in zip(
+            hard_legal, row.rates, child_values, strict=True
+        ):
+            rate = float(base_rate) * math.exp(
+                beta * (float(child_value) - current_value)
+            )
+            _require(
+                math.isfinite(rate) and rate > 0.0,
+                "V4 exact guided legal rate is invalid",
+            )
+            rates[action] = rate
+        result.append(rates)
+    return tuple(result), value_forward_calls
+
+
 def run_batched_mode_fixed_potential_smc_v4(
     root_state: FlowState,
     rate_provider: Callable[

@@ -29,6 +29,7 @@ from core.route2_xeditflow_smc_runtime_v4 import (
     combine_primary_and_replay_compute_v4,
     merge_smc_rounds_v4,
     run_batched_mode_fixed_potential_smc_v4,
+    scalar_potential_mode_rate_maps_v4,
 )
 
 
@@ -322,6 +323,52 @@ def test_v4_batched_smc_keeps_mode_and_separately_charges_networks() -> None:
     assert compute["value_forwards"] == 1
     assert compute["trajectory_count"] == 32
     assert compute["all_network_forwards_separately_charged"] is True
+
+
+def test_v4_exact_rate_map_batches_all_modes_and_uses_one_scalar_potential() -> None:
+    rate_calls = []
+    value_calls = []
+
+    def rates(states):
+        rate_calls.append(tuple(state.trajectory_mode_id for state in states))
+        return [
+            BatchedModeRateRowV4(
+                actions=tuple(legal_actions(state.flow_state)),
+                rates=tuple(
+                    float(state.trajectory_mode_id + 1)
+                    for _ in legal_actions(state.flow_state)
+                ),
+                trajectory_mode_id=state.trajectory_mode_id,
+            )
+            for state in states
+        ]
+
+    def values(states):
+        value_calls.append(tuple(state.trajectory_mode_id for state in states))
+        return [
+            float(
+                state.trajectory_mode_id
+                + int(
+                    state.flow_state.edit_count > 0
+                    or state.flow_state.terminal_cause is not None
+                )
+            )
+            for state in states
+        ]
+
+    maps, value_forward_calls = scalar_potential_mode_rate_maps_v4(
+        _root(), rates, values, beta_max=1.0
+    )
+    assert rate_calls == [tuple(range(8))]
+    assert len(value_calls) == 2
+    assert value_forward_calls == 2
+    assert len(maps) == 8
+    for mode, rate_map in enumerate(maps):
+        assert set(rate_map) == set(legal_actions(_root()))
+        assert all(
+            value == pytest.approx((mode + 1) * math.exp(0.25))
+            for value in rate_map.values()
+        )
 
 
 def test_v4_batched_smc_rejects_rate_provider_mode_drift() -> None:

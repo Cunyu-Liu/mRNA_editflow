@@ -31,6 +31,12 @@ from scripts.route_a_v3.score_route2_xeditflow_value_rollouts_v4 import (
 from scripts.route_a_v3.score_route2_xeditflow_candidates_v4 import (
     validate_candidate_score_config_v4,
 )
+from scripts.route_a_v3.evaluate_route2_xeditflow_closed_neighborhood_v4 import (
+    validate_closed_run_config_v4,
+)
+from scripts.route_a_v3.evaluate_route2_xeditflow_open_generation_v4 import (
+    validate_open_generation_config_v4,
+)
 from scripts.route_a_v3.run_route2_xeditflow_smc_v4 import (
     terminal_critic_forward_reservation_v4,
     validate_smc_run_config_v4,
@@ -422,6 +428,75 @@ def build_value_configs_v4(
             "new_final_evaluation_outcomes_accessed": False,
         }
         validate_candidate_score_config_v4(critic_config)
+        closed_output = output_root / "guidance_screen" / combination_id / "closed"
+        closed_config = {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_closed_neighborhood_config.v4"
+            ),
+            "critic_readiness_path": str(protocol["critic_readiness_path"]),
+            "setflow_confirmation_path": str(protocol["setflow_confirmation_path"]),
+            "setflow_runtime_config_path": str(
+                protocol["setflow_confirmation_runtime_config_paths"]["20260912"]
+            ),
+            "value_checkpoint_path": str(
+                value_output / value_id / "value_checkpoint.pt"
+            ),
+            "source_token_cache_path": str(protocol["source_token_cache_path"]),
+            "source_eligibility_manifest": str(protocol["source_eligibility_manifest"]),
+            "validation_projection_path": str(protocol["validation_projection_path"]),
+            "measured_neighborhood_path": str(protocol["measured_neighborhood_path"]),
+            "expected_source_count": 891,
+            "base_flow_training_seed": 20260912,
+            "kappa": kappa,
+            "temperature": temperature,
+            "beta_max": beta_max,
+            "method_id": smc_config["method_id"],
+            "potential_kind": "SOFT_VALUE",
+            "latent_mode_policy": (
+                "ROOT_PRIOR_WEIGHTED_SUM_OF_EIGHT_FIXED_MODE_TERMINAL_PROBABILITIES"
+            ),
+            "root_prior_forward_batch_size": 32,
+            "value_child_forward_batch_size": 32,
+            "pool_assignment": "DEVELOPMENT",
+            "split": "VALIDATION",
+            "maximum_enumerated_edits": 5,
+            "maximum_permutation_paths": 120,
+            "enumeration": "ALL_EDIT_PERMUTATIONS_EXACT_SUM",
+            "analysis_unit": "SOURCE",
+            "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+            "physical_gpu_index": rollout_gpu,
+            "device": f"cuda:{rollout_gpu}",
+            "output_dir": str(closed_output),
+            "independent_evaluator_used": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
+        validate_closed_run_config_v4(closed_config)
+        open_metric_output = smc_output / "generation_metrics.json"
+        open_metric_config = {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_open_generation_config.v4"
+            ),
+            "pool_assignment": "DEVELOPMENT",
+            "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+            "undefined_outcome_policy": "UNKNOWN_NOT_ZERO",
+            "source_eligibility_manifest": str(protocol["source_eligibility_manifest"]),
+            "candidate_path": str(
+                critic_output / "critic_scored_candidates.private.jsonl"
+            ),
+            "measured_neighborhood_path": str(protocol["measured_neighborhood_path"]),
+            "measured_top_k": 10,
+            "base_flow_training_seed": 20260912,
+            "kappa": kappa,
+            "temperature": temperature,
+            "beta_max": beta_max,
+            "method_id": smc_config["method_id"],
+            "critic_self_score_used_for_ranking": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+            "output_path": str(open_metric_output),
+        }
+        validate_open_generation_config_v4(open_metric_config)
         guidance_jobs.append(
             {
                 "combination_id": combination_id,
@@ -429,6 +504,8 @@ def build_value_configs_v4(
                 "value_id": value_id,
                 "smc_config": smc_config,
                 "critic_ensemble_config": critic_config,
+                "closed_config": closed_config,
+                "open_metric_config": open_metric_config,
             }
         )
     _require(len(guidance_jobs) == 18, "V4 guidance SMC job count differs")
@@ -486,6 +563,8 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
         value_paths.append(str(path))
     guidance_paths = []
     critic_paths = []
+    closed_paths = []
+    open_metric_paths = []
     for job in payload["guidance_jobs"]:
         path = output_dir / f"smc_{job['combination_id']}.json"
         path.write_text(
@@ -502,6 +581,19 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             encoding="utf-8",
         )
         critic_paths.append(str(critic_path))
+        closed_path = output_dir / f"closed_{job['combination_id']}.json"
+        closed_path.write_text(
+            json.dumps(job["closed_config"], indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        closed_paths.append(str(closed_path))
+        open_path = output_dir / f"open_metric_{job['combination_id']}.json"
+        open_path.write_text(
+            json.dumps(job["open_metric_config"], indent=2, sort_keys=True)
+            + "\n",
+            encoding="utf-8",
+        )
+        open_metric_paths.append(str(open_path))
     manifest = {
         key: value
         for key, value in payload.items()
@@ -518,6 +610,8 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     manifest["value_training_config_paths"] = value_paths
     manifest["guidance_smc_config_paths"] = guidance_paths
     manifest["guidance_critic_config_paths"] = critic_paths
+    manifest["guidance_closed_config_paths"] = closed_paths
+    manifest["guidance_open_metric_config_paths"] = open_metric_paths
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

@@ -147,6 +147,19 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
         for row in payload["guidance_jobs"]
     )
     assert all(
+        row["open_metric_config"]["method_id"]
+        == row["smc_config"]["method_id"]
+        and row["open_metric_config"]["critic_self_score_used_for_ranking"]
+        is False
+        for row in payload["guidance_jobs"]
+    )
+    assert all(
+        row["closed_config"]["method_id"] == row["smc_config"]["method_id"]
+        and row["closed_config"]["latent_mode_policy"]
+        == "ROOT_PRIOR_WEIGHTED_SUM_OF_EIGHT_FIXED_MODE_TERMINAL_PROBABILITIES"
+        for row in payload["guidance_jobs"]
+    )
+    assert all(
         row["critic_ensemble_config"]["kappa"] == row["combination"][0]
         and row["critic_ensemble_config"]
         ["critic_self_score_used_for_generation_or_selection"]
@@ -171,6 +184,8 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
     assert len(manifest["value_training_config_paths"]) == 6
     assert len(manifest["guidance_smc_config_paths"]) == 18
     assert len(manifest["guidance_critic_config_paths"]) == 18
+    assert len(manifest["guidance_closed_config_paths"]) == 18
+    assert len(manifest["guidance_open_metric_config_paths"]) == 18
     assert set(manifest["config_paths"]) == {
         "value_rollout.json",
         "value_critic_score.json",
