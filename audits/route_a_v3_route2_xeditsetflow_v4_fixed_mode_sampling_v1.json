@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_fixed_mode_sampling.v1",
+  "recorded_at_local": "2026-08-24T18:48:30+08:00",
+  "status": "XEDITSETFLOW_V4_FIXED_MODE_STRATIFIED_SAMPLING_IMPLEMENTED_NO_GENERATION",
+  "git_head_before_delivery": "66bcdfe",
+  "implementation": {
+    "core": "core/route2_xeditsetflow_sampling_v4.py",
+    "test": "tests/route_a_v3/test_route2_xeditsetflow_sampling_v4.py",
+    "config": "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json"
+  },
+  "allocation": {
+    "trajectories_per_source": 32,
+    "full_mode_count": 8,
+    "minimum_trajectory_per_mode": 1,
+    "full_remaining_largest_remainder_count": 24,
+    "single_mode_trajectory_count": 32,
+    "mode_fixed_for_entire_trajectory": true,
+    "mode_resampling_per_step": false,
+    "decoder_seed_base": 2026091101,
+    "common_validation_state_seed": 2026090301
+  },
+  "sampling": {
+    "hard_legal_mask_used_before_sampling": true,
+    "masked_action_probability": 0.0,
+    "replayable_per_trajectory_rng": true,
+    "duplicate_retry_or_rejection": false,
+    "mode_id_recordable_per_trajectory": true
+  },
+  "compute_accounting": {
+    "root_prior_trunk_forward_batches": true,
+    "trunk_forward_state_count": true,
+    "all_mode_head_forward_state_count": true,
+    "mode_head_cost_not_hidden": true
+  },
+  "verification": {
+    "sampling_focused_tests": "5/5 PASS",
+    "combined_setflow_v4_focused_tests": "33/33 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "generation_run_started": false,
+    "optimizer_attempt_started": false,
+    "critic_used": false,
+    "independent_evaluator_used": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

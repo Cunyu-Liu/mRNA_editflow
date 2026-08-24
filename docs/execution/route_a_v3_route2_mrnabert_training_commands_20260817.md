@@ -3393,3 +3393,14 @@ NLL、recovery或diversity。
 任何已登记attempt的技术失败原位更新FAILED。focused=4/4、combined SetFlow V4=28/28、精确V3.3.2=96/96、
 compile/diff-check PASS；尚未启动optimizer或读取Validation generation/Development TEST/Evaluation outcome。
 审计：`audits/route_a_v3_route2_xeditsetflow_v4_formal_training_runner_v1.json`。
+
+## XEditSetFlow V4 trajectory-fixed mode sampling（2026-08-24）
+
+`route2_xeditsetflow_sampling_v4.py`已实现32-trajectory固定预算：八mode先各1条，再按平滑prior的largest
+remainder分配24条；single-mode为32条mode0。mode ID全trajectory固定，hard legality先于采样，禁止duplicate
+retry/rejection，相同seed/mode可重放。
+
+root prior、trunk forward states/batches与全部mode-head state counts分别记账；decoder seed base固定
+2026091101。focused=5/5、combined SetFlow V4=33/33、精确V3.3.2=96/96、compile/JSON/diff-check PASS。
+尚未执行generation或读取protected outcome。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_fixed_mode_sampling_v1.json`。

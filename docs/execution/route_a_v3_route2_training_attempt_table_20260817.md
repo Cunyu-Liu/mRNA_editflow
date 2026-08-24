@@ -2264,6 +2264,21 @@ combined SetFlow V4 focused=28/28、精确V3.3.2=96/96、compile/diff-check PASS
 Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_formal_training_runner_v1.json`。
 
+## XEditSetFlow V4 trajectory-fixed mode sampling（2026-08-24）
+
+本项不运行generation或optimizer。已实现每source固定32 trajectories的mode分层：full先给8个mode各1条，再按
+平滑mode prior的largest remainder分配剩余24条；single-mode全部32条属于mode0。mode ID在trajectory开始前
+确定并贯穿所有SUB/STOP步骤，禁止逐步重采样。
+
+采样始终先应用hard legal mask，不拒绝重复candidate、不额外重试；相同seed/mode可重放。compute record分别
+累计root-prior与trajectory trunk forward batch/state，以及模型实际计算的全部mode-head state count，不能把
+一次trunk调用中8个mode head的代价隐藏。decoder seed base=2026091101，common NLL回放seed继续冻结为
+2026090301。
+
+sampling focused=5/5、combined SetFlow V4 focused=33/33、精确V3.3.2=96/96、compile/JSON/diff-check PASS。
+generation未启动，critic/evaluator使用=0，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_fixed_mode_sampling_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
