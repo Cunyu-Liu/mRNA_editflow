@@ -12,6 +12,18 @@ from core.route2_xeditcritic_gate_v3 import (
 )
 
 
+CONFIRMATION_SEEDS_V4 = (20260908, 20260909, 20260910)
+LOSO_STUDIES_V4 = (
+    "GSE200304",
+    "GSE114002",
+    "GSE149487",
+    "GSE217518",
+    "GSE186455",
+    "GSE256185",
+    "GSE269595",
+)
+
+
 class XEditCriticGateV4Error(RuntimeError):
     pass
 
@@ -464,4 +476,142 @@ def adjudicate_critic_frozen_test_v4(
         "loso_authorized": False,
         "guidance_authorized": False,
         "new_final_evaluation_authorized": False,
+    }
+
+
+def adjudicate_critic_loso_v4(
+    seed_results: Mapping[int, Mapping[str, Any]],
+) -> dict[str, Any]:
+    _require(
+        tuple(sorted(seed_results)) == CONFIRMATION_SEEDS_V4,
+        "Critic V4 LOSO requires exactly the three frozen seeds",
+    )
+    rows: dict[str, Any] = {}
+    model_spearmans = []
+    for seed in CONFIRMATION_SEEDS_V4:
+        result = seed_results[seed]
+        _require(
+            result.get("status") == "XEDITCRITIC_V4_PAIRED_LOSO_COMPLETE"
+            and int(result.get("held_out_study_count", -1)) == 7,
+            f"Critic V4 LOSO seed is not exact terminal: {seed}",
+        )
+        _require(
+            result.get("development_test_outcomes_accessed_during_loso") is False
+            and result.get("new_final_evaluation_outcomes_accessed") is False,
+            f"Critic V4 LOSO accessed protected outcome: {seed}",
+        )
+        fold_margins = result.get("fold_margins")
+        _require(
+            isinstance(fold_margins, Mapping)
+            and set(fold_margins) == set(LOSO_STUDIES_V4),
+            f"Critic V4 LOSO fold inventory changed: {seed}",
+        )
+        margins = [float(fold_margins[study]) for study in LOSO_STUDIES_V4]
+        _require(
+            all(math.isfinite(value) for value in margins),
+            f"Critic V4 LOSO margin is nonfinite: {seed}",
+        )
+        model = float(result["model_study_macro_spearman"])
+        baseline = float(result["baseline_study_macro_spearman"])
+        _require(
+            math.isfinite(model) and math.isfinite(baseline),
+            f"Critic V4 LOSO study-macro Spearman is nonfinite: {seed}",
+        )
+        margin = model - baseline
+        checks = {
+            "study_macro_spearman_at_least_0_25": model >= 0.25,
+            "margin_over_c0_v4_at_least_0_07": margin >= 0.07,
+            "positive_fold_margin_count_at_least_6": sum(
+                value > 0.0 for value in margins
+            )
+            >= 6,
+            "median_fold_margin_positive": float(np.median(margins)) > 0.0,
+            "leave_gse269595_out_margin_positive": float(
+                fold_margins["GSE269595"]
+            )
+            > 0.0,
+            "protected_outcome_reads_zero": True,
+        }
+        model_spearmans.append(model)
+        rows[str(seed)] = {
+            "model_study_macro_spearman": model,
+            "baseline_study_macro_spearman": baseline,
+            "margin_over_c0_v4": margin,
+            "fold_margins": {
+                study: float(fold_margins[study]) for study in LOSO_STUDIES_V4
+            },
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    median_spearman = float(np.median(model_spearmans))
+    cohort_checks = {
+        "exact_three_frozen_seeds": True,
+        "all_three_seed_checks_pass": all(row["passed"] for row in rows.values()),
+        "median_study_macro_spearman_at_least_0_30": median_spearman >= 0.30,
+    }
+    passed = all(cohort_checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_loso_gate.v1",
+        "status": "XEDITCRITIC_V4_LOSO_PASS"
+        if passed
+        else "XEDITCRITIC_V4_LOSO_NO_GO",
+        "required_seeds": list(CONFIRMATION_SEEDS_V4),
+        "held_out_studies": list(LOSO_STUDIES_V4),
+        "seed_results": rows,
+        "median_study_macro_spearman": median_spearman,
+        "cohort_checks": cohort_checks,
+        "guidance_readiness_authorized": passed,
+        "new_final_evaluation_authorized": False,
+    }
+
+
+def adjudicate_critic_readiness_v4(
+    three_seed_gate: Mapping[str, Any],
+    frozen_test_gate: Mapping[str, Any],
+    refit_manifest: Mapping[str, Any],
+    loso_gate: Mapping[str, Any],
+) -> dict[str, Any]:
+    three_seed_passed = (
+        three_seed_gate.get("status") == "XEDITCRITIC_V4_THREE_SEED_PASS"
+        and three_seed_gate.get("development_test_authorized") is True
+        and three_seed_gate.get("atomic_development_test_only") is True
+        and three_seed_gate.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+    )
+    frozen_test_passed = (
+        frozen_test_gate.get("status") == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+        and frozen_test_gate.get("all_development_refit_authorized") is True
+    )
+    refit_complete = (
+        refit_manifest.get("status")
+        == "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE"
+        and refit_manifest.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and int(refit_manifest.get("completed_refit_count", -1)) == 3
+        and int(refit_manifest.get("refit_pass_count", -1)) == 8
+        and refit_manifest.get("development_test_outcomes_accessed_during_refit")
+        is False
+        and refit_manifest.get("new_final_evaluation_outcomes_accessed") is False
+    )
+    loso_passed = (
+        loso_gate.get("status") == "XEDITCRITIC_V4_LOSO_PASS"
+        and loso_gate.get("guidance_readiness_authorized") is True
+        and loso_gate.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and loso_gate.get("held_out_studies") == list(LOSO_STUDIES_V4)
+    )
+    ready = three_seed_passed and frozen_test_passed and refit_complete and loso_passed
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
+        "status": "CRITIC_V4_READY_FOR_GUIDANCE"
+        if ready
+        else "CRITIC_V4_NOT_READY_FOR_GUIDANCE",
+        "three_seed_passed": three_seed_passed,
+        "frozen_test_passed": frozen_test_passed,
+        "all_development_refit_complete": refit_complete,
+        "loso_readiness_passed": loso_passed,
+        "development_test_access_event_count": 1 if frozen_test_passed else 0,
+        "general_test_projection_persisted": False,
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcomes_accessed": False,
+        "guidance_authorized": ready,
+        "new_final_evaluation_authorized": False,
+        "submission_ready": False,
     }

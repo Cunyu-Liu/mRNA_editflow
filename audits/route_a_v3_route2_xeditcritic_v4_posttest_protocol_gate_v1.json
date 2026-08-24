@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_protocol_gate.v1",
+  "recorded_at_local": "2026-08-24T19:47:35+08:00",
+  "status": "XEDITCRITIC_V4_POSTTEST_PROTOCOL_AND_READINESS_GATE_FROZEN_RUNTIME_NOT_IMPLEMENTED",
+  "git_head_before_delivery": "dc889f1b8dba8adb8acaa0e3d3510832cac540d1",
+  "implementation": {
+    "protocol": "configs/route_a_v3_route2_xeditcritic_v4_posttest_protocol_v1.json",
+    "loso_and_readiness_gate": "core/route2_xeditcritic_gate_v4.py",
+    "focused_test": "tests/route_a_v3/test_route2_xeditcritic_v4_posttest_protocol.py"
+  },
+  "all_development_refit": {
+    "required_seeds": [20260908, 20260909, 20260910],
+    "record_count": 107873,
+    "passes": 8,
+    "job_count": 3,
+    "test_or_validation_epoch_selection": false
+  },
+  "test_preserving_loso": {
+    "held_out_study_count": 7,
+    "paired_model_baseline_job_count": 42,
+    "minimum_per_seed_study_macro_spearman": 0.25,
+    "minimum_median_study_macro_spearman": 0.3,
+    "minimum_per_seed_margin_over_c0_v4": 0.07,
+    "minimum_positive_fold_margins_per_seed": 6,
+    "median_fold_margin_strictly_positive": true,
+    "leave_gse269595_out_margin_strictly_positive": true,
+    "unknown_held_out_study_scale": 1.0
+  },
+  "verification": {
+    "focused_gate_and_protocol": "11/11 PASS",
+    "complete_local_critic_v4_focused_cohort": "77/77 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "posttest_runtime_implemented": false,
+    "refit_configs_created": false,
+    "loso_configs_created": false,
+    "refit_or_loso_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "PROSPECTIVE POSTTEST AND READINESS RULES ONLY; NO REFIT, LOSO, GUIDANCE, OR PERFORMANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

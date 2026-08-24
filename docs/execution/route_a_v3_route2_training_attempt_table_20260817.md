@@ -2413,6 +2413,19 @@ A100 current-HEAD sync继续禁止，launch HEAD保持`4047f550`。下一统一�
 偏移估算本地20:41:58）。optimizer attempts不变，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_194422.json`。
 
+## XEditCritic V4 post-TEST refit/LOSO/readiness protocol freeze（2026-08-24）
+
+在任何V4 TEST结果出现前，已冻结TEST PASS后的唯一post-TEST路线：20260908/09/10各做一次固定8-pass
+all-Development refit，共3项；随后7个Development study × 3 seeds分别运行V4-FULL与matched C0-V4，
+共42项TEST-preserving LOSO jobs。refit不从TEST或Validation选择epoch，held-out study scale固定为1。
+
+LOSO gate严格要求每seed study-macro Spearman≥0.25、相对C0-V4 margin≥0.07、至少6/7 fold margin为正、
+median fold margin>0且leave-GSE269595-out margin>0，三seed中位Spearman≥0.30。只有three-seed、atomic
+TEST、三refit和LOSO四项均PASS才输出`CRITIC_V4_READY_FOR_GUIDANCE`。本项不新增attempt；focused=11/11、
+完整Critic V4=77/77、V3.3.2=96/96、compile/JSON/diff-check PASS。runtime尚未实现或执行，当前TEST/
+Evaluation read=0，guidance关闭。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_protocol_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

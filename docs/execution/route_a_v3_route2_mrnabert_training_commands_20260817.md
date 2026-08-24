@@ -3508,3 +3508,15 @@ compute-apps中，显存2,120–2,190MiB。未读stdout/stderr、active curve或
 `4047f550`且不做current-HEAD sync。新偏移为+144秒，下一远端窗口≥20:44:22（估算本地≥20:41:58）；
 Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_194422.json`。
+
+## XEditCritic V4 post-TEST protocol and readiness gate（2026-08-24）
+
+`route_a_v3_route2_xeditcritic_v4_posttest_protocol_v1.json`前瞻冻结三项固定8-pass all-Development refit
+与7-study×3-seed×`v4_full+c0_v4`的42项paired LOSO。LOSO始终复用TRAIN/VALIDATION projection并保持
+Development TEST关闭，unknown held-out study scale=1；refit/LOSO均使用GPU0–5、CUDA/BF16、无CPU fallback。
+
+`adjudicate_critic_loso_v4`和`adjudicate_critic_readiness_v4`已实现0.25 per-seed/0.30 median Spearman、
+0.07 matched margin、6/7 positive folds、positive median与GSE269595 stress gate，以及四predecessor联合授权。
+focused=11/11、完整Critic V4=77/77、精确V3.3.2=96/96、compile/JSON/diff-check PASS。post-TEST
+runtime仍未实现或执行，当前protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_protocol_gate_v1.json`。

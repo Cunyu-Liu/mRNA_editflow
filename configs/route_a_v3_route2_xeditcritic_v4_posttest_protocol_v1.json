@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_V4_POSTTEST_EXECUTION",
+  "three_seed_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/confirmation_v1/three_seed_gate.json",
+  "atomic_frozen_test_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/frozen_test_v1/atomic_frozen_test.json",
+  "screen_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
+  "formal_preflight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/preflight/xeditcritic_v4/formal_preflight.json",
+  "projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train_projection.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation_projection.jsonl"
+  ],
+  "bottom_six_cache": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v4/frozen_bottom_six_chunk_cache_v1.pt",
+  "required_seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "all_development_refit": {
+    "record_count": 107873,
+    "passes": 8,
+    "selected_model": "V4-FULL",
+    "job_count": 3,
+    "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION",
+    "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1",
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1"
+  },
+  "test_preserving_loso": {
+    "held_out_studies": [
+      "GSE200304",
+      "GSE114002",
+      "GSE149487",
+      "GSE217518",
+      "GSE186455",
+      "GSE256185",
+      "GSE269595"
+    ],
+    "model_run_id": "v4_full",
+    "matched_baseline_run_id": "c0_v4",
+    "paired_job_count": 42,
+    "passes": 8,
+    "unknown_held_out_study_scale": 1.0,
+    "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/test_preserving_loso_v1",
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/test_preserving_loso_v1",
+    "adjudication_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/test_preserving_loso_v1/loso_adjudication.json"
+  },
+  "loso_gate": {
+    "minimum_per_seed_study_macro_spearman": 0.25,
+    "minimum_median_study_macro_spearman": 0.30,
+    "minimum_per_seed_margin_over_c0_v4": 0.07,
+    "minimum_positive_fold_margins_per_seed": 6,
+    "median_fold_margin_strictly_positive": true,
+    "leave_gse269595_out_margin_strictly_positive": true
+  },
+  "readiness_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/guidance_readiness_v1.json",
+  "physical_gpu_indices": [0, 1, 2, 3, 4, 5],
+  "precision": "BF16",
+  "cpu_fallback_allowed": false,
+  "development_test_access_event_count_before_posttest": 1,
+  "development_test_outcomes_accessed_during_refit_or_loso": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "additional_seed_authorized": false,
+  "guidance_authorized_before_readiness": false
+}
