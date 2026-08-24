@@ -2247,6 +2247,23 @@ screen gate不存在。未读取stdout/stderr、active curve、metric或terminal
 不早于19:44:05（按最新偏移估算本地19:41:39）。optimizer attempts不变，Development TEST/new Evaluation
 outcome read=0。审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_184405.json`。
 
+## XEditSetFlow V4 formal training runner（2026-08-24）
+
+已实现`train_route2_xeditsetflow_v4.py`，但launch barrier未解除，未创建run目录或中央attempt。runner只接受
+seed20260911的full/single-mode package；在创建output/中央RUNNING前核对同一HEAD authorization、preflight、
+source-data audit、C3/A100/cache屏障与protected reads=0。正式训练限定GPU0–5、CUDA/BF16、无CPU fallback。
+
+每update固定8 sources×4 states=32，最后source batch仅按repeat-cap内的确定性补齐；10 passes的总updates由
+TRAIN source count唯一确定。loss严格为冻结的common+coverage+count+mode-information，single-mode的最后项
+为0；5% warmup后cosine至10%。训练中只输出alive-only pass event，不输出loss/NLL/recovery/diversity，且不运行
+Validation generation。
+
+pass4/6/8/10各保存一个checkpoint；terminal training summary形成后仍标记selection pending。若中央RUNNING行
+创建后发生技术故障，同一attempt原位更新FAILED并保留failure artifact，不新增行。formal runner focused=4/4、
+combined SetFlow V4 focused=28/28、精确V3.3.2=96/96、compile/diff-check PASS。optimizer attempts=0，
+Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_formal_training_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

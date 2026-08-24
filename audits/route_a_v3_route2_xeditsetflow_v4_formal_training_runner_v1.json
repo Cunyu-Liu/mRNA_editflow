@@ -1,0 +1,61 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_formal_training_runner.v1",
+  "recorded_at_local": "2026-08-24T18:44:30+08:00",
+  "status": "XEDITSETFLOW_V4_FORMAL_TRAINING_RUNNER_IMPLEMENTED_NO_ATTEMPT",
+  "git_head_before_delivery": "e884557",
+  "implementation": {
+    "script": "scripts/route_a_v3/train_route2_xeditsetflow_v4.py",
+    "test": "tests/route_a_v3/test_train_route2_xeditsetflow_v4.py"
+  },
+  "launch_semantics": {
+    "authorization_before_output_directory": true,
+    "authorization_before_central_running_row": true,
+    "same_git_head_required": true,
+    "exact_full_and_single_screen_package": true,
+    "preflight_and_source_data_audit_required": true,
+    "gpu_scope": [0, 1, 2, 3, 4, 5],
+    "precision": "CUDA_BF16",
+    "cpu_fallback": false
+  },
+  "training_semantics": {
+    "screen_seed": 20260911,
+    "passes": 10,
+    "sources_per_update": 8,
+    "states_per_source": 4,
+    "physical_and_effective_state_batch": 32,
+    "source_repeat_cap_per_pass": 4,
+    "optimizer": "FUSED_ADAMW",
+    "learning_rate": 0.0002,
+    "warmup_fraction": 0.05,
+    "decay": "COSINE_TO_TEN_PERCENT",
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "validation_generation_during_training": false,
+    "active_performance_metric_emitted": false,
+    "checkpoint_selection_during_training": false
+  },
+  "terminal_artifacts": {
+    "four_checkpoints_required": true,
+    "training_summary_retains_all_pass_losses_only_after_terminal": true,
+    "selection_status": "PENDING_TERMINAL_OUTCOME_FREE_VALIDATION_GENERATION",
+    "central_attempt_upsert": true,
+    "runtime_failure_updates_same_attempt_to_failed": true,
+    "runtime_failure_adds_new_attempt": false
+  },
+  "verification": {
+    "formal_runner_focused_tests": "4/4 PASS",
+    "combined_setflow_v4_focused_tests": "28/28 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_and_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "run_directory_created": false,
+    "validation_generation_read": false,
+    "critic_used": false,
+    "independent_evaluator_used": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

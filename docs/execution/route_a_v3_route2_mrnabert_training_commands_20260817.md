@@ -3381,3 +3381,15 @@ alive，elapsed 56,096–56,906秒，无terminal/failure且无screen gate。本�
 因此不报告新的CUDA快照，也不立即补查；最近有效CUDA证据仍为17:43:42。未读stdout/stderr或active metric，
 A100 current-HEAD sync继续等待。下一远端窗口≥19:44:05，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_184405.json`。
+
+## XEditSetFlow V4 formal training runner（2026-08-24）
+
+`train_route2_xeditsetflow_v4.py`已实现full/single-mode的正式10-pass CUDA/BF16训练。每update为8 sources×4
+states=32，repeat cap4；updates由真实TRAIN source inventory唯一决定。5% warmup/cosine-to-10%，只保存
+pass4/6/8/10。训练期间不运行Validation generation，pass stdout仅报告alive/CUDA/update，不泄露active loss、
+NLL、recovery或diversity。
+
+入口在run目录/中央attempt创建前核对全部launch barrier；terminal训练只产生待评测的四checkpoint，不选择模型。
+任何已登记attempt的技术失败原位更新FAILED。focused=4/4、combined SetFlow V4=28/28、精确V3.3.2=96/96、
+compile/diff-check PASS；尚未启动optimizer或读取Validation generation/Development TEST/Evaluation outcome。
+审计：`audits/route_a_v3_route2_xeditsetflow_v4_formal_training_runner_v1.json`。
