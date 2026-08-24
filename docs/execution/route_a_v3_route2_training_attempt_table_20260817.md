@@ -2969,3 +2969,16 @@ per-candidate mixture target和checkpoint decision也分别连接到collator/mod
 精确V3.3.2 96/96 PASS，compile/diff-check PASS。未执行cache、preflight、optimizer、inference或Validation metric，
 protected read=0；A100 current-HEAD tests等待旧C3五项terminal，下一允许远端检查仍为本地01:44:53。
 审计：`audits/route_a_v3_route2_xedit_v4_named_interface_implementation_v1.json`。
+
+## Critic V4 physical GPU scope binding（2026-08-25）
+
+启动前实现审计发现一个真实运行边界缺口：Critic V4 config虽然冻结`physical_gpu_scope=[0,1,2,3,4,5]`，
+formal preflight与通用trainer此前只调用CUDA/A100检查，没有直接消费该scope；因此GPU6/7理论上仍可能通过入口。
+现在共享`require_physical_gpu_scope_v4`要求scope精确为0–5、请求编号属于该集合、`cuda_bf16_only=true`且
+`cpu_fallback=false`，并在preflight及覆盖SCREEN/CONFIRMATION/REFIT/LOSO的统一trainer中于CUDA初始化前执行。
+既有`CUDA_VISIBLE_DEVICES`禁止重映射与A100检查保持不变。
+
+本地定向32/32、完整Critic V4相关68/68、精确V3.3.2 cohort 96/96、compile/diff-check PASS。该项没有
+启动GPU、cache、preflight、optimizer、inference或Validation metric；Development TEST/new Evaluation outcome
+read均为0。A100 current-HEAD同步仍等待五个C3旧作业全部terminal；下一允许远端检查不早于本地01:44:53。
+审计：`audits/route_a_v3_route2_xeditcritic_v4_gpu_scope_binding_v1.json`。

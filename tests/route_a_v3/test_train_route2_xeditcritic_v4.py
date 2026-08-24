@@ -73,6 +73,16 @@ def _preflight() -> dict:
     }
 
 
+def test_all_training_stages_bind_frozen_physical_gpu_scope_before_cuda() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
+    ).read_text(encoding="utf-8")
+    assert "require_physical_gpu_scope_v4(config, physical_gpu_index)" in source
+    assert source.index(
+        "require_physical_gpu_scope_v4(config, physical_gpu_index)"
+    ) < source.index("device = require_cuda(physical_gpu_index)")
+
+
 def test_screen_run_specs_bind_all_exact_frozen_controls_and_ablations() -> None:
     config = _config()
     permutation = screen_run_spec_v4(config, "v4_candidate_bundle_permutation")

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import torch
 
@@ -10,6 +12,9 @@ from scripts.route_a_v3.preflight_route2_xeditcritic_v4 import (
     require_preflight_authorization_v4,
     select_train_geometry_records_v4,
 )
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _row(record_id: str, split: str, length: int, edit_count: int) -> dict:
@@ -50,6 +55,16 @@ def _vocabs() -> dict:
         "numerator": {"__UNK__": 0, "__NONE__": 1},
         "denominator": {"__UNK__": 0, "__NONE__": 1},
     }
+
+
+def test_preflight_binds_frozen_physical_gpu_scope_before_cuda() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/preflight_route2_xeditcritic_v4.py"
+    ).read_text(encoding="utf-8")
+    assert "require_physical_gpu_scope_v4(config, physical_gpu_index)" in source
+    assert source.index(
+        "require_physical_gpu_scope_v4(config, physical_gpu_index)"
+    ) < source.index("device = require_cuda(physical_gpu_index)")
 
 
 def test_preflight_authorization_requires_terminal_read_once_sync_tests_and_cache() -> None:

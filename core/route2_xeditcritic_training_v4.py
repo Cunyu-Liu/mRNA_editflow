@@ -20,6 +20,7 @@ from core.route2_xeditcritic_training_data_v3 import (
 
 EFFECTIVE_BATCH_V4 = 32
 PHYSICAL_BATCH_CANDIDATES_V4 = (4, 8, 16, 32)
+PHYSICAL_GPU_SCOPE_V4 = (0, 1, 2, 3, 4, 5)
 
 
 class XEditCriticTrainingV4Error(RuntimeError):
@@ -29,6 +30,31 @@ class XEditCriticTrainingV4Error(RuntimeError):
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise XEditCriticTrainingV4Error(message)
+
+
+def require_physical_gpu_scope_v4(
+    config: Mapping[str, object], physical_gpu_index: int
+) -> None:
+    """Bind every Critic V4 CUDA entry point to the frozen physical GPUs 0–5."""
+
+    gpu_policy = config.get("gpu_policy")
+    _require(isinstance(gpu_policy, Mapping), "Critic V4 GPU policy is absent")
+    scope = gpu_policy.get("physical_gpu_scope")
+    _require(
+        scope == list(PHYSICAL_GPU_SCOPE_V4),
+        "Critic V4 physical GPU scope changed from 0–5",
+    )
+    _require(
+        isinstance(physical_gpu_index, int)
+        and not isinstance(physical_gpu_index, bool)
+        and physical_gpu_index in PHYSICAL_GPU_SCOPE_V4,
+        "Critic V4 GPU is outside 0–5",
+    )
+    _require(
+        gpu_policy.get("cuda_bf16_only") is True
+        and gpu_policy.get("cpu_fallback") is False,
+        "Critic V4 CUDA/BF16 or CPU-fallback policy changed",
+    )
 
 
 class FixedEffectiveTaskBatchSamplerV4(Sampler[list[int]]):

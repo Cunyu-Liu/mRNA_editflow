@@ -56,6 +56,7 @@ from core.route2_xeditcritic_training_v4 import (
     critic_v4_optimizer_parameter_groups,
     effective_prediction_objective_v4,
     physical_microbatch_partitions_v4,
+    require_physical_gpu_scope_v4,
 )
 from core.route2_xeditcritic_v3 import XEditCriticV3
 from core.route2_xeditcritic_v4 import (
@@ -738,6 +739,7 @@ def run(
             physical_batch_size=physical_batch_size,
             current_git_head=current_head,
         )
+    require_physical_gpu_scope_v4(config, physical_gpu_index)
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     _set_seed(training_seed)
     device = require_cuda(physical_gpu_index)

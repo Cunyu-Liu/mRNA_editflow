@@ -1,0 +1,57 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_gpu_scope_binding.v1",
+  "status": "XEDITCRITIC_V4_GPU_SCOPE_BOUND_AND_TESTED",
+  "recorded_at": "2026-08-25T01:06:17+08:00",
+  "implementation_parent_git_head": "970b74d16f8d6309d308dd6fa6d4142a3eae9e37",
+  "frozen_runtime_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "cuda_visible_devices_remapping_forbidden": true
+  },
+  "implementation": {
+    "shared_assertion": "core.route2_xeditcritic_training_v4.require_physical_gpu_scope_v4",
+    "preflight_consumer": "scripts/route_a_v3/preflight_route2_xeditcritic_v4.py",
+    "all_stage_training_consumer": "scripts/route_a_v3/train_route2_xeditcritic_v4.py",
+    "covered_training_stages": [
+      "SCREEN",
+      "CONFIRMATION",
+      "REFIT",
+      "LOSO"
+    ],
+    "rejected_before_cuda_initialization": [
+      "missing GPU policy",
+      "physical scope other than exact 0-5",
+      "requested physical GPU outside 0-5",
+      "non-integer or boolean device identity",
+      "cuda_bf16_only not true",
+      "cpu_fallback not false"
+    ]
+  },
+  "verification": {
+    "syntax_compile": "PASS",
+    "focused_gpu_and_entrypoint_tests": "32/32 PASS",
+    "critic_v4_related_tests": "68/68 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_state": {
+    "gpu_runtime_executed": false,
+    "bottom_six_cache_materialized": false,
+    "formal_preflight_executed": false,
+    "optimizer_attempt_created": false,
+    "inference_executed": false,
+    "validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "a100_current_head_sync_executed": false
+  },
+  "active_c3_barrier": {
+    "last_remote_observation": "2026-08-25T00:47:08+08:00",
+    "last_terminal_count": 0,
+    "next_remote_check_not_before": "2026-08-25T01:47:08+08:00",
+    "next_local_check_not_before": "2026-08-25T01:44:53+08:00",
+    "c3_terminal_payload_read": false
+  },
+  "claim_effect": "RUNTIME_BOUNDARY_EVIDENCE_ONLY_NO_MODEL_PERFORMANCE_OR_PUBLICATION_CLAIM"
+}

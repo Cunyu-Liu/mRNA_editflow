@@ -3957,3 +3957,15 @@ mixture target与checkpoint decision分别进入source-level collator/model、mi
 新增/相邻focused 42/42、Critic V4相关66/66、SetFlow V4相关53/53、完整XEditFlow/guidance 278/278、
 精确V3.3.2 96/96 PASS。没有GPU/cache/preflight/optimizer/inference或outcome metric执行，protected read=0；
 A100 current-HEAD测试与正式materialization继续等待五个旧C3作业全部terminal。
+
+## Critic V4 GPU 0–5 runtime binding focused record（2026-08-25）
+
+Critic V4 formal preflight和统一trainer现在在任何CUDA初始化前共同验证冻结GPU策略：物理设备集合必须精确为
+`[0,1,2,3,4,5]`，实际请求必须属于该集合，BF16-only必须开启且CPU fallback必须关闭。统一trainer覆盖
+screen、confirmation、all-Development refit及全部LOSO；GPU6/7、扩大scope、布尔型伪设备号、关闭BF16或
+开启CPU fallback均在运行目录和optimizer产生前硬失败。既有禁止`CUDA_VISIBLE_DEVICES`重映射及A100型号检查未变。
+
+本地focused=32/32、完整Critic V4相关=68/68、精确V3.3.2=96/96，Python compile与diff-check均PASS。
+没有运行GPU/cache/preflight/optimizer/inference或读取Validation metric，protected read=0；A100验证继续等待
+五项C3 terminal barrier，下一远端检查仍不早于本地01:44:53。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_gpu_scope_binding_v1.json`。

@@ -34,6 +34,7 @@ from core.route2_xeditcritic_training_data_v3 import (
 from core.route2_xeditcritic_training_v4 import (
     XEditCriticTrainingV4Error,
     critic_v4_optimizer_parameter_groups,
+    require_physical_gpu_scope_v4,
     select_physical_batch_from_memory_v4,
 )
 from core.route2_xeditcritic_v4 import (
@@ -336,6 +337,7 @@ def run(
     require_preflight_authorization_v4(
         authorization, current_git_head=current_head
     )
+    require_physical_gpu_scope_v4(config, physical_gpu_index)
     device = require_cuda(physical_gpu_index)
     started = time.time()
     projection_rows = load_projection_rows(

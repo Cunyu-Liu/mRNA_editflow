@@ -17,10 +17,49 @@ from core.route2_xeditcritic_training_v4 import (
     effective_prediction_objective_v4,
     pairwise_sigmoid_soft_ranks_v4,
     physical_microbatch_partitions_v4,
+    require_physical_gpu_scope_v4,
     select_physical_batch_from_memory_v4,
     soft_spearman_loss_v4,
     target_midranks_v4,
 )
+
+
+def _gpu_config() -> dict:
+    return {
+        "gpu_policy": {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+        }
+    }
+
+
+def test_gpu_scope_is_exactly_physical_zero_through_five() -> None:
+    config = _gpu_config()
+    for physical_gpu_index in range(6):
+        require_physical_gpu_scope_v4(config, physical_gpu_index)
+
+    with pytest.raises(XEditCriticTrainingV4Error, match="outside 0–5"):
+        require_physical_gpu_scope_v4(config, 6)
+    with pytest.raises(XEditCriticTrainingV4Error, match="outside 0–5"):
+        require_physical_gpu_scope_v4(config, True)
+
+
+def test_gpu_scope_rejects_policy_drift_or_cpu_fallback() -> None:
+    expanded = _gpu_config()
+    expanded["gpu_policy"]["physical_gpu_scope"].append(6)
+    with pytest.raises(XEditCriticTrainingV4Error, match="scope changed"):
+        require_physical_gpu_scope_v4(expanded, 0)
+
+    non_bf16 = _gpu_config()
+    non_bf16["gpu_policy"]["cuda_bf16_only"] = False
+    with pytest.raises(XEditCriticTrainingV4Error, match="CUDA/BF16"):
+        require_physical_gpu_scope_v4(non_bf16, 0)
+
+    cpu_fallback = _gpu_config()
+    cpu_fallback["gpu_policy"]["cpu_fallback"] = True
+    with pytest.raises(XEditCriticTrainingV4Error, match="CPU-fallback"):
+        require_physical_gpu_scope_v4(cpu_fallback, 0)
 
 
 def _record(index: int, task: str) -> XEditCriticRecordV3:
