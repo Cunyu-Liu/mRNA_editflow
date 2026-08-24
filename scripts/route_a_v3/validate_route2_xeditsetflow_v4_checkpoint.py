@@ -35,6 +35,7 @@ from core.route2_source_token_cache_v3 import (
 )
 from core.route2_xeditsetflow_runtime_v4 import (
     build_setflow_screen_model_v4,
+    require_setflow_v4_confirmation_launch_authorization,
     require_setflow_v4_screen_launch_authorization,
     screen_run_spec_v4,
 )
@@ -108,11 +109,34 @@ def _move(batch: Mapping[str, Any], device: torch.device) -> dict[str, Any]:
     }
 
 
-def require_screen_training_package_terminal_v4(
+def setflow_validation_stage_seed_v4(config: Mapping[str, Any]) -> tuple[str, int]:
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "unknown SetFlow V4 run stage")
+    seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
+    _require(
+        seed == 20260911
+        if run_stage == "SCREEN"
+        else seed in {20260912, 20260913, 20260914},
+        "SetFlow V4 validation seed is undeclared",
+    )
+    return run_stage, seed
+
+
+def require_training_package_terminal_v4(
     config: Mapping[str, Any],
 ) -> dict[str, dict[str, Any]]:
+    run_stage, training_seed = setflow_validation_stage_seed_v4(config)
     summaries: dict[str, dict[str, Any]] = {}
-    for required_run in ("v4_full", "v4_single_mode"):
+    required_runs = (
+        ("v4_full", "v4_single_mode")
+        if run_stage == "SCREEN"
+        else ("v4_full",)
+    )
+    for required_run in required_runs:
         directory = Path(config["output_root"]) / required_run
         _require(
             not (directory / "failure.json").exists(),
@@ -123,6 +147,11 @@ def require_screen_training_package_terminal_v4(
             summary.get("status")
             == "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
             f"SetFlow V4 training package is not fully terminal: {required_run}",
+        )
+        _require(
+            summary.get("run_stage", "SCREEN") == run_stage
+            and int(summary.get("seed", -1)) == training_seed,
+            f"SetFlow V4 training stage or seed changed: {required_run}",
         )
         _require(
             set(summary.get("saved_checkpoint_paths", {}))
@@ -141,8 +170,9 @@ def load_checkpoint_v4(
     device: torch.device,
 ) -> tuple[torch.nn.Module, dict[str, Any], dict[str, Any]]:
     _require(checkpoint_pass in {4, 6, 8, 10}, "SetFlow V4 checkpoint pass is undeclared")
+    run_stage, training_seed = setflow_validation_stage_seed_v4(config)
     training_directory = Path(config["output_root"]) / run_id
-    training_summary = require_screen_training_package_terminal_v4(config)[run_id]
+    training_summary = require_training_package_terminal_v4(config)[run_id]
     _require(
         training_summary.get("status")
         == "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
@@ -174,9 +204,9 @@ def load_checkpoint_v4(
     )
     _require(
         checkpoint.get("run_id") == run_id
+        and checkpoint.get("run_stage", "SCREEN") == run_stage
         and int(checkpoint.get("completed_pass", -1)) == checkpoint_pass
-        and int(checkpoint.get("seed", -1))
-        == int(config["training"]["screen_seed"]),
+        and int(checkpoint.get("seed", -1)) == training_seed,
         "SetFlow V4 checkpoint identity changed",
     )
     model, capacity = build_setflow_screen_model_v4(
@@ -360,17 +390,31 @@ def validate_checkpoint(
     physical_gpu_index: int,
 ) -> dict[str, Any]:
     spec = screen_run_spec_v4(config, run_id)
+    run_stage, training_seed = setflow_validation_stage_seed_v4(config)
     authorization = _read_json(authorization_path)
     preflight = _read_json(Path(config["preflight_output_path"]))
     source_data_audit = _read_json(Path(config["source_level_data_audit_path"]))
-    require_setflow_v4_screen_launch_authorization(
-        config,
-        authorization,
-        preflight,
-        source_data_audit,
-        run_id=run_id,
-        current_git_head=_git_head(),
-    )
+    current_head = _git_head()
+    if run_stage == "SCREEN":
+        require_setflow_v4_screen_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            current_git_head=current_head,
+        )
+    else:
+        screen_gate = _read_json(Path(config["screen_gate_path"]))
+        require_setflow_v4_confirmation_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            screen_gate,
+            run_id=run_id,
+            current_git_head=current_head,
+        )
     _require(not output_directory.exists(), "SetFlow V4 checkpoint validation already exists")
     _require(
         physical_gpu_index in config["gpu_policy"]["physical_gpu_scope"],
@@ -499,7 +543,9 @@ def validate_checkpoint(
     replay_failures = 0
     edit_budget_violations = 0
     terminal_causes = Counter()
-    method_id = f"unguided_xeditsetflow_v4_{run_id}_pass{checkpoint_pass}_seed20260911"
+    method_id = (
+        f"unguided_xeditsetflow_v4_{run_id}_pass{checkpoint_pass}_seed{training_seed}"
+    )
     for trajectory_index, (first, second) in enumerate(
         zip(sampled, replayed, strict=True)
     ):
@@ -592,10 +638,11 @@ def validate_checkpoint(
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation.v1",
         "status": "TERMINAL_XEDITSETFLOW_V4_CHECKPOINT_VALIDATION_COMPLETE",
         "g0_status": "FLOW_G0_READY" if correctness else "FLOW_G0_VALIDATION_FAIL",
+        "run_stage": run_stage,
         "run_id": run_id,
         "selectable": spec.selectable,
         "mode_count": spec.mode_count,
-        "seed": int(config["training"]["screen_seed"]),
+        "seed": training_seed,
         "checkpoint_pass": checkpoint_pass,
         "training_summary_status": training_summary["status"],
         "common_validation_set_marginal_nll": common_nll[
@@ -662,6 +709,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     arguments = parser.parse_args()
     config = _read_json(arguments.config)
+    run_stage, training_seed = setflow_validation_stage_seed_v4(config)
     output_directory = arguments.output_dir or (
         Path(config["validation_output_root"])
         / arguments.run_id
@@ -687,6 +735,8 @@ def main() -> int:
                     "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_failure.v1",
                     "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
                     "run_id": arguments.run_id,
+                    "run_stage": run_stage,
+                    "seed": training_seed,
                     "checkpoint_pass": arguments.checkpoint_pass,
                     "physical_gpu_index": arguments.physical_gpu_index,
                     "cpu_fallback_used": False,

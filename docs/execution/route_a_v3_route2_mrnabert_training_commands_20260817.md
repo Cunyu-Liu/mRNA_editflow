@@ -3436,3 +3436,19 @@ checkpoint与terminal后selection，不增加seed、不开放TEST/guidance。pai
 config focused=4/4、combined SetFlow V4=49/49、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前
 screen/confirmation均未运行，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json`。
+
+## XEditSetFlow V4 confirmation execution stack（2026-08-24）
+
+confirmation launch前必须先由`authorize_route2_xeditsetflow_v4_confirmation.py`核对同HEAD screen PASS、A100
+current-HEAD focused/V3.3.2、preflight、source-data与protected-read barriers。随后三份prepared runtime config只能
+分别训练V4-FULL seed20260912/20260913/20260914；training和checkpoint validation runner自动按`run_stage`分派，
+禁止single-mode进入confirmation。
+
+全部三seed training和每seed pass4/6/8/10 validation terminal后，
+`adjudicate_route2_xeditsetflow_v4_confirmation.py`才一次性读取终态摘要与只读terminal F2 per-source recovery，
+执行固定checkpoint selection和891-source、10,000-replicate paired bootstrap。仅三seed全部通过才输出
+`XEDITSETFLOW_V4_G0_READY`，且该状态本身仍不授权guidance，必须再与`CRITIC_V4_READY_FOR_GUIDANCE`合取。
+
+本地SetFlow V4 focused=59/59、精确V3.3.2=96/96、compile/diff-check PASS；screen/confirmation未运行，
+optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_confirmation_runtime_gate_v1.json`。

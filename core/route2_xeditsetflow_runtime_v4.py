@@ -260,3 +260,90 @@ def require_setflow_v4_screen_launch_authorization(
             int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
             f"SetFlow V4 {name} reports a new Evaluation read",
         )
+
+
+def require_setflow_v4_confirmation_launch_authorization(
+    config: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    preflight: Mapping[str, Any],
+    source_data_audit: Mapping[str, Any],
+    screen_gate: Mapping[str, Any],
+    *,
+    run_id: str,
+    current_git_head: str,
+) -> None:
+    seed = config.get("training_seed")
+    _require(
+        config.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_confirmation_runtime.v1"
+        and config.get("run_stage") == "CONFIRMATION",
+        "SetFlow V4 confirmation runtime config identity changed",
+    )
+    _require(
+        isinstance(seed, int)
+        and not isinstance(seed, bool)
+        and seed in {20260912, 20260913, 20260914},
+        "SetFlow V4 confirmation seed is undeclared",
+    )
+    _require(
+        run_id == config.get("selected_model") == "v4_full",
+        "SetFlow V4 confirmation attempted a non-full model",
+    )
+    _require(
+        screen_gate.get("status") == "XEDITSETFLOW_V4_SCREEN_PASS"
+        and screen_gate.get("confirmation_authorized") is True
+        and screen_gate.get("confirmation_seeds")
+        == [20260912, 20260913, 20260914],
+        "SetFlow V4 screen gate does not authorize confirmation",
+    )
+    _require(
+        authorization.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_confirmation_launch_authorization.v1"
+        and authorization.get("status")
+        == "XEDITSETFLOW_V4_CONFIRMATION_LAUNCH_AUTHORIZED",
+        "SetFlow V4 confirmation authorization is absent",
+    )
+    _require(
+        str(authorization.get("authorized_git_head")) == str(current_git_head)
+        and authorization.get("authorized_seeds")
+        == [20260912, 20260913, 20260914]
+        and authorization.get("authorized_run_id") == "v4_full",
+        "SetFlow V4 confirmation authorization scope changed",
+    )
+    barriers = authorization.get("barriers", {})
+    required = (
+        "screen_gate_passed",
+        "a100_current_head_focused_tests_passed",
+        "a100_current_head_v332_tests_passed",
+        "source_token_cache_terminal_complete",
+        "source_level_data_audit_passed",
+        "formal_parameter_preflight_passed",
+    )
+    _require(
+        all(barriers.get(key) is True for key in required),
+        "a SetFlow V4 confirmation barrier is not satisfied",
+    )
+    _require(
+        preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
+        and preflight.get("passed") is True
+        and int(preflight.get("full_trainable_parameter_count", -1))
+        == int(config["architecture"]["formal_full_trainable_parameter_count"]),
+        "SetFlow V4 confirmation preflight identity changed",
+    )
+    _require(
+        source_data_audit.get("status")
+        == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS"
+        and int(source_data_audit.get("validation_source_count", -1)) == 891,
+        "SetFlow V4 confirmation source-data identity changed",
+    )
+    for payload, name in (
+        (authorization, "authorization"),
+        (preflight, "preflight"),
+        (source_data_audit, "source data audit"),
+        (screen_gate, "screen gate"),
+    ):
+        _require(
+            int(payload.get("development_test_outcome_reads", -1)) == 0
+            and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            f"SetFlow V4 confirmation {name} reports a protected read",
+        )

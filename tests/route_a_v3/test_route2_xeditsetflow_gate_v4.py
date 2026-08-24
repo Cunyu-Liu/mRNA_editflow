@@ -7,7 +7,10 @@ import pytest
 
 from core.route2_xeditsetflow_gate_v4 import (
     XEditSetFlowGateV4Error,
+    adjudicate_setflow_confirmation_v4,
     adjudicate_setflow_screen_v4,
+    confirmation_technical_failure_gate_v4,
+    paired_bootstrap_recovery_improvement_v4,
     select_checkpoint_v4,
     technical_failure_gate_v4,
     validate_checkpoint_summary_identity_v4,
@@ -47,6 +50,7 @@ def _summary(
         "status": "TERMINAL_XEDITSETFLOW_V4_CHECKPOINT_VALIDATION_COMPLETE",
         "g0_status": "FLOW_G0_READY",
         "run_id": run_id,
+        "run_stage": "SCREEN",
         "selectable": run_id == "v4_full",
         "mode_count": modes,
         "seed": 20260911,
@@ -212,3 +216,126 @@ def test_technical_failure_is_terminal_no_go_and_authorizes_nothing() -> None:
                 }
             ]
         )
+
+
+def _confirmation_config(seed: int) -> dict:
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_runtime.v1",
+        "run_stage": "CONFIRMATION",
+        "training_seed": seed,
+        "selected_model": "v4_full",
+        "required_confirmation_seeds": [20260912, 20260913, 20260914],
+        "additional_seed_authorized": False,
+        "development_test_outcomes_accessed": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+
+
+def _with_per_source(summary: dict, values: list[float]) -> dict:
+    assert len(values) == 891
+    result = dict(summary)
+    result["source_macro_candidate_recovery_rate"] = sum(values) / len(values)
+    result["measured_neighborhood_metrics"] = {
+        "per_source": {
+            f"source-{index:04d}": {"candidate_recovery_rate": value}
+            for index, value in enumerate(values)
+        }
+    }
+    return result
+
+
+def _f2_summary(values: list[float]) -> dict:
+    recovery = sum(values) / len(values)
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_unguided_validation.v3",
+        "status": "FLOW_G0_READY",
+        "arm": "f2",
+        "seed": 20260903,
+        "source_count": 891,
+        "candidate_count": 28512,
+        "source_macro_candidate_recovery_rate": recovery,
+        "source_macro_measured_top_k_recovery_at_k": 0.16,
+        "source_macro_unique_candidate_rate": 0.67,
+        "measured_neighborhood_metrics": {
+            "per_source": {
+                f"source-{index:04d}": {"candidate_recovery_rate": value}
+                for index, value in enumerate(values)
+            }
+        },
+        "development_test_outcomes_accessed": False,
+        "evaluation_records_read": 0,
+        "evaluation_outcomes_accessed": False,
+        "guided_critic_used": False,
+        "independent_evaluator_used": False,
+    }
+
+
+def _confirmation_summaries(recovery: float = 0.40) -> dict:
+    summaries = {}
+    for seed in (20260912, 20260913, 20260914):
+        summaries[seed] = {}
+        for checkpoint_pass in (4, 6, 8, 10):
+            row = _summary(
+                "v4_full",
+                checkpoint_pass,
+                recovery=recovery,
+                top_k=0.25,
+                unique=0.96,
+            )
+            row["run_stage"] = "CONFIRMATION"
+            row["seed"] = seed
+            summaries[seed][checkpoint_pass] = _with_per_source(
+                row, [recovery] * 891
+            )
+    return summaries
+
+
+def test_three_seed_confirmation_requires_every_seed_and_positive_bootstrap_ci() -> None:
+    configs = {seed: _confirmation_config(seed) for seed in (20260912, 20260913, 20260914)}
+    summaries = _confirmation_summaries()
+    gate = adjudicate_setflow_confirmation_v4(
+        configs, summaries, _f2_summary([0.29] * 891)
+    )
+    assert gate["status"] == "XEDITSETFLOW_V4_G0_READY"
+    assert gate["guidance_authorized"] is False
+    assert all(
+        row["paired_bootstrap_recovery_improvement"][
+            "ci_lower_bound_strictly_greater_than_zero"
+        ]
+        for row in gate["seed_results"].values()
+    )
+    summaries.pop(20260914)
+    with pytest.raises(XEditSetFlowGateV4Error):
+        adjudicate_setflow_confirmation_v4(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+
+
+def test_bootstrap_can_reject_positive_point_margin_with_crossing_ci() -> None:
+    v4_values = [1.0] * 468 + [0.0] * 423
+    f2_values = [0.0] * 468 + [1.0] * 423
+    summary = _with_per_source(
+        {
+            "source_macro_candidate_recovery_rate": sum(v4_values) / 891,
+        },
+        v4_values,
+    )
+    bootstrap = paired_bootstrap_recovery_improvement_v4(
+        summary, _f2_summary(f2_values)
+    )
+    assert bootstrap["point_difference"] > 0.05
+    assert bootstrap["ci_lower_bound_strictly_greater_than_zero"] is False
+
+
+def test_confirmation_technical_failure_is_terminal_and_adds_no_seed() -> None:
+    gate = confirmation_technical_failure_gate_v4(
+        [
+            {
+                "training_seed": 20260912,
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            }
+        ]
+    )
+    assert gate["status"] == "XEDITSETFLOW_V4_CONFIRMATION_NO_GO"
+    assert gate["additional_seed_authorized"] is False

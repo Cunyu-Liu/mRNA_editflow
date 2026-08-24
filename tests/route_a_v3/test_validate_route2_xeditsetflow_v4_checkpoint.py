@@ -8,7 +8,8 @@ import pytest
 
 from scripts.route_a_v3.validate_route2_xeditsetflow_v4_checkpoint import (
     SetFlowCheckpointValidationV4Error,
-    require_screen_training_package_terminal_v4,
+    require_training_package_terminal_v4,
+    setflow_validation_stage_seed_v4,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,14 +65,19 @@ def test_compute_record_counts_prior_trunk_mode_heads_and_replay() -> None:
 def test_both_training_runs_must_be_terminal_before_any_checkpoint_validation(
     tmp_path: Path,
 ) -> None:
-    config = {"output_root": str(tmp_path)}
+    config = {
+        "output_root": str(tmp_path),
+        "training": {"screen_seed": 20260911},
+    }
     for run_id in ("v4_full", "v4_single_mode"):
         directory = tmp_path / run_id
         directory.mkdir()
         (directory / "training_summary.json").write_text(
             json.dumps(
-                {
-                    "status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
+                    {
+                        "status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
+                        "run_stage": "SCREEN",
+                        "seed": 20260911,
                     "saved_checkpoint_paths": {
                         "4": "a",
                         "6": "b",
@@ -82,10 +88,40 @@ def test_both_training_runs_must_be_terminal_before_any_checkpoint_validation(
             ),
             encoding="utf-8",
         )
-    assert set(require_screen_training_package_terminal_v4(config)) == {
+    assert set(require_training_package_terminal_v4(config)) == {
         "v4_full",
         "v4_single_mode",
     }
     (tmp_path / "v4_single_mode" / "failure.json").write_text("{}", encoding="utf-8")
     with pytest.raises(SetFlowCheckpointValidationV4Error):
-        require_screen_training_package_terminal_v4(config)
+        require_training_package_terminal_v4(config)
+
+
+def test_confirmation_waits_only_for_full_training_at_declared_seed(
+    tmp_path: Path,
+) -> None:
+    config = {
+        "run_stage": "CONFIRMATION",
+        "training_seed": 20260913,
+        "output_root": str(tmp_path),
+    }
+    directory = tmp_path / "v4_full"
+    directory.mkdir()
+    (directory / "training_summary.json").write_text(
+        json.dumps(
+            {
+                "status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
+                "run_stage": "CONFIRMATION",
+                "seed": 20260913,
+                "saved_checkpoint_paths": {
+                    "4": "a",
+                    "6": "b",
+                    "8": "c",
+                    "10": "d",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert setflow_validation_stage_seed_v4(config) == ("CONFIRMATION", 20260913)
+    assert set(require_training_package_terminal_v4(config)) == {"v4_full"}

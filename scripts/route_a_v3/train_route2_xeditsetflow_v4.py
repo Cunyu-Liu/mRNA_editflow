@@ -32,6 +32,7 @@ from core.route2_source_token_cache_v3 import (
 from core.route2_xeditsetflow_runtime_v4 import (
     build_setflow_screen_model_v4,
     pad_source_batches_v4,
+    require_setflow_v4_confirmation_launch_authorization,
     require_setflow_v4_screen_launch_authorization,
     screen_run_spec_v4,
     setflow_v4_learning_rate_factor,
@@ -160,18 +161,38 @@ def train(
     physical_gpu_index: int,
 ) -> dict[str, Any]:
     spec = screen_run_spec_v4(config, run_id)
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "unknown SetFlow V4 run stage")
+    training_seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
     current_head = _git_head()
     authorization = _load_json(authorization_path)
     preflight = _load_json(Path(config["preflight_output_path"]))
     source_data_audit = _load_json(Path(config["source_level_data_audit_path"]))
-    require_setflow_v4_screen_launch_authorization(
-        config,
-        authorization,
-        preflight,
-        source_data_audit,
-        run_id=run_id,
-        current_git_head=current_head,
-    )
+    if run_stage == "SCREEN":
+        require_setflow_v4_screen_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            current_git_head=current_head,
+        )
+        _require(training_seed == 20260911, "SetFlow V4 screen seed changed")
+    else:
+        screen_gate = _load_json(Path(config["screen_gate_path"]))
+        require_setflow_v4_confirmation_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            screen_gate,
+            run_id=run_id,
+            current_git_head=current_head,
+        )
     _require(
         not output_directory.exists(),
         f"terminal SetFlow V4 output already exists: {output_directory}",
@@ -222,7 +243,6 @@ def train(
         "SetFlow V4 runner parameter count differs from preflight",
     )
     training = config["training"]
-    _require(int(training["screen_seed"]) == 20260911, "SetFlow V4 screen seed changed")
     _require(int(training["pass_count"]) == 10, "SetFlow V4 pass count changed")
     _require(training["saved_checkpoint_passes"] == [4, 6, 8, 10], "SetFlow V4 checkpoint passes changed")
     _require(training["validation_generation_during_training"] is False, "active Validation generation was enabled")
@@ -230,16 +250,16 @@ def train(
         len(train_records), passes=int(training["pass_count"])
     )
     dataset = SetFlowSourceStateDatasetV4(
-        train_records, vocabs, seed=int(training["screen_seed"])
+        train_records, vocabs, seed=training_seed
     )
     sampler = BalancedTaskSourceGroupPassSamplerV3(
         train_records,
         record_batch_size=8,
-        seed=int(training["screen_seed"]),
+        seed=training_seed,
         repeat_cap=int(config["data_geometry"]["maximum_source_repeats_per_pass"]),
     )
-    torch.manual_seed(int(training["screen_seed"]))
-    torch.cuda.manual_seed_all(int(training["screen_seed"]))
+    torch.manual_seed(training_seed)
+    torch.cuda.manual_seed_all(training_seed)
     model = model.to(device)
     _require(next(model.parameters()).is_cuda, "SetFlow V4 model parameters left CUDA")
     optimizer = torch.optim.AdamW(
@@ -256,6 +276,8 @@ def train(
             {
                 **dict(config),
                 "run_id": run_id,
+                "run_stage": run_stage,
+                "training_seed": training_seed,
                 "physical_gpu_index": physical_gpu_index,
                 "device": str(device),
                 "authorized_git_head": current_head,
@@ -290,10 +312,10 @@ def train(
         + frozen_pretrained_count,
     }
     attempt_config = {
-        "attempt_id": f"xeditsetflow_v4_{run_id}_seed20260911",
-        "run_id": f"xeditsetflow_v4_{run_id}_seed20260911",
-        "baseline_id": f"xeditsetflow_v4_{run_id}_seed20260911",
-        "attempt_purpose": "XEDITSETFLOW_V4_SCREEN",
+        "attempt_id": f"xeditsetflow_v4_{run_id}_seed{training_seed}",
+        "run_id": f"xeditsetflow_v4_{run_id}_seed{training_seed}",
+        "baseline_id": f"xeditsetflow_v4_{run_id}_seed{training_seed}",
+        "attempt_purpose": f"XEDITSETFLOW_V4_{run_stage}",
         "scientific_role": "SELECTABLE_FULL" if spec.selectable else "SINGLE_MODE_MECHANISM_CONTROL",
         "result_stage": "DEVELOPMENT_VALIDATION_TRAINING_PENDING_GENERATION",
         "model_kind": "XEDITSETFLOW_V4_FULL" if spec.mode_count == 8 else "XEDITSETFLOW_V4_SINGLE_MODE",
@@ -307,7 +329,7 @@ def train(
         "loss_kind": "COMMON_SET_MARGINAL_PLUS_PER_CANDIDATE_COVERAGE_PLUS_COUNT_PLUS_MODE_INFORMATION",
         "training_sampling_mode": "TASK_SOURCE_BALANCED_SOURCE_LEVEL",
         "loss_aggregation_mode": "SOURCE_AND_UNIQUE_TERMINAL_CANDIDATE_EQUAL_WEIGHT",
-        "seed": int(training["screen_seed"]),
+        "seed": training_seed,
         "physical_gpu_index": physical_gpu_index,
         "device": str(device),
         "optimizer_name": "AdamW",
@@ -422,11 +444,12 @@ def train(
             torch.save(
                 {
                     "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint.v1",
+                    "run_stage": run_stage,
                     "run_id": run_id,
                     "selectable": spec.selectable,
                     "mode_count": spec.mode_count,
                     "mode_information_weight": spec.mode_information_weight,
-                    "seed": int(training["screen_seed"]),
+                    "seed": training_seed,
                     "completed_pass": pass_number,
                     "model_state_dict": model.state_dict(),
                     "vocabs": vocabs,
@@ -470,11 +493,12 @@ def train(
     summary = {
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_training_summary.v1",
         "status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
+        "run_stage": run_stage,
         "run_id": run_id,
         "selectable": spec.selectable,
         "mode_count": spec.mode_count,
         "mode_information_weight": spec.mode_information_weight,
-        "seed": int(training["screen_seed"]),
+        "seed": training_seed,
         "train_projection_candidate_row_count": len(train_rows),
         "train_source_count": len(train_records),
         "train_inventory": train_inventory,
@@ -537,6 +561,12 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     arguments = parser.parse_args()
     config = _load_json(arguments.config)
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    training_seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
     output_directory = arguments.output_dir or Path(config["output_root"]) / arguments.run_id
     try:
         result = train(
@@ -552,6 +582,8 @@ def main() -> int:
                 "schema_version": "route_a_v3_route2_xeditsetflow_v4_training_failure.v1",
                 "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
                 "run_id": arguments.run_id,
+                "run_stage": run_stage,
+                "seed": training_seed,
                 "error_type": type(error).__name__,
                 "error": str(error),
                 "development_test_outcome_reads": 0,

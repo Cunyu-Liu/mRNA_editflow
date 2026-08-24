@@ -1,0 +1,56 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_runtime_gate.v1",
+  "recorded_at_local": "2026-08-24T19:14:23+08:00",
+  "status": "XEDITSETFLOW_V4_CONFIRMATION_EXECUTION_STACK_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "d8cfca8e26aabf91bf1692591aff207608dffa8d",
+  "implementation": {
+    "runtime_authorization": "core/route2_xeditsetflow_runtime_v4.py",
+    "gate": "core/route2_xeditsetflow_gate_v4.py",
+    "training_runner": "scripts/route_a_v3/train_route2_xeditsetflow_v4.py",
+    "checkpoint_validation_runner": "scripts/route_a_v3/validate_route2_xeditsetflow_v4_checkpoint.py",
+    "confirmation_authorizer": "scripts/route_a_v3/authorize_route2_xeditsetflow_v4_confirmation.py",
+    "confirmation_adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditsetflow_v4_confirmation.py"
+  },
+  "frozen_confirmation_scope": {
+    "model": "v4_full",
+    "seeds": [
+      20260912,
+      20260913,
+      20260914
+    ],
+    "additional_seed_authorized": false,
+    "checkpoint_passes": [
+      4,
+      6,
+      8,
+      10
+    ],
+    "selection_order": [
+      "MAX_RECOVERY",
+      "MAX_TOP_K_RECOVERY",
+      "MIN_COMMON_NLL",
+      "EARLIEST_PASS"
+    ],
+    "paired_bootstrap_sources": 891,
+    "paired_bootstrap_replicates": 10000,
+    "paired_bootstrap_seed": 2026091102,
+    "paired_bootstrap_required_ci_lower_bound": "STRICTLY_GREATER_THAN_ZERO"
+  },
+  "verification": {
+    "combined_setflow_v4_focused_tests": "59/59 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_passed": false,
+    "confirmation_authorized": false,
+    "confirmation_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "IMPLEMENTATION_AND_GATE_ONLY; NO V4 PERFORMANCE OR GENERATOR ADVANTAGE HAS BEEN OBSERVED",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

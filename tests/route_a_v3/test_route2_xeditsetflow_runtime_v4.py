@@ -10,6 +10,7 @@ from core.route2_xeditsetflow_runtime_v4 import (
     XEditSetFlowRuntimeV4Error,
     build_setflow_screen_model_v4,
     pad_source_batches_v4,
+    require_setflow_v4_confirmation_launch_authorization,
     require_setflow_v4_screen_launch_authorization,
     screen_run_spec_v4,
     setflow_v4_learning_rate_factor,
@@ -140,6 +141,72 @@ def test_launch_authorization_rejects_protected_read_before_any_run() -> None:
             authorization,
             preflight,
             data,
+            run_id="v4_single_mode",
+            current_git_head="abc",
+        )
+
+
+def test_confirmation_authorization_is_full_only_three_seed_and_screen_gated() -> None:
+    config = {
+        **_config(),
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_runtime.v1",
+        "run_stage": "CONFIRMATION",
+        "training_seed": 20260912,
+        "selected_model": "v4_full",
+    }
+    authorization = {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_launch_authorization.v1",
+        "status": "XEDITSETFLOW_V4_CONFIRMATION_LAUNCH_AUTHORIZED",
+        "authorized_git_head": "abc",
+        "authorized_seeds": [20260912, 20260913, 20260914],
+        "authorized_run_id": "v4_full",
+        "barriers": {
+            "screen_gate_passed": True,
+            "a100_current_head_focused_tests_passed": True,
+            "a100_current_head_v332_tests_passed": True,
+            "source_token_cache_terminal_complete": True,
+            "source_level_data_audit_passed": True,
+            "formal_parameter_preflight_passed": True,
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    preflight = {
+        "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+        "passed": True,
+        "full_trainable_parameter_count": 100_099_998,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    data = {
+        "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
+        "validation_source_count": 891,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    gate = {
+        "status": "XEDITSETFLOW_V4_SCREEN_PASS",
+        "confirmation_authorized": True,
+        "confirmation_seeds": [20260912, 20260913, 20260914],
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    require_setflow_v4_confirmation_launch_authorization(
+        config,
+        authorization,
+        preflight,
+        data,
+        gate,
+        run_id="v4_full",
+        current_git_head="abc",
+    )
+    with pytest.raises(XEditSetFlowRuntimeV4Error):
+        require_setflow_v4_confirmation_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            data,
+            gate,
             run_id="v4_single_mode",
             current_git_head="abc",
         )

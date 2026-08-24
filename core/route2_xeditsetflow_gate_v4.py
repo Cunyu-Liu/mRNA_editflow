@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any, Mapping
 
+import numpy as np
+
 
 class XEditSetFlowGateV4Error(RuntimeError):
     pass
@@ -76,6 +78,8 @@ def validate_checkpoint_summary_identity_v4(
     *,
     run_id: str,
     checkpoint_pass: int,
+    expected_seed: int = 20260911,
+    expected_run_stage: str = "SCREEN",
 ) -> dict[str, Any]:
     mode_count = 8 if run_id == "v4_full" else 1
     selectable = run_id == "v4_full"
@@ -88,8 +92,9 @@ def validate_checkpoint_summary_identity_v4(
     )
     _require(
         summary.get("run_id") == run_id
+        and summary.get("run_stage") == expected_run_stage
         and int(summary.get("checkpoint_pass", -1)) == checkpoint_pass
-        and int(summary.get("seed", -1)) == 20260911
+        and int(summary.get("seed", -1)) == expected_seed
         and int(summary.get("mode_count", -1)) == mode_count
         and summary.get("selectable") is selectable,
         "SetFlow V4 checkpoint validation identity changed",
@@ -354,6 +359,257 @@ def technical_failure_gate_v4(failures: list[Mapping[str, Any]]) -> dict[str, An
         "selected_checkpoint_pass": None,
         "confirmation_authorized": False,
         "confirmation_seeds": [],
+        "additional_seed_authorized": False,
+        "development_test_authorized": False,
+        "guidance_authorized": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def paired_bootstrap_recovery_improvement_v4(
+    selected_summary: Mapping[str, Any],
+    terminal_f2_summary: Mapping[str, Any],
+    *,
+    replicates: int = 10_000,
+    seed: int = 2026091102,
+) -> dict[str, Any]:
+    _require(replicates == 10_000, "SetFlow V4 bootstrap replicate count changed")
+    _require(seed == 2026091102, "SetFlow V4 bootstrap seed changed")
+    per_source_v4 = selected_summary.get("measured_neighborhood_metrics", {}).get(
+        "per_source"
+    )
+    per_source_f2 = terminal_f2_summary.get("measured_neighborhood_metrics", {}).get(
+        "per_source"
+    )
+    _require(
+        isinstance(per_source_v4, Mapping) and isinstance(per_source_f2, Mapping),
+        "SetFlow V4 or terminal F2 per-source recovery is absent",
+    )
+    _require(
+        set(per_source_v4) == set(per_source_f2) and len(per_source_v4) == 891,
+        "SetFlow V4 paired-bootstrap source keys differ from the frozen 891-source F2 cohort",
+    )
+    source_keys = sorted(per_source_v4)
+    v4 = np.asarray(
+        [
+            _finite(per_source_v4[key].get("candidate_recovery_rate"), f"V4 recovery {key}")
+            for key in source_keys
+        ],
+        dtype=np.float64,
+    )
+    f2 = np.asarray(
+        [
+            _finite(per_source_f2[key].get("candidate_recovery_rate"), f"F2 recovery {key}")
+            for key in source_keys
+        ],
+        dtype=np.float64,
+    )
+    _require(
+        np.isclose(
+            v4.mean(),
+            _finite(
+                selected_summary.get("source_macro_candidate_recovery_rate"),
+                "V4 source-macro recovery",
+            ),
+            rtol=0.0,
+            atol=1e-12,
+        )
+        and np.isclose(
+            f2.mean(),
+            _finite(
+                terminal_f2_summary.get("source_macro_candidate_recovery_rate"),
+                "terminal F2 source-macro recovery",
+            ),
+            rtol=0.0,
+            atol=1e-12,
+        ),
+        "SetFlow V4 paired-bootstrap per-source means differ from summary metrics",
+    )
+    differences = v4 - f2
+    rng = np.random.default_rng(seed)
+    samples = rng.integers(
+        0, len(source_keys), size=(replicates, len(source_keys)), endpoint=False
+    )
+    bootstrap = differences[samples].mean(axis=1)
+    ci = np.quantile(bootstrap, [0.025, 0.975])
+    return {
+        "statistic": "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_MINUS_TERMINAL_F2",
+        "source_count": len(source_keys),
+        "point_difference": float(differences.mean()),
+        "ci_95": [float(ci[0]), float(ci[1])],
+        "replicates": replicates,
+        "seed": seed,
+        "ci_lower_bound_strictly_greater_than_zero": float(ci[0]) > 0.0,
+    }
+
+
+def _validate_terminal_f2_reference_v4(
+    terminal_f2_summary: Mapping[str, Any],
+) -> None:
+    _require(
+        terminal_f2_summary.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_unguided_validation.v3"
+        and terminal_f2_summary.get("status") == "FLOW_G0_READY"
+        and terminal_f2_summary.get("arm") == "f2"
+        and int(terminal_f2_summary.get("seed", -1)) == 20260903
+        and int(terminal_f2_summary.get("source_count", -1)) == 891
+        and int(terminal_f2_summary.get("candidate_count", -1)) == 28_512,
+        "terminal F2 reference identity changed",
+    )
+    _require(
+        terminal_f2_summary.get("development_test_outcomes_accessed") is False
+        and int(terminal_f2_summary.get("evaluation_records_read", -1)) == 0
+        and terminal_f2_summary.get("evaluation_outcomes_accessed") is False
+        and terminal_f2_summary.get("guided_critic_used") is False
+        and terminal_f2_summary.get("independent_evaluator_used") is False,
+        "terminal F2 reference used prohibited outcomes or evaluators",
+    )
+
+
+def adjudicate_setflow_confirmation_v4(
+    configs: Mapping[int, Mapping[str, Any]],
+    summaries: Mapping[int, Mapping[int, Mapping[str, Any]]],
+    terminal_f2_summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected_seeds = (20260912, 20260913, 20260914)
+    _validate_terminal_f2_reference_v4(terminal_f2_summary)
+    _require(
+        set(configs) == set(summaries) == set(expected_seeds),
+        "SetFlow V4 confirmation seed cohort is incomplete or contains an extra seed",
+    )
+    seed_results: dict[str, Any] = {}
+    all_passed = True
+    for seed in expected_seeds:
+        config = configs[seed]
+        _require(
+            config.get("schema_version")
+            == "route_a_v3_route2_xeditsetflow_v4_confirmation_runtime.v1"
+            and config.get("run_stage") == "CONFIRMATION"
+            and int(config.get("training_seed", -1)) == seed
+            and config.get("selected_model") == "v4_full"
+            and config.get("required_confirmation_seeds") == list(expected_seeds)
+            and config.get("additional_seed_authorized") is False,
+            f"SetFlow V4 confirmation config changed: {seed}",
+        )
+        _require(
+            int(config.get("development_test_outcomes_accessed", True)) == 0
+            and int(config.get("new_final_evaluation_outcomes_accessed", True)) == 0,
+            f"SetFlow V4 confirmation config reports a protected read: {seed}",
+        )
+        _require(
+            set(summaries[seed]) == {4, 6, 8, 10},
+            f"SetFlow V4 confirmation checkpoint package is incomplete: {seed}",
+        )
+        rows = {
+            checkpoint_pass: validate_checkpoint_summary_identity_v4(
+                summaries[seed][checkpoint_pass],
+                run_id="v4_full",
+                checkpoint_pass=checkpoint_pass,
+                expected_seed=seed,
+                expected_run_stage="CONFIRMATION",
+            )
+            for checkpoint_pass in (4, 6, 8, 10)
+        }
+        decision = select_checkpoint_v4(rows)
+        selected = decision["generation_constrained_selected_checkpoint"]
+        checks = {"has_eligible_checkpoint": selected is not None}
+        bootstrap = None
+        if selected is not None:
+            selected_summary = summaries[seed][selected["checkpoint_pass"]]
+            reference_recovery = _finite(
+                terminal_f2_summary.get("source_macro_candidate_recovery_rate"),
+                "terminal F2 recovery",
+            )
+            reference_top_k = _finite(
+                terminal_f2_summary.get(
+                    "source_macro_measured_top_k_recovery_at_k"
+                ),
+                "terminal F2 top-k recovery",
+            )
+            reference_unique = _finite(
+                terminal_f2_summary.get("source_macro_unique_candidate_rate"),
+                "terminal F2 unique rate",
+            )
+            bootstrap = paired_bootstrap_recovery_improvement_v4(
+                selected_summary, terminal_f2_summary
+            )
+            checks.update(
+                {
+                    "recovery_margin_over_terminal_f2_at_least_0_05": selected[
+                        "source_macro_candidate_recovery_rate"
+                    ]
+                    - reference_recovery
+                    >= 0.05,
+                    "top_k_margin_over_terminal_f2_at_least_0_03": selected[
+                        "source_macro_measured_top_k_recovery_at_k"
+                    ]
+                    - reference_top_k
+                    >= 0.03,
+                    "unique_margin_over_terminal_f2_at_least_0_15": selected[
+                        "source_macro_unique_candidate_rate"
+                    ]
+                    - reference_unique
+                    >= 0.15,
+                    "paired_bootstrap_recovery_ci_lower_bound_positive": bootstrap[
+                        "ci_lower_bound_strictly_greater_than_zero"
+                    ],
+                }
+            )
+        else:
+            checks.update(
+                {
+                    "recovery_margin_over_terminal_f2_at_least_0_05": False,
+                    "top_k_margin_over_terminal_f2_at_least_0_03": False,
+                    "unique_margin_over_terminal_f2_at_least_0_15": False,
+                    "paired_bootstrap_recovery_ci_lower_bound_positive": False,
+                }
+            )
+        passed = all(checks.values())
+        all_passed = all_passed and passed
+        seed_results[str(seed)] = {
+            "checkpoint_rows": rows,
+            "checkpoint_decision": decision,
+            "selected_checkpoint_pass": None
+            if selected is None
+            else selected["checkpoint_pass"],
+            "paired_bootstrap_recovery_improvement": bootstrap,
+            "checks": checks,
+            "passed": passed,
+        }
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
+        "status": "XEDITSETFLOW_V4_G0_READY"
+        if all_passed
+        else "XEDITSETFLOW_V4_CONFIRMATION_NO_GO",
+        "required_seeds": list(expected_seeds),
+        "seed_results": seed_results,
+        "additional_seed_authorized": False,
+        "development_test_authorized": False,
+        "guidance_authorized": False,
+        "critic_used": False,
+        "independent_evaluator_used": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def confirmation_technical_failure_gate_v4(
+    failures: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    _require(bool(failures), "SetFlow V4 confirmation failure gate has no failure")
+    for failure in failures:
+        _require(
+            int(failure.get("development_test_outcome_reads", -1)) == 0
+            and int(failure.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            "SetFlow V4 confirmation failure artifact has unauthorized protected reads",
+        )
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
+        "status": "XEDITSETFLOW_V4_CONFIRMATION_NO_GO",
+        "reason": "ONE_OR_MORE_FROZEN_CONFIRMATION_TRAINING_OR_VALIDATION_RUNS_FAILED_TECHNICALLY",
+        "required_seeds": [20260912, 20260913, 20260914],
+        "technical_failures": [dict(row) for row in failures],
         "additional_seed_authorized": False,
         "development_test_authorized": False,
         "guidance_authorized": False,

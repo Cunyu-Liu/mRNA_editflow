@@ -43,6 +43,16 @@ def test_config_requires_four_checkpoints_after_exact_ten_passes() -> None:
     assert config["training"]["checkpoint_selection_after_terminal_training_only"] is True
 
 
+def test_training_runner_dispatches_screen_and_confirmation_authorization() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/train_route2_xeditsetflow_v4.py"
+    ).read_text(encoding="utf-8")
+    assert 'run_stage in {"SCREEN", "CONFIRMATION"}' in source
+    assert "require_setflow_v4_screen_launch_authorization" in source
+    assert "require_setflow_v4_confirmation_launch_authorization" in source
+    assert 'attempt_purpose": f"XEDITSETFLOW_V4_{run_stage}"' in source
+
+
 def test_failure_updates_existing_attempt_in_place_without_adding_a_row(
     tmp_path: Path,
 ) -> None:

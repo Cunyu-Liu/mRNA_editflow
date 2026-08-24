@@ -2324,6 +2324,25 @@ confirmation config focused=4/4、combined SetFlow V4 focused=49/49、精确V3.3
 diff-check PASS。当前screen未运行，confirmation configs/attempts=0，Development TEST/new Evaluation outcome
 read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json`。
 
+## XEditSetFlow V4 confirmation runtime、authorization与三seed gate（2026-08-24）
+
+已将正式training/checkpoint-validation runner扩展为显式`SCREEN`/`CONFIRMATION`双阶段。screen仍固定
+seed20260911并等待full+single-mode均terminal；confirmation只接受`v4_full`及20260912/20260913/20260914，
+训练summary、checkpoint、validation artifact与中央attempt均记录真实stage/seed。confirmation launch authorization
+只能由同一Git HEAD的screen launch证据、terminal `XEDITSETFLOW_V4_SCREEN_PASS`、formal preflight、source-data
+audit和零protected read原子生成；不授权第四seed、TEST或guidance。
+
+三seed confirmation adjudicator要求每seed的10-pass训练及pass4/6/8/10四项固定Validation全部自然terminal，仍按
+recovery→top-k→NLL→earlier pass选择eligible checkpoint。每seed必须同时满足绝对NLL/recovery/top-k/unique/G0
+门槛、相对terminal F2的0.05/0.03/0.15 margin，以及精确891个相同source的10,000次paired-bootstrap recovery
+improvement 95% CI下界严格>0。三seed全过才写`XEDITSETFLOW_V4_G0_READY`；技术failure或任一gate失败均为
+terminal confirmation NO-GO，不补seed。
+
+本机combined SetFlow V4 focused=59/59、精确V3.3.2=96/96、compile/diff-check PASS。screen和confirmation
+尚未运行，optimizer attempts=0，Development TEST/new Evaluation outcome read=0；A100 current-HEAD测试继续等待
+五个旧launch-head C3 jobs全部terminal。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_confirmation_runtime_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
