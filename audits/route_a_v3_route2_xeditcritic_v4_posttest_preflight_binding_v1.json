@@ -1,0 +1,29 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_preflight_binding_audit.v1",
+  "status": "XEDITCRITIC_V4_POSTTEST_PREFLIGHT_BINDING_AND_CONFIG_ATOMICITY_FIXED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:57:00+08:00",
+  "head_before_change": "a09b6b7e6734587fa0e0ee9896d0ff61833c4230",
+  "binding": {
+    "old_nonproduced_preflight_path_removed": true,
+    "posttest_formal_preflight_equals_screen_preflight_output": true,
+    "refit_job_count": 3,
+    "loso_job_count": 42,
+    "runtime_config_packages_atomic_directory_publish": true,
+    "existing_final_or_partial_rejected": true
+  },
+  "verification": {
+    "focused_posttest_tests": "14 passed",
+    "critic_v4_related_tests": "90 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile_and_json_parse": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "development_test_access_events": 0,
+    "refit_configs_materialized": false,
+    "loso_configs_materialized": false,
+    "posttest_optimizer_attempts_started": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_POSTTEST_RUNTIME_BINDING_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

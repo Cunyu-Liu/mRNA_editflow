@@ -142,6 +142,36 @@ def test_v4_posttest_preparers_emit_three_refits_and_42_paired_loso(
     )
 
 
+def test_v4_posttest_config_manifest_is_atomically_published(tmp_path: Path) -> None:
+    output = tmp_path / "runtime-configs"
+    payload = {
+        "status": "XEDITCRITIC_V4_REFIT_CONFIGS_PREPARED_NOT_STARTED",
+        "jobs": [
+            {
+                "seed": 20260908,
+                "run_id": "v4_full",
+                "config": {"run_stage": "REFIT", "training_seed": 20260908},
+            }
+        ],
+    }
+    prepare.write_manifest_v4(payload, output)
+    assert not output.with_name(output.name + ".partial").exists()
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    assert len(manifest["runtime_config_paths"]) == 1
+    assert Path(manifest["runtime_config_paths"][0]).is_file()
+
+    stale_output = tmp_path / "stale-configs"
+    stale = stale_output.with_name(stale_output.name + ".partial")
+    stale.mkdir()
+    try:
+        prepare.write_manifest_v4(payload, stale_output)
+    except Exception as error:
+        assert "partial posttest config root exists" in str(error)
+    else:
+        raise AssertionError("stale posttest staging directory was overwritten")
+    assert stale.is_dir()
+
+
 def test_v4_posttest_authorizer_keeps_stage_seed_and_holdout_scope(tmp_path: Path) -> None:
     protocol = _protocol(tmp_path)
     refit = {

@@ -4101,3 +4101,12 @@ Development TEST或new Evaluation。最新时钟偏移为+135秒，下一检查�
 本地focused=14/14、Critic V4相关=89/89、精确V3.3.2=96/96、compile PASS。未授权或运行TEST，Development
 TEST access event=0、new Evaluation read=0；A100验证仍等待C3 terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_frozen_test_terminal_closure_v1.json`。
+
+## Critic V4 post-TEST formal-preflight binding focused record（2026-08-25）
+
+refit/LOSO runtime现在消费与screen authorizer/trainer相同的正式Critic V4 preflight，不再引用未生产的旧路径；
+三refit与42 paired LOSO config package均整目录原子发布。冻结seed/fold/pass/unknown-study policy不变。
+
+本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile/JSON PASS。Development TEST access=0，
+未启动post-TEST optimizer或new Evaluation read。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_preflight_binding_v1.json`。

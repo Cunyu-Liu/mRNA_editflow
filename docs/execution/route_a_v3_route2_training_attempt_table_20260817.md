@@ -3142,3 +3142,14 @@ TEST gate、18,292条数、bootstrap、读取次数和结果内容均不变。�
 精确V3.3.2=96/96、compile PASS。runner未授权、未执行，Development TEST access event仍为0，new Evaluation
 read=0，论文claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_frozen_test_terminal_closure_v1.json`。
+
+## Critic V4 post-TEST preflight binding and atomic configs（2026-08-25）
+
+post-TEST协议的`formal_preflight_path`仍指向从未由V4 preflight生成的旧目录，而正式screen config实际产物位于
+`experiments/xeditcritic_v4/screen_seed_20260907/preflight.json`。若TEST PASS，3个refit与42个LOSO job会因加载
+不存在的preflight硬失败。现协议路径与screen config强制相等，回归测试锁定该绑定。
+
+同时refit/LOSO runtime config+manifest由逐文件final写改为兄弟staging完整生成后整目录原子发布；既有final或
+partial不覆盖。seed、study folds、passes与gate均未改。本地focused=14/14、Critic V4相关=90/90、精确V3.3.2
+=96/96、compile/JSON PASS。TEST/refit/LOSO均未授权或执行，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_preflight_binding_v1.json`。

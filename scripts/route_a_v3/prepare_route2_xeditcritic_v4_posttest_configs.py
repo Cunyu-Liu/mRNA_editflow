@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -275,7 +276,9 @@ def prepare_loso_configs_v4(
 
 def write_manifest_v4(payload: Mapping[str, Any], output_dir: Path) -> None:
     _require(not output_dir.exists(), f"Critic V4 posttest config root exists: {output_dir}")
-    output_dir.mkdir(parents=True)
+    staging = output_dir.with_name(output_dir.name + ".partial")
+    _require(not staging.exists(), f"Critic V4 partial posttest config root exists: {staging}")
+    staging.mkdir(parents=True)
     written: dict[tuple[int, str | None], str] = {}
     for job in payload["jobs"]:
         identity = (int(job["seed"]), job.get("held_out_study"))
@@ -284,12 +287,12 @@ def write_manifest_v4(payload: Mapping[str, Any], output_dir: Path) -> None:
         label = f"seed_{identity[0]}"
         if identity[1] is not None:
             label += f"_{identity[1]}"
-        path = output_dir / f"{label}.json"
-        path.write_text(
+        filename = f"{label}.json"
+        (staging / filename).write_text(
             json.dumps(job["config"], indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        written[identity] = str(path)
+        written[identity] = str(output_dir / filename)
     manifest = {
         **dict(payload),
         "runtime_config_paths": list(written.values()),
@@ -299,9 +302,10 @@ def write_manifest_v4(payload: Mapping[str, Any], output_dir: Path) -> None:
             for job in payload["jobs"]
         ],
     }
-    (output_dir / "manifest.json").write_text(
+    (staging / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    os.replace(staging, output_dir)
 
 
 def main() -> None:
