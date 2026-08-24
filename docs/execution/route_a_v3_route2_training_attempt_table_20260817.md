@@ -2099,6 +2099,23 @@ Critic V4 focused=59/59、精确V3.3.2=96/96。formal runner尚未启动，optim
 TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_runner_batch_semantics_v1.json`。
 
+## XEditCritic V4 formal screen runner（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。formal runner已覆盖冻结的C0-V4、V4-FULL、三项
+candidate-information control、complete candidate-bundle permutation和NO-CROSS/NO-MOE共8个screen run。
+运行目录和RUNNING ledger row创建之前必须验证同一current Git HEAD的原子launch authorization：C3五项
+terminal且摘要恰好读取一次、A100 current-HEAD focused/V3.3.2 tests、bottom-six cache及formal参数/显存
+preflight必须全部PASS，protected reads必须为0。
+
+正式训练固定8 passes×2,802=22,416 optimizer updates、effective batch32、preflight选择的physical batch
+4/8/16/32、BF16 forward与FP32 effective objective。每个update先无图收集32条prediction，再按保存RNG
+逐physical batch重放反传；无singleton/CPU fallback。训练中不运行Validation，pass日志只发alive/CUDA和
+update count；全部8 passes terminal后才一次读取Validation并保存final-pass-8 checkpoint，不按peak重选。
+
+完整本机Critic V4 focused=63/63、精确V3.3.2=96/96、compile/diff-check PASS。runner未获launch
+authorization且未启动，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation
+outcome read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

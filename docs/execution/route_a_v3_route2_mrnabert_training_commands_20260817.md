@@ -3253,3 +3253,21 @@ cache materializer按batch行展开其ragged edit offsets和global residual，�
 arithmetic。相邻定向=24/24、完整本机Critic V4 focused=59/59、精确V3.3.2=96/96；optimizer attempts=0，
 Validation metric read=false，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_runner_batch_semantics_v1.json`。
+
+## XEditCritic V4 formal screen runner（2026-08-24）
+
+已实现`train_route2_xeditcritic_v4.py`。runner只接受screen config中的8个精确run ID；C0-V4使用相同
+projection、endpoint descriptors、sampler、loss schedule和update budget，V4 full/controls/ablations使用同一
+bottom-six cache及formal trainable upper-six。permutation control在TRAIN与VALIDATION内分别执行exact
+source/task complete candidate-bundle permutation，不跨split借donor。
+
+入口在创建output directory或中央RUNNING row之前验证原子launch authorization及preflight：五个C3终态、
+五摘要read-once、A100 current-HEAD两组测试、cache完成、165–175M formal count、20–35GiB进程内峰值和
+selected physical batch缺一不可，且授权Git HEAD必须等于runner HEAD。训练每update使用32条同task记录；
+BF16/no-grad第一次forward不进入activation checkpoint，第二次带图回放使用checkpoint并保持dropout bitwise
+相等；Huber/pairwise/soft-Spearman在FP32完整32-vector上计算。训练pass只输出alive事件，不读或输出active
+Validation性能；第8 pass后一次评测并固定final checkpoint。
+
+完整本机Critic V4 focused=63/63、精确V3.3.2=96/96、compile/diff-check PASS。当前launch barrier未解除，
+runner未启动，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation outcome
+read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_runner_v1.json`。

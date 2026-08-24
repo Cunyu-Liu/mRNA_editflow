@@ -1,0 +1,71 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_formal_runner.v1",
+  "recorded_at_local": "2026-08-24T17:57:01+08:00",
+  "status": "XEDITCRITIC_V4_FORMAL_SCREEN_RUNNER_IMPLEMENTED_NOT_LAUNCHED",
+  "git_head_before_delivery": "9632820",
+  "implementation": {
+    "runner": "scripts/route_a_v3/train_route2_xeditcritic_v4.py",
+    "test": "tests/route_a_v3/test_train_route2_xeditcritic_v4.py"
+  },
+  "launch_authorization": {
+    "checked_before_run_directory_creation": true,
+    "checked_before_training_attempt_row": true,
+    "exact_authorized_git_head_required": true,
+    "all_five_c3_terminal_required": true,
+    "c3_summaries_read_exactly_once_required": true,
+    "a100_current_head_focused_and_v332_tests_required": true,
+    "bottom_six_cache_terminal_required": true,
+    "formal_parameter_and_memory_preflight_required": true,
+    "development_test_outcome_reads_required": 0,
+    "new_final_evaluation_outcome_reads_required": 0
+  },
+  "training_path": {
+    "screen_run_count": 8,
+    "only_selectable_run": "v4_full",
+    "screen_seed": 20260907,
+    "passes": 8,
+    "updates_per_pass": 2802,
+    "total_optimizer_updates": 22416,
+    "effective_batch": 32,
+    "physical_batch_candidates": [4, 8, 16, 32],
+    "minimum_physical_forward": 4,
+    "singleton_forward_count": 0,
+    "forward_precision": "BF16",
+    "effective_objective_precision": "FP32",
+    "activation_checkpointing_no_grad_first_pass_disabled": true,
+    "rng_replay_bitwise_required": true,
+    "final_validation_read_pass": 8,
+    "validation_peak_reselection": false,
+    "cpu_fallback": false
+  },
+  "controls": {
+    "c0_same_endpoint_information": true,
+    "source_only": true,
+    "edit_metadata_only": true,
+    "no_candidate_sequence": true,
+    "complete_candidate_bundle_permutation_on_train_and_validation": true,
+    "parameter_matched_no_cross": true,
+    "parameter_matched_no_moe": true
+  },
+  "terminal_artifacts": {
+    "final_pass_8_checkpoint": true,
+    "final_validation_predictions": true,
+    "run_summary_or_failure": true,
+    "central_and_run_local_attempt_record": true,
+    "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "63/63 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

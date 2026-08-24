@@ -621,7 +621,9 @@ class XEditCriticV4(nn.Module):
                         use_reentrant=False,
                         preserve_rng_state=True,
                     )
-                    if self.training and self.activation_checkpointing
+                    if self.training
+                    and self.activation_checkpointing
+                    and torch.is_grad_enabled()
                     else self_block(edit_values)
                 )
             else:
@@ -645,7 +647,9 @@ class XEditCriticV4(nn.Module):
                         use_reentrant=False,
                         preserve_rng_state=True,
                     )
-                    if self.training and self.activation_checkpointing
+                    if self.training
+                    and self.activation_checkpointing
+                    and torch.is_grad_enabled()
                     else cross_block(edit_values)
                 )
         valid = ~edit_padding_mask
