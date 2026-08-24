@@ -3135,3 +3135,22 @@ source/candidate chunk去重且不截断或串接多edit record。
 materialize，A100 cache/online数值对齐及current-HEAD测试继续等待五个C3 launch-head jobs全部terminal；无
 optimizer attempt，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_implementation_v1.json`。
+
+## XEditCritic V4 architecture implementation（2026-08-24）
+
+已实现`XEditCriticV4`及formal pretrained mRNABERT upper-six adapter。主模型使用12个width768、12 heads、
+FFN3072交替block（6 edit-set self-attention + 6 radius-32 source/candidate shared-parameter cross-attention）、
+每block共享FFN加四个bottleneck256 top-2 outcome-free semantic experts、hidden65/depth2 raw residual、global
+delta/mean和六分支`4608→2560→768` counted readout。source→candidate/candidate→source在同一forward内使用
+共享参数与共享dropout mask；swap严格反对称、identity严格为0。study只进入无intercept multiplicative scale，
+unknown scale=1。
+
+formal upper adapter只保留预训练block6–11，embedding/bottom-six不进入trainable module。NO-CROSS用四个
+实际参与计算的width→width pooled projections精确匹配MHA参数；NO-MOE用四个实际参与计算的generic adapters
+匹配experts；三candidate-information controls同样不改变参数几何。local geometry proxy精确trainable count为
+173,692,549，模块账本求和一致并落在165–175M目标；formal pretrained exact count和20–35GiB峰值仍须在
+C3 barrier解除后的A100 preflight确认。
+
+完整本机Critic V4 focused=31/31、精确V3.3.2=96/96，compile/JSON/diff-check PASS；无optimizer
+attempt或Validation metric read，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_architecture_implementation_v1.json`。

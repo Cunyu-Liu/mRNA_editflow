@@ -104,6 +104,13 @@
         "cross_attention_fusion": "DIRECTIONAL_DELTA_AND_SYMMETRIC_MEAN"
       },
       "global_whole_sequence_mean_role": "INDEPENDENT_RESIDUAL_ONLY",
+      "formal_upper_encoder": {
+        "source": "PRETRAINED_MRNABERT_BLOCKS_6_THROUGH_11",
+        "block_count": 6,
+        "embedding_layer_retained": false,
+        "bottom_six_retained_in_trainable_module": false,
+        "all_retained_parameters_trainable": true
+      },
       "endpoint_semantic_mixture": {
         "shared_ffn_always_enabled": true,
         "semantic_expert_count": 4,
@@ -133,7 +140,22 @@
       "strict_swap_antisymmetry": true,
       "identity_pair_prediction": 0.0,
       "single_model_uncertainty_head": false,
-      "ensemble_uncertainty": "THREE_SEED_PREDICTION_SD"
+      "ensemble_uncertainty": "THREE_SEED_PREDICTION_SD",
+      "readout_fusion": {
+        "input_branches": [
+          "EDIT_ATTENTION_POOL",
+          "EDIT_MAX_POOL",
+          "RAW_ANTISYMMETRIC_RESIDUAL",
+          "GLOBAL_DIRECTIONAL_DELTA",
+          "GLOBAL_SYMMETRIC_MEAN",
+          "ENDPOINT_SEMANTIC_CONDITION"
+        ],
+        "concatenated_width": 4608,
+        "hidden_width": 2560,
+        "output_width": 768,
+        "role": "PREFLIGHT_COUNTED_READOUT_NOT_ADDITIONAL_TRANSFORMER_TRUNK"
+      },
+      "local_geometry_proxy_trainable_parameter_count": 173692549
     },
     "memory_preflight": {
       "outcome_free_train_geometry_only": true,

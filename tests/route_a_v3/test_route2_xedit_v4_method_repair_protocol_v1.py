@@ -83,6 +83,17 @@ def test_v4_critic_architecture_losses_controls_and_seeds_are_prefrozen() -> Non
     assert mixture["router_receives_outcome"] is False
     assert architecture["strict_swap_antisymmetry"] is True
     assert architecture["identity_pair_prediction"] == 0.0
+    assert architecture["formal_upper_encoder"] == {
+        "source": "PRETRAINED_MRNABERT_BLOCKS_6_THROUGH_11",
+        "block_count": 6,
+        "embedding_layer_retained": False,
+        "bottom_six_retained_in_trainable_module": False,
+        "all_retained_parameters_trainable": True,
+    }
+    assert architecture["readout_fusion"]["concatenated_width"] == 6 * 768
+    assert architecture["readout_fusion"]["hidden_width"] == 2560
+    assert architecture["readout_fusion"]["output_width"] == 768
+    assert architecture["local_geometry_proxy_trainable_parameter_count"] == 173_692_549
     assert critic["training"]["pass_3_8_loss"]["effective_task_batch_soft_spearman"] == 0.25
     assert critic["training"]["soft_spearman"] == {
         "rank_method": "PAIRWISE_SIGMOID_SOFT_RANK",

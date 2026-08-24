@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_architecture_implementation.v1",
+  "recorded_at_local": "2026-08-24T17:12:30+08:00",
+  "status": "XEDITCRITIC_V4_ARCHITECTURE_IMPLEMENTED_LOCAL_GEOMETRY_PASS_NO_PARAMETER_UPDATE",
+  "git_head_before_delivery": "5032447",
+  "implementation": {
+    "model": "core/route2_xeditcritic_v4.py",
+    "formal_pretrained_upper_six": "scripts/route_a_v3/route2_mrnabert_upper_six_encoder_v4.py",
+    "model_test": "tests/route_a_v3/test_route2_xeditcritic_v4.py",
+    "upper_six_test": "tests/route_a_v3/test_route2_mrnabert_upper_six_encoder_v4.py",
+    "protocol_binding": "configs/route_a_v3_route2_xedit_v4_method_repair_protocol_v1.json"
+  },
+  "capacity": {
+    "local_geometry_proxy_trainable_parameter_count": 173692549,
+    "frozen_allowed_minimum": 120000000,
+    "frozen_allowed_maximum": 180000000,
+    "frozen_design_target_minimum": 165000000,
+    "frozen_design_target_maximum": 175000000,
+    "module_counts": {
+      "upper_six": 42527232,
+      "endpoint_conditioner": 177856,
+      "semantic_router": 3076,
+      "edit_input_metadata_and_pool": 1232801,
+      "edit_blocks": 114617856,
+      "raw_branch": 184344,
+      "global_residual": 1181184,
+      "readout_and_head": 13768193,
+      "study_scale": 7
+    },
+    "formal_a100_exact_count": "PENDING_PRETRAINED_UPPER_SIX_PREFLIGHT"
+  },
+  "architecture_invariants": {
+    "upper_encoder_source_blocks": [6, 7, 8, 9, 10, 11],
+    "embedding_and_bottom_six_retained_in_trainable_module": false,
+    "edit_block_count": 12,
+    "self_attention_block_count": 6,
+    "local_cross_attention_block_count": 6,
+    "model_width": 768,
+    "attention_heads": 12,
+    "ffn_width": 3072,
+    "semantic_expert_count": 4,
+    "semantic_expert_bottleneck_width": 256,
+    "semantic_router_top_k": 2,
+    "router_receives_study_or_outcome": false,
+    "readout_geometry": "SIX_BRANCH_4608_TO_2560_TO_768",
+    "strict_swap_antisymmetry": true,
+    "strict_identity_zero": true,
+    "shared_direction_dropout": true,
+    "minimum_physical_batch": 4,
+    "no_cross_parameter_matched": true,
+    "no_moe_parameter_matched": true,
+    "candidate_controls_parameter_matched": true,
+    "local_cross_attention_reads_declared_radius_32_tokens_only": true,
+    "unknown_study_scale": 1.0
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "31/31 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "protocol_json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL",
+    "formal_cuda_bf16_forward_and_memory_preflight": "PENDING_C3_BARRIER"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

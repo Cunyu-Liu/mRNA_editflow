@@ -2007,6 +2007,19 @@ outcome payload=0、radius-32 most-centered、special-token offset、跨chunk ed
 数值验证等待五个C3 launch-head jobs全部terminal。Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_implementation_v1.json`。
 
+## XEditCritic V4 architecture implementation（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。V4 full、parameter-matched NO-CROSS/NO-MOE与三项
+candidate-information control的统一主模型已实现；formal adapter仅保留预训练mRNABERT block6–11。默认
+geometry proxy精确trainable count=173,692,549，六分支readout冻结为`4608→2560→768`，没有unused
+parameter padding。严格antisymmetry、identity-zero、shared directional dropout、top-2 semantic routing、
+study exclusion/unknown scale、radius-32合法window和physical batch<4 hard fail均有回归测试。
+
+本机完整Critic V4 focused=31/31、精确V3.3.2=96/96，compile/JSON/diff-check PASS。formal A100
+parameter/VRAM/BF16 preflight仍等待五个C3 launch-head jobs全部terminal；optimizer attempts=0，Development
+TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_architecture_implementation_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

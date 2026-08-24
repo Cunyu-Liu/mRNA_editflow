@@ -81,6 +81,14 @@ the unknown-study scale is exactly one. Source and candidate directions share al
 parameters and dropout masks. The final half-difference is strictly
 antisymmetric, and identity pairs return exactly zero.
 
+The implementation-bound readout concatenates edit attention pooling, edit max
+pooling, the raw antisymmetric residual, global directional delta, global
+symmetric mean, and endpoint condition (six 768-wide branches), then applies a
+counted `4608→2560→768` fusion. This is the sole large readout and is not an
+additional transformer trunk. With a geometry-compatible six-block upper encoder,
+the prospectively counted local model contains 173,692,549 trainable parameters;
+the formal pretrained instance must reproduce the 165–175M target before training.
+
 The instantiated model must contain 120–180M trainable parameters, targeting
 165–175M. Before any outcome or Validation metric read, TRAIN geometry alone is
 used to select the largest physical batch in {4, 8, 16, 32} whose in-process peak
