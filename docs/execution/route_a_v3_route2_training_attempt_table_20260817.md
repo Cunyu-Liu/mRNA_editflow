@@ -3118,3 +3118,15 @@ C3 barrier后的首批正式产物存在三个中断窗口：Critic cache tensor
 本地focused=27/27、扩展V4相关=173/173、精确V3.3.2=96/96、compile PASS。未执行cache、preflight、CUDA或
 optimizer，protected read=0；科学claim不变。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_cache_preflight_packages_v1.json`。
+
+## 02:48 C3 five-job scheduled health（2026-08-25）
+
+本地02:45:51越过校准窗口后执行一次单包SSH；远端02:48:06时C3 full、source-only、edit-metadata-only、
+no-candidate-sequence和candidate-bundle-permutation五项仍均为`Rl` CUDA进程，elapsed分别为
+85,946/85,946/85,946/85,518/85,136秒。五个精确run summary/failure、C3 reference与screen gate均不存在；
+GPU3/0/5/1/2占用为2,190/2,120/2,190/2,120/2,190 MiB。
+
+read-once producer因terminal_count=0未执行；未读stdout/stderr、active curve、terminal content、Development TEST
+或new Evaluation outcome，也未同步A100或启动V4。远端仍比本地快135秒；下一远端/本地窗口分别不早于
+03:48:06/03:45:51。本监控项无新增代码，不重复focused/V3.3.2测试，科学claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_024806.json`。

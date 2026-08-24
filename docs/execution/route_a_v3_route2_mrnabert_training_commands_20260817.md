@@ -4084,3 +4084,11 @@ PASS/PAUSE使用partial文件原子发布。中断不再暴露半套正式packag
 本地focused=27/27、扩展V4相关=173/173、精确V3.3.2=96/96、compile PASS。未materialize任何package或启动
 CUDA/optimizer，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_cache_preflight_packages_v1.json`。
+
+## 02:48 C3 long-interval health（2026-08-25）
+
+本地02:45:51合法窗口后的一次远端检查显示，远端02:48:06时五个登记PID仍全部活跃并位于GPU0/1/2/3/5；
+五项精确summary/failure与screen gate均不存在，read-once因terminal_count=0未运行。未读取日志、active curve、
+Development TEST或new Evaluation。最新时钟偏移为+135秒，下一检查不得早于远端03:48:06/本地03:45:51。
+监控项无代码变化，不重复test cohort。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_024806.json`。
