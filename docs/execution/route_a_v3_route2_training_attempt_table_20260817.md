@@ -2766,6 +2766,8 @@ network forward。free action-ratio head仍不存在。
 
 同时修复`merge_smc_rounds_v4`：它现在在terminal critic reservation之上累加每轮轨迹内的真实critic calls；原
 full soft-value路径每轮该值为0，因此既有结果不变，而first-order/simple-rate不会再低估matched compute。
-本地focused/相邻31/31、XEditFlow/guidance 237/237、V3.3.2 96/96 PASS。尚未实现/运行GPU matched-control
+simple-rate还按完整source/current/budget/terminal/context state key缓存已执行的确定性critic reward；相同步骤、
+不同latent mode或fixed-seed replay再次遇到同一state时不重复执行或重复计费，只对首次出现的完整state评分。
+本地focused/相邻17/17、XEditFlow/guidance 238/238、V3.3.2 96/96 PASS。尚未实现/运行GPU matched-control
 runner，未新增attempt、runtime artifact或protected read，claim不变；A100 current-HEAD测试等待旧C3 terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。

@@ -84,26 +84,34 @@ class ExactCriticRewardPotentialV4:
 
     def __init__(self, reward_provider: CriticRewardProviderV4) -> None:
         self.reward_provider = reward_provider
+        self.cache: dict[tuple[Any, ...], float] = {}
 
     def __call__(
         self, states: Sequence[SetFlowMixtureStateV4]
     ) -> CriticRewardBatchV4:
         _require(bool(states), "V4 exact critic potential state batch is empty")
-        unique: list[FlowState] = []
-        index_by_key: dict[tuple[Any, ...], int] = {}
+        missing: list[FlowState] = []
+        missing_keys: list[tuple[Any, ...]] = []
         for state in states:
             key = _flow_key(state.flow_state)
-            if key not in index_by_key:
-                index_by_key[key] = len(unique)
-                unique.append(state.flow_state)
-        scored = self.reward_provider(unique)
-        _require(
-            len(scored.values) == len(unique),
-            "V4 exact critic reward count differs",
-        )
+            if key not in self.cache and key not in missing_keys:
+                missing_keys.append(key)
+                missing.append(state.flow_state)
+        member_calls = (0, 0, 0)
+        if missing:
+            scored = self.reward_provider(missing)
+            _require(
+                len(scored.values) == len(missing),
+                "V4 exact critic reward count differs",
+            )
+            member_calls = scored.forward_batches_by_member
+            self.cache.update(
+                (key, float(value))
+                for key, value in zip(missing_keys, scored.values, strict=True)
+            )
         return CriticRewardBatchV4(
-            tuple(scored.values[index_by_key[_flow_key(state.flow_state)]] for state in states),
-            scored.forward_batches_by_member,
+            tuple(self.cache[_flow_key(state.flow_state)] for state in states),
+            member_calls,
         )
 
 

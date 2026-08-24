@@ -95,6 +95,27 @@ def test_v4_simple_rate_deduplicates_states_and_charges_critic_not_value() -> No
     assert merged["matched_compute"]["critic_forwards_by_member"] == [3, 3, 3]
 
 
+def test_v4_simple_rate_cache_only_charges_new_complete_states() -> None:
+    calls = []
+
+    def reward(states):
+        calls.append(tuple(state.current_sequence for state in states))
+        return CriticRewardBatchV4(
+            tuple(float(state.edit_count) for state in states),
+            (1, 1, 1),
+        )
+
+    potential = ExactCriticRewardPotentialV4(reward)
+    source = SetFlowMixtureStateV4(_root(), 0)
+    first = potential([source, source])
+    second = potential([SetFlowMixtureStateV4(_root(), 7)])
+    assert first.values == (0.0, 0.0)
+    assert second.values == (0.0,)
+    assert first.forward_batches_by_member == (1, 1, 1)
+    assert second.forward_batches_by_member == (0, 0, 0)
+    assert calls == [("AA",)]
+
+
 def test_v4_first_order_is_shared_across_modes_and_cached() -> None:
     calls = []
 

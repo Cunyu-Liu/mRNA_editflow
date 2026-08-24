@@ -3796,6 +3796,8 @@ trajectory mode，resampling复制完整mode state；rate仍来自相同V4 SetFl
 Critic-derived控制的三名member forwards进入`critic_forwards_by_member`，`value_forwards`保持0。
 
 通用V4 round merger也已改为累加轨迹内critic calls，再加terminal reservation；这修复了未来controls的可达
-低计费路径，同时不改变每轮critic=0的full soft-value SMC。本地focused 31/31、XEditFlow/guidance 237/237、
+低计费路径，同时不改变每轮critic=0的full soft-value SMC。simple-rate按完整state key缓存已执行的冻结critic
+reward，跨mode和fixed-seed replay不重复推理，只有新state产生真实forward。本地focused 17/17、
+XEditFlow/guidance 238/238、
 V3.3.2 96/96 PASS。GPU runner/config尚未实现或执行，optimizer/protected read均为0。审计：
 `audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。
