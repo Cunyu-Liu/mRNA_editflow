@@ -3404,3 +3404,14 @@ root prior、trunk forward states/batches与全部mode-head state counts分别�
 2026091101。focused=5/5、combined SetFlow V4=33/33、精确V3.3.2=96/96、compile/JSON/diff-check PASS。
 尚未执行generation或读取protected outcome。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_fixed_mode_sampling_v1.json`。
+
+## XEditSetFlow V4 terminal checkpoint validation runner（2026-08-24）
+
+`validate_route2_xeditsetflow_v4_checkpoint.py`只在full和single-mode两项训练都terminal且四checkpoint完整后运行。
+每个checkpoint先回放V3可比common NLL，再运行891×32 fixed-mode trajectories与同seed/mode replay；不重试、
+不拒绝重复。small graph对每个固定mode分别做DP/独立路径枚举，再按root prior混合核对。
+
+common NLL、root prior、primary/replay的trunk与全部mode-head forwards分别计费，wall time/peak VRAM一并记录；
+runner无backward/optimizer。focused=6/6、combined SetFlow V4=40/40、精确V3.3.2=96/96、compile/diff-check
+PASS；尚未执行或读取指标，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_runner_v1.json`。

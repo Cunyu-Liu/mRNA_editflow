@@ -1,0 +1,58 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_runner.v1",
+  "recorded_at_local": "2026-08-24T18:54:11+08:00",
+  "status": "XEDITSETFLOW_V4_TERMINAL_CHECKPOINT_VALIDATION_RUNNER_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "45f2de2",
+  "implementation": {
+    "common_nll": "core/route2_xeditsetflow_v4.py::common_set_marginal_loss_v4",
+    "script": "scripts/route_a_v3/validate_route2_xeditsetflow_v4_checkpoint.py",
+    "test": "tests/route_a_v3/test_validate_route2_xeditsetflow_v4_checkpoint.py"
+  },
+  "authorization_and_order": {
+    "full_and_single_training_both_terminal_before_any_validation": true,
+    "all_four_checkpoint_files_required_per_run": true,
+    "technical_training_failure_blocks_validation": true,
+    "same_screen_launch_authorization_and_git_head_required": true,
+    "no_parameter_update": true
+  },
+  "common_nll": {
+    "v3_comparable_validation_state_seed": 2026090301,
+    "states_per_candidate_record": 2,
+    "latent_mode_mixture_mass": true,
+    "structural_states_excluded": true,
+    "checkpoint_passes": [4, 6, 8, 10]
+  },
+  "generation": {
+    "source_count": 891,
+    "trajectories_per_source": 32,
+    "candidate_cap_per_source": 32,
+    "duplicate_retry_or_rejection_count": 0,
+    "trajectory_mode_fixed": true,
+    "primary_and_exact_replay": true,
+    "open_generated_support_recovery": true,
+    "small_graph_mode_mixture_exact_enumeration": true
+  },
+  "compute": {
+    "common_nll_trunk_and_mode_head_states_recorded": true,
+    "root_prior_trunk_and_mode_head_states_recorded": true,
+    "primary_and_replay_trunk_and_mode_head_states_recorded": true,
+    "critic_forward_count": 0,
+    "independent_evaluator_forward_count": 0,
+    "wall_time_and_peak_vram_recorded": true
+  },
+  "verification": {
+    "validation_runner_focused_tests": "6/6 PASS",
+    "combined_setflow_v4_focused_tests": "40/40 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_and_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "checkpoint_validation_started": false,
+    "validation_metric_read": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

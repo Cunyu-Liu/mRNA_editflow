@@ -34,6 +34,13 @@ class MixtureSetFlowLossV4:
     active_candidate_constraint_count: int
 
 
+@dataclass(frozen=True)
+class CommonSetMarginalLossV4:
+    loss: torch.Tensor
+    active_weight: torch.Tensor
+    active_state_count: int
+
+
 class XEditSetFlowV4(nn.Module):
     """18-block SetFlow with one trajectory-fixed source-level latent mode."""
 
@@ -433,6 +440,61 @@ def mixture_setflow_loss_v4(
         mode_information=mode_information,
         active_state_count=int(active.sum().item()),
         active_candidate_constraint_count=int(active_candidates.sum().item()),
+    )
+
+
+def common_set_marginal_loss_v4(
+    output: Mapping[str, torch.Tensor],
+    positive_action_mask: torch.Tensor,
+    structural_budget_exhausted: torch.Tensor,
+    sample_weight: torch.Tensor,
+) -> CommonSetMarginalLossV4:
+    """V3-comparable common-state NLL under the V4 latent-mode mixture."""
+
+    rates = output["mode_rates"].float()
+    legal = output["legal_action_mask"]
+    prior = output["mode_prior"].float()
+    _require(
+        rates.shape[0] == positive_action_mask.shape[0] == legal.shape[0],
+        "SetFlow V4 common NLL batch geometry differs",
+    )
+    _require(
+        rates.shape[2] == positive_action_mask.shape[1] == legal.shape[1],
+        "SetFlow V4 common NLL action geometry differs",
+    )
+    _require(
+        structural_budget_exhausted.shape == sample_weight.shape == (rates.shape[0],),
+        "SetFlow V4 common NLL state weights differ",
+    )
+    _require(
+        bool(torch.all(positive_action_mask <= legal).item()),
+        "SetFlow V4 common NLL positive action is illegal",
+    )
+    active = ~structural_budget_exhausted
+    _require(
+        bool(torch.all(positive_action_mask.any(dim=1) == active).item()),
+        "SetFlow V4 common NLL target presence differs from structural state",
+    )
+    probabilities = rates / rates.sum(dim=2, keepdim=True).clamp_min(1e-20)
+    per_mode_mass = (
+        probabilities
+        * positive_action_mask[:, None, :].to(probabilities.dtype)
+    ).sum(dim=2)
+    mixture_mass = (per_mode_mass * prior).sum(dim=1)
+    active_weight = sample_weight.float()[active].sum()
+    _require(
+        torch.isfinite(active_weight).item() and float(active_weight.item()) > 0.0,
+        "SetFlow V4 common NLL has no active weight",
+    )
+    loss = (
+        -torch.log(mixture_mass[active].clamp_min(1e-20))
+        * sample_weight.float()[active]
+    ).sum() / active_weight
+    _require(torch.isfinite(loss).item(), "SetFlow V4 common NLL is nonfinite")
+    return CommonSetMarginalLossV4(
+        loss=loss,
+        active_weight=active_weight,
+        active_state_count=int(active.sum().item()),
     )
 
 

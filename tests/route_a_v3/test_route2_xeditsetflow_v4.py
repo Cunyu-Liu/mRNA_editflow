@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import torch
+import pytest
 
 from core.route2_xeditsetflow_v4 import (
     XEditSetFlowV4,
+    common_set_marginal_loss_v4,
     mixture_setflow_loss_v4,
     require_setflow_v4_trainable_parameter_range,
     select_trajectory_mode_rates_v4,
@@ -143,6 +145,20 @@ def test_single_mode_control_has_exact_zero_information_loss() -> None:
     output["mode_prior"] = torch.ones(2, 1)
     loss = mixture_setflow_loss_v4(output, batch)
     assert loss.mode_information.item() == 0.0
+
+
+def test_common_nll_uses_mixture_mass_and_excludes_structural_state() -> None:
+    output, batch = _loss_bundle((0, 1))
+    result = common_set_marginal_loss_v4(
+        output,
+        batch["common_positive_action_mask"],
+        batch["structural_budget_exhausted"],
+        torch.tensor([2.0, 9.0]),
+    )
+    expected_mass = 10.0 / 11.0
+    assert result.loss.item() == pytest.approx(-torch.log(torch.tensor(expected_mass)).item())
+    assert result.active_weight.item() == 2.0
+    assert result.active_state_count == 1
 
 
 def test_formal_full_capacity_is_95_to_110m_and_single_mode_diff_is_below_two_percent() -> None:

@@ -2279,6 +2279,22 @@ sampling focused=5/5、combined SetFlow V4 focused=33/33、精确V3.3.2=96/96、
 generation未启动，critic/evaluator使用=0，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_fixed_mode_sampling_v1.json`。
 
+## XEditSetFlow V4 terminal checkpoint validation runner（2026-08-24）
+
+已实现pass4/6/8/10 checkpoint的统一terminal后评测入口。任何checkpoint评测前要求full与single-mode两项训练
+均自然terminal、无failure且各自四checkpoint完整；训练期间不能边跑边读取generation。runner不创建optimizer，
+也不改变checkpoint参数。
+
+common NLL使用V3可比的seed2026090301、每candidate record两个common states，在V4 latent-mode mixture下计算
+正确action总概率；structural state不伪造action loss。随后固定运行891 sources×32 trajectories、primary+同seed/
+mode replay、open-support recovery/top-k/unique与small-graph逐mode精确分布后mixture枚举；不重试、不拒绝重复。
+
+compute分别记录common NLL、root prior、primary和replay的trunk batch/state及全部mode-head state forwards，并记录
+wall time/peak VRAM；critic/evaluator forwards均为0。validation runner focused=6/6、combined SetFlow V4
+focused=40/40、精确V3.3.2=96/96、compile/diff-check PASS。尚未执行checkpoint validation或读取指标，
+Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_runner_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
