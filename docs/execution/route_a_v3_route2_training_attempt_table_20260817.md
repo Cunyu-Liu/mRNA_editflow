@@ -2311,6 +2311,19 @@ gate focused=5/5、combined SetFlow V4 focused=45/45、精确V3.3.2=96/96、comp
 尚未adjudicate或授权confirmation，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。
 审计：`audits/route_a_v3_route2_xeditsetflow_v4_strict_screen_gate_v1.json`。
 
+## XEditSetFlow V4 confirmation protocol and config preparation（2026-08-24）
+
+已在任何screen结果前冻结confirmation protocol：只有`XEDITSETFLOW_V4_SCREEN_PASS`且存在合法selected checkpoint
+才能生成配置，模型固定为V4-FULL，seeds仅20260912/20260913/20260914，不授权第四seed。每seed仍为10 passes、
+batch32、pass4/6/8/10、terminal后selection，训练期禁止Validation generation。
+
+每seed除绝对门槛及terminal F2 margin外，source-paired recovery improvement以精确891 source keys计算10,000次
+percentile bootstrap，预注册seed2026091102、双侧95% CI，下界必须严格>0。配置preparer也不授权TEST或guidance。
+
+confirmation config focused=4/4、combined SetFlow V4 focused=49/49、精确V3.3.2=96/96、compile/JSON/
+diff-check PASS。当前screen未运行，confirmation configs/attempts=0，Development TEST/new Evaluation outcome
+read=0。审计：`audits/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

@@ -3426,3 +3426,13 @@ full另需相对terminal F2达到0.05/0.03/0.15，相对single-mode达到recover
 cohort、mode分配、compute、small graph、wall/VRAM及protected reads。技术failure保留并terminal NO-GO。
 focused=5/5、combined SetFlow V4=45/45、精确V3.3.2=96/96、compile/diff-check PASS；尚未adjudicate或
 授权confirmation。审计：`audits/route_a_v3_route2_xeditsetflow_v4_strict_screen_gate_v1.json`。
+
+## XEditSetFlow V4 confirmation protocol and config preparation（2026-08-24）
+
+confirmation只在screen PASS后生成V4-FULL的20260912/13/14三份配置；保持10 passes、batch32、4/6/8/10
+checkpoint与terminal后selection，不增加seed、不开放TEST/guidance。paired recovery improvement相对terminal F2
+使用891 source、10,000次、seed2026091102的双侧percentile 95% CI并要求下界>0。
+
+config focused=4/4、combined SetFlow V4=49/49、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前
+screen/confirmation均未运行，protected outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json`。

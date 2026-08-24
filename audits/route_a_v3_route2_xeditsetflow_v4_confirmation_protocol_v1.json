@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_freeze.v1",
+  "recorded_at_local": "2026-08-24T19:03:02+08:00",
+  "status": "XEDITSETFLOW_V4_CONFIRMATION_PROTOCOL_AND_CONFIG_PREPARER_FROZEN_NOT_AUTHORIZED",
+  "git_head_before_delivery": "592b836",
+  "implementation": {
+    "protocol": "configs/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json",
+    "script": "scripts/route_a_v3/prepare_route2_xeditsetflow_v4_confirmation_configs.py",
+    "test": "tests/route_a_v3/test_prepare_route2_xeditsetflow_v4_confirmation_configs.py"
+  },
+  "confirmation": {
+    "selected_model": "v4_full",
+    "required_seeds": [20260912, 20260913, 20260914],
+    "additional_seed_authorized": false,
+    "passes": 10,
+    "batch_size": 32,
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "active_validation_generation": false,
+    "screen_pass_and_selected_checkpoint_required": true
+  },
+  "paired_bootstrap": {
+    "statistic": "SOURCE_MACRO_RECOVERY_DIFFERENCE_V4_MINUS_TERMINAL_F2",
+    "source_count": 891,
+    "replicates": 10000,
+    "confidence_level": 0.95,
+    "interval": "PERCENTILE_TWO_SIDED",
+    "seed": 2026091102,
+    "required_lower_bound_strictly_positive": true
+  },
+  "verification": {
+    "confirmation_config_focused_tests": "4/4 PASS",
+    "combined_setflow_v4_focused_tests": "49/49 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_passed": false,
+    "confirmation_configs_prepared": false,
+    "confirmation_authorized": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
