@@ -1,0 +1,42 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_value_critic_scorer_audit.v1",
+  "status": "IMPLEMENTED_NOT_AUTHORIZED_OR_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "scorer": "scripts/route_a_v3/score_route2_xeditflow_value_rollouts_v4.py",
+    "test": "tests/route_a_v3/test_score_route2_xeditflow_value_rollouts_v4.py"
+  },
+  "inference": {
+    "critic_seeds": [20260908, 20260909, 20260910],
+    "checkpoint_stage": "ALL_DEVELOPMENT_REFIT_FINAL_PASS_8",
+    "bottom_six": "ONLINE_EPHEMERAL_PER_GENERATED_BATCH",
+    "upper_six": "FROZEN_REFIT_MEMBER_WEIGHTS",
+    "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "prediction_scale": "TASK_ROBUST_STANDARDIZED_EFFECT",
+    "trajectory_mode_used_as_critic_input": false,
+    "generated_bundle_rederived_from_sequences": true,
+    "dummy_target": {
+      "value": 0.0,
+      "purpose": "DATASET_CONSTRUCTION_ONLY_NOT_MODEL_INPUT_OR_OUTCOME",
+      "explicit_marker": "dummy_target_for_inference_only"
+    },
+    "independent_evaluator_used": false,
+    "each_member_forward_separately_counted": true
+  },
+  "verification": {
+    "new_and_adjacent_tests": "6/6 PASS",
+    "all_xeditflow_and_guidance_tests": "196/196 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "critic_models_loaded": false,
+    "critic_inference_started": false,
+    "score_artifact_created": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

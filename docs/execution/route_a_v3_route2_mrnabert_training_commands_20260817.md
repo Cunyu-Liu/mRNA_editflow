@@ -3660,3 +3660,14 @@ primary/replay trunk与mode compute及进程内VRAM均记录。
 本地新增/相邻6/6，XEditFlow/guidance 193/193，精确V3.3.2 96/96，compile/diff-check PASS。runner/config均
 未执行或materialize，protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_rollout_runner_v1.json`。
+
+## XEditFlow V4 frozen refit ensemble value-rollout scorer（2026-08-24）
+
+`score_route2_xeditflow_value_rollouts_v4.py`按batch生成ephemeral online bottom-six cache，并使用20260908/09/10
+三份refit final-pass-8 V4 full分别给出study-neutral standardized prediction。mode不进critic特征，generated
+source/candidate/edit bundle先重新核对，unknown study scale严格为1；三member forward独立记录。
+
+dataset的0 target带`dummy_target_for_inference_only`，仅满足既有inference dataset schema，不读取或代表outcome且不进
+模型。本地新增/相邻6/6，XEditFlow/guidance 196/196，V3.3.2 96/96，compile/diff-check PASS。scorer未执行，
+protected read=0；A100 current-HEAD测试等待旧C3。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_critic_scorer_v1.json`。

@@ -1753,6 +1753,18 @@ GPU0–5 CUDA/BF16且无CPU fallback。本项没有materialize config/artifact�
 XEditFlow/guidance=193/193、V3.3.2=96/96、compile/diff-check PASS；protected read=0，A100测试继续等待旧C3。
 审计：`audits/route_a_v3_route2_xeditflow_v4_value_rollout_runner_v1.json`。
 
+## XEditFlow V4 frozen refit ensemble value-rollout scorer（2026-08-24）
+
+已实现对replay-checked terminal rollouts的三成员V4 critic scorer。它只接受三份all-Development refit final-pass-8
+checkpoint（20260908/09/10）；每个generated batch在线构建ephemeral bottom-six cache，再让三成员分别运行upper-six/
+V4 trunk并分别计费。study统一映射`__UNK__`、scale固定1；输出为task-robust standardized effect。
+
+generated edit bundle先由source/candidate sequence重新推导并精确核对。trajectory mode不进入critic输入，只用于终态
+score bundle的state/rollout provenance对齐。dataset构造需要的target固定为带显式marker的dummy0，不是outcome也不进
+模型。本项没有加载checkpoint或执行inference。新增/相邻=6/6、完整XEditFlow/guidance=196/196、V3.3.2=96/96、
+compile/diff-check PASS；protected read=0，A100测试继续等待旧C3。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_critic_scorer_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此
