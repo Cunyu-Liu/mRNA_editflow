@@ -20,6 +20,7 @@ ROUTE2 = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2"
 
 def _critic_ready() -> dict:
     return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
         "status": "CRITIC_V4_READY_FOR_GUIDANCE",
         "three_seed_passed": True,
         "frozen_test_passed": True,
@@ -35,6 +36,7 @@ def _critic_ready() -> dict:
 
 def _setflow_ready() -> dict:
     return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
         "status": "XEDITSETFLOW_V4_G0_READY",
         "required_seeds": [20260912, 20260913, 20260914],
         "seed_results": {
@@ -42,6 +44,9 @@ def _setflow_ready() -> dict:
             "20260913": {"passed": True, "selected_checkpoint_pass": 6},
             "20260914": {"passed": True, "selected_checkpoint_pass": 10},
         },
+        "additional_seed_authorized": False,
+        "development_test_authorized": False,
+        "guidance_authorized": False,
         "critic_used": False,
         "independent_evaluator_used": False,
         "development_test_outcome_reads": 0,

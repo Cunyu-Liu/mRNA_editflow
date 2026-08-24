@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_readiness_fixture_integration_audit.v1",
+  "status": "XEDITFLOW_V4_CANONICAL_READINESS_FIXTURES_PROPAGATED",
+  "recorded_at": "2026-08-25T03:06:35+08:00",
+  "head_before_change": "9477bc8587dd8e31fe03a01f711cfd1f947565ae",
+  "test_contract_change": {
+    "critic_fixture_schema_bound": true,
+    "setflow_fixture_schema_bound": true,
+    "all_and_only_confirmation_seed_passes_present": true,
+    "additional_seed_authorized": false,
+    "development_test_authorized": false,
+    "component_level_guidance_authorized": false,
+    "production_gate_weakened": false
+  },
+  "verification": {
+    "previous_integrated_failure_count": 11,
+    "previous_integrated_pass_count": 259,
+    "focused_fixture_regressions": "15 passed",
+    "integrated_v4_critic_setflow_guidance_cohort": "270 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "training_attempt_added": false,
+    "guidance_authorization_materialized": false,
+    "development_test_access_events": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "TEST_CONTRACT_PROPAGATION_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

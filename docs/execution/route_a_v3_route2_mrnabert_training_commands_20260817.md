@@ -4138,3 +4138,13 @@ post-TEST协议原先使用未由正式projection producer生成的`train_projec
 本地post-TEST focused=9/9、精确V3.3.2=96/96。没有修改projection内容、split或target语义，TEST access=0，
 未materialize post-TEST config或启动optimizer；A100 current-HEAD验证仍等待五项C3自然terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_projection_binding_v1.json`。
+
+## XEditFlow V4 canonical readiness fixture integration record（2026-08-25）
+
+联合V4 cohort首次运行时，11项下游value/final-generation测试仍构造旧的status-only readiness假receipt，因新严格
+联合门控而正确失败；其余259项通过。四个测试fixture现使用精确Critic/SetFlow schema、三枚且仅三枚seed PASS，
+并保持additional-seed、Development TEST和组件级guidance授权为false；生产门控未放宽。
+
+定向回归=15/15，合并V4 Critic/SetFlow/guidance=270/270，精确V3.3.2=96/96。没有新增训练attempt、
+guidance、TEST或Evaluation读取；A100 current-HEAD验证仍等待五项C3自然terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_readiness_fixture_integration_v1.json`。

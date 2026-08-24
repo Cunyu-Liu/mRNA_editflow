@@ -23,6 +23,7 @@ from core.route2_xeditflow_value_training_v4 import (
 def _readiness():
     return (
         {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
             "status": "CRITIC_V4_READY_FOR_GUIDANCE",
             "three_seed_passed": True,
             "frozen_test_passed": True,
@@ -35,8 +36,16 @@ def _readiness():
             "guidance_authorized": True,
         },
         {
+            "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
             "status": "XEDITSETFLOW_V4_G0_READY",
             "required_seeds": [20260912, 20260913, 20260914],
+            "seed_results": {
+                str(seed): {"passed": True}
+                for seed in (20260912, 20260913, 20260914)
+            },
+            "additional_seed_authorized": False,
+            "development_test_authorized": False,
+            "guidance_authorized": False,
             "critic_used": False,
             "independent_evaluator_used": False,
             "development_test_outcome_reads": 0,

@@ -3183,3 +3183,11 @@ post-TEST refit/LOSO协议此前引用不存在的`train_projection.jsonl`与`va
 本地focused=9/9、精确V3.3.2=96/96。没有新增training attempt，没有访问Development TEST或new Evaluation，
 也没有生成refit/LOSO runtime package；中央结果和论文claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_projection_binding_v1.json`。
+
+## XEditFlow V4 canonical readiness fixture propagation（2026-08-25）
+
+严格联合readiness gate进入全V4集成cohort后，11个旧测试fixture因缺少精确schema、seed-result与禁止字段被正确拒绝；
+没有通过放宽门控解决。四个fixture已迁移到正式V4 receipt形状，合并cohort从259 pass/11 fail恢复到270/270。
+
+定向=15/15、精确V3.3.2=96/96。此项仅更新测试合同，没有新增中央training attempt、参数更新、结果读取或
+scientific claim。审计：`audits/route_a_v3_route2_xeditflow_v4_readiness_fixture_integration_v1.json`。
