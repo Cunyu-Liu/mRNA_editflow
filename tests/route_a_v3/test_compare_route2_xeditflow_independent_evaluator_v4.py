@@ -20,7 +20,7 @@ def _write_jsonl(path, rows) -> None:
     )
 
 
-def _fixture(tmp_path):
+def _fixture(tmp_path, *, seed=20260912):
     sources = tmp_path / "sources.jsonl"
     guided = tmp_path / "guided.jsonl"
     strongest = tmp_path / "strongest.json"
@@ -43,7 +43,7 @@ def _fixture(tmp_path):
         [
             {
                 "method_id": "xeditflow_v4_guidance_screen_k",
-                "base_flow_training_seed": 20260912,
+                "base_flow_training_seed": seed,
                 "kappa": 0.5,
                 "temperature": 1.0,
                 "beta_max": 2.0,
@@ -107,7 +107,7 @@ def _fixture(tmp_path):
             "route_a_v3_route2_xeditflow_independent_evaluator_comparison_config.v4"
         ),
         "method_id": "xeditflow_v4_guidance_screen_k",
-        "base_flow_training_seed": 20260912,
+        "base_flow_training_seed": seed,
         "combination": [0.5, 1.0, 2.0],
         "strongest_baseline_path": str(strongest),
         "baseline_selection_input_path": str(selection),
@@ -129,6 +129,11 @@ def test_v4_independent_evaluator_margin_is_source_paired_and_frozen(
     assert abs(result["paired_margin_over_strongest_baseline"] - 0.3) < 1e-12
     assert result["source_paired_margin_ci_95"] == pytest.approx([0.3, 0.3])
     assert result["independent_evaluator_used_for_gradient"] is False
+
+
+def test_v4_independent_evaluator_accepts_frozen_final_seed(tmp_path) -> None:
+    result = compare_independent_evaluator_v4(_fixture(tmp_path, seed=20260914))
+    assert result["base_flow_training_seed"] == 20260914
 
 
 def test_v4_independent_evaluator_rejects_gradient_or_combination_drift(

@@ -2801,3 +2801,18 @@ no-candidate/candidate-bundle-permutation五项PID均仍活跃，elapsed分别71
 偏移为+149秒；下一远端窗口不早于23:46:30，对应本地不早于23:44:01。A100 current-HEAD sync继续等待
 五项自然terminal。未新增optimizer attempt，论文claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_224630.json`。
+
+## XEditFlow V4 final-seed runtime boundary（2026-08-24）
+
+full soft-value SMC、terminal candidate Critic scorer、closed measured-neighborhood、open-support metrics和
+independent-evaluator paired comparison现统一只接受冻结SetFlow seeds 20260912/13/14，不再把screen seed
+20260912误当成final chain的唯一合法seed。screen的18-cell grid及seed仍未改变。
+
+open metric同时冻结方法特定排序来源：full/unguided/first-order/simple-rate继续按其generation score排序；
+generate-then-rerank必须带`critic_self_score_used_for_ranking=true`，并只消费terminal scorer已重排但support不变的
+candidates。未知generated outcome仍保持unknown而非填0。
+
+本地focused 38/38、完整XEditFlow/guidance 252/252、精确V3.3.2 96/96、compile/diff-check PASS。未materialize
+final configs，未执行generation/metric/evaluator/optimizer，protected read=0；A100 current-HEAD测试仍等待旧C3
+五项terminal。论文claim不变。审计：
+`audits/route_a_v3_route2_xeditflow_v4_final_seed_runtime_boundary_v1.json`。

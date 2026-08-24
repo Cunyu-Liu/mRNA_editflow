@@ -36,7 +36,10 @@ from core.route2_xeditflow_smc_runtime_v4 import (
     merge_smc_rounds_v4,
     run_batched_mode_fixed_potential_smc_v4,
 )
-from core.route2_xeditflow_value_training_v4 import load_value_checkpoint_v4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    load_value_checkpoint_v4,
+)
 from core.route2_xeditsetflow_sampling_v3 import build_generation_metadata_v3
 from core.route2_xeditsetflow_sampling_v4 import (
     root_mode_priors_v4,
@@ -91,8 +94,8 @@ def validate_smc_run_config_v4(config: Mapping[str, Any]) -> None:
         "V4 SMC additional-round ceiling changed",
     )
     _require(
-        int(config.get("base_flow_training_seed", -1)) == 20260912,
-        "V4 guidance screen SetFlow seed changed",
+        int(config.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V4,
+        "V4 SMC SetFlow seed changed",
     )
     _require(float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}, "V4 SMC kappa differs")
     _require(float(config.get("temperature", -1)) in {0.5, 1.0}, "V4 SMC temperature differs")

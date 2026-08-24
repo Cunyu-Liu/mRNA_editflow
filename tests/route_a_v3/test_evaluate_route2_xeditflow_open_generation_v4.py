@@ -35,3 +35,8 @@ def test_v4_open_metric_keeps_unknown_outcomes_and_generation_ranking() -> None:
     changed["critic_self_score_used_for_ranking"] = True
     with pytest.raises(Exception, match="metric or protected-input"):
         validate_open_generation_config_v4(changed)
+    rerank = _config()
+    rerank["base_flow_training_seed"] = 20260914
+    rerank["method_id"] = "generate_then_rerank"
+    rerank["critic_self_score_used_for_ranking"] = True
+    validate_open_generation_config_v4(rerank)

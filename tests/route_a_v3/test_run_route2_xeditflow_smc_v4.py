@@ -39,6 +39,9 @@ def _config() -> dict:
 
 def test_v4_smc_runner_freezes_grid_seed_replay_and_compute() -> None:
     validate_smc_run_config_v4(_config())
+    final_seed = _config()
+    final_seed["base_flow_training_seed"] = 20260914
+    validate_smc_run_config_v4(final_seed)
     assert maximum_round_forward_equivalents_v4(1) == 20
     assert maximum_round_forward_equivalents_v4(3) == 60
     assert maximum_round_forward_equivalents_v4(5) == 100
@@ -75,7 +78,7 @@ def test_v4_smc_critic_reservation_requires_all_frozen_physical_batches() -> Non
         ("forward_equivalent_ceiling_per_source", 321, "compute ceiling"),
         ("terminal_critic_forwards_by_member", [1, 1, 0], "critic reservation"),
         ("maximum_sampling_rounds", 31, "additional-round ceiling"),
-        ("base_flow_training_seed", 20260913, "seed changed"),
+        ("base_flow_training_seed", 20260911, "seed changed"),
         ("beta_max", 4.0, "beta"),
         ("replay_check", False, "replay check"),
         ("decoder_seed_base", 20261002, "decoder seed"),

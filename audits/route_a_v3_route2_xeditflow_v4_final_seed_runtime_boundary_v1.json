@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_final_seed_runtime_boundary_audit.v1",
+  "status": "XEDITFLOW_V4_FINAL_SEED_RUNTIME_BOUNDARY_IMPLEMENTED_NOT_RUN",
+  "date": "2026-08-24",
+  "predecessor_head": "3f013eb",
+  "required_base_flow_training_seeds": [
+    20260912,
+    20260913,
+    20260914
+  ],
+  "generalized_components": [
+    "FULL_SOFT_VALUE_SMC",
+    "TERMINAL_CANDIDATE_CRITIC_SCORER",
+    "CLOSED_MEASURED_NEIGHBORHOOD",
+    "OPEN_GENERATION_METRICS",
+    "INDEPENDENT_EVALUATOR_PAIRED_COMPARISON"
+  ],
+  "ranking_provenance": {
+    "generate_then_rerank_uses_terminal_critic_ranking": true,
+    "all_other_open_methods_use_generation_score_without_critic_rerank": true,
+    "candidate_support_expansion_by_rerank": false,
+    "unknown_generated_outcome_zero_filled": false
+  },
+  "tests": {
+    "focused_passed": 38,
+    "focused_failed": 0,
+    "xeditflow_guidance_passed": 252,
+    "xeditflow_guidance_failed": 0,
+    "v332_passed": 96,
+    "v332_failed": 0,
+    "compile_passed": true,
+    "diff_check_passed": true
+  },
+  "execution": {
+    "runtime_config_materialized": false,
+    "gpu_generation_run": false,
+    "closed_or_open_metric_run": false,
+    "independent_evaluator_inference_run": false,
+    "optimizer_attempt_created": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "a100_current_head_tests_run": false,
+    "a100_current_head_blocker": "FIVE_OLD_C3_LAUNCH_HEAD_JOBS_NOT_ALL_TERMINAL"
+  },
+  "claim_status": "NOT_ESTABLISHED_SOFTWARE_ONLY"
+}

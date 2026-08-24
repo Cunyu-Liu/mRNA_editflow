@@ -49,6 +49,9 @@ def _config() -> dict:
 
 def test_v4_closed_config_freezes_mode_marginalization_and_enumeration() -> None:
     validate_closed_run_config_v4(_config())
+    final_seed = _config()
+    final_seed["base_flow_training_seed"] = 20260914
+    validate_closed_run_config_v4(final_seed)
     changed = _config()
     changed["latent_mode_policy"] = "SELECT_BEST_MODE"
     with pytest.raises(Exception, match="mode marginalization"):

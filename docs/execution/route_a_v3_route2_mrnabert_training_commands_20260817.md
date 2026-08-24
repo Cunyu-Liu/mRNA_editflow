@@ -3823,3 +3823,13 @@ current-HEAD tests等待五个旧C3作业terminal。审计：
 performance。未读日志、Development TEST或new Evaluation。下一远端/本地窗口分别为23:46:30/23:44:01，
 A100 current-HEAD sync继续受五项terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_224630.json`。
+
+## XEditFlow V4 three-seed runtime generalization（2026-08-24）
+
+V4 SMC、closed/open评测、candidate Critic scorer和independent-evaluator comparison现接受且只接受
+20260912/13/14三个冻结base-flow seeds；20260912的screen链保持原样。generate-then-rerank的open config必须显式
+声明Critic terminal ranking，其他方法必须显式拒绝该声明，避免结果表混淆ranking来源。
+
+focused 38/38、XEditFlow/guidance 252/252、V3.3.2 96/96、compile/diff-check PASS。未生成final runtime config、
+未执行GPU或metric、protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_final_seed_runtime_boundary_v1.json`。

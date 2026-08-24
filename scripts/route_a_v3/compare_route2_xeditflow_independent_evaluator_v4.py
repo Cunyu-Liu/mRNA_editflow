@@ -23,6 +23,7 @@ from scripts.route_a_v3.evaluate_route2_generation_v1 import (
     evaluate_generation,
     load_source_manifest,
 )
+from core.route2_xeditflow_value_training_v4 import BASE_FLOW_SEEDS_V4
 
 
 class XEditFlowIndependentEvaluatorV4Error(RuntimeError):
@@ -77,7 +78,7 @@ def compare_independent_evaluator_v4(
         and combination[0] in {0.0, 0.5, 1.0}
         and combination[1] in {0.5, 1.0}
         and combination[2] in {0.5, 1.0, 2.0}
-        and int(config.get("base_flow_training_seed", -1)) == 20260912,
+        and int(config.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V4,
         "V4 evaluator comparison identity differs",
     )
     _require(
@@ -132,10 +133,11 @@ def compare_independent_evaluator_v4(
     )
     candidate_rows = _jsonl(Path(str(config["guided_scored_candidate_path"])))
     expected_method = str(config["method_id"])
+    base_flow_seed = int(config["base_flow_training_seed"])
     _require(
         all(
             str(row.get("method_id")) == expected_method
-            and int(row.get("base_flow_training_seed", -1)) == 20260912
+            and int(row.get("base_flow_training_seed", -1)) == base_flow_seed
             and tuple(
                 float(row[key]) for key in ("kappa", "temperature", "beta_max")
             )
@@ -190,7 +192,7 @@ def compare_independent_evaluator_v4(
         ),
         "status": "XEDITFLOW_V4_INDEPENDENT_EVALUATOR_COMPARISON_COMPLETE",
         "method_id": expected_method,
-        "base_flow_training_seed": 20260912,
+        "base_flow_training_seed": base_flow_seed,
         "combination": list(combination),
         "strongest_baseline_id": strongest_id,
         "source_count": len(values),

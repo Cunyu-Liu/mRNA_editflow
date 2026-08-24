@@ -19,6 +19,7 @@ from scripts.route_a_v3.evaluate_route2_generation_v1 import (
     measured_neighborhood_metrics,
     validate_measured_pool,
 )
+from core.route2_xeditflow_value_training_v4 import BASE_FLOW_SEEDS_V4
 
 
 class XEditFlowOpenGenerationV4Error(RuntimeError):
@@ -62,16 +63,19 @@ def validate_open_generation_config_v4(config: Mapping[str, Any]) -> None:
         "V4 open-generation cohort or support policy differs",
     )
     _require(
-        int(config.get("base_flow_training_seed", -1)) == 20260912
+        int(config.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V4
         and float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}
         and float(config.get("temperature", -1)) in {0.5, 1.0}
         and float(config.get("beta_max", -1)) in {0.5, 1.0, 2.0}
         and bool(str(config.get("method_id", ""))),
         "V4 open-generation combination differs",
     )
+    critic_ranked = config.get("critic_self_score_used_for_ranking")
     _require(
-        int(config.get("measured_top_k", -1)) == 10
-        and config.get("critic_self_score_used_for_ranking") is False
+        isinstance(critic_ranked, bool)
+        and critic_ranked
+        is (str(config.get("method_id")) == "generate_then_rerank")
+        and int(config.get("measured_top_k", -1)) == 10
         and config.get("development_test_outcomes_accessed_after_atomic_test")
         is False
         and config.get("new_final_evaluation_outcomes_accessed") is False,
@@ -86,6 +90,8 @@ def evaluate_open_generation_v4(
     measured_rows: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     validate_open_generation_config_v4(config)
+    base_flow_seed = int(config["base_flow_training_seed"])
+    critic_ranked = bool(config["critic_self_score_used_for_ranking"])
     sources = load_source_manifest(Path(config["source_eligibility_manifest"]))
     candidate_rows = (
         _jsonl(Path(config["candidate_path"]))
@@ -100,13 +106,13 @@ def evaluate_open_generation_v4(
     _require(
         all(
             str(row.get("method_id")) == str(config["method_id"])
-            and int(row.get("base_flow_training_seed", -1)) == 20260912
+            and int(row.get("base_flow_training_seed", -1)) == base_flow_seed
             and float(row.get("kappa", -1)) == float(config["kappa"])
             and float(row.get("temperature", -1))
             == float(config["temperature"])
             and float(row.get("beta_max", -1)) == float(config["beta_max"])
             and row.get("critic_self_score_used_for_generation_or_selection")
-            is False
+            is critic_ranked
             for row in candidate_rows
         ),
         "V4 open-generation candidate combination differs",
@@ -128,7 +134,7 @@ def evaluate_open_generation_v4(
         "schema_version": "route_a_v3_route2_xeditflow_open_generation_metrics.v4",
         "status": "XEDITFLOW_V4_OPEN_GENERATION_METRICS_COMPLETE",
         "method_id": generation["method_id"],
-        "base_flow_training_seed": 20260912,
+        "base_flow_training_seed": base_flow_seed,
         "kappa": float(config["kappa"]),
         "temperature": float(config["temperature"]),
         "beta_max": float(config["beta_max"]),
@@ -155,7 +161,11 @@ def evaluate_open_generation_v4(
         ]
         is None,
         "unknown_generated_candidates_are_zero_gain": False,
-        "ranking_input": "GENERATION_SCORE_NOT_CRITIC_SELF_SCORE",
+        "ranking_input": (
+            "TERMINAL_CRITIC_RERANK_SCORE"
+            if critic_ranked
+            else "GENERATION_SCORE_NOT_CRITIC_SELF_SCORE"
+        ),
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
