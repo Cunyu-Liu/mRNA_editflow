@@ -3585,3 +3585,16 @@ physical batch；SetFlow需full/single参数量精确等于冻结值，并要求
 本项未创建authorization、未运行preflight或optimizer。定向focused=24/24、完整Critic V4=90/90、完整SetFlow
 V4=63/63、精确V3.3.2=96/96，compile/diff-check PASS；A100 current-HEAD验证继续等待五个C3旧job自然terminal。
 审计：`audits/route_a_v3_route2_xedit_v4_screen_stage_authorizer_v1.json`。
+
+## XEditFlow V4 three-seed matched generation gate（2026-08-24）
+
+已实现20260912/13/14三seed的最终generation gate。每个seed必须同时胜过unguided SetFlow、first-order、
+simple-rate、generate-then-rerank和strongest matched baseline，并满足closed NDCG两项margin≥0.05、paired CI
+下界>0、regret两项降低≥10%、top-1不降、open recovery/top-k/unique≥0.25/0.15/0.90、independent evaluator
+margin与CI、G0 correctness和320 compute ceiling。三seed中位minimum NDCG improvement≥0.07且independent
+evaluator margin≥0.10。
+
+V4 gate额外要求mode固定、无free action-ratio、`MatchedComputeRecordV4`、trunk/mode/value/三critic分项计费及
+independent evaluator不进梯度。critic self-score提高但measured/evaluator证据失败会标记reward exploitation。
+本项不运行generation或gate；focused=12/12、完整XEditFlow=133/133、V3.3.2=96/96，compile/diff-check PASS。
+审计：`audits/route_a_v3_route2_xeditflow_v4_three_seed_gate_v1.json`。

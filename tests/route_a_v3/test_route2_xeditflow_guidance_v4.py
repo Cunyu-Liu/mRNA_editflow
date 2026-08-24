@@ -11,6 +11,7 @@ import torch
 from core.route2_legal_xeditflow import FlowState, LegalAction
 from core.route2_xeditflow_gate_v4 import (
     GUIDANCE_GRID_V4,
+    adjudicate_guided_three_seed_v4,
     adjudicate_guidance_screen_v4,
     authorize_xeditflow_guidance_v4,
 )
@@ -222,3 +223,80 @@ def test_v4_smc_replays_and_rejects_within_trajectory_mode_change() -> None:
         run_mode_fixed_scalar_potential_smc_v4(
             _root(), changed_provider, **kwargs
         )
+
+
+def _guided_method(ndcg: float, regret: float, top_1: float = 0.6):
+    return {
+        "closed_source_macro_ndcg": ndcg,
+        "closed_source_macro_normalized_regret": regret,
+        "closed_source_macro_top_1_recall": top_1,
+    }
+
+
+def _guided_v4_payloads():
+    payloads = {}
+    for seed in (20260912, 20260913, 20260914):
+        full = {
+            **_guided_method(0.72, 0.30),
+            "open_source_macro_candidate_recovery": 0.36,
+            "open_source_macro_top_k_recovery": 0.21,
+            "open_source_macro_unique_candidate_rate": 0.92,
+            "independent_evaluator_margin_over_strongest_baseline": 0.12,
+            "hard_legality_rate": 1.0,
+            "edit_budget_violation_count": 0,
+            "candidate_budget_violation_count": 0,
+            "trajectory_replay_failure_count": 0,
+            "numerical_failure_count": 0,
+            "maximum_forward_equivalents_per_source": 320,
+        }
+        payloads[seed] = {
+            "methods": {
+                "full_soft_value_smc": full,
+                "unguided_setflow": _guided_method(0.64, 0.40),
+                "first_order_guidance": _guided_method(0.62, 0.42),
+                "simple_rate_guidance": _guided_method(0.63, 0.41),
+                "generate_then_rerank": _guided_method(0.65, 0.39),
+                "strongest_matched_baseline": _guided_method(0.64, 0.40),
+            },
+            "source_paired_ndcg_improvement_ci_95": {
+                "over_unguided": [0.02, 0.14],
+                "over_strongest_baseline": [0.02, 0.14],
+            },
+            "source_paired_independent_evaluator_margin_ci_95": [0.02, 0.20],
+            "critic_self_score_increased": True,
+            "all_methods_matched_compute_ceiling_met": True,
+            "matched_compute_schema": "MatchedComputeRecordV4",
+            "setflow_mode_is_fixed_trajectory_state": True,
+            "free_action_ratio_head_used": False,
+            "all_network_forwards_separately_charged": True,
+            "independent_evaluator_in_gradient": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcome_reads": 0,
+        }
+    return payloads
+
+
+def test_v4_three_seed_gate_requires_measured_and_independent_improvement() -> None:
+    result = adjudicate_guided_three_seed_v4(_guided_v4_payloads())
+    assert result["status"] == "XEDITFLOW_V4_PASS"
+    assert result["new_final_evaluation_authorized"] is True
+    assert result["submission_ready"] is False
+    failed = _guided_v4_payloads()
+    failed[20260913]["methods"]["full_soft_value_smc"][
+        "closed_source_macro_ndcg"
+    ] = 0.65
+    result = adjudicate_guided_three_seed_v4(failed)
+    assert result["status"] == "XEDITFLOW_V4_NO_GO"
+    assert result["reward_exploitation"] is True
+    assert result["new_final_evaluation_authorized"] is False
+
+
+def test_v4_three_seed_gate_rejects_mode_compute_or_seed_drift() -> None:
+    payloads = _guided_v4_payloads()
+    payloads[20260912]["all_network_forwards_separately_charged"] = False
+    with pytest.raises(Exception, match="mechanism or compute"):
+        adjudicate_guided_three_seed_v4(payloads)
+    payloads = _guided_v4_payloads()
+    payloads[20260915] = payloads.pop(20260914)
+    with pytest.raises(Exception, match="exactly the three"):
+        adjudicate_guided_three_seed_v4(payloads)

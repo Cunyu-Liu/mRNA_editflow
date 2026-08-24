@@ -6,6 +6,8 @@ import math
 from itertools import product
 from typing import Any, Mapping
 
+import numpy as np
+
 
 class XEditFlowGateV4Error(RuntimeError):
     pass
@@ -187,4 +189,219 @@ def adjudicate_guidance_screen_v4(
         "additional_grid_combination_authorized": False,
         "development_test_reopened": False,
         "new_final_evaluation_authorized": False,
+    }
+
+
+def adjudicate_guided_three_seed_v4(
+    payloads: Mapping[int, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Apply the frozen V4 publication gate to three matched Flow seeds."""
+
+    required_seeds = (20260912, 20260913, 20260914)
+    _require(
+        tuple(sorted(payloads)) == required_seeds and len(payloads) == 3,
+        "V4 guided comparison requires exactly the three frozen base-flow seeds",
+    )
+    required_methods = {
+        "full_soft_value_smc",
+        "unguided_setflow",
+        "first_order_guidance",
+        "simple_rate_guidance",
+        "generate_then_rerank",
+        "strongest_matched_baseline",
+    }
+    seed_results: dict[str, Any] = {}
+    minimum_ndcg_improvements: list[float] = []
+    evaluator_margins: list[float] = []
+    for seed in required_seeds:
+        payload = payloads[seed]
+        methods = payload.get("methods")
+        _require(
+            isinstance(methods, Mapping) and set(methods) == required_methods,
+            f"V4 guided comparison method set differs: {seed}",
+        )
+        _require(
+            payload.get("setflow_mode_is_fixed_trajectory_state") is True
+            and payload.get("free_action_ratio_head_used") is False
+            and payload.get("all_network_forwards_separately_charged") is True
+            and payload.get("matched_compute_schema") == "MatchedComputeRecordV4",
+            f"V4 guided mechanism or compute accounting differs: {seed}",
+        )
+        _require(
+            payload.get("development_test_outcomes_accessed_after_atomic_test")
+            is False
+            and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0
+            and payload.get("independent_evaluator_in_gradient") is False,
+            f"V4 guided comparison accessed a protected outcome or evaluator gradient: {seed}",
+        )
+        full = methods["full_soft_value_smc"]
+        unguided = methods["unguided_setflow"]
+        baseline = methods["strongest_matched_baseline"]
+        full_ndcg = _finite(full.get("closed_source_macro_ndcg"), "full NDCG")
+        unguided_ndcg = _finite(
+            unguided.get("closed_source_macro_ndcg"), "unguided NDCG"
+        )
+        baseline_ndcg = _finite(
+            baseline.get("closed_source_macro_ndcg"), "baseline NDCG"
+        )
+        auxiliary_ndcgs = {
+            name: _finite(
+                methods[name].get("closed_source_macro_ndcg"), f"{name} NDCG"
+            )
+            for name in (
+                "first_order_guidance",
+                "simple_rate_guidance",
+                "generate_then_rerank",
+            )
+        }
+        improvement_unguided = full_ndcg - unguided_ndcg
+        improvement_baseline = full_ndcg - baseline_ndcg
+        minimum_ndcg_improvements.append(
+            min(improvement_unguided, improvement_baseline)
+        )
+        full_regret = _finite(
+            full.get("closed_source_macro_normalized_regret"), "full regret"
+        )
+        unguided_regret = _finite(
+            unguided.get("closed_source_macro_normalized_regret"),
+            "unguided regret",
+        )
+        baseline_regret = _finite(
+            baseline.get("closed_source_macro_normalized_regret"),
+            "baseline regret",
+        )
+        evaluator_margin = _finite(
+            full.get("independent_evaluator_margin_over_strongest_baseline"),
+            "independent evaluator margin",
+        )
+        evaluator_margins.append(evaluator_margin)
+        ndcg_ci = payload.get("source_paired_ndcg_improvement_ci_95")
+        evaluator_ci = payload.get(
+            "source_paired_independent_evaluator_margin_ci_95"
+        )
+        _require(
+            isinstance(ndcg_ci, Mapping)
+            and set(ndcg_ci) == {"over_unguided", "over_strongest_baseline"}
+            and all(
+                isinstance(value, list) and len(value) == 2
+                for value in ndcg_ci.values()
+            )
+            and isinstance(evaluator_ci, list)
+            and len(evaluator_ci) == 2,
+            f"V4 guided paired-bootstrap intervals differ: {seed}",
+        )
+        checks = {
+            "ndcg_over_unguided_at_least_0_05": improvement_unguided >= 0.05,
+            "ndcg_over_strongest_baseline_at_least_0_05": improvement_baseline
+            >= 0.05,
+            "ndcg_beats_first_order_simple_rate_and_rerank": all(
+                full_ndcg > value for value in auxiliary_ndcgs.values()
+            ),
+            "ndcg_bootstrap_ci_over_unguided_positive": float(
+                ndcg_ci["over_unguided"][0]
+            )
+            > 0.0,
+            "ndcg_bootstrap_ci_over_strongest_positive": float(
+                ndcg_ci["over_strongest_baseline"][0]
+            )
+            > 0.0,
+            "regret_reduction_over_unguided_at_least_10pct": unguided_regret
+            > 0.0
+            and (unguided_regret - full_regret) / unguided_regret >= 0.10,
+            "regret_reduction_over_strongest_at_least_10pct": baseline_regret
+            > 0.0
+            and (baseline_regret - full_regret) / baseline_regret >= 0.10,
+            "top_1_recall_not_below_unguided": _finite(
+                full.get("closed_source_macro_top_1_recall"), "full top-1"
+            )
+            >= _finite(
+                unguided.get("closed_source_macro_top_1_recall"), "unguided top-1"
+            ),
+            "top_1_recall_not_below_strongest": _finite(
+                full.get("closed_source_macro_top_1_recall"), "full top-1"
+            )
+            >= _finite(
+                baseline.get("closed_source_macro_top_1_recall"), "baseline top-1"
+            ),
+            "open_recovery_at_least_0_25": _finite(
+                full.get("open_source_macro_candidate_recovery"), "open recovery"
+            )
+            >= 0.25,
+            "open_top_k_recovery_at_least_0_15": _finite(
+                full.get("open_source_macro_top_k_recovery"), "open top-k recovery"
+            )
+            >= 0.15,
+            "unique_rate_at_least_0_90": _finite(
+                full.get("open_source_macro_unique_candidate_rate"),
+                "open unique rate",
+            )
+            >= 0.90,
+            "independent_evaluator_margin_positive": evaluator_margin > 0.0,
+            "independent_evaluator_ci_lower_positive": float(evaluator_ci[0])
+            > 0.0,
+            "hard_legality_100pct": _finite(
+                full.get("hard_legality_rate"), "hard legality"
+            )
+            == 1.0,
+            "failure_counters_zero": all(
+                int(full.get(key, -1)) == 0
+                for key in (
+                    "edit_budget_violation_count",
+                    "candidate_budget_violation_count",
+                    "trajectory_replay_failure_count",
+                    "numerical_failure_count",
+                )
+            ),
+            "matched_compute_ceiling_met": 0
+            <= int(full.get("maximum_forward_equivalents_per_source", -1))
+            <= 320
+            and payload.get("all_methods_matched_compute_ceiling_met") is True,
+            "protected_outcome_and_mechanism_checks_pass": True,
+        }
+        seed_results[str(seed)] = {
+            "ndcg_improvement_over_unguided": improvement_unguided,
+            "ndcg_improvement_over_strongest_baseline": improvement_baseline,
+            "independent_evaluator_margin": evaluator_margin,
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    median_min_ndcg_improvement = float(np.median(minimum_ndcg_improvements))
+    median_evaluator_margin = float(np.median(evaluator_margins))
+    cohort_checks = {
+        "all_three_seed_checks_pass": all(
+            row["passed"] for row in seed_results.values()
+        ),
+        "median_min_ndcg_improvement_at_least_0_07": median_min_ndcg_improvement
+        >= 0.07,
+        "median_independent_evaluator_margin_at_least_0_10": median_evaluator_margin
+        >= 0.10,
+    }
+    passed = all(cohort_checks.values())
+    reward_exploitation = any(
+        payloads[seed].get("critic_self_score_increased") is True
+        and not all(
+            seed_results[str(seed)]["checks"][key]
+            for key in (
+                "ndcg_over_unguided_at_least_0_05",
+                "ndcg_over_strongest_baseline_at_least_0_05",
+                "regret_reduction_over_unguided_at_least_10pct",
+                "regret_reduction_over_strongest_at_least_10pct",
+                "independent_evaluator_margin_positive",
+                "independent_evaluator_ci_lower_positive",
+            )
+        )
+        for seed in required_seeds
+    )
+    return {
+        "schema_version": "route_a_v3_route2_xeditflow_v4_three_seed_gate.v1",
+        "status": "XEDITFLOW_V4_PASS" if passed else "XEDITFLOW_V4_NO_GO",
+        "required_seeds": list(required_seeds),
+        "seed_results": seed_results,
+        "median_min_ndcg_improvement": median_min_ndcg_improvement,
+        "median_independent_evaluator_margin": median_evaluator_margin,
+        "cohort_checks": cohort_checks,
+        "reward_exploitation": reward_exploitation,
+        "new_final_evaluation_authorized": passed,
+        "additional_training_seed_authorized": False,
+        "submission_ready": False,
     }

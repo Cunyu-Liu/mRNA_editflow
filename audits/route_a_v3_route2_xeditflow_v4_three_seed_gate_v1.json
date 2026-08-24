@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_three_seed_gate.v1",
+  "recorded_at_local": "2026-08-24T20:26:19+08:00",
+  "status": "XEDITFLOW_V4_THREE_SEED_GATE_IMPLEMENTED_NO_RESULT",
+  "git_head_before_delivery": "05012c4",
+  "implementation": {
+    "gate": "core/route2_xeditflow_gate_v4.py",
+    "focused_test": "tests/route_a_v3/test_route2_xeditflow_guidance_v4.py"
+  },
+  "required_seeds": [20260912, 20260913, 20260914],
+  "required_methods": [
+    "full_soft_value_smc",
+    "unguided_setflow",
+    "first_order_guidance",
+    "simple_rate_guidance",
+    "generate_then_rerank",
+    "strongest_matched_baseline"
+  ],
+  "frozen_evidence": {
+    "per_seed_ndcg_margin_over_unguided_and_strongest": 0.05,
+    "median_minimum_ndcg_margin": 0.07,
+    "paired_ndcg_ci_lower_bound_strictly_positive": true,
+    "regret_reduction_over_unguided_and_strongest_fraction": 0.1,
+    "top_1_recall_not_lower": true,
+    "minimum_open_recovery": 0.25,
+    "minimum_open_top_k_recovery": 0.15,
+    "minimum_unique_rate": 0.9,
+    "independent_evaluator_ci_lower_bound_strictly_positive": true,
+    "median_independent_evaluator_margin": 0.1,
+    "hard_legality_rate": 1.0,
+    "failure_counters_zero": true
+  },
+  "mechanism_and_compute": {
+    "setflow_mode_fixed_in_trajectory": true,
+    "free_action_ratio_head_used": false,
+    "matched_compute_schema": "MatchedComputeRecordV4",
+    "trunk_mode_value_and_each_critic_member_separately_charged": true,
+    "forward_equivalent_ceiling_per_source": 320,
+    "independent_evaluator_in_gradient": false,
+    "critic_self_score_alone_cannot_pass": true,
+    "reward_exploitation_flagged": true
+  },
+  "verification": {
+    "new_and_adjacent_focused": "12/12 PASS",
+    "complete_local_xeditflow_focused_cohort": "133/133 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "three_seed_payloads_created": 0,
+    "gate_executed": false,
+    "new_final_evaluation_authorized": false,
+    "development_test_outcome_reads_after_atomic_test": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_boundary": "GATE SOFTWARE ONLY; NO GUIDED GENERATION OR MODEL-ADVANTAGE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
