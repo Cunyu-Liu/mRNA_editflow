@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_candidate_critic_scorer_audit.v1",
+  "status": "IMPLEMENTED_NOT_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "scorer": "scripts/route_a_v3/score_route2_xeditflow_candidates_v4.py",
+    "config_producer": "scripts/route_a_v3/prepare_route2_xeditflow_v4_value_configs.py",
+    "tests": "tests/route_a_v3/test_score_route2_xeditflow_candidates_v4.py"
+  },
+  "frozen_behavior": {
+    "critic_seeds": [20260908, 20260909, 20260910],
+    "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "prediction_scale": "TASK_ROBUST_STANDARDIZED_EFFECT",
+    "candidate_cap_per_source": 32,
+    "source_count": 891,
+    "source_candidate_identity_allowed": true,
+    "identity_pair_edit_count": 0,
+    "actual_member_forwards": "CEIL(ACTUAL_SOURCE_CANDIDATE_COUNT / FROZEN_MEMBER_PHYSICAL_BATCH_SIZE)",
+    "reservation_reconciled_per_source": true,
+    "equal_wall_time_includes_generation_and_critic_scoring": true,
+    "peak_vram_is_maximum_across_generation_and_critic_scoring": true,
+    "combination_identity_fields": [
+      "method_id",
+      "base_flow_training_seed",
+      "kappa",
+      "temperature",
+      "beta_max"
+    ],
+    "critic_self_score_is_diagnostic_only": true,
+    "critic_self_score_used_for_generation_or_selection": false,
+    "independent_evaluator_used": false,
+    "cpu_fallback_allowed": false
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "21/21 PASS",
+    "all_xeditcritic_v4_tests": "77/77 PASS",
+    "all_xeditflow_and_guidance_tests": "222/222 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "formal_smc_started": false,
+    "candidate_critic_scoring_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

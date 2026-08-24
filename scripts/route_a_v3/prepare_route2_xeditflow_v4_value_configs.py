@@ -28,6 +28,9 @@ from scripts.route_a_v3.generate_route2_xeditflow_value_rollouts_v4 import (
 from scripts.route_a_v3.score_route2_xeditflow_value_rollouts_v4 import (
     validate_value_critic_score_config_v4,
 )
+from scripts.route_a_v3.score_route2_xeditflow_candidates_v4 import (
+    validate_candidate_score_config_v4,
+)
 from scripts.route_a_v3.run_route2_xeditflow_smc_v4 import (
     terminal_critic_forward_reservation_v4,
     validate_smc_run_config_v4,
@@ -378,12 +381,54 @@ def build_value_configs_v4(
             "new_final_evaluation_outcomes_accessed": False,
         }
         validate_smc_run_config_v4(smc_config)
+        critic_output = smc_output / "terminal_critic"
+        critic_config = {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_candidate_critic_score_config.v4"
+            ),
+            "critic_readiness_path": str(protocol["critic_readiness_path"]),
+            "setflow_confirmation_path": str(protocol["setflow_confirmation_path"]),
+            "critic_refit_manifest_path": str(protocol["critic_refit_manifest_path"]),
+            "critic_refit_runtime_config_paths": dict(
+                protocol["critic_refit_runtime_config_paths"]
+            ),
+            "critic_seeds": list(CRITIC_SEEDS_V4),
+            "generation_summary_path": str(smc_output / "run_summary.json"),
+            "candidate_path": str(
+                smc_output / "generated_candidates.private.jsonl"
+            ),
+            "generation_compute_path": str(smc_output / "matched_compute.jsonl"),
+            "source_eligibility_manifest": str(protocol["source_eligibility_manifest"]),
+            "validation_projection_path": str(protocol["validation_projection_path"]),
+            "mrnabert_model_path": str(protocol["mrnabert_model_path"]),
+            "expected_source_count": 891,
+            "candidate_cap_per_source": 32,
+            "base_flow_training_seed": 20260912,
+            "kappa": kappa,
+            "temperature": temperature,
+            "beta_max": beta_max,
+            "method_id": smc_config["method_id"],
+            "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+            "prediction_scale": "TASK_ROBUST_STANDARDIZED_EFFECT",
+            "bottom_six_maximum_sequences_per_batch": 8,
+            "bottom_six_batch_token_budget": 4096,
+            "attention_backend": "PYTORCH_SDPA_AUTO",
+            "physical_gpu_index": critic_gpu,
+            "device": f"cuda:{critic_gpu}",
+            "output_dir": str(critic_output),
+            "critic_self_score_used_for_generation_or_selection": False,
+            "independent_evaluator_used": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
+        validate_candidate_score_config_v4(critic_config)
         guidance_jobs.append(
             {
                 "combination_id": combination_id,
                 "combination": [kappa, temperature, beta_max],
                 "value_id": value_id,
                 "smc_config": smc_config,
+                "critic_ensemble_config": critic_config,
             }
         )
     _require(len(guidance_jobs) == 18, "V4 guidance SMC job count differs")
@@ -440,6 +485,7 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
         )
         value_paths.append(str(path))
     guidance_paths = []
+    critic_paths = []
     for job in payload["guidance_jobs"]:
         path = output_dir / f"smc_{job['combination_id']}.json"
         path.write_text(
@@ -447,6 +493,15 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             encoding="utf-8",
         )
         guidance_paths.append(str(path))
+        critic_path = output_dir / f"critic_{job['combination_id']}.json"
+        critic_path.write_text(
+            json.dumps(
+                job["critic_ensemble_config"], indent=2, sort_keys=True
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        critic_paths.append(str(critic_path))
     manifest = {
         key: value
         for key, value in payload.items()
@@ -462,6 +517,7 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     manifest["config_paths"] = paths
     manifest["value_training_config_paths"] = value_paths
     manifest["guidance_smc_config_paths"] = guidance_paths
+    manifest["guidance_critic_config_paths"] = critic_paths
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

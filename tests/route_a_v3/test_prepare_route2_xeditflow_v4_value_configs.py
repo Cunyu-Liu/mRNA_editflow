@@ -146,6 +146,13 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
         == [4, 4, 4]
         for row in payload["guidance_jobs"]
     )
+    assert all(
+        row["critic_ensemble_config"]["kappa"] == row["combination"][0]
+        and row["critic_ensemble_config"]
+        ["critic_self_score_used_for_generation_or_selection"]
+        is False
+        for row in payload["guidance_jobs"]
+    )
     assert payload["beta_max_used_in_value_target_or_training"] is False
     assert payload["rollout_config"]["expected_train_source_count"] == 101
     assert (
@@ -163,6 +170,7 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
     )
     assert len(manifest["value_training_config_paths"]) == 6
     assert len(manifest["guidance_smc_config_paths"]) == 18
+    assert len(manifest["guidance_critic_config_paths"]) == 18
     assert set(manifest["config_paths"]) == {
         "value_rollout.json",
         "value_critic_score.json",

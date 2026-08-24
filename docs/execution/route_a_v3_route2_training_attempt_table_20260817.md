@@ -2700,6 +2700,19 @@ batch4/8/16/32分别预留8/4/2/1次forward；runner再次从manifest独立推�
 config、未执行SMC/scoring/optimizer，protected read=0，claim不变；A100 current-HEAD测试仍等待旧C3全部terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_dynamic_critic_compute_v1.json`。
 
+## XEditFlow V4 generated-candidate critic scorer（2026-08-24）
+
+正式scorer现按891个Validation sources逐source构造ephemeral bottom-six cache并依次执行20260908/09/10三名
+study-neutral refit critic。每名member实际forward严格为`ceil(actual candidate count/frozen physical batch)`，
+generation阶段按32-candidate cap预留的上界会逐source降为实际值；matched wall time相加，peak VRAM取两阶段最大值。
+source= candidate的合法0-edit STOP终态保留并交给严格identity=0 critic，不误判为非法。
+
+18-cell config现分别绑定`method_id/seed/kappa/temperature/beta_max`与scorer输出，防止组合串线。critic self-score
+只作诊断，不进generation或单独触发PASS。focused/相邻21/21、Critic V4 77/77、XEditFlow/guidance 222/222、
+V3.3.2 96/96 PASS。未materialize config、未执行SMC/scoring/optimizer，protected read=0，claim不变；A100
+current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_candidate_critic_scorer_v1.json`。
+
 ## 21:46 C3 five-job scheduled health（2026-08-24）
 
 本地21:43:35越过校准窗口后单次SSH；远端21:46:08。C3 full/source-only/edit-metadata-only/no-candidate/

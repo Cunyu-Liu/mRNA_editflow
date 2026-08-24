@@ -3741,6 +3741,17 @@ producer据此按`ceil(32/physical_batch_size)`预留每成员终态forward，ru
 attempt或protected read；A100 current-HEAD测试等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_dynamic_critic_compute_v1.json`。
 
+## XEditFlow V4 generated-candidate critic scoring closure（2026-08-24）
+
+`score_route2_xeditflow_candidates_v4.py`从每个open-generation source的unique candidates构造完整candidate bundle，
+使用ephemeral bottom-six representation和三份all-Development refit critic做unknown-study=1 inference。scorer逐source
+执行以便精确记录每member batch forwards，并把generation compute的maximum reservation闭合为actual calls；两段wall time
+相加、VRAM取最大。合法0-edit identity candidate保持可评分。
+
+配置生产器为18个组合各写一份scorer config，并硬绑定method/seed/kappa/temperature/beta。focused/相邻21/21、
+Critic V4 77/77、XEditFlow/guidance 222/222、精确V3.3.2 96/96 PASS；未执行正式scoring或读取protected
+outcome。审计：`audits/route_a_v3_route2_xeditflow_v4_candidate_critic_scorer_v1.json`。
+
 ## 21:46 C3 long-interval health（2026-08-24）
 
 五个C3作业在远端21:46:08均无terminal/failure且PID仍活跃，screen gate不存在，launch HEAD=`4047f55`。
