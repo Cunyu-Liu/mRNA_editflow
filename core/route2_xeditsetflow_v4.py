@@ -11,6 +11,10 @@ from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
 
 from core.route2_xeditcritic_v3 import EndpointConditionerV1
+from core.route2_xedit_v4_interfaces import (
+    MixtureSetMarginalTargetV4,
+    SetFlowSourceBatchV4,
+)
 from core.route2_xeditsetflow_v3 import HybridSetFlowBlockV3
 
 
@@ -187,7 +191,7 @@ class XEditSetFlowV4(nn.Module):
         )
         return counts
 
-    def _condition(self, batch: Mapping[str, torch.Tensor]) -> torch.Tensor:
+    def _condition(self, batch: SetFlowSourceBatchV4) -> torch.Tensor:
         return self.endpoint_conditioner(
             {
                 "quantity": batch["quantity_ids"],
@@ -200,7 +204,7 @@ class XEditSetFlowV4(nn.Module):
             }
         )
 
-    def forward(self, batch: Mapping[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def forward(self, batch: SetFlowSourceBatchV4) -> dict[str, torch.Tensor]:
         source = batch["source_tokens"]
         current = batch["current_tokens"]
         padding = batch["padding_mask"]
@@ -349,10 +353,11 @@ def mixture_setflow_loss_v4(
     rates = output["mode_rates"].float()
     legal = output["legal_action_mask"]
     prior = output["mode_prior"].float()
-    common_positive = batch["common_positive_action_mask"]
-    candidate_positive = batch["candidate_positive_action_mask"]
-    candidate_valid = batch["candidate_valid_mask"]
-    structural = batch["structural_budget_exhausted"]
+    target = MixtureSetMarginalTargetV4.from_source_batch(batch)
+    common_positive = target.common_positive_action_mask
+    candidate_positive = target.candidate_positive_action_mask
+    candidate_valid = target.candidate_valid_mask
+    structural = target.structural_budget_exhausted
     _require(rates.shape[:1] == legal.shape[:1] == prior.shape[:1], "SetFlow V4 loss batch geometry differs")
     _require(rates.shape[2] == legal.shape[1] == common_positive.shape[1] == candidate_positive.shape[2], "SetFlow V4 loss action geometry differs")
     _require(candidate_positive.shape[:2] == candidate_valid.shape, "SetFlow V4 candidate masks differ")
@@ -386,7 +391,7 @@ def mixture_setflow_loss_v4(
         per_candidate_nll * active_candidates
     ).sum(dim=1) / active_candidates.sum(dim=1).clamp_min(1)
     coverage_loss = per_source_coverage[active].mean()
-    count_target = batch["remaining_count_soft_target"].float()
+    count_target = target.remaining_count_soft_target.float()
     _require(count_target.shape == output["remaining_count_logits"].shape, "SetFlow V4 count target geometry changed")
     _require(bool(torch.allclose(count_target.sum(dim=1), torch.ones(count_target.shape[0], device=count_target.device), atol=1e-6)), "SetFlow V4 count target is not normalized")
     count_loss = -(

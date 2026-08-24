@@ -2955,3 +2955,17 @@ elapsed为78,688/78,689/78,689/78,260/77,878秒；五个精确run summary/failur
 未读stdout/stderr、active curve、Development TEST或new Evaluation outcome；未新增optimizer attempt，也未同步
 A100 Git worktree。最新远端偏移为+135秒；下一远端/本地窗口分别不早于01:47:08/01:44:53。
 审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_004708.json`。
+
+## V4 named behavior-interface closure（2026-08-25）
+
+启动前协议审计发现六个冻结接口名此前只存在于protocol JSON，实际模块仍通过匿名dict或其他内部类型传递。
+现已补齐并绑定全部九个接口：`CriticStateBatchV4`由正式collator产生并被Critic forward消费；
+`EndpointSemanticMixtureV4`直接作为各语义block的expert module；`CriticPredictionV4`在正式terminal candidate
+scorer中固定三seed prediction、ensemble mean/SD、standardized reward与study-neutral语义；SetFlow source batch、
+per-candidate mixture target和checkpoint decision也分别连接到collator/model、loss及screen/confirmation gate。
+既有cache、mixture state与matched compute接口保持实际调用，不增加无调用wrapper。
+
+本地新增/相邻42/42、Critic V4相关66/66、SetFlow V4相关53/53、完整XEditFlow/guidance 278/278、
+精确V3.3.2 96/96 PASS，compile/diff-check PASS。未执行cache、preflight、optimizer、inference或Validation metric，
+protected read=0；A100 current-HEAD tests等待旧C3五项terminal，下一允许远端检查仍为本地01:44:53。
+审计：`audits/route_a_v3_route2_xedit_v4_named_interface_implementation_v1.json`。

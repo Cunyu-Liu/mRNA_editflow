@@ -1,0 +1,78 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_named_interface_implementation.v1",
+  "status": "ALL_NINE_FROZEN_V4_BEHAVIOR_INTERFACES_IMPLEMENTED_AND_CONSUMED",
+  "recorded_at_local": "2026-08-25T00:53:54+08:00",
+  "git_head_before_delivery": "88588c0",
+  "interface_evidence": {
+    "FrozenBottomEncoderChunkCacheV4": {
+      "implementation": "core/route2_bottom_encoder_chunk_cache_v4.py",
+      "consumer_bound": true
+    },
+    "CriticStateBatchV4": {
+      "implementation": "core/route2_xedit_v4_interfaces.py",
+      "producers": ["XEditCriticCollatorV4"],
+      "consumers": ["XEditCriticV4.forward"]
+    },
+    "EndpointSemanticMixtureV4": {
+      "implementation": "core/route2_xeditcritic_v4.py",
+      "consumer": "every V4 semantic transformer block"
+    },
+    "CriticPredictionV4": {
+      "implementation": "core/route2_xedit_v4_interfaces.py",
+      "consumer": "formal terminal candidate critic scorer",
+      "fields": [
+        "per_seed_predictions",
+        "ensemble_mean",
+        "ensemble_sd",
+        "standardized_reward",
+        "study_neutral"
+      ]
+    },
+    "SetFlowSourceBatchV4": {
+      "implementation": "core/route2_xedit_v4_interfaces.py",
+      "producer": "collate_setflow_source_states_v4",
+      "consumer": "XEditSetFlowV4.forward"
+    },
+    "MixtureSetMarginalTargetV4": {
+      "implementation": "core/route2_xedit_v4_interfaces.py",
+      "consumer": "mixture_setflow_loss_v4",
+      "candidate_constraints_preserved_separately": true
+    },
+    "SetFlowMixtureStateV4": {
+      "implementation": "core/route2_xeditflow_guidance_v4.py",
+      "consumer_bound": true
+    },
+    "SetFlowCheckpointDecisionV4": {
+      "implementation": "core/route2_xedit_v4_interfaces.py",
+      "producer": "select_checkpoint_v4",
+      "consumers": [
+        "adjudicate_setflow_screen_v4",
+        "adjudicate_setflow_confirmation_v4"
+      ]
+    },
+    "MatchedComputeRecordV4": {
+      "implementation": "core/route2_xeditflow_guidance_v4.py",
+      "consumer_bound": true
+    }
+  },
+  "verification": {
+    "new_and_adjacent_focused": "42/42 PASS",
+    "critic_v4_related": "66/66 PASS",
+    "setflow_v4_related": "53/53 PASS",
+    "complete_xeditflow_guidance": "278/278 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "v4_cache_materialized": false,
+    "preflight_executed": false,
+    "optimizer_attempt_added": false,
+    "validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "next_remote_c3_check_not_before_local": "2026-08-25T01:44:53+08:00",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

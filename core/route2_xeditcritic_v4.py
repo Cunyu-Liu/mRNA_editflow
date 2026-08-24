@@ -9,6 +9,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
 
+from core.route2_xedit_v4_interfaces import CriticStateBatchV4
 from core.route2_xeditcritic_v3 import (
     EndpointConditionerV1,
     RawAntisymmetricBranchV3,
@@ -109,7 +110,7 @@ class EndpointSemanticRouterV4(nn.Module):
         return weights, balance
 
 
-class SemanticResidualExpertsV4(nn.Module):
+class EndpointSemanticMixtureV4(nn.Module):
     """Four bottleneck semantic experts or a parameter-matched generic adapter."""
 
     def __init__(
@@ -167,7 +168,7 @@ class _SemanticBlockBaseV4(nn.Module):
             nn.GELU(),
             nn.Linear(ffn_width, width),
         )
-        self.experts = SemanticResidualExpertsV4(
+        self.experts = EndpointSemanticMixtureV4(
             width=width,
             bottleneck_width=expert_bottleneck_width,
             expert_count=expert_count,
@@ -522,7 +523,7 @@ class XEditCriticV4(nn.Module):
         _require(sum(counts.values()) == self.trainable_parameter_count, "module parameter accounting is incomplete")
         return counts
 
-    def _endpoint_condition(self, batch: Mapping[str, torch.Tensor]) -> torch.Tensor:
+    def _endpoint_condition(self, batch: CriticStateBatchV4) -> torch.Tensor:
         return self.endpoint_conditioner(
             {
                 "quantity": batch["quantity_ids"],
@@ -537,7 +538,7 @@ class XEditCriticV4(nn.Module):
 
     def _paired_representations(
         self,
-        batch: Mapping[str, torch.Tensor],
+        batch: CriticStateBatchV4,
         *,
         replace_candidate_sequence: bool = False,
         suppress_edits: bool = False,
@@ -704,7 +705,7 @@ class XEditCriticV4(nn.Module):
         )
         return self.readout_dropout(representation), router_balance, route_weights
 
-    def forward(self, batch: Mapping[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+    def forward(self, batch: CriticStateBatchV4) -> dict[str, torch.Tensor]:
         if self.control_mode == "SOURCE_ONLY":
             representations, balance, route = self._paired_representations(
                 batch,

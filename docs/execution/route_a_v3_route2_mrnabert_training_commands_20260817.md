@@ -3945,3 +3945,15 @@ A100 current-HEAD验证继续等待五个旧launch-head C3 jobs全部terminal。
 135秒；下一远端/本地窗口分别不早于01:47:08/01:44:53。没有V4 cache/preflight/optimizer执行，
 A100 current-HEAD Git sync继续受五项terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_004708.json`。
+
+## V4 frozen named-interface focused record（2026-08-25）
+
+协议中的九个命名行为接口现在均为真实实现并由正式路径消费。新补齐的Critic batch、semantic mixture和prediction
+接口分别进入collator/model、每个语义block以及terminal candidate scorer；SetFlow source batch、per-candidate
+mixture target与checkpoint decision分别进入source-level collator/model、mixture loss和screen/confirmation gate。
+其中`CriticPredictionV4`逐项冻结三个Critic seed、population SD、`mean-κ×SD` standardized reward及study-neutral
+标志；`MixtureSetMarginalTargetV4`保持每个compatible candidate的action mask独立，不能退化为union mass。
+
+新增/相邻focused 42/42、Critic V4相关66/66、SetFlow V4相关53/53、完整XEditFlow/guidance 278/278、
+精确V3.3.2 96/96 PASS。没有GPU/cache/preflight/optimizer/inference或outcome metric执行，protected read=0；
+A100 current-HEAD测试与正式materialization继续等待五个旧C3作业全部terminal。

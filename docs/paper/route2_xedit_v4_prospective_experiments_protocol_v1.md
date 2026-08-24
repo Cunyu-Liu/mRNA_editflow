@@ -189,3 +189,15 @@ predictor, generator, baselines, metrics, and adaptation policy are frozen. If
 either V4 screen or confirmation fails, the manuscript remains not ready for a
 model-advantage claim. Thresholds, controls, tasks, and seeds are not changed; a
 future method requires a new user discussion and prospective freeze.
+
+## Implementation evidence note（2026-08-25）
+
+The nine frozen behavior-interface names are now bound to concrete code paths
+rather than protocol-only labels. The Critic batch, semantic mixture, and
+prediction interfaces are consumed by the formal collator/model/scorer chain;
+the SetFlow source batch, per-candidate mixture target, and checkpoint decision
+are consumed by the formal collator/model/loss/gate chain. The cache,
+trajectory-state, and matched-compute interfaces were already concrete and
+remain in use. This note records implementation conformance only and does not
+amend any architecture, seed, loss, threshold, gate, outcome-access boundary,
+or claim above.

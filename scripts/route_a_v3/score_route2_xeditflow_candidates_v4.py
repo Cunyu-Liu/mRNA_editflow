@@ -24,6 +24,7 @@ from core.route2_gpu_failure_evidence import (
     write_gpu_failure_evidence,
 )
 from core.route2_xeditcritic_training_data_v3 import UNKNOWN_CATEGORY
+from core.route2_xedit_v4_interfaces import CriticPredictionV4
 from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
 from core.route2_xeditflow_guidance_v3 import uncertainty_penalized_reward_v3
 from core.route2_xeditflow_guidance_v4 import MatchedComputeRecordV4
@@ -523,8 +524,27 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             ],
             dtype=torch.float32,
         )
-        rewards = uncertainty_penalized_reward_v3(
+        reference_rewards = uncertainty_penalized_reward_v3(
             prediction_tensor, kappa=float(config["kappa"])
+        )
+        critic_predictions = [
+            CriticPredictionV4.from_seed_predictions(
+                {
+                    seed: predictions_by_seed[seed][index]
+                    for seed in CRITIC_SEEDS_V4
+                },
+                uncertainty_penalty_kappa=float(config["kappa"]),
+                required_seeds=CRITIC_SEEDS_V4,
+            )
+            for index in range(len(source_candidates))
+        ]
+        rewards = torch.tensor(
+            [prediction.standardized_reward for prediction in critic_predictions],
+            dtype=torch.float32,
+        )
+        _require(
+            torch.allclose(rewards, reference_rewards, rtol=1e-6, atol=1e-7),
+            "CriticPredictionV4 reward differs from the frozen tensor reward",
         )
         torch.cuda.synchronize(device)
         source_wall = time.perf_counter() - source_started
@@ -555,20 +575,23 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         selection_used = str(config["method_id"]) == "generate_then_rerank"
         enriched = []
         for index, candidate in enumerate(source_candidates):
-            values = prediction_tensor[index]
+            prediction = critic_predictions[index]
             enriched.append(
                 {
                     **candidate,
                     "pre_rerank_generation_rank": int(candidate["generation_rank"]),
                     "pre_rerank_generation_score": float(candidate["generation_score"]),
                     "critic_seeds": list(CRITIC_SEEDS_V4),
-                    "calibrated_seed_predictions": values.tolist(),
-                    "critic_ensemble_mean": float(values.mean().item()),
-                    "critic_ensemble_sd": float(values.std(unbiased=False).item()),
+                    "calibrated_seed_predictions": [
+                        value for _, value in prediction.per_seed_predictions
+                    ],
+                    "critic_ensemble_mean": prediction.ensemble_mean,
+                    "critic_ensemble_sd": prediction.ensemble_sd,
                     "uncertainty_penalty_kappa": float(config["kappa"]),
-                    "calibrated_reward": float(rewards[index].item()),
-                    "critic_self_score": float(rewards[index].item()),
-                    "study_neutral": True,
+                    "calibrated_reward": prediction.standardized_reward,
+                    "critic_self_score": prediction.standardized_reward,
+                    "study_neutral": prediction.study_neutral,
+                    "critic_prediction_v4": prediction.to_artifact(),
                     "critic_self_score_is_diagnostic_only": not selection_used,
                     "critic_self_score_used_for_generation_or_selection": selection_used,
                     "terminal_rerank_pending": False,

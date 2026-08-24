@@ -11,6 +11,7 @@ from core.route2_bottom_encoder_chunk_cache_v4 import (
     validate_frozen_bottom_encoder_chunk_cache_v4,
 )
 from core.route2_xeditcritic_training_data_v3 import PAD_TOKEN, RNA_TOKEN
+from core.route2_xedit_v4_interfaces import CriticStateBatchV4
 from scripts.route_a_v3.train_route2_xeditcritic_v3 import XEditCriticDatasetV3
 
 
@@ -73,7 +74,7 @@ class XEditCriticCollatorV4:
         self.cache = cache
         self.minimum_physical_batch = int(minimum_physical_batch)
 
-    def __call__(self, examples: list[dict[str, Any]]) -> dict[str, Any]:
+    def __call__(self, examples: list[dict[str, Any]]) -> CriticStateBatchV4:
         batch_size = len(examples)
         _require(batch_size >= self.minimum_physical_batch, "V4 collator received a sub-four physical batch")
         maximum_length = max(len(example["source"]) for example in examples)
@@ -108,7 +109,7 @@ class XEditCriticCollatorV4:
             [str(example["cache_record_id"]) for example in examples]
         )
         _require(cache_batch["edit_positions"].tolist() == flattened_positions, "V4 cache edit mapping differs from the complete candidate bundle")
-        result: dict[str, Any] = {
+        result: CriticStateBatchV4 = {
             "record_ids": [str(example["record_id"]) for example in examples],
             "cache_record_ids": [str(example["cache_record_id"]) for example in examples],
             "source_groups": [str(example["source_group"]) for example in examples],

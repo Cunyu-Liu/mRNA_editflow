@@ -11,6 +11,7 @@ import torch
 
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3
 from core.route2_xeditcritic_training_data_v3 import descriptor_category
+from core.route2_xedit_v4_interfaces import SetFlowSourceBatchV4
 from core.route2_xeditsetflow_training_v3 import (
     XEditSetFlowTrainingError,
     assigned_edit_budget,
@@ -360,7 +361,7 @@ def collate_setflow_source_states_v4(
     examples: Sequence[Mapping[str, Any]],
     *,
     source_cache: SourceTokenCacheIndexV3,
-) -> dict[str, Any]:
+) -> SetFlowSourceBatchV4:
     _require(bool(examples), "SetFlow V4 state batch is empty")
     maximum_length = max(len(str(example["source_sequence"])) for example in examples)
     maximum_candidates = max(len(example["compatible_terminal_edit_sets"]) for example in examples)

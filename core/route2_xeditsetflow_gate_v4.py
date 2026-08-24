@@ -7,6 +7,8 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from core.route2_xedit_v4_interfaces import SetFlowCheckpointDecisionV4
+
 
 class XEditSetFlowGateV4Error(RuntimeError):
     pass
@@ -215,7 +217,9 @@ def validate_checkpoint_summary_identity_v4(
     }
 
 
-def select_checkpoint_v4(rows: Mapping[int, Mapping[str, Any]]) -> dict[str, Any]:
+def select_checkpoint_v4(
+    rows: Mapping[int, Mapping[str, Any]]
+) -> SetFlowCheckpointDecisionV4:
     _require(set(rows) == {4, 6, 8, 10}, "SetFlow V4 checkpoint set is incomplete")
     eligible = [dict(rows[checkpoint_pass]) for checkpoint_pass in (4, 6, 8, 10) if rows[checkpoint_pass]["eligible"]]
     nll_selected = min(
