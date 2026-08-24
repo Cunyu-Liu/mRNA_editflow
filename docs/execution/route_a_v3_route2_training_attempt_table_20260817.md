@@ -2054,6 +2054,14 @@ screen-config focused=5/5，完整本机Critic V4 focused=49/49、精确V3.3.2=9
 optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_screen_config_freeze_v1.json`。
 
+## XEditCritic V4 activation/optimizer schedule（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。V4 12-block及upper-six activation checkpointing、三档
+互斥optimizer parameter groups和1,121-step warmup/cosine-to-10% schedule已实现；参数完整覆盖且无重复。
+相邻定向=24/24，完整本机Critic V4 focused=52/52、精确V3.3.2=96/96，diff-check PASS。
+formal runner/A100 preflight仍pending，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_checkpoint_optimizer_schedule_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

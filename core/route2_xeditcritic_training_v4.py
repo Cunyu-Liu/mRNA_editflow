@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+import math
 from typing import Callable, Mapping, Sequence
 
 import torch
@@ -407,3 +408,81 @@ def select_physical_batch_from_memory_v4(
         "measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
         "passed": True,
     }
+
+
+def critic_v4_optimizer_parameter_groups(
+    model: torch.nn.Module,
+    *,
+    head_learning_rate: float = 2e-4,
+    semantic_learning_rate: float = 1e-4,
+    upper_six_learning_rate: float = 1e-5,
+) -> list[dict[str, object]]:
+    """Partition every trainable parameter exactly once into the frozen LRs."""
+
+    _require(min(head_learning_rate, semantic_learning_rate, upper_six_learning_rate) > 0, "Critic V4 learning rate is nonpositive")
+    _require(hasattr(model, "upper_encoder") and hasattr(model, "router") and hasattr(model, "blocks"), "Critic V4 model lacks optimizer group modules")
+    upper = {
+        id(parameter): parameter
+        for parameter in model.upper_encoder.parameters()
+        if parameter.requires_grad
+    }
+    semantic_modules = [model.router]
+    semantic_modules.extend(block.experts for block in model.blocks)
+    semantic = {
+        id(parameter): parameter
+        for module in semantic_modules
+        for parameter in module.parameters()
+        if parameter.requires_grad
+    }
+    _require(not (set(upper) & set(semantic)), "upper-six and semantic optimizer groups overlap")
+    all_parameters = {
+        id(parameter): parameter
+        for parameter in model.parameters()
+        if parameter.requires_grad
+    }
+    head_ids = set(all_parameters) - set(upper) - set(semantic)
+    _require(bool(upper) and bool(semantic) and bool(head_ids), "Critic V4 optimizer group is empty")
+    _require(set(all_parameters) == set(upper) | set(semantic) | head_ids, "Critic V4 optimizer groups do not cover every trainable parameter")
+    groups = [
+        {
+            "name": "HEAD_AND_V4_TRUNK",
+            "params": [all_parameters[index] for index in sorted(head_ids)],
+            "lr": float(head_learning_rate),
+        },
+        {
+            "name": "SEMANTIC_EXPERTS_AND_ROUTER",
+            "params": [semantic[index] for index in sorted(semantic)],
+            "lr": float(semantic_learning_rate),
+        },
+        {
+            "name": "MRNABERT_TOP_SIX",
+            "params": [upper[index] for index in sorted(upper)],
+            "lr": float(upper_six_learning_rate),
+        },
+    ]
+    _require(
+        sum(parameter.numel() for group in groups for parameter in group["params"])
+        == sum(parameter.numel() for parameter in all_parameters.values()),
+        "Critic V4 optimizer parameter accounting changed",
+    )
+    return groups
+
+
+def critic_v4_learning_rate_factor(
+    completed_update_count: int,
+    *,
+    total_updates: int = 22416,
+    warmup_fraction: float = 0.05,
+    final_fraction: float = 0.10,
+) -> float:
+    """Linear 5% warmup followed by cosine decay to 10% of initial LR."""
+
+    _require(total_updates > 0 and 0.0 < warmup_fraction < 1.0, "Critic V4 scheduler geometry is invalid")
+    _require(0.0 < final_fraction <= 1.0, "Critic V4 final learning-rate fraction is invalid")
+    _require(0 <= completed_update_count <= total_updates, "Critic V4 scheduler update is out of range")
+    warmup_updates = math.ceil(total_updates * warmup_fraction)
+    if completed_update_count < warmup_updates:
+        return (completed_update_count + 1) / warmup_updates
+    progress = (completed_update_count - warmup_updates) / max(1, total_updates - warmup_updates)
+    cosine = 0.5 * (1.0 + math.cos(math.pi * progress))
+    return final_fraction + (1.0 - final_fraction) * cosine

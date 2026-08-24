@@ -3203,3 +3203,15 @@ bottom-six cache完整、formal exact parameter/20–35GiB memory preflight通�
 screen-config focused=5/5，完整本机Critic V4 focused=49/49、精确V3.3.2=96/96，JSON/diff-check PASS；
 Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_screen_config_freeze_v1.json`。
+
+## XEditCritic V4 activation checkpointing and optimizer schedule（2026-08-24）
+
+12个V4 edit/cross blocks及formal pretrained upper-six均启用preserve-RNG activation checkpointing；每个
+checkpoint closure绑定其精确block/layer，反向重算不会错误引用循环末层。optimizer参数被互斥划分为
+head+V4 trunk LR2e-4、semantic experts+router LR1e-4、mRNABERT top-six LR1e-5；全部trainable
+parameters恰好覆盖一次，无empty或overlap group。固定22,416 updates的前5%采用ceil后的1,121-step linear
+warmup，之后cosine decay至initial LR的10%。
+
+相邻定向=24/24，完整本机Critic V4 focused=52/52、精确V3.3.2=96/96，diff-check PASS；formal
+runner/A100 preflight仍未执行，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_checkpoint_optimizer_schedule_v1.json`。

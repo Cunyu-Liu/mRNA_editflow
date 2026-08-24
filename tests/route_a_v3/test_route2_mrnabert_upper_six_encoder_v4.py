@@ -36,6 +36,21 @@ def test_upper_six_runs_exactly_six_trainable_layers_and_propagates_gradients() 
     assert all(layer.last_attention_mask is not None for layer in layers)
 
 
+def test_upper_six_activation_checkpointing_preserves_gradients() -> None:
+    layers = nn.ModuleList([_Layer(float(index + 1)) for index in range(6)])
+    hidden = torch.zeros((2, 5, 3), requires_grad=True)
+    mask = torch.ones((2, 5), dtype=torch.bool)
+    output = forward_upper_six_layers_v4(
+        layers,
+        hidden,
+        mask,
+        activation_checkpointing=True,
+    )
+    output.square().mean().backward()
+    assert hidden.grad is not None
+    assert all(layer.scale.grad is not None for layer in layers)
+
+
 def test_upper_six_rejects_a_fifth_or_seventh_layer_scope() -> None:
     hidden = torch.zeros((1, 3, 2))
     mask = torch.ones((1, 3), dtype=torch.bool)

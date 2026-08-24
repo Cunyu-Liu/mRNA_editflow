@@ -1,0 +1,43 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_checkpoint_optimizer_schedule.v1",
+  "recorded_at_local": "2026-08-24T17:28:05+08:00",
+  "status": "XEDITCRITIC_V4_ACTIVATION_CHECKPOINT_OPTIMIZER_SCHEDULE_IMPLEMENTED_NO_ATTEMPT",
+  "git_head_before_delivery": "8bf89de",
+  "activation_checkpointing": {
+    "v4_edit_blocks": true,
+    "pretrained_mrnabert_upper_six": true,
+    "preserve_rng_state": true,
+    "checkpoint_closure_binds_exact_block": true
+  },
+  "optimizer_groups": [
+    {"name": "HEAD_AND_V4_TRUNK", "learning_rate": 0.0002},
+    {"name": "SEMANTIC_EXPERTS_AND_ROUTER", "learning_rate": 0.0001},
+    {"name": "MRNABERT_TOP_SIX", "learning_rate": 0.00001}
+  ],
+  "optimizer_parameter_coverage": {
+    "all_trainable_parameters_covered": true,
+    "parameter_overlap": 0,
+    "empty_group": false
+  },
+  "scheduler": {
+    "total_updates": 22416,
+    "warmup_fraction": 0.05,
+    "warmup_updates_ceil": 1121,
+    "post_warmup": "COSINE",
+    "final_learning_rate_fraction": 0.1
+  },
+  "verification": {
+    "activation_optimizer_schedule_adjacent": "24/24 PASS",
+    "complete_local_critic_v4_focused_cohort": "52/52 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_and_memory_preflight": "DEFERRED_UNTIL_C3_BARRIER"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

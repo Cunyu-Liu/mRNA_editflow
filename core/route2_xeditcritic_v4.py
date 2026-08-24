@@ -7,6 +7,7 @@ from typing import Any, Mapping
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.utils.checkpoint import checkpoint
 
 from core.route2_xeditcritic_v3 import (
     EndpointConditionerV1,
@@ -422,6 +423,7 @@ class XEditCriticV4(nn.Module):
         readout_hidden_width: int = 2560,
         dropout: float = 0.1,
         minimum_physical_batch: int = 4,
+        activation_checkpointing: bool = True,
     ) -> None:
         super().__init__()
         _require(control_mode in XEDITCRITIC_V4_CONTROLS, "unknown Critic V4 control")
@@ -433,6 +435,7 @@ class XEditCriticV4(nn.Module):
         self.control_mode = control_mode
         self.mechanism_mode = mechanism_mode
         self.minimum_physical_batch = int(minimum_physical_batch)
+        self.activation_checkpointing = bool(activation_checkpointing)
         self.endpoint_conditioner = EndpointConditionerV1(
             quantity_count=quantity_count,
             measurement_count=measurement_count,
@@ -601,19 +604,49 @@ class XEditCriticV4(nn.Module):
         right_context = torch.stack((candidate_context, source_context), dim=0)
         for block in self.blocks:
             if isinstance(block, EditSetSelfAttentionBlockV4):
-                edit_values = block(
-                    edit_values,
-                    edit_padding_mask=edit_padding_mask,
-                    route_weights=route_weights,
+                def self_block(
+                    values: torch.Tensor,
+                    active_block: EditSetSelfAttentionBlockV4 = block,
+                ) -> torch.Tensor:
+                    return active_block(
+                        values,
+                        edit_padding_mask=edit_padding_mask,
+                        route_weights=route_weights,
+                    )
+
+                edit_values = (
+                    checkpoint(
+                        self_block,
+                        edit_values,
+                        use_reentrant=False,
+                        preserve_rng_state=True,
+                    )
+                    if self.training and self.activation_checkpointing
+                    else self_block(edit_values)
                 )
             else:
-                edit_values = block(
-                    edit_values,
-                    left_context=left_context,
-                    right_context=right_context,
-                    local_context_mask=local["local_context_mask"],
-                    edit_padding_mask=edit_padding_mask,
-                    route_weights=route_weights,
+                def cross_block(
+                    values: torch.Tensor,
+                    active_block: nn.Module = block,
+                ) -> torch.Tensor:
+                    return active_block(
+                        values,
+                        left_context=left_context,
+                        right_context=right_context,
+                        local_context_mask=local["local_context_mask"],
+                        edit_padding_mask=edit_padding_mask,
+                        route_weights=route_weights,
+                    )
+
+                edit_values = (
+                    checkpoint(
+                        cross_block,
+                        edit_values,
+                        use_reentrant=False,
+                        preserve_rng_state=True,
+                    )
+                    if self.training and self.activation_checkpointing
+                    else cross_block(edit_values)
                 )
         valid = ~edit_padding_mask
         has_edit = valid.any(dim=1)

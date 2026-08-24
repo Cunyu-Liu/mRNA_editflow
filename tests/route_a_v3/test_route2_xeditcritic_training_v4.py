@@ -11,7 +11,9 @@ from core.route2_xeditcritic_training_v4 import (
     XEditCriticTrainingV4Error,
     backward_replayed_prediction_gradient_v4,
     collect_replayable_predictions_v4,
+    critic_v4_learning_rate_factor,
     critic_v4_loss_weights,
+    critic_v4_optimizer_parameter_groups,
     effective_prediction_objective_v4,
     pairwise_sigmoid_soft_ranks_v4,
     physical_microbatch_partitions_v4,
@@ -201,5 +203,37 @@ def test_rng_replay_reproduces_dropout_predictions_and_backpropagates_full_gradi
     assert torch.equal(torch.cat(replayed), predictions)
     assert all(parameter.grad is not None for parameter in model.parameters())
     assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters())
+
+
+def test_optimizer_groups_cover_each_parameter_once_at_the_three_frozen_rates() -> None:
+    class Model(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.upper_encoder = torch.nn.Linear(3, 3)
+            self.router = torch.nn.Linear(3, 2)
+            block = torch.nn.Module()
+            block.experts = torch.nn.Linear(3, 3)
+            self.blocks = torch.nn.ModuleList([block])
+            self.head = torch.nn.Linear(3, 1)
+
+    model = Model()
+    groups = critic_v4_optimizer_parameter_groups(model)
+    assert [group["name"] for group in groups] == [
+        "HEAD_AND_V4_TRUNK",
+        "SEMANTIC_EXPERTS_AND_ROUTER",
+        "MRNABERT_TOP_SIX",
+    ]
+    assert [group["lr"] for group in groups] == [2e-4, 1e-4, 1e-5]
+    parameter_ids = [id(parameter) for group in groups for parameter in group["params"]]
+    assert len(parameter_ids) == len(set(parameter_ids))
+    assert set(parameter_ids) == {id(parameter) for parameter in model.parameters()}
+
+
+def test_scheduler_uses_ceil_five_percent_warmup_and_ends_at_ten_percent() -> None:
+    warmup_updates = 1121
+    assert critic_v4_learning_rate_factor(0) == pytest.approx(1 / warmup_updates)
+    assert critic_v4_learning_rate_factor(warmup_updates - 1) == pytest.approx(1.0)
+    assert critic_v4_learning_rate_factor(warmup_updates) == pytest.approx(1.0)
+    assert critic_v4_learning_rate_factor(22416) == pytest.approx(0.1)
     backward_replayed_prediction_gradient_v4,
     collect_replayable_predictions_v4,
