@@ -2175,8 +2175,10 @@ critic/evaluator使用=0，Development TEST/new Evaluation outcome read=0。审�
 window64、dilation 1/2/4/8循环的V4 trunk，以及8个trajectory-fixed source-level latent modes。mode router只接收
 source与outcome-free endpoint descriptors，先验严格为`0.5*softmax(r)+0.5/8`；study identity不进入模型。
 
-正式full准确可训练参数为100,098,878，落在80–150M硬范围及95–110M设计目标内。single-mode control为
-98,627,597参数，差异1.470%，无未使用参数填充。每个mode有低秩token residual、substitution head与独立STOP
+按既有冻结Development endpoint vocab（assay7/context28/quantity6/measurement5/numerator6/denominator6）
+实例化后，正式full准确可训练参数为100,099,998，落在80–150M硬范围及95–110M设计目标内；single-mode为
+98,628,717参数，差异1.470%，无未使用参数填充。该数值在任何V4训练/Validation结果前替换占位vocab计数，
+不改变架构几何。每个mode有低秩token residual、substitution head与独立STOP
 head；remaining-count head共享。hard legality在rate交付给loss/sampler前应用，structural budget exhaustion下无
 SUB或STOP合法动作。
 

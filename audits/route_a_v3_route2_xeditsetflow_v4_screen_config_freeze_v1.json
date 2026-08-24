@@ -4,6 +4,11 @@
   "status": "XEDITSETFLOW_V4_SCREEN_CONFIG_FROZEN_NO_ATTEMPT",
   "git_head_before_delivery": "28d656e",
   "config": "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json",
+  "formal_parameter_counts": {
+    "full": 100099998,
+    "single_mode": 98628717,
+    "vocab_cardinalities": "assay7/context28/quantity6/measurement5/numerator6/denominator6"
+  },
   "screen": {
     "seed": 20260911,
     "required_runs": ["v4_full", "v4_single_mode"],

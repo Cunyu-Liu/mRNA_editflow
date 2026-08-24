@@ -19,16 +19,24 @@
     "mode_prior": "0.5*softmax(source_and_endpoint_router)+0.5/8",
     "trajectory_mode_fixed": true,
     "study_identity_input": false,
-    "trainable_parameter_count": 100098878,
+    "formal_endpoint_vocab_cardinalities": {
+      "assay": 7,
+      "context": 28,
+      "quantity": 6,
+      "measurement": 5,
+      "numerator": 6,
+      "denominator": 6
+    },
+    "trainable_parameter_count": 100099998,
     "trainable_parameter_range_pass": true,
     "design_target_95_to_110m_pass": true,
-    "single_mode_trainable_parameter_count": 98627597,
-    "full_vs_single_parameter_difference_fraction": 0.0147,
+    "single_mode_trainable_parameter_count": 98628717,
+    "full_vs_single_parameter_difference_fraction": 0.014698112181780463,
     "full_vs_single_parameter_difference_below_two_percent": true,
     "unused_parameter_padding": false
   },
   "module_parameter_counts": {
-    "endpoint": 91840,
+    "endpoint": 92960,
     "state_input": 599840,
     "hybrid_trunk": 96560928,
     "mode_router": 552328,
@@ -67,6 +75,12 @@
     "validation_generation_read": false,
     "development_test_outcome_read": 0,
     "new_final_evaluation_outcome_read": 0
+  },
+  "pretraining_correction": {
+    "reason": "REPLACED_PLACEHOLDER_VOCAB_CARDINALITIES_WITH_THE_EXISTING_FROZEN_DEVELOPMENT_ENDPOINT_VOCAB",
+    "validation_result_seen_before_correction": false,
+    "optimizer_attempt_started_before_correction": false,
+    "architecture_geometry_changed": false
   },
   "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
 }

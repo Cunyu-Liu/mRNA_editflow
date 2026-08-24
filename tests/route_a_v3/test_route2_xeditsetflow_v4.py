@@ -147,23 +147,25 @@ def test_single_mode_control_has_exact_zero_information_loss() -> None:
 
 def test_formal_full_capacity_is_95_to_110m_and_single_mode_diff_is_below_two_percent() -> None:
     full = XEditSetFlowV4(
-        assay_count=4,
-        context_count=5,
-        quantity_count=7,
-        measurement_count=6,
-        numerator_count=4,
-        denominator_count=4,
+        assay_count=7,
+        context_count=28,
+        quantity_count=6,
+        measurement_count=5,
+        numerator_count=6,
+        denominator_count=6,
     )
     single = XEditSetFlowV4(
-        assay_count=4,
-        context_count=5,
-        quantity_count=7,
-        measurement_count=6,
-        numerator_count=4,
-        denominator_count=4,
+        assay_count=7,
+        context_count=28,
+        quantity_count=6,
+        measurement_count=5,
+        numerator_count=6,
+        denominator_count=6,
         mode_count=1,
     )
     capacity = require_setflow_v4_trainable_parameter_range(full)
+    assert capacity["trainable_parameter_count"] == 100_099_998
+    assert single.trainable_parameter_count == 98_628_717
     assert 95_000_000 <= capacity["trainable_parameter_count"] <= 110_000_000
     difference = full.trainable_parameter_count - single.trainable_parameter_count
     assert 0 < difference / full.trainable_parameter_count < 0.02

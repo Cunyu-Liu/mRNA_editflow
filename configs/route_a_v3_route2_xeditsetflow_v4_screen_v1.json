@@ -61,8 +61,16 @@
     "full_mode_count": 8,
     "mode_residual_rank": 64,
     "stop_bottleneck_width": 128,
-    "formal_full_trainable_parameter_count": 100098878,
-    "formal_single_mode_trainable_parameter_count": 98627597,
+    "formal_endpoint_vocab_cardinalities": {
+      "assay": 7,
+      "context": 28,
+      "quantity": 6,
+      "measurement": 5,
+      "numerator": 6,
+      "denominator": 6
+    },
+    "formal_full_trainable_parameter_count": 100099998,
+    "formal_single_mode_trainable_parameter_count": 98628717,
     "minimum_trainable_parameter_count": 80000000,
     "maximum_trainable_parameter_count": 150000000,
     "design_target_minimum_trainable_parameter_count": 95000000,

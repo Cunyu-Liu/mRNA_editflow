@@ -35,8 +35,8 @@ def test_formal_capacity_and_source_level_objective_match_protocol() -> None:
     config = _load()
     architecture = config["architecture"]
     objective = config["objective"]
-    assert architecture["formal_full_trainable_parameter_count"] == 100_098_878
-    assert architecture["formal_single_mode_trainable_parameter_count"] == 98_627_597
+    assert architecture["formal_full_trainable_parameter_count"] == 100_099_998
+    assert architecture["formal_single_mode_trainable_parameter_count"] == 98_628_717
     assert 95_000_000 <= architecture["formal_full_trainable_parameter_count"] <= 110_000_000
     assert objective == {
         "common_set_marginal_weight": 1.0,

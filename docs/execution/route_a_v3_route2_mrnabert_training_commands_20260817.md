@@ -3326,7 +3326,9 @@ diff-check PASS；optimizer attempts=0、critic/evaluator use=0、Development TE
 
 已实现`route2_xeditsetflow_v4.py`：正式模型固定为18×640 hybrid trunk、10 heads、FFN2560、window64与
 8个source-level modes；mode从source/outcome-free endpoint先验在trajectory开始时选定，trajectory内部不得
-重采样。full/single-mode准确可训练参数分别为100,098,878/98,627,597，差异1.470%，均来自真实使用模块。
+重采样。按既有冻结Development endpoint vocab实例化的full/single-mode准确可训练参数分别为
+100,099,998/98,628,717，差异1.470%，均来自真实使用模块。该训练前修正仅把占位vocab cardinalities替换为
+assay7/context28/quantity6/measurement5/numerator6/denominator6，不改变18×640架构。
 
 目标函数保留共同set-marginal可比NLL，同时对每个compatible measured candidate分别施加coverage NLL，增加
 remaining-edit-count校准及防止mode同质化的information项；权重固定为1/0.50/0.20/0.05。hard legality先于
