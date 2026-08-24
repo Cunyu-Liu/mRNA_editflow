@@ -16,6 +16,7 @@ def _config():
             "route_a_v3_route2_xeditflow_value_critic_score_config.v4"
         ),
         "critic_seeds": [20260908, 20260909, 20260910],
+        "base_flow_training_seed": 20260912,
         "critic_refit_runtime_config_paths": {
             "20260908": "/mnt/refit-8.json",
             "20260909": "/mnt/refit-9.json",
@@ -69,6 +70,9 @@ def _terminal():
 
 def test_v4_value_critic_score_config_freezes_seed_study_mode_and_paths() -> None:
     validate_value_critic_score_config_v4(_config())
+    config = _config()
+    config["base_flow_training_seed"] = 20260914
+    validate_value_critic_score_config_v4(config)
 
 
 def test_v4_value_critic_score_config_rejects_mode_or_protected_drift() -> None:
@@ -80,10 +84,16 @@ def test_v4_value_critic_score_config_rejects_mode_or_protected_drift() -> None:
     config["development_test_outcomes_accessed_after_atomic_test"] = True
     with pytest.raises(Exception, match="reopened Development TEST"):
         validate_value_critic_score_config_v4(config)
+    config = _config()
+    config["base_flow_training_seed"] = 20260915
+    with pytest.raises(Exception, match="base-flow seed is undeclared"):
+        validate_value_critic_score_config_v4(config)
 
 
 def test_v4_terminal_rollout_conversion_uses_dummy_zero_only_for_inference() -> None:
-    rows = projection_rows_from_terminal_rollouts_v4([_terminal()], global_start=7)
+    rows = projection_rows_from_terminal_rollouts_v4(
+        [_terminal()], global_start=7, base_flow_training_seed=20260912
+    )
     assert len(rows) == 1
     row = rows[0]
     assert row["canonical_record_id"] == "generated-000000000007"
@@ -95,4 +105,15 @@ def test_v4_terminal_rollout_conversion_uses_dummy_zero_only_for_inference() -> 
     terminal = copy.deepcopy(_terminal())
     terminal["source_relative_edits"][0]["position"] = 1
     with pytest.raises(Exception, match="candidate bundle differs"):
-        projection_rows_from_terminal_rollouts_v4([terminal], global_start=0)
+        projection_rows_from_terminal_rollouts_v4(
+            [terminal], global_start=0, base_flow_training_seed=20260912
+        )
+
+
+def test_v4_terminal_rollout_conversion_rejects_mixed_base_flow_seed() -> None:
+    terminal = _terminal()
+    terminal["base_flow_training_seed"] = 20260913
+    with pytest.raises(Exception, match="base-flow seed differs"):
+        projection_rows_from_terminal_rollouts_v4(
+            [terminal], global_start=0, base_flow_training_seed=20260912
+        )

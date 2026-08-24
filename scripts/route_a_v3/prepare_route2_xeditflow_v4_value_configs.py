@@ -284,6 +284,7 @@ def build_value_configs_v4(
             protocol["critic_refit_runtime_config_paths"]
         ),
         "critic_seeds": list(CRITIC_SEEDS_V4),
+        "base_flow_training_seed": 20260912,
         "rollout_summary_path": str(rollout_output / "run_summary.json"),
         "terminal_rollout_path": str(
             rollout_output / "terminal_rollouts.private.jsonl"

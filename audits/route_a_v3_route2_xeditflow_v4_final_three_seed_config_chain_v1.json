@@ -1,0 +1,82 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_final_three_seed_config_chain_audit.v1",
+  "status": "XEDITFLOW_V4_FINAL_THREE_SEED_CONFIG_SOFTWARE_COMPLETE_NOT_EXECUTED",
+  "recorded_at": "2026-08-24T23:12:37+08:00",
+  "head_before_change": "3d3c7fb8efcced15ca6ac227ab310142a49757b9",
+  "base_flow_training_seeds": [
+    20260912,
+    20260913,
+    20260914
+  ],
+  "critic_ensemble_seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "implemented_files": [
+    "scripts/route_a_v3/build_route2_xeditflow_final_value_target_v4.py",
+    "scripts/route_a_v3/prepare_route2_xeditflow_final_generation_configs_v4.py"
+  ],
+  "strengthened_files": [
+    "scripts/route_a_v3/score_route2_xeditflow_value_rollouts_v4.py",
+    "scripts/route_a_v3/prepare_route2_xeditflow_v4_value_configs.py"
+  ],
+  "frozen_execution_semantics": {
+    "screen_seed_reuses_screen_selected_value_checkpoint": true,
+    "non_screen_seeds_build_seed_local_rollouts_scores_target_and_value_checkpoint": [
+      20260913,
+      20260914
+    ],
+    "selected_kappa_temperature_reused_without_reselection": true,
+    "beta_max_absent_from_value_target_and_training": true,
+    "same_decoder_seed_base_across_all_methods_and_seeds": 20261001,
+    "candidate_cap_per_source": 32,
+    "forward_equivalent_ceiling_per_source": 320,
+    "terminal_critic_scoring_methods": [
+      "full_soft_value_smc",
+      "unguided_setflow",
+      "first_order_guidance",
+      "simple_rate_guidance",
+      "generate_then_rerank"
+    ],
+    "critic_score_changes_ranking_only_for": "generate_then_rerank",
+    "rerank_changes_candidate_support": false,
+    "closed_exact_probability_methods": [
+      "full_soft_value_smc",
+      "unguided_setflow"
+    ],
+    "closed_frozen_critic_score_methods": [
+      "first_order_guidance",
+      "simple_rate_guidance",
+      "generate_then_rerank"
+    ],
+    "strongest_baseline_score_table_frozen_before_v4": true,
+    "strongest_baseline_reselected_for_v4": false,
+    "independent_evaluator_in_gradient": false
+  },
+  "value_critic_seed_binding": {
+    "config_required": true,
+    "rollout_summary_required_to_match": true,
+    "every_terminal_row_required_to_match": true,
+    "terminal_score_summary_records_seed": true,
+    "mixed_seed_artifact_rejected": true
+  },
+  "verification": {
+    "focused_tests": "24 passed",
+    "xeditflow_and_guidance_tests": "271 passed",
+    "v3_3_2_tests": "96 passed",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "gpu_generation_executed": false,
+    "critic_inference_executed": false,
+    "value_optimizer_attempts_started": 0,
+    "validation_generation_metrics_read": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "claim_effect": "SOFTWARE_AND_PROVENANCE_BOUNDARY_ONLY_NO_PERFORMANCE_OR_PUBLICATION_CLAIM_CHANGE"
+}

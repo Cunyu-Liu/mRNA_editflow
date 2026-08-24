@@ -2832,3 +2832,23 @@ measured set或单编辑系数超过32，scorer按32分块而不截断。score�
 本地closed-focused 14/14、完整XEditFlow/guidance 260/260、精确V3.3.2 96/96、compile/diff-check PASS。未materialize
 config，未执行Critic inference、closed Validation metric或optimizer，protected read=0，claim不变；A100 current-HEAD
 tests等待旧C3 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_closed_matched_controls_v1.json`。
+
+## XEditFlow V4 final three-seed value/config chain（2026-08-24）
+
+补齐20260913/14两条非screen seed的正式value链：每个seed各自生成固定mode TRAIN rollouts，以冻结三成员Critic
+评分，只使用guidance screen已选定的`κ/τ`构建单一value target，再按固定8 passes训练本seed的scalar value model。
+20260912不重复训练，严格复用screen中相同`κ/τ`对应的final-pass checkpoint；`βmax`只进入最终sampling，不能进入
+value target或value training。
+
+value Critic scorer同时新增端到端base-flow seed绑定：配置、rollout terminal summary、每条terminal row和最终score
+summary必须一致，混合seed artifact硬失败。正式配置生产器为三个SetFlow seeds固定full soft-value SMC、四个matched
+controls、五种方法的terminal Critic scorer与open metrics、两条exact closed probability路径、三条Critic closed score
+路径、pre-V4 frozen strongest-baseline score table及full-vs-strongest independent evaluator比较。所有方法共享decoder seed
+base `20261001`、candidate cap 32和320 forward-equivalents/source；只有generate-then-rerank可按Critic终态分数重排，
+且不得改变候选support。
+
+本地focused 24/24、完整XEditFlow/guidance 271/271、精确V3.3.2 96/96、compile/diff-check PASS。23:12本地时间
+尚未越过C3下一次允许检查窗口23:44:01，因此未发起SSH。未materialize runtime configs、未运行value optimizer、
+generation、Critic inference或Validation metrics；Development TEST post-atomic reopen和new Evaluation outcome read均为0，
+attempt数及论文claim不变。A100 current-HEAD tests仍等待五个旧launch-head jobs自然terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_final_three_seed_config_chain_v1.json`。

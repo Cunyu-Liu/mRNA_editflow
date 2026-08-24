@@ -195,6 +195,7 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
         payload["critic_score_config"]["expected_terminal_rollout_count"]
         == 3232
     )
+    assert payload["critic_score_config"]["base_flow_training_seed"] == 20260912
     assert len(payload["target_grid_config"]["grid"]) == 6
     assert {row["physical_gpu_index"] for row in payload["value_jobs"]} == set(
         range(6)

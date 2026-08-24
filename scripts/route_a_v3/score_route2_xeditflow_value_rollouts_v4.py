@@ -33,7 +33,10 @@ from core.route2_xeditcritic_training_data_v3 import (
 )
 from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
 from core.route2_xeditflow_value_rollouts_v4 import frozen_rollout_score_row_v4
-from core.route2_xeditflow_value_training_v4 import CRITIC_SEEDS_V4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    CRITIC_SEEDS_V4,
+)
 from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
     FrozenMRNABERTBottomSixEncoderV4,
 )
@@ -88,6 +91,11 @@ def validate_value_critic_score_config_v4(config: Mapping[str, Any]) -> None:
         == CRITIC_SEEDS_V4,
         "V4 value critic seeds changed",
     )
+    _require(
+        int(config.get("base_flow_training_seed", -1))
+        in BASE_FLOW_SEEDS_V4,
+        "V4 value critic base-flow seed is undeclared",
+    )
     runtime_paths = config.get("critic_refit_runtime_config_paths")
     _require(
         isinstance(runtime_paths, Mapping)
@@ -141,9 +149,17 @@ def validate_value_critic_score_config_v4(config: Mapping[str, Any]) -> None:
 
 
 def projection_rows_from_terminal_rollouts_v4(
-    terminal_rows: Sequence[Mapping[str, Any]], *, global_start: int
+    terminal_rows: Sequence[Mapping[str, Any]],
+    *,
+    global_start: int,
+    base_flow_training_seed: int,
 ) -> list[dict[str, Any]]:
-    _require(bool(terminal_rows) and global_start >= 0, "V4 terminal score batch differs")
+    _require(
+        bool(terminal_rows)
+        and global_start >= 0
+        and base_flow_training_seed in BASE_FLOW_SEEDS_V4,
+        "V4 terminal score batch differs",
+    )
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     for offset, terminal in enumerate(terminal_rows):
@@ -155,6 +171,11 @@ def projection_rows_from_terminal_rollouts_v4(
         _require(
             terminal.get("setflow_mode_is_fixed_trajectory_state") is True,
             "V4 terminal rollout did not preserve mode state",
+        )
+        _require(
+            int(terminal.get("base_flow_training_seed", -1))
+            == base_flow_training_seed,
+            "V4 terminal rollout base-flow seed differs",
         )
         source = str(terminal["source_sequence"])
         candidate = str(terminal["candidate_sequence"])
@@ -355,6 +376,7 @@ def _score_member_batch_v4(
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_value_critic_score_config_v4(config)
+    base_flow_seed = int(config["base_flow_training_seed"])
     _require(
         output_dir == Path(str(config["output_dir"])),
         "V4 value critic output path differs from frozen config",
@@ -376,6 +398,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     _require(
         rollout_summary.get("status")
         == "XEDITFLOW_V4_VALUE_ROLLOUTS_COMPLETE_PENDING_CRITIC_SCORING"
+        and int(rollout_summary.get("base_flow_training_seed", -1))
+        == base_flow_seed
         and rollout_summary.get("fixed_seed_replayable") is True
         and int(rollout_summary.get("fixed_seed_replay_failure_count", -1)) == 0
         and rollout_summary.get("critic_scoring_performed") is False,
@@ -426,7 +450,9 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             int(config["candidate_batch_size"]),
         ):
             projection_rows = projection_rows_from_terminal_rollouts_v4(
-                terminal_rows, global_start=processed
+                terminal_rows,
+                global_start=processed,
+                base_flow_training_seed=base_flow_seed,
             )
             cache_view = _ephemeral_cache_view_v4(
                 projection_rows, encoder=bottom_encoder
@@ -469,6 +495,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "schema_version": "route_a_v3_route2_xeditflow_value_critic_scores.v4",
         "status": "XEDITFLOW_V4_VALUE_CRITIC_SCORING_COMPLETE",
         "terminal_rollout_count": processed,
+        "base_flow_training_seed": base_flow_seed,
         "critic_seeds": list(CRITIC_SEEDS_V4),
         "critic_forward_counts_by_member": {
             str(seed): forward_counts[seed] for seed in CRITIC_SEEDS_V4

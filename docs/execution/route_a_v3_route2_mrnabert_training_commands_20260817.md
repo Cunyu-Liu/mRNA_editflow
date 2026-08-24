@@ -3844,3 +3844,22 @@ strongest baseline统一转换为source-level NDCG/regret/top-1，undefined不�
 closed-focused 14/14、XEditFlow/guidance 260/260、V3.3.2 96/96、compile/diff-check PASS。未执行scoring/metric或
 optimizer，protected read=0；A100 current-HEAD tests仍等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_closed_matched_controls_v1.json`。
+
+## XEditFlow V4 final three-seed value/config focused record（2026-08-24）
+
+当前HEAD已实现但尚未执行以下前瞻链：
+
+- seed 20260912只复用guidance screen已冻结的selected value checkpoint；
+- seeds 20260913/14各运行一次同seed、mode-fixed、K=8 rollout → 三成员Critic score → selected `κ/τ` target →
+  fixed-pass value training；
+- 三个seed各生成full soft-value SMC和四个matched controls，随后统一terminal Critic scoring；
+- open metrics只有generate-then-rerank使用Critic排序，其他方法保持generation排序；
+- closed metrics对full/unguided使用exact order-invariant probability，对三个Critic controls及pre-V4 strongest baseline使用
+  冻结score table；
+- full方法另走冻结independent evaluator并与strongest baseline做source-paired comparison。
+
+focused命令覆盖final target、final config producer、value rollout scorer、screen config producer、target assembly和value training，
+结果24/24 PASS；完整`*xeditflow*.py + *guidance*.py`为271/271 PASS；本地`*v332*.py`为96/96 PASS；
+`py_compile`与`git diff --check`均PASS。当前仅有代码、测试和审计文件；正式runtime config尚未materialize，GPU job、
+optimizer attempt与metric read均未发生，protected read保持0。23:12尚未到下一C3检查窗口，本轮没有SSH或提前补查。
+A100 current-HEAD focused/V3.3.2仍受五个旧launch-head jobs terminal barrier约束。
