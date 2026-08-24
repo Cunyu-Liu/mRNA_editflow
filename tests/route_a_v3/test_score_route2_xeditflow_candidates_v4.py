@@ -8,6 +8,7 @@ from core.route2_xeditflow_guidance_v4 import MatchedComputeRecordV4
 from core.route2_xeditcritic_training_data_v3 import UNKNOWN_CATEGORY
 from scripts.route_a_v3.score_route2_xeditflow_candidates_v4 import (
     candidate_projection_rows_v4,
+    rank_scored_candidates_v4,
     reconcile_candidate_compute_v4,
     validate_candidate_score_config_v4,
 )
@@ -50,8 +51,13 @@ def test_v4_candidate_scorer_config_freezes_identity_and_diagnostic_scope() -> N
     validate_candidate_score_config_v4(_config())
     changed = copy.deepcopy(_config())
     changed["critic_self_score_used_for_generation_or_selection"] = True
-    with pytest.raises(Exception, match="protected-input policy"):
+    with pytest.raises(Exception, match="critic-selection policy"):
         validate_candidate_score_config_v4(changed)
+    rerank = copy.deepcopy(_config())
+    rerank["method_id"] = "generate_then_rerank"
+    rerank["base_flow_training_seed"] = 20260914
+    rerank["critic_self_score_used_for_generation_or_selection"] = True
+    validate_candidate_score_config_v4(rerank)
 
 
 def test_v4_candidate_projection_accepts_identity_stop_and_complete_edit_bundle() -> None:
@@ -133,3 +139,50 @@ def test_v4_candidate_scorer_reconciles_reserved_to_actual_member_forwards() -> 
             scorer_wall_time_seconds=0.0,
             scorer_peak_vram_mb=0.0,
         )
+
+
+def test_v4_candidate_scorer_preserves_trajectory_critic_compute() -> None:
+    compute = MatchedComputeRecordV4(
+        source_key="source",
+        trunk_forwards=18,
+        mode_forwards=144,
+        value_forwards=0,
+        critic_forwards_by_member=[11, 7, 4],
+        candidate_count=2,
+        trajectory_count=32,
+        wall_time_seconds=1.0,
+    ).to_dict()
+    compute["terminal_critic_forwards_reserved_by_member"] = [8, 4, 1]
+    compute["trajectory_critic_forwards_actual_by_member"] = [3, 3, 3]
+    reconciled = reconcile_candidate_compute_v4(
+        compute,
+        actual_critic_forwards_by_member=[1, 1, 1],
+        scorer_wall_time_seconds=0.0,
+        scorer_peak_vram_mb=0.0,
+    )
+    assert reconciled["critic_forwards_by_member"] == [4, 4, 4]
+    assert reconciled["trajectory_critic_forwards_actual_by_member"] == [3, 3, 3]
+    assert reconciled["trajectory_critic_forwards_preserved_during_reconciliation"] is True
+
+
+def test_v4_generate_then_rerank_changes_order_not_support() -> None:
+    rows = [
+        {
+            "candidate_sequence": "AA",
+            "generation_rank": 1,
+            "generation_score": -1.0,
+            "calibrated_reward": 0.1,
+        },
+        {
+            "candidate_sequence": "CA",
+            "generation_rank": 2,
+            "generation_score": -2.0,
+            "calibrated_reward": 0.9,
+        },
+    ]
+    reranked = rank_scored_candidates_v4(rows, method_id="generate_then_rerank")
+    assert [row["candidate_sequence"] for row in reranked] == ["CA", "AA"]
+    assert [row["generation_rank"] for row in reranked] == [1, 2]
+    assert {row["candidate_sequence"] for row in reranked} == {"AA", "CA"}
+    diagnostic = rank_scored_candidates_v4(rows, method_id="simple_rate_guidance")
+    assert [row["candidate_sequence"] for row in diagnostic] == ["AA", "CA"]

@@ -2771,3 +2771,21 @@ simple-rate还按完整source/current/budget/terminal/context state key缓存已
 本地focused/相邻17/17、XEditFlow/guidance 238/238、V3.3.2 96/96 PASS。尚未实现/运行GPU matched-control
 runner，未新增attempt、runtime artifact或protected read，claim不变；A100 current-HEAD测试等待旧C3 terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。
+
+## XEditFlow V4 formal matched-control runner与terminal rerank闭合（2026-08-24）
+
+新增正式CUDA/BF16 runner，覆盖unguided、first-order、simple-rate和generate-then-rerank四个controls，并接受
+三个冻结SetFlow seeds 20260912/13/14。每source先执行相同outcome-free root mode allocation；32粒子mode在完整
+trajectory及resampling lineage内固定，primary与fixed-seed replay均计费。额外完整轮只有在按各critic member冻结
+physical batch推导的最坏Critic调用、SetFlow trunk/mode调用、root prior及terminal reservation合计仍不超过
+320/source时才会启动。
+
+terminal scorer现在也支持三个final seeds。generate-then-rerank只对同一unguided candidate support按冻结三成员
+uncertainty-penalized Critic reward重排，候选集合不得改变；其余方法保留base/guided generation顺序，Critic self-score
+仅作诊断。实现审阅同时修复一个可达的matched-compute错误：first-order/simple-rate的轨迹Critic调用在终态reservation
+闭合时必须保留，scorer现在只把terminal reservation替换为actual terminal batches，不再覆盖此前真实调用。
+
+本地focused 35/35、完整XEditFlow/guidance 251/251、精确V3.3.2 96/96、compile/diff-check PASS。未materialize
+runtime config，未执行GPU generation、Critic inference或optimizer update，Development TEST/new Evaluation read均为0，
+论文claim不变；A100 current-HEAD测试仍等待五个旧C3 launch-head jobs全部terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_matched_control_runner_v1.json`。

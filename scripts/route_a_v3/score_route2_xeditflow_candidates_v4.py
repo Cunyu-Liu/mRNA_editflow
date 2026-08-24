@@ -27,7 +27,10 @@ from core.route2_xeditcritic_training_data_v3 import UNKNOWN_CATEGORY
 from core.route2_xeditflow_gate_v4 import authorize_xeditflow_guidance_v4
 from core.route2_xeditflow_guidance_v3 import uncertainty_penalized_reward_v3
 from core.route2_xeditflow_guidance_v4 import MatchedComputeRecordV4
-from core.route2_xeditflow_value_training_v4 import CRITIC_SEEDS_V4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    CRITIC_SEEDS_V4,
+)
 from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
     FrozenMRNABERTBottomSixEncoderV4,
 )
@@ -79,7 +82,7 @@ def validate_candidate_score_config_v4(config: Mapping[str, Any]) -> None:
         "V4 candidate critic seeds changed",
     )
     _require(
-        int(config.get("base_flow_training_seed", -1)) == 20260912,
+        int(config.get("base_flow_training_seed", -1)) in BASE_FLOW_SEEDS_V4,
         "V4 candidate scorer base-flow seed changed",
     )
     _require(
@@ -117,10 +120,17 @@ def validate_candidate_score_config_v4(config: Mapping[str, Any]) -> None:
         gpu in range(6) and str(config.get("device")) == f"cuda:{gpu}",
         "V4 candidate scorer GPU provenance differs",
     )
+    critic_selected = config.get(
+        "critic_self_score_used_for_generation_or_selection"
+    )
+    _require(
+        isinstance(critic_selected, bool)
+        and critic_selected
+        is (str(config.get("method_id")) == "generate_then_rerank"),
+        "V4 candidate scorer critic-selection policy differs",
+    )
     _require(
         config.get("independent_evaluator_used") is False
-        and config.get("critic_self_score_used_for_generation_or_selection")
-        is False
         and config.get("development_test_outcomes_accessed_after_atomic_test")
         is False
         and config.get("new_final_evaluation_outcomes_accessed") is False,
@@ -235,12 +245,59 @@ def reconcile_candidate_compute_v4(
     scorer_wall_time_seconds: float,
     scorer_peak_vram_mb: float,
 ) -> dict[str, Any]:
-    reserved = tuple(int(value) for value in compute["critic_forwards_by_member"])
-    actual = tuple(int(value) for value in actual_critic_forwards_by_member)
+    charged_before = tuple(
+        int(value) for value in compute["critic_forwards_by_member"]
+    )
+    terminal_reserved = tuple(
+        int(value)
+        for value in compute.get(
+            "terminal_critic_forwards_reserved_by_member", charged_before
+        )
+    )
+    trajectory_actual = tuple(
+        int(value)
+        for value in compute.get(
+            "trajectory_critic_forwards_actual_by_member",
+            [
+                total - reserved
+                for total, reserved in zip(
+                    charged_before, terminal_reserved, strict=True
+                )
+            ],
+        )
+    )
+    terminal_actual = tuple(
+        int(value) for value in actual_critic_forwards_by_member
+    )
     _require(
-        len(reserved) == len(actual) == 3
-        and all(0 < value <= cap for value, cap in zip(actual, reserved, strict=True)),
+        len(charged_before)
+        == len(terminal_reserved)
+        == len(trajectory_actual)
+        == len(terminal_actual)
+        == 3
+        and all(value >= 0 for value in trajectory_actual)
+        and all(
+            total == trajectory + reserved
+            for total, trajectory, reserved in zip(
+                charged_before,
+                trajectory_actual,
+                terminal_reserved,
+                strict=True,
+            )
+        )
+        and all(
+            0 < value <= cap
+            for value, cap in zip(
+                terminal_actual, terminal_reserved, strict=True
+            )
+        ),
         "V4 actual critic compute exceeds or differs from reservation",
+    )
+    reconciled_actual = tuple(
+        trajectory + terminal
+        for trajectory, terminal in zip(
+            trajectory_actual, terminal_actual, strict=True
+        )
     )
     failures = compute["failure_counters"]
     generation_wall = float(
@@ -255,7 +312,7 @@ def reconcile_candidate_compute_v4(
         trunk_forwards=int(compute["trunk_forwards"]),
         mode_forwards=int(compute["mode_forwards"]),
         value_forwards=int(compute["value_forwards"]),
-        critic_forwards_by_member=list(actual),
+        critic_forwards_by_member=list(reconciled_actual),
         candidate_count=int(compute["candidate_count"]),
         trajectory_count=int(compute["trajectory_count"]),
         wall_time_seconds=generation_wall + float(scorer_wall_time_seconds),
@@ -269,8 +326,14 @@ def reconcile_candidate_compute_v4(
     ).to_dict()
     record.update(
         {
-            "terminal_critic_forwards_reserved_by_member": list(reserved),
-            "terminal_critic_forwards_actual_by_member": list(actual),
+            "terminal_critic_forwards_reserved_by_member": list(
+                terminal_reserved
+            ),
+            "terminal_critic_forwards_actual_by_member": list(terminal_actual),
+            "trajectory_critic_forwards_actual_by_member": list(
+                trajectory_actual
+            ),
+            "trajectory_critic_forwards_preserved_during_reconciliation": True,
             "terminal_critic_forwards_are_reserved_pending_scoring": False,
             "terminal_critic_reservation_reconciled": True,
             "source_equal_wall_time_seconds": generation_wall
@@ -287,6 +350,38 @@ def reconcile_candidate_compute_v4(
     return record
 
 
+def rank_scored_candidates_v4(
+    rows: Sequence[Mapping[str, Any]], *, method_id: str
+) -> list[dict[str, Any]]:
+    """Apply only the declared terminal rerank, preserving the exact support."""
+
+    _require(bool(rows) and len(rows) <= 32, "V4 scored candidate source batch differs")
+    result = [dict(row) for row in rows]
+    sequences_before = {str(row["candidate_sequence"]) for row in result}
+    _require(
+        len(sequences_before) == len(result)
+        and all(math.isfinite(float(row["calibrated_reward"])) for row in result),
+        "V4 scored candidate support or reward differs",
+    )
+    selection_used = method_id == "generate_then_rerank"
+    if selection_used:
+        result.sort(
+            key=lambda row: (
+                -float(row["calibrated_reward"]),
+                str(row["candidate_sequence"]),
+            )
+        )
+    for rank, row in enumerate(result, start=1):
+        row["generation_rank"] = rank
+        if selection_used:
+            row["generation_score"] = float(row["calibrated_reward"])
+    _require(
+        {str(row["candidate_sequence"]) for row in result} == sequences_before,
+        "V4 terminal rerank changed candidate support",
+    )
+    return result
+
+
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_candidate_score_config_v4(config)
     _require(output_dir == Path(str(config["output_dir"])), "V4 scorer output differs")
@@ -301,11 +396,13 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "V4 candidate scoring remains blocked before joint readiness",
     )
     generation_summary = _json(Path(config["generation_summary_path"]))
+    base_flow_seed = int(config["base_flow_training_seed"])
     _require(
         generation_summary.get("status")
         == "XEDITFLOW_V4_SMC_GENERATION_COMPLETE_PENDING_TERMINAL_CRITIC_SCORING"
         and generation_summary.get("terminal_critic_scoring_performed") is False
-        and int(generation_summary.get("base_flow_training_seed", -1)) == 20260912,
+        and int(generation_summary.get("base_flow_training_seed", -1))
+        == base_flow_seed,
         "V4 candidate scorer requires terminal pending generation",
     )
     _require(
@@ -353,7 +450,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     for candidate in candidates:
         _require(
             str(candidate.get("method_id")) == str(config["method_id"])
-            and int(candidate.get("base_flow_training_seed", -1)) == 20260912
+            and int(candidate.get("base_flow_training_seed", -1))
+            == base_flow_seed
             and float(candidate.get("kappa", -1)) == float(config["kappa"])
             and float(candidate.get("temperature", -1))
             == float(config["temperature"])
@@ -454,36 +552,42 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         )
         with compute_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(reconciled, sort_keys=True) + "\n")
+        selection_used = str(config["method_id"]) == "generate_then_rerank"
+        enriched = []
+        for index, candidate in enumerate(source_candidates):
+            values = prediction_tensor[index]
+            enriched.append(
+                {
+                    **candidate,
+                    "pre_rerank_generation_rank": int(candidate["generation_rank"]),
+                    "pre_rerank_generation_score": float(candidate["generation_score"]),
+                    "critic_seeds": list(CRITIC_SEEDS_V4),
+                    "calibrated_seed_predictions": values.tolist(),
+                    "critic_ensemble_mean": float(values.mean().item()),
+                    "critic_ensemble_sd": float(values.std(unbiased=False).item()),
+                    "uncertainty_penalty_kappa": float(config["kappa"]),
+                    "calibrated_reward": float(rewards[index].item()),
+                    "critic_self_score": float(rewards[index].item()),
+                    "study_neutral": True,
+                    "critic_self_score_is_diagnostic_only": not selection_used,
+                    "critic_self_score_used_for_generation_or_selection": selection_used,
+                    "terminal_rerank_pending": False,
+                    "support_unchanged_by_terminal_rerank": True,
+                    "independent_evaluator_score": None,
+                    "development_test_outcomes_accessed_after_atomic_test": False,
+                    "new_final_evaluation_outcomes_accessed": False,
+                }
+            )
+        enriched = rank_scored_candidates_v4(
+            enriched, method_id=str(config["method_id"])
+        )
         with scored_path.open("a", encoding="utf-8") as handle:
-            for index, candidate in enumerate(source_candidates):
-                values = prediction_tensor[index]
-                handle.write(
-                    json.dumps(
-                        {
-                            **candidate,
-                            "critic_seeds": list(CRITIC_SEEDS_V4),
-                            "calibrated_seed_predictions": values.tolist(),
-                            "critic_ensemble_mean": float(values.mean().item()),
-                            "critic_ensemble_sd": float(
-                                values.std(unbiased=False).item()
-                            ),
-                            "uncertainty_penalty_kappa": float(config["kappa"]),
-                            "calibrated_reward": float(rewards[index].item()),
-                            "study_neutral": True,
-                            "critic_self_score_is_diagnostic_only": True,
-                            "critic_self_score_used_for_generation_or_selection": False,
-                            "independent_evaluator_score": None,
-                            "development_test_outcomes_accessed_after_atomic_test": False,
-                            "new_final_evaluation_outcomes_accessed": False,
-                        },
-                        sort_keys=True,
-                    )
-                    + "\n"
-                )
+            for row in enriched:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
     result = {
         "schema_version": "route_a_v3_route2_xeditflow_candidate_critic_scores.v4",
         "status": "XEDITFLOW_V4_CANDIDATE_CRITIC_SCORING_COMPLETE",
-        "base_flow_training_seed": 20260912,
+        "base_flow_training_seed": base_flow_seed,
         "method_id": str(config["method_id"]),
         "kappa": float(config["kappa"]),
         "temperature": float(config["temperature"]),
@@ -498,7 +602,10 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "forward_equivalent_ceiling_per_source": 320,
         "reservation_reconciled_for_every_source": True,
         "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
-        "critic_self_score_used_for_generation_or_selection": False,
+        "critic_self_score_used_for_generation_or_selection": (
+            str(config["method_id"]) == "generate_then_rerank"
+        ),
+        "candidate_support_unchanged_by_terminal_rerank": True,
         "wall_time_seconds": time.time() - started,
         "peak_vram_mb": run_peak_vram_mb,
         "physical_gpu_index": gpu,

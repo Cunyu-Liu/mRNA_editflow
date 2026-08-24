@@ -3801,3 +3801,17 @@ reward，跨mode和fixed-seed replay不重复推理，只有新state产生真实
 XEditFlow/guidance 238/238、
 V3.3.2 96/96 PASS。GPU runner/config尚未实现或执行，optimizer/protected read均为0。审计：
 `audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。
+
+## XEditFlow V4 formal matched controls与terminal scoring（2026-08-24）
+
+`run_route2_xeditflow_matched_controls_v4.py`已把四类冻结control连接到三个confirmation SetFlow checkpoints、
+trajectory-fixed latent modes、root mode prior、三成员refit Critic和891-source cohort。first-order/simple-rate在轨迹中
+使用Critic scalar potential，unguided/generate-then-rerank使用零势函数；所有primary/replay、trunk、八mode heads和
+每名Critic member均分别计费。下一轮只在conservative worst-case仍能满足320/source ceiling时启动。
+
+`score_route2_xeditflow_candidates_v4.py`现接受20260912/13/14三个final seeds，并对generate-then-rerank执行唯一允许的
+terminal排序：只按冻结Critic reward重排现有support，不增加、拒绝或重试候选。终态compute reconciliation保留轨迹
+Critic actual calls，只闭合terminal reservation。focused 35/35、XEditFlow/guidance 251/251、V3.3.2 96/96、
+compile/diff-check PASS。runner/scorer均未执行，runtime artifacts与optimizer attempts不变，protected read=0；A100
+current-HEAD tests等待五个旧C3作业terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_matched_control_runner_v1.json`。
