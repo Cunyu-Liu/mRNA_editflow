@@ -3130,3 +3130,15 @@ read-once producer因terminal_count=0未执行；未读stdout/stderr、active cu
 或new Evaluation outcome，也未同步A100或启动V4。远端仍比本地快135秒；下一远端/本地窗口分别不早于
 03:48:06/03:45:51。本监控项无新增代码，不重复focused/V3.3.2测试，科学claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_024806.json`。
+
+## Critic V4 atomic frozen TEST terminal closure（2026-08-25）
+
+唯一TEST runner已有正确的三seed PASS授权、单次access、full+C0同调用、内存态TEST rows/bottom-six cache和无通用
+TEST loader语义，但授权消费标记、最终result、posttest receipt与failure仍直接写；receipt失败时还可能在result之后
+再写failure，破坏精确单终态。
+
+现四类封闭artifact都使用partial加原子替换；`atomic_frozen_test.json`一旦发布，异常路径不得再追加failure。
+TEST gate、18,292条数、bootstrap、读取次数和结果内容均不变。本地focused=14/14、Critic V4相关=89/89、
+精确V3.3.2=96/96、compile PASS。runner未授权、未执行，Development TEST access event仍为0，new Evaluation
+read=0，论文claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_frozen_test_terminal_closure_v1.json`。

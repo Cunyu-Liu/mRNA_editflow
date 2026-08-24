@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from dataclasses import replace
@@ -71,6 +72,20 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
         rows = [json.loads(line) for line in handle]
     _require(bool(rows), f"prediction artifact is empty: {path}")
     return rows
+
+
+def _write_atomic_once(path: Path, payload: Mapping[str, Any]) -> None:
+    _require(not path.exists(), f"Critic V4 atomic TEST artifact already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    _require(
+        not partial.exists(),
+        f"Critic V4 atomic TEST partial artifact already exists: {partial}",
+    )
+    partial.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
 
 
 def require_atomic_test_authorization_v4(
@@ -328,22 +343,17 @@ def run(protocol: Mapping[str, Any]) -> dict[str, Any]:
         _require(path.exists(), f"Critic V4 atomic TEST preflight input is absent: {path}")
     device = require_cuda(int(protocol["physical_gpu_index"]))
     output_directory.mkdir(parents=True)
-    (output_directory / "authorization_consumed.json").write_text(
-        json.dumps(
-            {
-                "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_authorization.v1",
-                "status": "ATOMIC_TEST_AUTHORIZATION_CONSUMED_NO_RETRY",
-                "required_seeds": list(seeds),
-                "consumed_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-                "development_test_access_event_count": 1,
-                "general_test_projection_persisted": False,
-                "test_bottom_six_cache_persisted": False,
-            },
-            indent=2,
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
+    _write_atomic_once(
+        output_directory / "authorization_consumed.json",
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_authorization.v1",
+            "status": "ATOMIC_TEST_AUTHORIZATION_CONSUMED_NO_RETRY",
+            "required_seeds": list(seeds),
+            "consumed_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "development_test_access_event_count": 1,
+            "general_test_projection_persisted": False,
+            "test_bottom_six_cache_persisted": False,
+        },
     )
     access_started = False
     try:
@@ -420,9 +430,7 @@ def run(protocol: Mapping[str, Any]) -> dict[str, Any]:
             "test_bottom_six_cache_persisted": False,
             "new_final_evaluation_outcomes_accessed": False,
         }
-        (output_directory / "atomic_frozen_test.json").write_text(
-            json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        _write_atomic_once(output_directory / "atomic_frozen_test.json", result)
         receipt = {
             "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
             "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED"
@@ -439,8 +447,9 @@ def run(protocol: Mapping[str, Any]) -> dict[str, Any]:
             "development_test_metrics_in_receipt": False,
             "new_final_evaluation_outcomes_accessed": False,
         }
-        (output_directory / "posttest_authorization_receipt.json").write_text(
-            json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        _write_atomic_once(
+            output_directory / "posttest_authorization_receipt.json",
+            receipt,
         )
         return result
     except Exception as exc:
@@ -455,9 +464,8 @@ def run(protocol: Mapping[str, Any]) -> dict[str, Any]:
             "error_type": type(exc).__name__,
             "error": str(exc),
         }
-        (output_directory / "failure.json").write_text(
-            json.dumps(failure, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-        )
+        if not (output_directory / "atomic_frozen_test.json").exists():
+            _write_atomic_once(output_directory / "failure.json", failure)
         raise
 
 

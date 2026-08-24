@@ -120,3 +120,23 @@ def test_v4_atomic_runner_has_no_persistent_test_projection_or_cache_path() -> N
     assert "authorization_consumed.json" in source
     assert "posttest_authorization_receipt.json" in source
     assert '"development_test_metrics_in_receipt": False' in source
+
+
+def test_v4_atomic_test_terminal_files_are_atomic_and_exact_one(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    result_path = tmp_path / "atomic_frozen_test.json"
+    payload = {"status": "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL"}
+    module._write_atomic_once(result_path, payload)
+    assert json.loads(result_path.read_text(encoding="utf-8")) == payload
+    assert not result_path.with_suffix(result_path.suffix + ".partial").exists()
+
+    partial = tmp_path / "failure.json.partial"
+    partial.write_text("interrupted", encoding="utf-8")
+    with pytest.raises(module.AtomicFrozenTestV4Error, match="partial artifact"):
+        module._write_atomic_once(tmp_path / "failure.json", payload)
+
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert 'if not (output_directory / "atomic_frozen_test.json").exists()' in source
+    assert "_write_atomic_once(output_directory / \"atomic_frozen_test.json\", result)" in source

@@ -4092,3 +4092,12 @@ CUDA/optimizer，Development TEST/new Evaluation read=0。审计：
 Development TEST或new Evaluation。最新时钟偏移为+135秒，下一检查不得早于远端03:48:06/本地03:45:51。
 监控项无代码变化，不重复test cohort。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_024806.json`。
+
+## Critic V4 frozen TEST atomic terminal focused record（2026-08-25）
+
+冻结TEST runner的authorization-consumed marker、唯一terminal result、posttest receipt和technical failure现在均
+原子发布；result存在时禁止产生第二个failure。内存态TEST projection/cache、full+C0同调用和一次access语义未变。
+
+本地focused=14/14、Critic V4相关=89/89、精确V3.3.2=96/96、compile PASS。未授权或运行TEST，Development
+TEST access event=0、new Evaluation read=0；A100验证仍等待C3 terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_frozen_test_terminal_closure_v1.json`。
