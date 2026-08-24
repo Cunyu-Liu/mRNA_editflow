@@ -3107,3 +3107,14 @@ Critic REFIT/LOSO共用路径的成功与失败终态都使用partial加原子�
 相关=156/156、精确V3.3.2=96/96、compile PASS。V4 optimizer/summary均未materialize，protected read=0；A100
 current-HEAD测试仍等待C3五项terminal。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_training_terminal_artifacts_v1.json`。
+
+## V4 atomic cache and preflight packages（2026-08-25）
+
+C3 barrier后的首批正式产物存在三个中断窗口：Critic cache tensor先发布而summary直接写；Critic preflight直接
+写最终PASS/PAUSE；SetFlow preflight先写source audit再写preflight。中断可留下无法合法继续的半套package。
+
+现Critic cache的tensor+summary在兄弟staging目录完整生成后一次目录发布；Critic preflight单文件partial后原子
+发布；SetFlow source audit+preflight在同一staging目录完整生成后一次目录发布。既有final/partial均fail closed。
+本地focused=27/27、扩展V4相关=173/173、精确V3.3.2=96/96、compile PASS。未执行cache、preflight、CUDA或
+optimizer，protected read=0；科学claim不变。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_cache_preflight_packages_v1.json`。

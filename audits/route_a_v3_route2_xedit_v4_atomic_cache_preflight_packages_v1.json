@@ -1,0 +1,32 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_atomic_cache_preflight_packages_audit.v1",
+  "status": "XEDIT_V4_ATOMIC_CACHE_PREFLIGHT_PACKAGES_IMPLEMENTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:44:00+08:00",
+  "head_before_change": "a9714a8dc05e8733fd15e5a354f8ca0a09cf3d1f",
+  "packages": {
+    "critic_bottom_six_cache": ["tensor_payload", "terminal_summary"],
+    "critic_preflight": ["terminal_pass_or_pause"],
+    "setflow_preflight": ["source_level_data_audit", "terminal_preflight"]
+  },
+  "publication_protocol": {
+    "multi_artifact_packages_use_atomic_directory_replace": true,
+    "single_artifact_preflight_uses_atomic_file_replace": true,
+    "existing_final_or_partial_rejected": true,
+    "data_model_metric_or_gate_semantics_changed": false
+  },
+  "verification": {
+    "focused_cache_preflight_tests": "27 passed",
+    "expanded_v4_related_tests": "173 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "cache_materialized": false,
+    "preflight_materialized": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_PACKAGE_ATOMICITY_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

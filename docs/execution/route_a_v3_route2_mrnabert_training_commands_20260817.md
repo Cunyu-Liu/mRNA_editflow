@@ -4074,3 +4074,13 @@ Critic与SetFlow V4正式trainer现在原子发布成功summary和technical fail
 metric，Development TEST/new Evaluation read=0；A100 current-HEAD验证继续等待五项C3 terminal，下一远端检查
 仍不早于本地02:45:28。审计：
 `audits/route_a_v3_route2_xedit_v4_atomic_training_terminal_artifacts_v1.json`。
+
+## V4 cache/preflight package atomicity focused record（2026-08-25）
+
+Critic bottom-six tensor与summary、SetFlow source audit与preflight现在分别整目录原子发布；Critic单一preflight
+PASS/PAUSE使用partial文件原子发布。中断不再暴露半套正式package，既有final/partial不覆盖。该修复不改变cache
+表示、显存选择、参数量或gate。
+
+本地focused=27/27、扩展V4相关=173/173、精确V3.3.2=96/96、compile PASS。未materialize任何package或启动
+CUDA/optimizer，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_cache_preflight_packages_v1.json`。

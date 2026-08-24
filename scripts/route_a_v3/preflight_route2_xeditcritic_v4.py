@@ -460,6 +460,8 @@ def run(
 ) -> dict[str, Any]:
     output_path = Path(config["preflight_output"])
     _require(not output_path.exists(), "Critic V4 preflight artifact already exists")
+    partial_output = output_path.with_suffix(output_path.suffix + ".partial")
+    _require(not partial_output.exists(), "partial Critic V4 preflight artifact already exists")
     current_head = _git_head()
     authorization = _load_json(authorization_path)
     require_preflight_authorization_v4(
@@ -514,7 +516,11 @@ def run(
             "authorization_path": str(authorization_path),
         }
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        partial_output.write_text(
+            json.dumps(summary, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(partial_output, output_path)
         return summary
     cache = FrozenBottomEncoderChunkCacheViewV4(
         cache_payload, set(str(value) for value in cache_payload["record_ids"])
@@ -613,10 +619,11 @@ def run(
         "authorization_path": str(authorization_path),
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
+    partial_output.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    os.replace(partial_output, output_path)
     return summary
 
 

@@ -75,6 +75,15 @@ def test_preflight_binds_frozen_physical_gpu_scope_before_cuda() -> None:
     ) < source.index("device = require_cuda(physical_gpu_index)")
 
 
+def test_critic_preflight_terminal_pause_or_pass_is_atomically_published() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/preflight_route2_xeditcritic_v4.py"
+    ).read_text(encoding="utf-8")
+    assert 'partial_output = output_path.with_suffix(output_path.suffix + ".partial")' in source
+    assert source.count("os.replace(partial_output, output_path)") == 2
+    assert "partial Critic V4 preflight artifact already exists" in source
+
+
 def test_preflight_authorization_requires_terminal_read_once_sync_tests_and_cache() -> None:
     authorization = {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_preflight_authorization.v1",

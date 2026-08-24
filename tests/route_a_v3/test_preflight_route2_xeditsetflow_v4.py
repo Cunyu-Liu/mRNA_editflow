@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import pytest
 
@@ -9,6 +10,19 @@ from scripts.route_a_v3.preflight_route2_xeditsetflow_v4 import (
     require_preflight_authorization_v4,
     select_train_geometry_sources_v4,
 )
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_setflow_preflight_and_source_audit_publish_as_one_directory() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/preflight_route2_xeditsetflow_v4.py"
+    ).read_text(encoding="utf-8")
+    assert 'staging_root = package_root.with_name(package_root.name + ".partial")' in source
+    assert '(staging_root / data_audit_path.name).write_text(' in source
+    assert '(staging_root / output_path.name).write_text(' in source
+    assert "os.replace(staging_root, package_root)" in source
 
 
 def _authorization() -> dict:

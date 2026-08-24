@@ -127,6 +127,11 @@ def run_preflight(
     )
     output_path = Path(config["preflight_output_path"])
     data_audit_path = Path(config["source_level_data_audit_path"])
+    package_root = output_path.parent
+    staging_root = package_root.with_name(package_root.name + ".partial")
+    _require(data_audit_path.parent == package_root, "SetFlow V4 preflight and source audit must share one package root")
+    _require(not package_root.exists(), "SetFlow V4 preflight package already exists")
+    _require(not staging_root.exists(), "partial SetFlow V4 preflight package already exists")
     _require(not output_path.exists(), "SetFlow V4 preflight is already terminal")
     _require(not data_audit_path.exists(), "SetFlow V4 source data audit already exists")
     _require(
@@ -303,14 +308,15 @@ def run_preflight(
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    data_audit_path.write_text(
+    staging_root.mkdir(parents=True)
+    (staging_root / data_audit_path.name).write_text(
         json.dumps(data_audit, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    output_path.write_text(
+    (staging_root / output_path.name).write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    os.replace(staging_root, package_root)
     return result
 
 

@@ -215,6 +215,19 @@ def test_cache_preparation_requires_authorization_before_any_payload_read() -> N
     )
 
 
+def test_critic_cache_payload_and_summary_publish_as_one_directory() -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py"
+    ).read_text()
+    assert 'staging_root = package_root.with_name(package_root.name + ".partial")' in source
+    assert "torch.save(payload, staging_root / output_path.name)" in source
+    assert '(staging_root / summary_path.name).write_text(' in source
+    assert "os.replace(staging_root, package_root)" in source
+    assert source.index("torch.save(payload, staging_root / output_path.name)") < source.index(
+        "os.replace(staging_root, package_root)"
+    )
+
+
 def test_cache_preparation_fails_before_config_cuda_or_payload_without_authorization(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

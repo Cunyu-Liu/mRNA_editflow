@@ -59,6 +59,11 @@ def build(
     physical_gpu_index = require_cache_runtime_policy_v4(config)
     output_path = Path(config["output_path"])
     summary_path = Path(config["summary_path"])
+    package_root = output_path.parent
+    staging_root = package_root.with_name(package_root.name + ".partial")
+    _require(summary_path.parent == package_root, "V4 cache payload and summary must share one package root")
+    _require(not package_root.exists(), f"V4 bottom-six cache package exists: {package_root}")
+    _require(not staging_root.exists(), f"partial V4 cache package exists: {staging_root}")
     _require(not output_path.exists(), f"V4 bottom-six cache already exists: {output_path}")
     _require(not summary_path.exists(), f"V4 bottom-six summary already exists: {summary_path}")
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
@@ -114,11 +119,8 @@ def build(
         pretrained_parameter_count=encoder.parameter_count,
         attention_backend=encoder.attention_backend,
     )
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = output_path.with_suffix(output_path.suffix + ".partial")
-    _require(not temporary.exists(), f"partial V4 cache already exists: {temporary}")
-    torch.save(payload, temporary)
-    os.replace(temporary, output_path)
+    staging_root.mkdir(parents=True)
+    torch.save(payload, staging_root / output_path.name)
     summary = {
         "schema_version": "route_a_v3_route2_frozen_bottom_encoder_chunk_cache_summary.v4",
         "status": "XEDITCRITIC_V4_BOTTOM_SIX_CACHE_COMPLETE",
@@ -153,11 +155,11 @@ def build(
         "evaluation_outcomes_accessed": False,
         "output_path": str(output_path),
     }
-    summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(
+    (staging_root / summary_path.name).write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    os.replace(staging_root, package_root)
     return summary
 
 
