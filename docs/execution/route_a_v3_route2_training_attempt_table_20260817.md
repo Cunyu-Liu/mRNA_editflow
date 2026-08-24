@@ -2677,3 +2677,14 @@ value、mode和三名critic member forward仍分别计费且总量不得超过32
 本地focused/相邻17/17，完整XEditFlow/guidance 204/204，精确V3.3.2 cohort 96/96 PASS。本项未启动SMC或
 optimizer attempt，protected outcome read=0，claim不变；A100 current-HEAD测试等待五个旧C3 launch-head jobs
 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_multiround_compute_v1.json`。
+
+## XEditFlow V4 formal mode-fixed SMC runner（2026-08-24）
+
+正式runner已连接冻结SetFlow seed20260912 checkpoint、六个`kappa×temperature` final-pass-8 value checkpoints、
+root mode prior、32-particle SMC、完整fixed-seed replay和多轮matched-compute合并。decoder seed base现前瞻固定为
+20261001，18个组合共享相同seed streams；每source候选仍封顶32，总forward ceiling仍为320。三名critic member
+各1次终态batch forward只在generation阶段预留，并明确标为pending，不能冒充已执行scoring。
+
+本地focused/相邻29/29，完整XEditFlow/guidance 218/218，精确V3.3.2 96/96 PASS。config未materialize、SMC/
+critic scoring/optimizer均未启动，protected read=0，claim不变；A100 current-HEAD测试等待五个旧C3作业terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。

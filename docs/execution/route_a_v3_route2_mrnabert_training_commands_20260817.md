@@ -3718,3 +3718,15 @@ candidate/compute合并函数，重放forward、root mode prior、shared trunk�
 本地focused/相邻17/17，完整XEditFlow/guidance 204/204，精确V3.3.2 96/96 PASS；未启动正式SMC、未新增
 optimizer attempt、protected read=0。A100 current-HEAD测试仍等待旧C3全部terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_multiround_compute_v1.json`。
+
+## XEditFlow V4 formal SMC runner与18-cell configs（2026-08-24）
+
+`run_route2_xeditflow_smc_v4.py`现执行CUDA/BF16、trajectory-fixed latent mode、single scalar potential SMC；
+每source先计算outcome-free root mode prior，按平滑prior固定分配32个mode ids，随后以decoder seed base 20261001
+生成并完整重放。只有unique candidates不足32且下一完整轮的worst-case compute连同root prior和三critic reservations
+仍不超过320时才继续采样。
+
+既有value config producer同时生成精确18个SMC configs，全部共享decoder streams并预绑定正确value checkpoint。
+本地focused/相邻29/29、完整XEditFlow/guidance 218/218、精确V3.3.2 96/96 PASS；formal configs和SMC均未
+执行，protected read=0。A100 current-HEAD测试等待旧C3全部terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。

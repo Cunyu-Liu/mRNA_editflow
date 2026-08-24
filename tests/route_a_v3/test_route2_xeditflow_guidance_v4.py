@@ -72,6 +72,10 @@ def test_v4_protocol_freezes_grid_mode_and_compute_boundaries() -> None:
     assert protocol["value_to_go"]["study_identity_input"] is False
     assert protocol["potential"]["free_action_ratio_head_allowed"] is False
     assert protocol["smc"]["forward_equivalent_ceiling_per_source"] == 320
+    assert protocol["smc"]["decoder_seed_base"] == 20261001
+    assert protocol["smc"]["maximum_sampling_rounds"] == 32
+    assert protocol["smc"]["fixed_seed_replay_check"] is True
+    assert protocol["smc"]["same_decoder_seed_streams_across_all_18_combinations"] is True
     assert protocol["protected_outcomes"]["new_final_evaluation_outcome_reads"] == 0
 
 

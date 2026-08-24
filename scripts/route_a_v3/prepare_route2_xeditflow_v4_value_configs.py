@@ -28,6 +28,9 @@ from scripts.route_a_v3.generate_route2_xeditflow_value_rollouts_v4 import (
 from scripts.route_a_v3.score_route2_xeditflow_value_rollouts_v4 import (
     validate_value_critic_score_config_v4,
 )
+from scripts.route_a_v3.run_route2_xeditflow_smc_v4 import (
+    validate_smc_run_config_v4,
+)
 
 
 class XEditFlowValueConfigPrepareV4Error(RuntimeError):
@@ -307,6 +310,78 @@ def build_value_configs_v4(
             }
         )
     _require(len(value_jobs) == 6, "V4 value training job count differs")
+    smc_policy = protocol.get("smc")
+    _require(
+        smc_policy
+        == {
+            "particles": 32,
+            "candidate_cap_per_source": 32,
+            "ess_resample_threshold": 16,
+            "resampling": "STRATIFIED",
+            "edit_budgets": [1, 3, 5],
+            "decoder_seed_base": 20261001,
+            "maximum_sampling_rounds": 32,
+            "fixed_seed_replay_check": True,
+            "same_decoder_seed_streams_across_all_18_combinations": True,
+            "forward_equivalent_ceiling_per_source": 320,
+            "trunk_mode_value_and_each_critic_member_forwards_separately_charged": True,
+        },
+        "V4 SMC runtime policy changed",
+    )
+    guidance_jobs: list[dict[str, Any]] = []
+    for kappa, temperature, beta_max in GUIDANCE_GRID_V4:
+        value_id = _value_id(kappa, temperature)
+        combination_id = (
+            f"{value_id}_beta_{_component(beta_max)}"
+        )
+        smc_output = output_root / "guidance_screen" / combination_id / "open_smc"
+        smc_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_smc_run_config.v4",
+            "critic_readiness_path": str(protocol["critic_readiness_path"]),
+            "setflow_confirmation_path": str(protocol["setflow_confirmation_path"]),
+            "setflow_runtime_config_path": str(
+                protocol["setflow_confirmation_runtime_config_paths"]["20260912"]
+            ),
+            "value_checkpoint_path": str(
+                value_output / value_id / "value_checkpoint.pt"
+            ),
+            "source_token_cache_path": str(protocol["source_token_cache_path"]),
+            "source_eligibility_manifest": str(protocol["source_eligibility_manifest"]),
+            "validation_projection_path": str(protocol["validation_projection_path"]),
+            "measured_neighborhood_path": str(protocol["measured_neighborhood_path"]),
+            "expected_source_count": 891,
+            "base_flow_training_seed": 20260912,
+            "kappa": kappa,
+            "temperature": temperature,
+            "beta_max": beta_max,
+            "particle_count": 32,
+            "candidate_cap": 32,
+            "ess_threshold": 16.0,
+            "resampling": "STRATIFIED",
+            "forward_equivalent_ceiling_per_source": 320,
+            "terminal_critic_forwards_by_member": [1, 1, 1],
+            "maximum_sampling_rounds": 32,
+            "action_space": "SUB+STOP",
+            "replay_check": True,
+            "decoder_seed_base": 20261001,
+            "physical_gpu_index": rollout_gpu,
+            "device": f"cuda:{rollout_gpu}",
+            "method_id": f"xeditflow_v4_guidance_screen_{combination_id}",
+            "output_dir": str(smc_output),
+            "independent_evaluator_used": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
+        validate_smc_run_config_v4(smc_config)
+        guidance_jobs.append(
+            {
+                "combination_id": combination_id,
+                "combination": [kappa, temperature, beta_max],
+                "value_id": value_id,
+                "smc_config": smc_config,
+            }
+        )
+    _require(len(guidance_jobs) == 18, "V4 guidance SMC job count differs")
     return {
         "schema_version": (
             "route_a_v3_route2_xeditflow_v4_value_config_manifest.v1"
@@ -324,6 +399,7 @@ def build_value_configs_v4(
         "critic_score_config": score_config,
         "target_grid_config": target_config,
         "value_jobs": value_jobs,
+        "guidance_jobs": guidance_jobs,
         "beta_max_used_in_value_target_or_training": False,
         "independent_evaluator_used": False,
         "development_test_outcomes_accessed_after_atomic_test": False,
@@ -358,6 +434,14 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             encoding="utf-8",
         )
         value_paths.append(str(path))
+    guidance_paths = []
+    for job in payload["guidance_jobs"]:
+        path = output_dir / f"smc_{job['combination_id']}.json"
+        path.write_text(
+            json.dumps(job["smc_config"], indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        guidance_paths.append(str(path))
     manifest = {
         key: value
         for key, value in payload.items()
@@ -367,10 +451,12 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             "critic_score_config",
             "target_grid_config",
             "value_jobs",
+            "guidance_jobs",
         }
     }
     manifest["config_paths"] = paths
     manifest["value_training_config_paths"] = value_paths
+    manifest["guidance_smc_config_paths"] = guidance_paths
     (output_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -411,6 +497,7 @@ def main() -> None:
                     "critic_score_config",
                     "target_grid_config",
                     "value_jobs",
+                    "guidance_jobs",
                 }
             },
             sort_keys=True,

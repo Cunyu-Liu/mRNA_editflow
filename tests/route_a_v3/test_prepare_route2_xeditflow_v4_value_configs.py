@@ -115,7 +115,7 @@ def test_v4_guidance_protocol_uses_actual_readiness_and_refit_outputs() -> None:
     )
 
 
-def test_v4_value_config_producer_emits_one_one_six_six_exact_chain(
+def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
     tmp_path: Path,
 ) -> None:
     payload = _payload()
@@ -126,6 +126,22 @@ def test_v4_value_config_producer_emits_one_one_six_six_exact_chain(
     assert payload["value_target_package_count"] == 6
     assert payload["value_training_job_count"] == 6
     assert payload["later_guidance_combination_count"] == 18
+    assert len(payload["guidance_jobs"]) == 18
+    assert {
+        tuple(row["combination"]) for row in payload["guidance_jobs"]
+    } == {
+        (kappa, temperature, beta)
+        for kappa in (0.0, 0.5, 1.0)
+        for temperature in (0.5, 1.0)
+        for beta in (0.5, 1.0, 2.0)
+    }
+    assert all(
+        row["smc_config"]["decoder_seed_base"] == 20261001
+        and row["smc_config"]["physical_gpu_index"] == 5
+        and row["smc_config"]["terminal_critic_forwards_by_member"]
+        == [1, 1, 1]
+        for row in payload["guidance_jobs"]
+    )
     assert payload["beta_max_used_in_value_target_or_training"] is False
     assert payload["rollout_config"]["expected_train_source_count"] == 101
     assert (
@@ -142,6 +158,7 @@ def test_v4_value_config_producer_emits_one_one_six_six_exact_chain(
         (tmp_path / "configs" / "manifest.json").read_text(encoding="utf-8")
     )
     assert len(manifest["value_training_config_paths"]) == 6
+    assert len(manifest["guidance_smc_config_paths"]) == 18
     assert set(manifest["config_paths"]) == {
         "value_rollout.json",
         "value_critic_score.json",

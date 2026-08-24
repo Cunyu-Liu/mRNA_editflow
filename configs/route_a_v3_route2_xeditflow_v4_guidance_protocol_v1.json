@@ -15,8 +15,11 @@
     "20260914": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v1/seed_20260914.json"
   },
   "train_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+  "validation_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl",
   "source_token_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
   "source_level_data_audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/source_level_data_audit.json",
+  "source_eligibility_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
+  "measured_neighborhood_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/measured_neighborhood.private.jsonl",
   "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
   "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "authorization_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditflow_v4/guidance_v1/guidance_authorization.json",
@@ -101,6 +104,10 @@
     "ess_resample_threshold": 16,
     "resampling": "STRATIFIED",
     "edit_budgets": [1, 3, 5],
+    "decoder_seed_base": 20261001,
+    "maximum_sampling_rounds": 32,
+    "fixed_seed_replay_check": true,
+    "same_decoder_seed_streams_across_all_18_combinations": true,
     "forward_equivalent_ceiling_per_source": 320,
     "trunk_mode_value_and_each_critic_member_forwards_separately_charged": true
   },
