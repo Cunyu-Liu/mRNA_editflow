@@ -3229,3 +3229,14 @@ balance梯度，不保留计算图、不增加forward，并用共享前向tensor
 Critic V4 focused=56/56、精确V3.3.2=96/96。formal runner/A100 preflight仍pending且受C3 barrier约束；
 optimizer attempts=0、Validation metric read=false、Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_attempt_ledger_v1.json`。
+
+## 17:43 C3 five-run long-interval health（2026-08-24）
+
+本轮检查前最后一步本地时间为17:41:10；沿用远端快152秒校准后已越过17:43:26窗口，远端实际观察为
+17:43:42。C3 full及四controls全部alive且CUDA resident，elapsed为53,282–53,285秒（较晚启动两项为
+52,857/52,475秒），GPU进程显存2,120–2,190MiB。五项均无terminal/failure，screen gate不存在。
+
+未读取stdout/stderr、active metric、terminal/failure内容或中央ledger；不执行A100 current-HEAD sync，
+不授权C3 confirmation/TEST。下一统一远端检查不早于18:43:42。optimizer attempts不变，Development
+TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_174342.json`。

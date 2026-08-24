@@ -2076,6 +2076,16 @@ Critic V4 focused=56/56、精确V3.3.2=96/96。formal runner仍pending，optimiz
 TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_attempt_ledger_v1.json`。
 
+## 17:43 C3 five-run long-interval health（2026-08-24）
+
+严格在远端`next_check_not_before=17:43:26`之后，于远端17:43:42统一检查五项launch-head作业。
+C3 full/source-only/edit-metadata-only/no-candidate/permutation均仍为RUNNING，PID分别为2443206/
+2443207/2443208/2529140/2592082，elapsed分别为53,282/53,285/53,285/52,857/52,475秒；
+GPU3/0/5/1/2进程显存分别为2,190/2,120/2,190/2,120/2,190MiB。五项均无terminal summary或
+failure artifact，screen gate不存在；未读active curve、stdout、stderr、terminal内容或中央CSV。
+下一统一远端窗口不早于18:43:42。未新增optimizer attempt，Development TEST/new Evaluation read=0。
+审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_174342.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
