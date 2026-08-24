@@ -3242,3 +3242,14 @@ SSH、训练、metric/outcome读取或模型/gate变更，不新增training atte
 首次更新使用60分钟interval，但应用层未暴露下一运行锚点，无法证明会在当前`03:45:51`窗口后及时唤醒。调度因此
 进一步等价冻结为每小时本地`:46`：首轮`03:46:00`晚于not-before 9秒，此后仍严格每60分钟；prompt、线程、状态和
 通知策略不变。该对齐只防止过早或漏掉当前窗口，不放宽远端检查前的独立本地时间复核。
+
+## 03:48 C3 five-job scheduled health（2026-08-25）
+
+本地03:46:16完成最后时间读取后执行一次原子SSH；远端03:48:31时C3 full、source-only、edit-metadata-only、
+no-candidate-sequence与candidate-bundle-permutation五项仍均为CUDA alive，elapsed分别为
+89,571/89,571/89,572/89,143/88,761秒，GPU3/0/5/1/2占用为2,190/2,120/2,190/2,120/2,190 MiB。
+
+五个summary/failure、C3 reference与screen gate均不存在，read-once未执行。未读日志、active curve、Development
+TEST或new Evaluation，也未同步A100或启动V4。远端偏移仍为+135秒；下一远端/本地窗口分别不早于
+04:48:31/04:46:16。监控无仓库代码变化，不重复focused/V3.3.2测试，claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_034831.json`。

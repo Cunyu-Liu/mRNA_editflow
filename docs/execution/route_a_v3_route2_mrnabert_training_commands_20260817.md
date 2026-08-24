@@ -4148,3 +4148,14 @@ post-TEST协议原先使用未由正式projection producer生成的`train_projec
 定向回归=15/15，合并V4 Critic/SetFlow/guidance=270/270，精确V3.3.2=96/96。没有新增训练attempt、
 guidance、TEST或Evaluation读取；A100 current-HEAD验证仍等待五项C3自然terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_readiness_fixture_integration_v1.json`。
+
+## 03:48 C3 long-interval health（2026-08-25）
+
+本地03:46:16越过校准窗口后执行一次单包远端检查；远端03:48:31时五个登记PID仍全部活跃并位于
+GPU0/1/2/3/5，CUDA占用保持2,120–2,190 MiB。`c3`、no-candidate与permutation为`Rl`，source-only与
+edit-metadata-only为`Sl`；两种状态均来自登记进程的单次liveness快照，不作为性能或停滞判断。
+
+五项精确summary/failure、C3 reference与screen gate均不存在，read-once因terminal_count=0未运行。未读stdout/
+stderr、active curve、Development TEST或new Evaluation；A100 current-HEAD sync和V4运行仍关闭。下一检查不得
+早于远端04:48:31/本地04:46:16。监控项无代码变化，不重复test cohort。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_034831.json`。
