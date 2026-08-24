@@ -3499,3 +3499,12 @@ marker，之后才通过ID-first canonical scan解码18,292条TEST记录。V4 bo
 本地runner focused=4/4、完整Critic V4 focused=74/74、精确V3.3.2=96/96、compile/diff-check PASS；runner
 从未执行，authorization未消费，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_test_runner_v1.json`。
+
+## 19:44 C3 five-run long-interval health（2026-08-24）
+
+本地19:41:58按最近+146秒偏移确认越过窗口后，远端19:44:22仅检查terminal/failure/alive/CUDA。
+五项C3作业均alive，elapsed 59,713–60,523秒，无terminal/failure且无screen gate；五个PID均在CUDA
+compute-apps中，显存2,120–2,190MiB。未读stdout/stderr、active curve或metric，A100仍保持launch HEAD
+`4047f550`且不做current-HEAD sync。新偏移为+144秒，下一远端窗口≥20:44:22（估算本地≥20:41:58）；
+Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_194422.json`。
