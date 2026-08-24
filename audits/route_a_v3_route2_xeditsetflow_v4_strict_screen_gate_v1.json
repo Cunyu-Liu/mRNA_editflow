@@ -1,0 +1,62 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_strict_screen_gate.v1",
+  "recorded_at_local": "2026-08-24T18:59:23+08:00",
+  "status": "XEDITSETFLOW_V4_STRICT_SCREEN_GATE_IMPLEMENTED_NOT_ADJUDICATED",
+  "git_head_before_delivery": "3c8a20c",
+  "implementation": {
+    "core": "core/route2_xeditsetflow_gate_v4.py",
+    "script": "scripts/route_a_v3/adjudicate_route2_xeditsetflow_v4_screen.py",
+    "test": "tests/route_a_v3/test_route2_xeditsetflow_gate_v4.py"
+  },
+  "terminal_package": {
+    "training_runs": ["v4_full", "v4_single_mode"],
+    "checkpoint_passes_per_run": [4, 6, 8, 10],
+    "all_training_terminal_before_validation": true,
+    "all_eight_checkpoint_validations_terminal_before_performance_adjudication": true,
+    "training_technical_failure_can_terminal_no_go_without_impossible_checkpoint_validation": true,
+    "checkpoint_validation_failures_all_retained": true
+  },
+  "identity_checks": {
+    "exact_891_by_32_cohort": true,
+    "duplicate_retry_or_rejection_zero": true,
+    "common_validation_15924_by_2": true,
+    "mode_allocation_every_mode_per_source": true,
+    "common_prior_primary_replay_compute_exactly_accounted": true,
+    "small_graph_mixture_exact": true,
+    "wall_time_and_peak_vram_present": true,
+    "critic_and_evaluator_forwards_zero": true,
+    "protected_reads_zero": true
+  },
+  "checkpoint_selection": {
+    "absolute_nll_maximum": 2.06809,
+    "absolute_recovery_minimum": 0.35,
+    "absolute_top_k_minimum": 0.2,
+    "absolute_unique_minimum": 0.9,
+    "g0_all_required": true,
+    "selection_order": ["MAX_RECOVERY", "MAX_TOP_K", "MIN_NLL", "EARLIEST_PASS"],
+    "no_eligible_checkpoint_nearest_selection": false,
+    "nll_selected_same_training_read_only_diagnostic": true
+  },
+  "screen_margins": {
+    "recovery_over_terminal_f2": 0.05,
+    "top_k_over_terminal_f2": 0.03,
+    "unique_over_terminal_f2": 0.15,
+    "recovery_over_single_mode": 0.03,
+    "unique_over_single_mode": 0.05
+  },
+  "verification": {
+    "screen_gate_focused_tests": "5/5 PASS",
+    "combined_setflow_v4_focused_tests": "45/45 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_and_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_adjudicated": false,
+    "confirmation_authorized": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

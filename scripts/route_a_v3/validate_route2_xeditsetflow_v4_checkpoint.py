@@ -22,7 +22,6 @@ if str(REPO_ROOT) not in sys.path:
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import (
     cuda_device_observation,
-    write_gpu_failure_evidence,
 )
 from core.route2_legal_xeditflow import (
     exact_terminal_distribution,
@@ -678,12 +677,29 @@ def main() -> int:
             physical_gpu_index=arguments.physical_gpu_index,
         )
     except Exception as error:
-        write_gpu_failure_evidence(
-            output_directory.with_name(output_directory.name + ".failed.json"),
-            config,
-            error,
-            entrypoint="validate_route2_xeditsetflow_v4_checkpoint",
-            evaluation_outcomes_accessed=False,
+        failure_path = output_directory.with_name(
+            output_directory.name + ".failed.json"
+        )
+        failure_path.parent.mkdir(parents=True, exist_ok=True)
+        failure_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_failure.v1",
+                    "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+                    "run_id": arguments.run_id,
+                    "checkpoint_pass": arguments.checkpoint_pass,
+                    "physical_gpu_index": arguments.physical_gpu_index,
+                    "cpu_fallback_used": False,
+                    "error_type": type(error).__name__,
+                    "error": str(error),
+                    "development_test_outcome_reads": 0,
+                    "new_final_evaluation_outcome_reads": 0,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
         )
         raise
     print(json.dumps(result, sort_keys=True))

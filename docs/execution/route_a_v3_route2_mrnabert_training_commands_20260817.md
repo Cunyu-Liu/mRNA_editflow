@@ -3415,3 +3415,14 @@ common NLL、root prior、primary/replay的trunk与全部mode-head forwards分�
 runner无backward/optimizer。focused=6/6、combined SetFlow V4=40/40、精确V3.3.2=96/96、compile/diff-check
 PASS；尚未执行或读取指标，protected outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_runner_v1.json`。
+
+## XEditSetFlow V4 strict checkpoint selection and screen gate（2026-08-24）
+
+已实现`route2_xeditsetflow_gate_v4.py`与原子adjudicator。full/single各自的4/6/8/10 checkpoint必须先满足
+NLL≤2.06809、recovery≥0.35、top-k≥0.20、unique≥0.90及G0全通过，才能按recovery→top-k→NLL→earlier
+pass选择；无eligible项直接NO-GO，NLL-only仅作同训练只读诊断。
+
+full另需相对terminal F2达到0.05/0.03/0.15，相对single-mode达到recovery0.03/unique0.05。gate也核对精确
+cohort、mode分配、compute、small graph、wall/VRAM及protected reads。技术failure保留并terminal NO-GO。
+focused=5/5、combined SetFlow V4=45/45、精确V3.3.2=96/96、compile/diff-check PASS；尚未adjudicate或
+授权confirmation。审计：`audits/route_a_v3_route2_xeditsetflow_v4_strict_screen_gate_v1.json`。

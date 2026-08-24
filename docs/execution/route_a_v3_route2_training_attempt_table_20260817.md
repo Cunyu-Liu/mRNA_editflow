@@ -2295,6 +2295,22 @@ focused=40/40、精确V3.3.2=96/96、compile/diff-check PASS。尚未执行check
 Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_checkpoint_validation_runner_v1.json`。
 
+## XEditSetFlow V4 strict checkpoint selection and screen gate（2026-08-24）
+
+已实现full/single-mode共8个checkpoint validation的原子screen adjudicator。若任一training发生技术故障，在两项
+training均terminal后可直接写terminal NO-GO；否则必须等待8项validation各自恰有summary/failure后才裁决，
+所有failure保留。任何failure artifact若protected read非0则拒绝作为合法证据。
+
+每个checkpoint先验证891×32、15924×2 common cohort、无retry、每mode覆盖、G0/small-graph、wall/VRAM及
+common/root/primary/replay trunk与mode-head完整计费，再应用NLL≤2.06809、recovery≥0.35、top-k≥0.20、
+unique≥0.90和全部G0门槛。full和single各自只能从eligible checkpoint按recovery→top-k→NLL→earlier pass选择；
+无eligible项不得选择“最接近”结果。NLL-only checkpoint只作同一次training的只读错位诊断。
+
+最终full还必须满足相对terminal F2的0.05/0.03/0.15 margin及相对single-mode的recovery0.03/unique0.05。
+gate focused=5/5、combined SetFlow V4 focused=45/45、精确V3.3.2=96/96、compile/diff-check PASS。
+尚未adjudicate或授权confirmation，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。
+审计：`audits/route_a_v3_route2_xeditsetflow_v4_strict_screen_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
