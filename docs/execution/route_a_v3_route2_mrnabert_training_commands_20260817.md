@@ -3571,3 +3571,17 @@ artifact全部保留。C3 full有有效terminal Validation指标时直接作为V
 尚未执行，五个active job的terminal payload read仍为0。新增/相邻focused=12/12、完整本机Critic V4=86/86、
 精确V3.3.2=96/96，compile/diff-check PASS；A100 current-HEAD测试仍受五job terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_v4_reference_read_once_producer_v1.json`。
+
+## Critic/SetFlow V4 preflight与screen launch authorizer（2026-08-24）
+
+盘点发现既有preflight和trainer只消费严格authorization artifact但没有producer，现已补齐两组件×两阶段的窄
+authorizer。preflight authorization要求C3五项read-once完成、A100在旧job terminal后同步到精确current HEAD并通过
+Critic/SetFlow focused与96项V3.3.2、对应cache terminal且protected read=0。
+
+screen authorization进一步要求正式preflight PASS。Critic需165–175M参数、20–35GiB进程内峰值与候选集合内的
+physical batch；SetFlow需full/single参数量精确等于冻结值，并要求891-source source-level audit PASS。授权分别覆盖
+8项Critic package和2项SetFlow package，不能漏掉control后局部启动。
+
+本项未创建authorization、未运行preflight或optimizer。定向focused=24/24、完整Critic V4=90/90、完整SetFlow
+V4=63/63、精确V3.3.2=96/96，compile/diff-check PASS；A100 current-HEAD验证继续等待五个C3旧job自然terminal。
+审计：`audits/route_a_v3_route2_xedit_v4_screen_stage_authorizer_v1.json`。

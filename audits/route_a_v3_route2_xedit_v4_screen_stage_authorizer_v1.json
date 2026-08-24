@@ -1,0 +1,52 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_screen_stage_authorizer.v1",
+  "recorded_at_local": "2026-08-24T20:20:21+08:00",
+  "status": "XEDIT_V4_PREFLIGHT_AND_SCREEN_STAGE_AUTHORIZER_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "012ea77",
+  "implementation": {
+    "authorizer": "scripts/route_a_v3/authorize_route2_xedit_v4_screen_stages.py",
+    "focused_test": "tests/route_a_v3/test_authorize_route2_xedit_v4_screen_stages.py",
+    "components": ["critic", "setflow"],
+    "stages": ["preflight", "screen"]
+  },
+  "common_barriers": {
+    "c3_five_run_reference_read_once_complete": true,
+    "c3_terminal_artifacts_retained": true,
+    "a100_exact_current_head_after_old_jobs_terminal": true,
+    "a100_critic_and_setflow_focused_pass": true,
+    "a100_exact_v332_96_pass": true,
+    "protected_outcome_reads_zero": true
+  },
+  "critic_barriers": {
+    "bottom_six_cache_terminal_isolated": true,
+    "formal_trainable_parameter_count_165_to_175m": true,
+    "formal_peak_allocated_gib_20_to_35": true,
+    "selected_physical_batch_in_4_8_16_32": true,
+    "all_eight_screen_runs_authorized_as_one_package": true
+  },
+  "setflow_barriers": {
+    "source_token_cache_terminal_isolated": true,
+    "formal_full_and_single_parameter_counts_exact": true,
+    "source_level_data_audit_pass": true,
+    "validation_source_count": 891,
+    "both_screen_runs_authorized_as_one_package": true
+  },
+  "verification": {
+    "new_and_adjacent_focused": "24/24 PASS",
+    "complete_local_critic_v4_focused_cohort": "90/90 PASS",
+    "complete_local_setflow_v4_focused_cohort": "63/63 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "preflight_authorizations_created": 0,
+    "screen_launch_authorizations_created": 0,
+    "preflights_executed": 0,
+    "v4_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

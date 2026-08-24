@@ -1692,6 +1692,12 @@ V3.3.2=96/96；A100 current-HEAD验证继续受五个旧C3 launch-head jobs term
 metric。producer不更新参数、不新增中央attempt；C3无论成功失败均不授权confirmation/TEST/refit/LOSO/guidance。
 定向12/12、完整Critic V4 86/86、精确V3.3.2 96/96；protected outcome read保持0。
 
+## V4 preflight/screen authorization producer implementation（2026-08-24）
+
+已补齐Critic与SetFlow V4 preflight/screen launch authorization producer。实现与测试不执行参数更新，中央attempt
+行数不变；当前authorization created=0、preflight executed=0、V4 optimizer attempts=0。完整Critic V4 90/90、
+SetFlow V4 63/63、V3.3.2 96/96；Development TEST/new Evaluation outcome read=0。
+
 ## 13:01–13:13 scheduled screen health（2026-08-23）
 
 C2 full/F3 training/C2 source-only分别在13:01:35/13:05:49/13:13:04保持RUNNING，elapsed分别为
