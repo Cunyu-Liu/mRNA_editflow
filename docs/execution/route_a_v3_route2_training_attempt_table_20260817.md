@@ -1765,6 +1765,18 @@ score bundle的state/rollout provenance对齐。dataset构造需要的target固�
 compile/diff-check PASS；protected read=0，A100测试继续等待旧C3。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_critic_scorer_v1.json`。
 
+## XEditFlow V4 exact six-package value-target grid builder（2026-08-24）
+
+已实现screen seed20260912的精确六个`kappa×temperature` value-target包构建器：只接受
+`kappa={0,0.5,1}`、`temperature={0.5,1}`，每个state-mode必须有同mode K=8、三名冻结refit critic
+的study-neutral scores，并要求rollout replay为零失败。`beta_max`不进入reward或soft-value target；未来18个
+guidance cells通过`6×3 beta_max`复用这六个value模型，避免把同一target重复训练三次。
+
+本项未materialize配置或大型target包、未新增optimizer attempt、未启动guidance。新增/相邻=6/6，完整
+XEditFlow/guidance=198/198，V3.3.2=96/96，compile/diff-check PASS；protected read=0，A100 current-HEAD
+测试继续等待五个旧C3作业terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_target_grid_builder_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

@@ -1,0 +1,53 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_value_target_grid_builder_audit.v1",
+  "status": "IMPLEMENTED_NOT_AUTHORIZED_OR_EXECUTED",
+  "date": "2026-08-24",
+  "implementation": {
+    "builder": "scripts/route_a_v3/build_route2_xeditflow_value_targets_v4.py",
+    "test": "tests/route_a_v3/test_build_route2_xeditflow_value_targets_v4.py"
+  },
+  "frozen_grid": {
+    "base_flow_training_seed": 20260912,
+    "kappa": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "temperature": [
+      0.5,
+      1.0
+    ],
+    "value_target_package_count": 6,
+    "beta_max_used_in_value_target": false,
+    "later_guidance_combination_count": 18,
+    "rollouts_per_state_mode": 8,
+    "critic_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ]
+  },
+  "authorization": {
+    "critic_status": "CRITIC_V4_READY_FOR_GUIDANCE",
+    "setflow_status": "XEDITSETFLOW_V4_G0_READY",
+    "replay_checked_rollouts_required": true,
+    "frozen_refit_critic_scores_required": true,
+    "independent_evaluator_used": false
+  },
+  "verification": {
+    "new_and_adjacent_tests": "6/6 PASS",
+    "all_xeditflow_and_guidance_tests": "198/198 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "target_grid_config_materialized": false,
+    "value_target_package_materialized": false,
+    "optimizer_attempt_started": false,
+    "guidance_screen_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

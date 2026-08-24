@@ -3671,3 +3671,15 @@ dataset的0 target带`dummy_target_for_inference_only`，仅满足既有inferenc
 模型。本地新增/相邻6/6，XEditFlow/guidance 196/196，V3.3.2 96/96，compile/diff-check PASS。scorer未执行，
 protected read=0；A100 current-HEAD测试等待旧C3。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_critic_scorer_v1.json`。
+
+## XEditFlow V4 exact six-package value-target grid builder（2026-08-24）
+
+`build_route2_xeditflow_value_targets_v4.py`现将同一次replay-checked TRAIN rollout与冻结三成员critic scores
+严格转换为六个`kappa×temperature` target packages。screen只接受seed20260912和精确
+`{0,0.5,1}×{0.5,1}`；每个package保留mode-fixed K=8 reward与soft-value target，但不含`beta_max`。
+因此后续18-cell screen应训练六个value checkpoints，再分别配三个`beta_max`运行generation，而不是训练18个
+内容重复的value模型。
+
+本地新增/相邻6/6，XEditFlow/guidance 198/198，精确V3.3.2 96/96，compile/diff-check PASS。builder未执行、
+target packages未materialize、optimizer attempts不变，protected read=0；A100 current-HEAD测试等待旧C3
+terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_target_grid_builder_v1.json`。
