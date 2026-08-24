@@ -3620,3 +3620,13 @@ compute-apps中，elapsed 63,408–64,219秒，显存2,120–2,190MiB；screen g
 最新偏移+155秒；下一远端check not before 21:45:58，估算本地not before 21:43:23。TEST/Evaluation read=0，
 不做A100 current-HEAD sync。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_204558.json`。
+
+## XEditFlow V4 mode-conditioned value target contract（2026-08-24）
+
+新增`XEditValueV4`与`ValueTargetV4`：6×384单scalar value显式接收trajectory-fixed mode；每个TRAIN state-mode
+要求同mode K=8 rollouts和精确三名V4 critic seeds，拒绝mode drift、independent evaluator与post-atomic TEST reopen。
+guidance protocol现固定source-level四state的平衡mode assignment，以及8-pass/batch32/BF16/final-pass-8 value训练预算。
+
+本地新增/相邻15/15，XEditFlow/guidance 184/184，精确V3.3.2 cohort 96/96，compile/JSON/diff-check PASS。
+没有materialize target、没有训练value、没有授权guidance，protected read=0；A100 current-HEAD测试等待五个旧C3
+作业terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_target_contract_v1.json`。

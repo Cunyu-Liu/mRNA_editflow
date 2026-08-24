@@ -8,8 +8,11 @@ from typing import Any, Callable, Sequence
 
 import numpy as np
 import torch
+from torch import nn
 
 from core.route2_legal_xeditflow import FlowState, LegalAction, apply_action
+from core.route2_xeditcritic_v3 import EndpointConditionerV1
+from core.route2_xeditsetflow_v3 import HybridSetFlowBlockV3
 from core.route2_xeditflow_guidance_v3 import (
     deduplicate_terminal_candidates_v3,
     potential_guided_rates_v3,
@@ -69,6 +72,158 @@ def potential_guided_rates_v4(
         progress=progress,
         beta_max=beta_max,
     )
+
+
+class XEditValueV4(nn.Module):
+    """Six-block scalar potential conditioned on the fixed trajectory mode."""
+
+    def __init__(
+        self,
+        *,
+        assay_count: int,
+        context_count: int,
+        quantity_count: int,
+        measurement_count: int,
+        numerator_count: int,
+        denominator_count: int,
+        dropout: float = 0.10,
+    ) -> None:
+        super().__init__()
+        width = 384
+        condition_width = 256
+        nucleotide_width = 48
+        self.mode_count = 8
+        self.endpoint_conditioner = EndpointConditionerV1(
+            quantity_count=quantity_count,
+            measurement_count=measurement_count,
+            numerator_count=numerator_count,
+            denominator_count=denominator_count,
+            assay_count=assay_count,
+            context_count=context_count,
+            region_count=2,
+            output_width=condition_width,
+            category_width=32,
+        )
+        self.trajectory_mode = nn.Embedding(self.mode_count, condition_width)
+        self.source_nucleotide = nn.Embedding(5, nucleotide_width, padding_idx=4)
+        self.current_nucleotide = nn.Embedding(5, nucleotide_width, padding_idx=4)
+        self.source_pretrained_projection = nn.Linear(768, width)
+        self.state_projection = nn.Linear(nucleotide_width * 2 + 4, width)
+        self.input_norm = nn.LayerNorm(width)
+        self.blocks = nn.ModuleList(
+            HybridSetFlowBlockV3(
+                width=width,
+                heads=8,
+                ffn_width=1536,
+                window=64,
+                dilation=2 ** (index % 4),
+                shifted=bool(index % 2),
+                dropout=dropout,
+                condition_width=condition_width,
+            )
+            for index in range(6)
+        )
+        self.pool_attention = nn.Linear(width, 1)
+        self.scalar_head = nn.Sequential(
+            nn.Linear(width + condition_width + 2, width),
+            nn.GELU(),
+            nn.Linear(width, 1),
+        )
+
+    @property
+    def trainable_parameter_count(self) -> int:
+        return sum(
+            parameter.numel()
+            for parameter in self.parameters()
+            if parameter.requires_grad
+        )
+
+    def forward(self, batch: Mapping[str, torch.Tensor]) -> torch.Tensor:
+        source = batch["source_tokens"]
+        current = batch["current_tokens"]
+        padding = batch["padding_mask"]
+        pretrained = batch["source_pretrained_tokens"]
+        mode_ids = batch["trajectory_mode_ids"]
+        _require(
+            source.shape == current.shape == padding.shape,
+            "V4 value sequence tensors differ",
+        )
+        _require(
+            pretrained.shape[:2] == source.shape,
+            "V4 value pretrained tokens do not align",
+        )
+        _require(
+            mode_ids.shape == (source.shape[0],)
+            and bool(((mode_ids >= 0) & (mode_ids < self.mode_count)).all().item()),
+            "V4 value trajectory mode ids differ",
+        )
+        valid = ~padding
+        _require(
+            bool(valid.any(dim=1).all().item()),
+            "V4 value received an empty source sequence",
+        )
+        edited = (source != current) & valid
+        length = valid.sum(dim=1, keepdim=True)
+        position_index = torch.arange(source.shape[1], device=source.device)[None]
+        position = (position_index / (length - 1).clamp_min(1)).to(
+            pretrained.dtype
+        ) * valid
+        edited_count = edited.sum(dim=1).to(pretrained.dtype)
+        remaining = batch["remaining_budget"].to(pretrained.dtype)
+        assigned = edited_count + remaining
+        progress = edited_count / assigned.clamp_min(1)
+        state = torch.cat(
+            (
+                self.source_nucleotide(source),
+                self.current_nucleotide(current),
+                edited.to(pretrained.dtype).unsqueeze(-1),
+                position.unsqueeze(-1),
+                remaining.log1p().view(-1, 1, 1).expand(-1, source.shape[1], -1),
+                progress.view(-1, 1, 1).expand(-1, source.shape[1], -1),
+            ),
+            dim=-1,
+        )
+        endpoint = self.endpoint_conditioner(
+            {
+                "quantity": batch["quantity_ids"],
+                "measurement": batch["measurement_ids"],
+                "numerator": batch["numerator_ids"],
+                "denominator": batch["denominator_ids"],
+                "assay": batch["assay_ids"],
+                "context": batch["context_ids"],
+                "region": batch["region_ids"],
+            }
+        )
+        condition = endpoint + self.trajectory_mode(mode_ids)
+        hidden = self.input_norm(
+            self.source_pretrained_projection(
+                pretrained.to(self.source_pretrained_projection.weight.dtype)
+            )
+            + self.state_projection(state)
+        ) * valid.unsqueeze(-1)
+        for block in self.blocks:
+            hidden = block(hidden, padding, condition)
+        attention_logits = self.pool_attention(hidden).squeeze(-1).masked_fill(
+            ~valid, -torch.inf
+        )
+        attention = torch.softmax(attention_logits, dim=1)
+        pooled = (hidden * attention.unsqueeze(-1)).sum(dim=1)
+        value = self.scalar_head(
+            torch.cat(
+                (
+                    pooled,
+                    condition,
+                    remaining.log1p().unsqueeze(-1),
+                    progress.unsqueeze(-1),
+                ),
+                dim=-1,
+            )
+        ).squeeze(-1)
+        _require(
+            value.shape == (source.shape[0],),
+            "V4 value output is not one scalar per state-mode",
+        )
+        return value
 
 
 @dataclass(frozen=True)

@@ -1704,6 +1704,20 @@ screen gate不存在，A100仍为launch HEAD `4047f550`。
 A100 current-HEAD sync继续禁止。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_204558.json`。
 
+## XEditFlow V4 mode-conditioned value target contract（2026-08-24）
+
+`XEditValueV4`已前瞻冻结并实现为6个width384 hybrid blocks、8 heads、FFN1536的单一scalar potential。
+trajectory mode通过8-entry embedding进入state condition；模型不接收study identity，也不输出free action ratio。
+每个target的单位是显式TRAIN state-mode pair，同一pair必须有恰好K=8个固定同mode SetFlow rollouts，并只接受
+20260908/20260909/20260910三名frozen V4 critic的study-neutral predictions；independent evaluator禁止进入target或梯度。
+
+future value budget同时写入guidance protocol：四个outcome-free source-level states按词典序source index与slot进行
+确定性平衡mode赋值，每source形成4个state-mode而不是事后无界扩增；训练固定8 passes、batch32、BF16、AdamW
+lr3e-4/weight decay1e-4、clip1.0，final pass8固定checkpoint。本项不新增optimizer attempt、不创建guidance授权。
+新增/相邻=15/15、XEditFlow/guidance=184/184、V3.3.2=96/96、compile/JSON/diff-check PASS；A100测试仍受
+旧C3 barrier约束。protected outcome追加读取=0。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_target_contract_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

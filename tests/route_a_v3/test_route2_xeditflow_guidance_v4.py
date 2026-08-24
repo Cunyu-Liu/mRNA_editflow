@@ -65,6 +65,9 @@ def test_v4_protocol_freezes_grid_mode_and_compute_boundaries() -> None:
     assert protocol["base_flow_screen_seed"] == 20260912
     assert protocol["guidance_grid"]["combination_count"] == 18
     assert protocol["setflow_mode_state"]["fixed_for_complete_trajectory"] is True
+    assert protocol["value_to_go"]["output"] == "ONE_SCALAR_PER_STATE_MODE"
+    assert protocol["value_to_go"]["rollouts_per_state_mode"] == 8
+    assert protocol["value_to_go"]["study_identity_input"] is False
     assert protocol["potential"]["free_action_ratio_head_allowed"] is False
     assert protocol["smc"]["forward_equivalent_ceiling_per_source"] == 320
     assert protocol["protected_outcomes"]["new_final_evaluation_outcome_reads"] == 0
