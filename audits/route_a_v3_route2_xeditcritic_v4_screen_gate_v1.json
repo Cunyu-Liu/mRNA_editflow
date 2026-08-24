@@ -1,0 +1,69 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_gate_implementation.v1",
+  "recorded_at_local": "2026-08-24T18:07:58+08:00",
+  "status": "XEDITCRITIC_V4_SCREEN_GATE_IMPLEMENTED_NOT_ADJUDICATED",
+  "git_head_before_delivery": "7299880",
+  "implementation": {
+    "gate_core": "core/route2_xeditcritic_gate_v4.py",
+    "adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_screen.py",
+    "test": "tests/route_a_v3/test_route2_xeditcritic_gate_v4.py",
+    "config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
+  },
+  "frozen_permutation_applicable_tasks": [
+    "MEAN_RIBOSOME_LOAD::region=0",
+    "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1",
+    "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1",
+    "RNA_HALF_LIFE_MINUTES::region=0",
+    "RNA_HALF_LIFE_MINUTES::region=1",
+    "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1"
+  ],
+  "gate_identity": {
+    "all_eight_runs_exactly_terminal": true,
+    "screen_seed": 20260907,
+    "train_validation_counts": [89580, 18293],
+    "passes": 8,
+    "updates": 22416,
+    "selected_pass": 8,
+    "effective_batch": 32,
+    "singleton_forward_count": 0,
+    "formal_parameter_count_matches_preflight": true,
+    "physical_batch_matches_preflight": true,
+    "peak_memory_maximum_gib": 35.0,
+    "task_rows_recompute_macro_and_positive_count": true,
+    "active_validation_metric_read": false,
+    "protected_reads_zero": true
+  },
+  "scientific_gate": {
+    "spearman_formula": "MAX(0.30,C3_REFERENCE+0.05,C0_V4+0.10)",
+    "standardized_mae_maximum": 1.7,
+    "minimum_positive_tasks": 8,
+    "minimum_c0_task_wins": 6,
+    "candidate_information_controls_all_beaten": true,
+    "permutation_aggregate_margin": 0.05,
+    "permutation_task_wins": "AT_LEAST_5_OF_EXACT_6",
+    "no_cross_margin": 0.02,
+    "no_moe_margin": 0.02,
+    "technical_failure_policy": "TERMINAL_XEDITCRITIC_V4_SCREEN_NO_GO"
+  },
+  "c3_reference_boundary": {
+    "source": "C3_V4_REFERENCE_READ_ONCE_ADJUDICATION_ONLY",
+    "c3_terminal_summary_reread_by_v4_gate": false,
+    "c3_can_authorize_test": false
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "72/72 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_adjudicated": false,
+    "confirmation_authorized": false,
+    "development_test_authorized": false,
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -3288,3 +3288,20 @@ tensor或CPU fallback替代。formal exact parameter count必须为165–175M；
 完整本机Critic V4 focused=67/67、精确V3.3.2=96/96、compile/diff-check PASS；preflight executed=false、
 optimizer attempts=0、Validation metric read=false、Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_formal_preflight_runner_v1.json`。
+
+## XEditCritic V4 strict screen gate（2026-08-24）
+
+已实现`route2_xeditcritic_gate_v4.py`与一次性`adjudicate_route2_xeditcritic_v4_screen.py`。六个exact
+permutation applicable tasks现在在screen config内逐名冻结，来自V3 complete candidate-bundle permutation
+在结果读取前已有的eligible inventory，不由V4结果选择。adjudicator要求8个run各自恰有run_summary或failure
+之一；任何技术failure直接写terminal NO-GO。性能gate只消费C3 read-once reference artifact，因此不二次读取
+C3 terminal content。
+
+artifact identity核对包括seed、split inventory、passes/updates、final pass、batch、0 singleton、formal count、
+preflight selection、actual peak、precision、parameter update、九task覆盖和0 protected read。task macro与positive
+count由task rows反算。完整门槛涵盖动态Spearman公式、MAE、task breadth、C0、三candidate controls、六task
+permutation及两机制消融；PASS只授权三confirmation seeds，不直接授权TEST。
+
+完整本机Critic V4 focused=72/72、精确V3.3.2=96/96、compile/JSON/diff-check PASS；screen adjudicated=false、
+confirmation/TEST authorized=false、optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_screen_gate_v1.json`。

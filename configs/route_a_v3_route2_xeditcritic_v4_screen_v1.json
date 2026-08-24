@@ -13,6 +13,7 @@
   "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907",
   "preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight.json",
   "screen_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/screen_gate.json",
+  "c3_read_once_reference_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/c3_v4_reference_read_once.json",
   "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "launch_barrier": {
     "all_c3_jobs_must_be_terminal": true,
@@ -123,6 +124,14 @@
     "must_beat_source_only_edit_metadata_only_no_candidate_sequence": true,
     "minimum_permutation_aggregate_margin": 0.05,
     "minimum_permutation_wins_of_six_tasks": 5,
+    "permutation_applicable_tasks": [
+      "MEAN_RIBOSOME_LOAD::region=0",
+      "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1",
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1",
+      "RNA_HALF_LIFE_MINUTES::region=0",
+      "RNA_HALF_LIFE_MINUTES::region=1",
+      "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1"
+    ],
     "minimum_no_cross_margin": 0.02,
     "minimum_no_moe_margin": 0.02,
     "prediction_spread_finite_nonzero": true,

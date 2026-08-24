@@ -2132,6 +2132,26 @@ checkpointed backward、gradient clipping与AdamW state materialization，并仅
 C3 barrier约束，optimizer attempts=0，Validation metric read=false，Development TEST/new Evaluation outcome
 read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_formal_preflight_runner_v1.json`。
 
+## XEditCritic V4 strict screen gate（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。已实现8-run terminal adjudicator与严格gate，并在任何V4
+Validation结果前从既有outcome-free complete-bundle permutation inventory冻结六个适用task。gate只接受
+C3 five-run read-once reference artifact，不重新打开C3 terminal summaries；C3仍永不授权TEST。
+
+每个V4 artifact必须匹配seed20260907、89,580/18,293 inventories、8 passes/22,416 updates、final pass8、
+effective32、preflight physical batch、formal parameter count、≤35GiB实际peak、0 singleton、BF16/FP32
+precision及protected reads=0。gate从九个task rows重新计算macro Spearman/MAE和positive-task count，不接受
+summary内部自相矛盾的aggregate。
+
+科学门槛逐项实现为`max(0.30,C3+0.05,C0+0.10)`、MAE≤1.70且不劣于C0、8/9 positive、6/9胜C0、
+胜三candidate controls、permutation aggregate margin≥0.05且精确六task至少5胜、NO-CROSS/NO-MOE各≥0.02。
+任一技术失败或任一check失败均terminal `XEDITCRITIC_V4_SCREEN_NO_GO`；confirmation最多仅由完整PASS授权，
+screen本身永不授权Development TEST。
+
+完整本机Critic V4 focused=72/72、精确V3.3.2=96/96、compile/JSON/diff-check PASS。screen尚未运行或
+adjudicate，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_screen_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
