@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1",
+  "recorded_at_local": "2026-08-24T19:53:39+08:00",
+  "status": "XEDITCRITIC_V4_POSTTEST_CONFIG_COLLECTOR_READINESS_RUNTIME_IMPLEMENTED_NOT_AUTHORIZED",
+  "git_head_before_delivery": "e5ccaae9bdc8aa118e7a68d1a342d43cab60196f",
+  "implementation": {
+    "config_preparer": "scripts/route_a_v3/prepare_route2_xeditcritic_v4_posttest_configs.py",
+    "terminal_collector": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_posttest.py",
+    "readiness_composer": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_readiness.py",
+    "focused_test": "tests/route_a_v3/test_route2_xeditcritic_v4_posttest_runtime.py"
+  },
+  "runtime_scope": {
+    "refit_runtime_config_count": 3,
+    "refit_run_count": 3,
+    "loso_runtime_config_count": 21,
+    "loso_model_baseline_run_count": 42,
+    "updates_per_pass_derived_from_fold_specific_frozen_sampler": true,
+    "refit_requires_atomic_frozen_test_pass": true,
+    "loso_requires_all_three_refits_complete": true,
+    "technical_failure_is_terminal_no_go": true,
+    "readiness_requires_all_four_predecessors": true
+  },
+  "verification": {
+    "posttest_protocol_and_runtime_focused": "7/7 PASS",
+    "complete_local_critic_v4_focused_cohort": "81/81 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "trainer_refit_loso_stage_integrated": false,
+    "runtime_configs_materialized": false,
+    "refit_or_loso_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "POSTTEST CONFIGURATION AND TERMINAL ADJUDICATION SOFTWARE ONLY; NO REFIT, LOSO, OR GUIDANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

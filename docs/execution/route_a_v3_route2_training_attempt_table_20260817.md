@@ -2426,6 +2426,18 @@ TEST、三refit和LOSO四项均PASS才输出`CRITIC_V4_READY_FOR_GUIDANCE`。本
 Evaluation read=0，guidance关闭。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_protocol_gate_v1.json`。
 
+## XEditCritic V4 post-TEST config/collector/readiness runtime（2026-08-24）
+
+post-TEST preparer只在精确three-seed PASS与atomic frozen TEST PASS后生成3份refit config；LOSO preparer
+还要求三refit terminal complete，才生成21份seed×study runtime config及42项`v4_full+c0_v4` jobs。每个
+refit/fold的updates-per-pass由其实际TRAIN-side records与冻结sampler计算，不沿用screen update数。
+
+terminal collector要求每项summary/failure恰有一个；任一技术failure保留并直接NO-GO。refit只在3/3完成时
+授权LOSO，LOSO只在42/42 terminal后一次性形成三seed gate；readiness composer要求three-seed/TEST/refit/LOSO
+四项同时PASS。本项不新增attempt，focused=7/7、完整Critic V4=81/81、V3.3.2=96/96、compile/diff-check
+PASS。trainer的REFIT/LOSO stage尚未接入，configs未materialize，protected read=0，guidance关闭。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_runtime_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

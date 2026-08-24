@@ -3520,3 +3520,14 @@ Development TEST关闭，unknown held-out study scale=1；refit/LOSO均使用GPU
 focused=11/11、完整Critic V4=77/77、精确V3.3.2=96/96、compile/JSON/diff-check PASS。post-TEST
 runtime仍未实现或执行，当前protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_protocol_gate_v1.json`。
+
+## XEditCritic V4 post-TEST runtime stack（2026-08-24）
+
+`prepare_route2_xeditcritic_v4_posttest_configs.py`实现REFIT/LOSO两阶段config preparation：3份refit configs，
+以及三refit完成后21份LOSO configs/42项paired jobs；每项fold-specific update budget由固定effective-32 sampler
+计算。`adjudicate_route2_xeditcritic_v4_posttest.py`保留技术failure并NO-GO，只有3/3 refit授权LOSO，只有
+42/42 terminal才评估LOSO gate。`adjudicate_route2_xeditcritic_v4_readiness.py`组合四个冻结predecessors。
+
+posttest protocol/runtime focused=7/7、完整Critic V4=81/81、精确V3.3.2=96/96、compile/diff-check PASS。
+这些入口尚未获授权或执行；trainer REFIT/LOSO stage仍pending，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_runtime_v1.json`。
