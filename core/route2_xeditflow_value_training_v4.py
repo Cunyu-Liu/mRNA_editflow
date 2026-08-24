@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import torch
@@ -32,6 +33,98 @@ VALUE_CHECKPOINT_SCHEMA_V4 = "route_a_v3_route2_xeditflow_value_checkpoint.v4"
 CRITIC_SEEDS_V4 = (20260908, 20260909, 20260910)
 BASE_FLOW_SEEDS_V4 = (20260912, 20260913, 20260914)
 MODE_IDS_V4 = tuple(range(8))
+
+
+def load_value_checkpoint_v4(
+    path: Path,
+    *,
+    base_flow_training_seed: int,
+    kappa: float,
+    temperature: float,
+    device: torch.device,
+) -> XEditValueV4:
+    """Load only the frozen final-pass V4 scalar potential identity."""
+
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    _require(isinstance(checkpoint, Mapping), "V4 value checkpoint is not a mapping")
+    _require(
+        checkpoint.get("schema_version") == VALUE_CHECKPOINT_SCHEMA_V4,
+        "unexpected V4 value checkpoint schema",
+    )
+    _require(
+        int(checkpoint.get("base_flow_training_seed", -1))
+        == int(base_flow_training_seed),
+        "V4 value checkpoint base-flow seed differs",
+    )
+    _require(
+        tuple(int(seed) for seed in checkpoint.get("critic_seeds", ()))
+        == CRITIC_SEEDS_V4,
+        "V4 value checkpoint critic ensemble differs",
+    )
+    _require(
+        float(checkpoint.get("kappa", -1)) == float(kappa)
+        and float(checkpoint.get("temperature", -1)) == float(temperature),
+        "V4 value checkpoint guidance target identity differs",
+    )
+    _require(
+        int(checkpoint.get("selected_pass", -1)) == 8
+        and checkpoint.get("checkpoint_selection")
+        == "FINAL_PASS_8_NO_EPOCH_RESELECTION",
+        "V4 value checkpoint is not the frozen final pass",
+    )
+    provenance = checkpoint.get("training_provenance")
+    _require(
+        isinstance(provenance, Mapping)
+        and provenance.get("parameter_changed") is True
+        and int(provenance.get("optimizer_steps", 0)) > 0
+        and provenance.get("cpu_fallback_used") is False,
+        "V4 value checkpoint lacks a valid CUDA training update",
+    )
+    model_config = dict(checkpoint.get("model_config", {}))
+    topology = {
+        "blocks": model_config.pop("blocks", None),
+        "width": model_config.pop("width", None),
+        "heads": model_config.pop("heads", None),
+        "ffn_width": model_config.pop("ffn_width", None),
+        "trajectory_mode_count": model_config.pop(
+            "trajectory_mode_count", None
+        ),
+    }
+    _require(
+        topology
+        == {
+            "blocks": 6,
+            "width": 384,
+            "heads": 8,
+            "ffn_width": 1536,
+            "trajectory_mode_count": 8,
+        },
+        "V4 value checkpoint architecture differs",
+    )
+    expected_model_fields = {
+        "assay_count",
+        "context_count",
+        "quantity_count",
+        "measurement_count",
+        "numerator_count",
+        "denominator_count",
+        "dropout",
+    }
+    _require(
+        set(model_config) == expected_model_fields
+        and all(
+            int(model_config[field]) >= 1
+            for field in expected_model_fields - {"dropout"}
+        )
+        and float(model_config["dropout"]) == 0.10,
+        "V4 value checkpoint model configuration differs",
+    )
+    model = XEditValueV4(**model_config).to(device)
+    state = checkpoint.get("model_state_dict")
+    _require(isinstance(state, Mapping), "V4 value checkpoint state is absent")
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    return model
 
 
 def require_value_training_authorization_v4(

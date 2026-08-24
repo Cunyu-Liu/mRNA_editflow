@@ -3696,3 +3696,14 @@ refit terminal manifest与上下游runtime paths。focused=25/25，XEditFlow/gui
 96/96，compile/JSON/diff-check PASS。producer未运行、configs/targets/checkpoints均未materialize、attempts不变，
 protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_config_producer_v1.json`。
+
+## XEditFlow V4 frozen value-checkpoint loader（2026-08-24）
+
+`load_value_checkpoint_v4`已实现SMC前的严格checkpoint identity检查：seed、`kappa/temperature`、三critic members、
+final pass8、模型拓扑、八mode、endpoint vocab、真实参数更新和无CPU fallback全部匹配后才实例化
+`XEditValueV4`并strict-load。formal checkpoint尚不存在且未加载，SMC未启动。
+
+相邻测试16/16；一次不存在的独立SMC测试路径先产生`no tests ran`，随后使用实际guidance runtime测试完成验证。
+完整XEditFlow/guidance 202/202、精确V3.3.2 96/96、compile/diff-check PASS；attempt/protected read均不变，
+A100 current-HEAD测试等待旧C3。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_checkpoint_loader_v1.json`。

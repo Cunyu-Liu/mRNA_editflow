@@ -13,6 +13,7 @@ from core.route2_xeditflow_guidance_v4 import XEditValueV4
 from core.route2_xeditflow_value_training_v4 import (
     assemble_value_targets_v4,
     collate_value_targets_v4,
+    load_value_checkpoint_v4,
     require_value_training_authorization_v4,
     value_distillation_loss_v4,
     value_target_records_v4,
@@ -192,3 +193,66 @@ def test_v4_value_collation_and_model_gradient_include_trajectory_mode() -> None
     assert model.trajectory_mode.weight.grad is not None
     assert model.trajectory_mode.weight.grad[[0, 7]].abs().sum().item() > 0.0
     assert model(batch).shape == (2,)
+
+
+def _checkpoint() -> dict:
+    model_config = {
+        "assay_count": 2,
+        "context_count": 2,
+        "quantity_count": 2,
+        "measurement_count": 3,
+        "numerator_count": 1,
+        "denominator_count": 1,
+        "dropout": 0.1,
+    }
+    model = XEditValueV4(**model_config)
+    return {
+        "schema_version": "route_a_v3_route2_xeditflow_value_checkpoint.v4",
+        "model_state_dict": model.state_dict(),
+        "model_config": {
+            **model_config,
+            "blocks": 6,
+            "width": 384,
+            "heads": 8,
+            "ffn_width": 1536,
+            "trajectory_mode_count": 8,
+        },
+        "base_flow_training_seed": 20260912,
+        "critic_seeds": [20260908, 20260909, 20260910],
+        "kappa": 0.5,
+        "temperature": 1.0,
+        "selected_pass": 8,
+        "checkpoint_selection": "FINAL_PASS_8_NO_EPOCH_RESELECTION",
+        "training_provenance": {
+            "optimizer_steps": 10,
+            "parameter_changed": True,
+            "cpu_fallback_used": False,
+        },
+    }
+
+
+def test_v4_value_checkpoint_loader_requires_frozen_identity(
+    tmp_path,
+) -> None:
+    path = tmp_path / "value.pt"
+    torch.save(_checkpoint(), path)
+    model = load_value_checkpoint_v4(
+        path,
+        base_flow_training_seed=20260912,
+        kappa=0.5,
+        temperature=1.0,
+        device=torch.device("cpu"),
+    )
+    assert isinstance(model, XEditValueV4)
+    assert model.training is False
+    changed = _checkpoint()
+    changed["selected_pass"] = 6
+    torch.save(changed, path)
+    with pytest.raises(Exception, match="frozen final pass"):
+        load_value_checkpoint_v4(
+            path,
+            base_flow_training_seed=20260912,
+            kappa=0.5,
+            temperature=1.0,
+            device=torch.device("cpu"),
+        )

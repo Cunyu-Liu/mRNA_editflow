@@ -1789,6 +1789,17 @@ rollout、1个三成员scorer、1个六包target builder及6个value-training co
 V3.3.2=96/96，compile/JSON/diff-check PASS；protected read=0，A100测试仍等待旧C3 terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_config_producer_v1.json`。
 
+## XEditFlow V4 frozen value-checkpoint loader（2026-08-24）
+
+新增V4 scalar-potential checkpoint loader，正式SMC只能加载与base-flow seed、`kappa/temperature`、三名critic
+seed完全一致的final-pass-8 checkpoint；6×384×8-head×FFN1536、八mode、完整endpoint vocab和dropout配置均
+严格核对。checkpoint还必须有实际optimizer update且未使用CPU fallback，state dict严格加载。
+
+本项未加载formal checkpoint、未运行SMC或新增attempt。相邻测试16/16；首次命令误含一个尚不存在的独立SMC
+test路径，未运行测试，随后改用现有guidance runtime测试并通过。完整XEditFlow/guidance=202/202、V3.3.2=96/96、
+compile/diff-check PASS；protected read=0，A100测试继续等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_checkpoint_loader_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此
