@@ -122,6 +122,7 @@ def test_v4_target_builder_writes_exact_six_packages_without_beta(tmp_path) -> N
         "setflow_confirmation_path": str(tmp_path / "flow.json"),
         "rollout_summary_path": str(tmp_path / "rollout_summary.json"),
         "critic_score_summary_path": str(tmp_path / "score_summary.json"),
+        "output_root": str(tmp_path / "targets"),
     }
     result = build(config, output_root=tmp_path / "targets")
     assert result["package_count"] == 6

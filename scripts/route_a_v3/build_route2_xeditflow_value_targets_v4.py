@@ -77,6 +77,10 @@ def build(config: dict[str, Any], *, output_root: Path) -> dict[str, Any]:
         "V4 value target grid changed",
     )
     _require(
+        output_root == Path(str(config.get("output_root", ""))),
+        "V4 value target output path differs from frozen config",
+    )
+    _require(
         not output_root.exists(),
         f"terminal V4 value target grid already exists: {output_root}",
     )

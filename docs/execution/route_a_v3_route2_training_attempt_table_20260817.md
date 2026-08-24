@@ -1777,6 +1777,18 @@ XEditFlow/guidance=198/198，V3.3.2=96/96，compile/diff-check PASS；protected 
 测试继续等待五个旧C3作业terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_target_grid_builder_v1.json`。
 
+## XEditFlow V4 value execution config producer与readiness路径修复（2026-08-24）
+
+V4 guidance protocol原先将critic readiness指向未被composer写出的`posttest_v1/readiness.json`；现已与冻结
+post-TEST protocol的实际输出`guidance_readiness_v1.json`统一，并显式冻结refit terminal manifest、三份refit
+runtime、三份SetFlow confirmation runtime及value执行批量预算。该修复发生在任何guidance授权或运行前。
+
+新增producer只在精确joint authorization、三refit、SetFlow G0与source-level audit均PASS后，生成1个mode-fixed
+rollout、1个三成员scorer、1个六包target builder及6个value-training configs；TRAIN source数从冻结audit绑定，
+不用临时常数。未materialize configs、未新增attempt。focused=25/25，完整XEditFlow/guidance=201/201，
+V3.3.2=96/96，compile/JSON/diff-check PASS；protected read=0，A100测试仍等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_config_producer_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

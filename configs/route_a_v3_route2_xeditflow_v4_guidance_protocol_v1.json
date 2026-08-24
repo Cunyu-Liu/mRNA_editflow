@@ -1,10 +1,27 @@
 {
   "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_protocol.v1",
   "status": "FROZEN_PROSPECTIVE_BEFORE_V4_GUIDANCE_AUTHORIZATION_OR_OUTCOME_READ",
-  "critic_readiness_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/posttest_v1/readiness.json",
+  "critic_readiness_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/guidance_readiness_v1.json",
   "setflow_confirmation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v1/confirmation_gate.json",
+  "critic_refit_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1/refit_manifest.json",
+  "critic_refit_runtime_config_paths": {
+    "20260908": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1/seed_20260908.json",
+    "20260909": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1/seed_20260909.json",
+    "20260910": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1/seed_20260910.json"
+  },
+  "setflow_confirmation_runtime_config_paths": {
+    "20260912": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v1/seed_20260912.json",
+    "20260913": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v1/seed_20260913.json",
+    "20260914": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v1/seed_20260914.json"
+  },
+  "train_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+  "source_token_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
+  "source_level_data_audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/source_level_data_audit.json",
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "authorization_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditflow_v4/guidance_v1/guidance_authorization.json",
   "guidance_screen_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditflow_v4/guidance_v1/screen_seed_20260912",
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditflow_v4/guidance_screen_v1",
   "required_critic_status": "CRITIC_V4_READY_FOR_GUIDANCE",
   "required_setflow_status": "XEDITSETFLOW_V4_G0_READY",
   "base_flow_screen_seed": 20260912,
@@ -67,6 +84,16 @@
     "precision": "BF16",
     "checkpoint_selection": "FINAL_PASS_8_NO_EPOCH_RESELECTION",
     "independent_evaluator_in_targets_or_gradient": false
+  },
+  "value_runtime": {
+    "sampling_state_batch_size": 32,
+    "trajectory_forward_batch_size": 64,
+    "critic_candidate_batch_size": 128,
+    "bottom_six_maximum_sequences_per_batch": 8,
+    "bottom_six_batch_token_budget": 4096,
+    "attention_backend": "PYTORCH_SDPA_AUTO",
+    "fixed_seed_replay_check": true,
+    "value_training_gpu_assignment": "ROUND_ROBIN_ACROSS_DECLARED_GPU_0_TO_5"
   },
   "smc": {
     "particles": 32,

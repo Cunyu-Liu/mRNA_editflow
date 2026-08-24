@@ -3683,3 +3683,16 @@ protected read=0；A100 current-HEAD测试等待旧C3。审计：
 本地新增/相邻6/6，XEditFlow/guidance 198/198，精确V3.3.2 96/96，compile/diff-check PASS。builder未执行、
 target packages未materialize、optimizer attempts不变，protected read=0；A100 current-HEAD测试等待旧C3
 terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_value_target_grid_builder_v1.json`。
+
+## XEditFlow V4 value execution config producer与readiness路径修复（2026-08-24）
+
+`prepare_route2_xeditflow_v4_value_configs.py`现把联合readiness后的执行链一次性固定为1个rollout job、1个
+三成员critic-score job、6个`kappa×temperature` targets和6个value training jobs；每个训练config预绑定
+source cache、ledger、CUDA0–5之一、8 passes/final-pass-8，且不含`beta_max`。state/rollout总数由冻结
+source-level audit的TRAIN unique-source count按`source×4×8`唯一确定。
+
+同时修复V4 guidance protocol的critic readiness路径，使其与post-TEST composer的真实冻结输出一致，并补全
+refit terminal manifest与上下游runtime paths。focused=25/25，XEditFlow/guidance 201/201，精确V3.3.2
+96/96，compile/JSON/diff-check PASS。producer未运行、configs/targets/checkpoints均未materialize、attempts不变，
+protected read=0；A100 current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_value_config_producer_v1.json`。

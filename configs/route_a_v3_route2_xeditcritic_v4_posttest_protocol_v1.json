@@ -23,7 +23,8 @@
     "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION",
     "authorization_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1/launch_authorization.json",
     "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/all_development_refit_v1",
-    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1"
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1",
+    "terminal_manifest_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/all_development_refit_v1/refit_manifest.json"
   },
   "test_preserving_loso": {
     "held_out_studies": [
