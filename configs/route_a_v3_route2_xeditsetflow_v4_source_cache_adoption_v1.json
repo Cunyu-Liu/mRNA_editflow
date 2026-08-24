@@ -1,0 +1,19 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_config.v1",
+  "status": "FROZEN_BEFORE_V4_READ_ONLY_CACHE_ADOPTION",
+  "legacy_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
+  "legacy_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.summary.json",
+  "adoption_receipt_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v4/source_token_cache_v3_adoption_receipt_v1.json",
+  "expected_model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "expected_projection_record_count": 107873,
+  "expected_eligible_record_count": 84218,
+  "expected_unique_source_count": 19303,
+  "expected_token_count": 2817781,
+  "expected_maximum_source_length": 837,
+  "expected_embedding_width": 768,
+  "legacy_artifact_policy": "READ_ONLY_NO_REBUILD_NO_OVERWRITE",
+  "encoder_forward_count": 0,
+  "parameter_update_count": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

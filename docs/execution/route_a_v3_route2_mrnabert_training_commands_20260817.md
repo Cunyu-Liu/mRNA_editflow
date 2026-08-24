@@ -4016,3 +4016,17 @@ cache/preflight/optimizer均未运行，Development TEST/new Evaluation read=0�
 执行，A100 current-HEAD Git sync继续受五项terminal barrier约束。监控任务没有代码变化，因此没有重复
 focused/V3.3.2测试。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_014743.json`。
+
+## SetFlow V4 read-only source-cache adoption focused record（2026-08-25）
+
+修复V4正式执行前的terminal-artifact冲突。SetFlow V3 `source_token_cache_v1.pt`已经是4.33GB终态产物并通过
+全量loader validation；因此V4不再要求其summary缺失，也不再调用V3 cache builder。新adoption executor只在
+C3 read-once与A100 exact-current-HEAD tests授权后打开旧summary/payload，核对同一model revision、84,218 records、
+19,303 sources、2,817,781 tokens、length837、width768、token/chunk policy与outcome isolation，并写独立
+current-HEAD receipt。旧`.pt`和旧summary保持字节/文本不变；无encoder forward、无参数更新、无CPU训练fallback。
+
+formal authorizer现在拒绝直接把旧summary冒充current-HEAD provenance，只接受上述read-only receipt；SetFlow
+preflight仍会再次从实际payload生成identity receipt。focused 27/27、SetFlow V4 64/64、Critic V4 83/83、
+精确V3.3.2 96/96、compile/JSON/diff-check与项目外scheduler smoke均PASS。尚未执行A100 adoption、Critic cache、
+preflight或optimizer，Development TEST/new Evaluation read=0，下一C3检查仍不早于本地02:45:28。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_read_only_source_cache_adoption_v1.json`。

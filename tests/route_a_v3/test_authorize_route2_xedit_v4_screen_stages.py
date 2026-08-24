@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from scripts.route_a_v3 import build_route2_mrnabert_bottom_six_cache_v4
-from scripts.route_a_v3 import build_route2_xeditsetflow_source_token_cache_v3
+from scripts.route_a_v3 import adopt_route2_xeditsetflow_v4_source_token_cache
 from scripts.route_a_v3.authorize_route2_xedit_v4_screen_stages import (
     build_cache_launch_authorization_v4,
     build_preflight_authorization_v4,
@@ -85,25 +85,22 @@ def _critic_cache():
 
 def _flow_cache():
     return {
-        "schema_version": "route_a_v3_route2_setflow_source_token_cache_summary.v3",
-        "status": "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE",
-        "projection_record_count": 107873,
-        "eligible_record_count": 84218,
-        "unique_source_count": 19303,
-        "unique_source_token_count": 2817781,
-        "maximum_source_length": 837,
-        "embedding_width": 768,
-        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
-        "raw_sequence_payload_written": 0,
-        "outcome_value_access_count": 0,
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_receipt.v1",
+        "status": "XEDITSETFLOW_V4_SOURCE_CACHE_ADOPTED_READ_ONLY",
         "git_head": HEAD,
         "cache_launch_authorization_status": "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED",
-        "physical_gpu_index": 0,
-        "cuda_device_name": "NVIDIA A100-SXM4-40GB",
-        "forward_precision": "BF16",
-        "cpu_fallback": False,
-        "development_test_outcomes_accessed": False,
-        "evaluation_outcomes_accessed": False,
+        "legacy_summary_schema_version": "route_a_v3_route2_setflow_source_token_cache_summary.v3",
+        "legacy_summary_status": "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE",
+        "legacy_artifact_policy": "READ_ONLY_NO_REBUILD_NO_OVERWRITE",
+        "source_token_cache_identity": _flow_cache_receipt(),
+        "encoder_forward_count": 0,
+        "parameter_update_count": 0,
+        "cpu_fallback_used": False,
+        "identity_validation_map_location": "CPU_READ_ONLY",
+        "legacy_payload_modified": False,
+        "legacy_summary_modified": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
     }
 
 
@@ -189,63 +186,66 @@ def test_cache_runtime_policy_is_exact_gpu_zero_to_five_bf16_no_cpu_fallback() -
         require_cache_runtime_policy_v4(config)
 
 
-def test_cache_builders_require_authorization_before_projection_and_bind_runtime() -> None:
-    cache_configs = (
-        ROOT / "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json",
-        ROOT / "configs/route_a_v3_route2_xeditsetflow_v3_source_token_cache_v1.json",
+def test_cache_preparation_requires_authorization_before_any_payload_read() -> None:
+    critic_config = json.loads(
+        (ROOT / "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json").read_text()
     )
-    for path in cache_configs:
-        config = json.loads(path.read_text(encoding="utf-8"))
-        assert require_cache_runtime_policy_v4(config) == 0
-
-    builders = (
-        ROOT / "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py",
-        ROOT / "scripts/route_a_v3/build_route2_xeditsetflow_source_token_cache_v3.py",
+    assert require_cache_runtime_policy_v4(critic_config) == 0
+    adoption_config = json.loads(
+        (ROOT / "configs/route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_v1.json").read_text()
     )
-    for path in builders:
-        source = path.read_text(encoding="utf-8")
-        assert "parser.add_argument(\"--authorization\", required=True" in source
-        assert "CUDA_VISIBLE_DEVICES remapping is forbidden" in source
-        assert "torch.cuda.is_bf16_supported()" in source
-        assert source.index("require_cache_launch_authorization_v4(") < source.index(
-            "load_projection_rows("
-        )
+    assert adoption_config["legacy_artifact_policy"] == "READ_ONLY_NO_REBUILD_NO_OVERWRITE"
+
+    critic_source = (
+        ROOT / "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py"
+    ).read_text()
+    assert "parser.add_argument(\"--authorization\", required=True" in critic_source
+    assert "CUDA_VISIBLE_DEVICES remapping is forbidden" in critic_source
+    assert "torch.cuda.is_bf16_supported()" in critic_source
+    assert critic_source.index("require_cache_launch_authorization_v4(") < critic_source.index(
+        "load_projection_rows("
+    )
+
+    adoption_source = (
+        ROOT / "scripts/route_a_v3/adopt_route2_xeditsetflow_v4_source_token_cache.py"
+    ).read_text()
+    assert "parser.add_argument(\"--authorization\", required=True" in adoption_source
+    assert adoption_source.index("require_cache_launch_authorization_v4(") < adoption_source.index(
+        "load_source_token_cache_v3("
+    )
 
 
-def test_cache_builders_fail_before_config_cuda_or_projection_without_authorization(
+def test_cache_preparation_fails_before_config_cuda_or_payload_without_authorization(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    for module in (
-        build_route2_mrnabert_bottom_six_cache_v4,
-        build_route2_xeditsetflow_source_token_cache_v3,
+    for module, entrypoint in (
+        (build_route2_mrnabert_bottom_six_cache_v4, "build"),
+        (adopt_route2_xeditsetflow_v4_source_token_cache, "adopt"),
     ):
         monkeypatch.setattr(module, "_git_head", lambda: HEAD)
         with pytest.raises(Exception, match="launch authorization is absent"):
-            module.build({}, {})
+            getattr(module, entrypoint)({}, {})
 
 
 def test_cache_builders_reject_gpu_six_before_cuda_initialization(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    for component, module in (
-        ("critic", build_route2_mrnabert_bottom_six_cache_v4),
-        ("setflow", build_route2_xeditsetflow_source_token_cache_v3),
-    ):
-        monkeypatch.setattr(module, "_git_head", lambda: HEAD)
-        authorization = build_cache_launch_authorization_v4(
-            component, _c3(), _a100(), current_git_head=HEAD
-        )
-        config = {
-            "device": "cuda:6",
-            "gpu_policy": {
-                "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
-                "cuda_bf16_only": True,
-                "cpu_fallback": False,
-                "cuda_visible_devices_remapping_forbidden": True,
-            },
-        }
-        with pytest.raises(Exception, match="outside physical GPU"):
-            module.build(config, authorization)
+    module = build_route2_mrnabert_bottom_six_cache_v4
+    monkeypatch.setattr(module, "_git_head", lambda: HEAD)
+    authorization = build_cache_launch_authorization_v4(
+        "critic", _c3(), _a100(), current_git_head=HEAD
+    )
+    config = {
+        "device": "cuda:6",
+        "gpu_policy": {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+            "cuda_visible_devices_remapping_forbidden": True,
+        },
+    }
+    with pytest.raises(Exception, match="outside physical GPU"):
+        module.build(config, authorization)
 
 
 def test_preflight_authorizations_supply_exact_runner_barriers() -> None:
@@ -308,10 +308,19 @@ def test_preflight_authorization_rejects_wrong_cache_identity() -> None:
         )
 
     flow_cache = _flow_cache()
-    flow_cache["model_id"] = "another-model"
-    with pytest.raises(Exception, match="not terminal and isolated"):
+    flow_cache["source_token_cache_identity"]["model_id"] = "another-model"
+    with pytest.raises(Exception, match="revision changed"):
         build_preflight_authorization_v4(
             "setflow", _c3(), _a100(), flow_cache, current_git_head=HEAD
+        )
+
+    legacy_summary = {
+        "schema_version": "route_a_v3_route2_setflow_source_token_cache_summary.v3",
+        "status": "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE",
+    }
+    with pytest.raises(Exception, match="read-only adoption"):
+        build_preflight_authorization_v4(
+            "setflow", _c3(), _a100(), legacy_summary, current_git_head=HEAD
         )
 
 
@@ -325,7 +334,7 @@ def test_preflight_authorization_rejects_cache_without_current_launch_provenance
 
     stale = _flow_cache()
     stale["git_head"] = "b" * 40
-    with pytest.raises(Exception, match="launch provenance"):
+    with pytest.raises(Exception, match="read-only adoption"):
         build_preflight_authorization_v4(
             "setflow", _c3(), _a100(), stale, current_git_head=HEAD
         )

@@ -227,45 +227,57 @@ def _require_cache(
             and int(cache.get("label_or_outcome_payload_written", -1)) == 0,
             "Critic V4 bottom-six cache is not terminal and isolated",
         )
+        _require(
+            cache.get("development_test_outcomes_accessed") is False
+            and cache.get("evaluation_outcomes_accessed") is False,
+            "critic cache reports a protected outcome read",
+        )
+        _require(
+            str(cache.get("git_head")) == str(current_git_head)
+            and cache.get("cache_launch_authorization_status")
+            == "XEDITCRITIC_V4_CACHE_LAUNCH_AUTHORIZED"
+            and isinstance(cache.get("physical_gpu_index"), int)
+            and not isinstance(cache.get("physical_gpu_index"), bool)
+            and int(cache["physical_gpu_index"]) in {0, 1, 2, 3, 4, 5}
+            and bool(str(cache.get("cuda_device_name", "")))
+            and cache.get("forward_precision") == "BF16"
+            and cache.get("cpu_fallback") is False,
+            "critic cache launch provenance is absent or stale",
+        )
     else:
         _require(
             cache.get("schema_version")
+            == "route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_receipt.v1"
+            and cache.get("status")
+            == "XEDITSETFLOW_V4_SOURCE_CACHE_ADOPTED_READ_ONLY"
+            and str(cache.get("git_head")) == str(current_git_head)
+            and cache.get("cache_launch_authorization_status")
+            == "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED"
+            and cache.get("legacy_summary_schema_version")
             == "route_a_v3_route2_setflow_source_token_cache_summary.v3"
-            and cache.get("status") == "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE"
-            and int(cache.get("projection_record_count", -1)) == 107873
-            and int(cache.get("eligible_record_count", -1)) == 84218
-            and int(cache.get("unique_source_count", -1)) == 19303
-            and int(cache.get("unique_source_token_count", -1)) == 2817781
-            and int(cache.get("maximum_source_length", -1)) == 837
-            and int(cache.get("embedding_width", -1)) == 768
-            and str(cache.get("model_id"))
-            == "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40"
-            and int(cache.get("raw_sequence_payload_written", -1)) == 0
-            and int(cache.get("outcome_value_access_count", -1)) == 0,
-            "SetFlow source-token cache is not terminal and isolated",
+            and cache.get("legacy_summary_status")
+            == "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE"
+            and cache.get("legacy_artifact_policy")
+            == "READ_ONLY_NO_REBUILD_NO_OVERWRITE"
+            and int(cache.get("encoder_forward_count", -1)) == 0
+            and int(cache.get("parameter_update_count", -1)) == 0
+            and cache.get("legacy_payload_modified") is False
+            and cache.get("legacy_summary_modified") is False
+            and cache.get("cpu_fallback_used") is False
+            and cache.get("identity_validation_map_location") == "CPU_READ_ONLY"
+            and int(cache.get("development_test_outcome_reads", -1)) == 0
+            and int(cache.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            "SetFlow source-token cache read-only adoption is absent or stale",
         )
-    _require(
-        cache.get("development_test_outcomes_accessed") is False
-        and cache.get("evaluation_outcomes_accessed") is False,
-        f"{component} cache reports a protected outcome read",
-    )
-    expected_authorization_status = (
-        "XEDITCRITIC_V4_CACHE_LAUNCH_AUTHORIZED"
-        if component == "critic"
-        else "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED"
-    )
-    _require(
-        str(cache.get("git_head")) == str(current_git_head)
-        and cache.get("cache_launch_authorization_status")
-        == expected_authorization_status
-        and isinstance(cache.get("physical_gpu_index"), int)
-        and not isinstance(cache.get("physical_gpu_index"), bool)
-        and int(cache["physical_gpu_index"]) in {0, 1, 2, 3, 4, 5}
-        and bool(str(cache.get("cuda_device_name", "")))
-        and cache.get("forward_precision") == "BF16"
-        and cache.get("cpu_fallback") is False,
-        f"{component} cache launch provenance is absent or stale",
-    )
+        require_source_token_cache_identity_receipt_v3(
+            cache.get("source_token_cache_identity"),
+            expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+            expected_record_count=84218,
+            expected_unique_source_count=19303,
+            expected_token_count=2817781,
+            expected_maximum_source_length=837,
+            expected_embedding_width=768,
+        )
 
 
 def build_preflight_authorization_v4(

@@ -1,0 +1,66 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_read_only_source_cache_adoption.v1",
+  "status": "XEDITSETFLOW_V4_READ_ONLY_SOURCE_CACHE_ADOPTION_IMPLEMENTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:09:14+08:00",
+  "implementation_parent_git_head": "07d4b7f0a3d64f8ef0babf93923a18ceea7bf721",
+  "problem_closed": {
+    "terminal_v3_cache_already_exists": true,
+    "legacy_cache_size_bytes": 4332870924,
+    "old_launcher_would_require_summary_absent_and_rebuild": true,
+    "v4_protocol_requires_v3_artifacts_read_only": true,
+    "old_launcher_and_protocol_were_in_conflict": true
+  },
+  "frozen_legacy_identity": {
+    "cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
+    "summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.summary.json",
+    "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+    "eligible_record_count": 84218,
+    "unique_source_count": 19303,
+    "token_count": 2817781,
+    "maximum_source_length": 837,
+    "embedding_width": 768,
+    "dtype": "FLOAT16",
+    "raw_sequence_payload_written": 0,
+    "development_test_record_count": 0,
+    "evaluation_record_count": 0
+  },
+  "implementation": {
+    "config": "configs/route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_v1.json",
+    "executor": "scripts/route_a_v3/adopt_route2_xeditsetflow_v4_source_token_cache.py",
+    "receipt_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v4/source_token_cache_v3_adoption_receipt_v1.json",
+    "legacy_policy": "READ_ONLY_NO_REBUILD_NO_OVERWRITE",
+    "actual_tensor_payload_identity_validated": true,
+    "legacy_summary_and_payload_path_binding_required": true,
+    "current_git_head_bound": true,
+    "c3_and_a100_authorization_required_before_payload_open": true,
+    "encoder_forward_count": 0,
+    "parameter_update_count": 0,
+    "legacy_payload_modified": false,
+    "legacy_summary_modified": false,
+    "preflight_and_screen_authorizer_consume_adoption_receipt": true,
+    "critic_v4_bottom_six_cache_still_constructed_new": true
+  },
+  "verification": {
+    "adoption_and_authorizer_focused": "27/27 PASS",
+    "setflow_v4_related": "64/64 PASS",
+    "critic_v4_related": "83/83 PASS",
+    "exact_local_v332": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS",
+    "projectless_screen_scheduler_smoke": "PASS"
+  },
+  "execution_state": {
+    "c3_terminal_count": 0,
+    "a100_current_head_sync_executed": false,
+    "cache_adoption_authorization_materialized": false,
+    "adoption_receipt_materialized": false,
+    "critic_bottom_six_cache_materialized": false,
+    "formal_preflight_executed": false,
+    "optimizer_attempt_created": false,
+    "validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "PROVENANCE_AND_EXECUTION_ORDER_FIX_ONLY_NO_MODEL_PERFORMANCE_OR_PUBLICATION_CLAIM"
+}

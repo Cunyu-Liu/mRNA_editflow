@@ -3039,3 +3039,20 @@ active curve、Development TEST或new Evaluation outcome，未新增optimizer at
 监控任务没有仓库代码变化，因此没有重复已通过的focused/V3.3.2测试。远端偏移仍为+135秒；下一远端/本地
 窗口分别不早于02:47:43/02:45:28。科学claim保持NOT_ESTABLISHED。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_014743.json`。
+
+## SetFlow V4 terminal V3 source-cache read-only adoption（2026-08-25）
+
+执行链核查发现：SetFlow V3 source-token cache早已terminal并通过全量loader验证，实际payload为
+4,332,870,924 bytes、84,218 records、19,303 sources、2,817,781×768 float16 tokens；V4协议同时冻结
+`v3_artifacts_read_only=true`。此前新cache launcher却要求旧summary不存在并再次调用V3 builder，既会在当前
+真实状态硬失败，也与“不重复/不覆盖terminal V3 artifact”冲突。
+
+现改为只读adoption：C3五项terminal/read-once及A100 exact-current-HEAD tests通过后，独立executor验证旧summary
+指向同一`.pt`、完整加载实际tensor payload并生成current-HEAD adoption receipt；旧payload与summary不修改，
+encoder forward与parameter update均为0。SetFlow preflight/screen authorizer消费新receipt；Critic V4 bottom-six
+cache仍按冻结协议新建。旧V3 builder与terminal artifact均未删除或覆盖。
+
+adoption/authorizer focused 27/27、SetFlow V4相关64/64、Critic V4相关83/83、精确V3.3.2 96/96、
+compile/JSON/diff-check及项目外screen scheduler smoke均PASS。正式receipt尚未materialize，cache/preflight/
+optimizer/Validation generation均未执行，protected read=0；科学claim不变。下一C3检查仍不早于本地02:45:28。
+审计：`audits/route_a_v3_route2_xeditsetflow_v4_read_only_source_cache_adoption_v1.json`。
