@@ -1,0 +1,40 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_matched_control_core_audit.v1",
+  "status": "XEDITFLOW_V4_MATCHED_CONTROL_CORE_IMPLEMENTED_NOT_RUN",
+  "date": "2026-08-24",
+  "predecessor_head": "13b7da4",
+  "methods": [
+    "unguided_setflow",
+    "first_order_guidance",
+    "simple_rate_guidance"
+  ],
+  "mechanism": {
+    "setflow_mode_is_fixed_trajectory_state": true,
+    "resampling_copies_complete_mode_state": true,
+    "free_action_ratio_head_used": false,
+    "unguided_potential": "ZERO",
+    "first_order_anchor": "SOURCE",
+    "simple_rate_potential": "EXACT_CURRENT_FROZEN_CRITIC_REWARD",
+    "critic_forward_is_not_value_forward": true,
+    "round_merge_adds_trajectory_and_terminal_critic_calls": true
+  },
+  "tests": {
+    "focused_passed": 31,
+    "focused_failed": 0,
+    "xeditflow_guidance_passed": 237,
+    "xeditflow_guidance_failed": 0,
+    "v332_passed": 96,
+    "v332_failed": 0
+  },
+  "execution": {
+    "gpu_runner_implemented": false,
+    "runtime_config_materialized": false,
+    "generation_run": false,
+    "optimizer_attempt_created": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "a100_current_head_tests_run": false,
+    "a100_current_head_blocker": "FIVE_OLD_C3_LAUNCH_HEAD_JOBS_NOT_ALL_TERMINAL"
+  },
+  "claim_status": "NOT_ESTABLISHED_SOFTWARE_ONLY"
+}

@@ -2755,3 +2755,17 @@ regret→independent-evaluator margin→open recovery→compute顺序冻结唯�
 independent evaluator没有执行新推理，Validation generation/closed metrics、optimizer和protected outcome均未读取；
 attempt数与论文claim不变。A100 current-HEAD测试仍等待五个旧C3作业自然terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_independent_evaluator_screen_chain_v1.json`。
+
+## XEditFlow V4 mode-fixed matched-control core（2026-08-24）
+
+新增V4专用unguided SetFlow、source-anchored first-order guidance和exact-current-critic simple-rate guidance
+核心。三者均继承八mode root allocation，mode在完整trajectory及resampling lineage中固定；shared trunk、八mode
+heads和三名critic members分别计费。unguided严格使用零势函数且critic/value forward均为0；first-order只在source
+处估计单edit系数并跨mode复用；simple-rate使用冻结critic当前状态reward差值，不把critic inference伪记为value
+network forward。free action-ratio head仍不存在。
+
+同时修复`merge_smc_rounds_v4`：它现在在terminal critic reservation之上累加每轮轨迹内的真实critic calls；原
+full soft-value路径每轮该值为0，因此既有结果不变，而first-order/simple-rate不会再低估matched compute。
+本地focused/相邻31/31、XEditFlow/guidance 237/237、V3.3.2 96/96 PASS。尚未实现/运行GPU matched-control
+runner，未新增attempt、runtime artifact或protected read，claim不变；A100 current-HEAD测试等待旧C3 terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。

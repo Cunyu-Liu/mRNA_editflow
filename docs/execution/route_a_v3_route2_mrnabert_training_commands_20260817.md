@@ -3787,3 +3787,15 @@ value和三名critic member分别计费、reservation已闭合、所有failure c
 materialize config、运行evaluator/metric/optimizer或读取Development TEST/new Evaluation。A100 current-HEAD测试
 仍受五个旧C3 launch-head作业terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditflow_v4_independent_evaluator_screen_chain_v1.json`。
+
+## XEditFlow V4 mode-fixed matched controls核心（2026-08-24）
+
+`route2_xeditflow_matched_methods_v4.py`现提供最终three-seed comparison所需的三类同源控制：零势函数unguided、
+source-anchored additive first-order critic，以及exact current-critic simple-rate。每个32-particle round保留
+trajectory mode，resampling复制完整mode state；rate仍来自相同V4 SetFlow proposal，不创建free ratio head。
+Critic-derived控制的三名member forwards进入`critic_forwards_by_member`，`value_forwards`保持0。
+
+通用V4 round merger也已改为累加轨迹内critic calls，再加terminal reservation；这修复了未来controls的可达
+低计费路径，同时不改变每轮critic=0的full soft-value SMC。本地focused 31/31、XEditFlow/guidance 237/237、
+V3.3.2 96/96 PASS。GPU runner/config尚未实现或执行，optimizer/protected read均为0。审计：
+`audits/route_a_v3_route2_xeditflow_v4_matched_control_core_v1.json`。

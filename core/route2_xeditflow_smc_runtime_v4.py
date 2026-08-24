@@ -176,6 +176,10 @@ def merge_smc_rounds_v4(
         trunk += int(compute["trunk_forwards"])
         mode += int(compute["mode_forwards"])
         value += int(compute["value_forwards"])
+        for member_index, count in enumerate(
+            compute["critic_forwards_by_member"]
+        ):
+            critic_counts[member_index] += int(count)
         trajectories += int(compute["trajectory_count"])
         wall_time += float(compute["wall_time_seconds"])
         peak_vram = max(peak_vram, float(compute.get("peak_vram_mb", 0.0)))
