@@ -70,6 +70,22 @@ def test_v4_screen_capacity_and_memory_preflight_cannot_silently_shrink() -> Non
     assert memory["artificial_padding_or_unused_tensor"] is False
 
 
+def test_v4_cache_online_alignment_cohort_and_tolerances_are_frozen() -> None:
+    alignment = _load()["cache_online_alignment"]
+    assert alignment == {
+        "sequence_count": 8,
+        "selection": "LENGTH_SORTED_EVEN_QUANTILES_OVER_LEXICOGRAPHIC_CACHE_SEQUENCE_INDICES",
+        "maximum_absolute_tolerance": 0.02,
+        "mean_absolute_tolerance": 0.005,
+        "maximum_sequences_per_batch": 8,
+        "batch_token_budget": 4096,
+        "attention_backend": "PYTORCH_SDPA_AUTO",
+        "raw_sequence_payload_written": 0,
+        "target_value_accessed": False,
+        "validation_metric_read": False,
+    }
+
+
 def test_v4_screen_launch_is_blocked_until_c3_cache_tests_and_preflight_finish() -> None:
     barrier = _load()["launch_barrier"]
     assert len(barrier["c3_required_run_ids"]) == 5

@@ -8,10 +8,18 @@ import torch
 from scripts.route_a_v3.preflight_route2_xeditcritic_v4 import (
     XEditCriticPreflightV4Error,
     build_preflight_vocabs_v4,
+    cached_bottom_sequences_v4,
     preflight_example_v4,
     require_preflight_authorization_v4,
+    select_cache_online_alignment_sequences_v4,
     select_train_geometry_records_v4,
 )
+from core.route2_bottom_encoder_chunk_cache_v4 import (
+    BottomEncodedChunkV4,
+    BottomEncodedSequenceV4,
+    assemble_frozen_bottom_encoder_chunk_cache_v4,
+)
+from core.route2_mrnabert_edit_site_features_v3 import ChunkSpan
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -106,6 +114,65 @@ def test_geometry_selection_uses_train_edit_and_length_only() -> None:
     assert selected_ids[0] == "train-many-edits"
     assert "validation-many-edits" not in selected_ids
     assert len(selected_ids) == 32
+
+
+def test_cache_online_alignment_selection_is_outcome_free_length_stratified() -> None:
+    rows = [_row(f"r-{index}", "TRAIN", index + 4, 1) for index in range(10)]
+    sequences = sorted(
+        {
+            sequence
+            for row in rows
+            for sequence in (row["source_sequence"], row["candidate_sequence"])
+        }
+    )
+    payload = {"sequence_lengths": torch.tensor([len(value) for value in sequences])}
+    selected = select_cache_online_alignment_sequences_v4(rows, payload, count=4)
+    before = {index: len(value) for index, value in selected.items()}
+    for row in rows:
+        row["direction_normalized_delta"] *= -1e9
+    after = select_cache_online_alignment_sequences_v4(rows, payload, count=4)
+    assert {index: len(value) for index, value in after.items()} == before
+    assert min(before.values()) == min(map(len, sequences))
+    assert max(before.values()) == max(map(len, sequences))
+
+
+def test_cached_bottom_sequence_reconstruction_preserves_chunks_masks_and_globals() -> None:
+    source = "A" * 6
+    candidate = "CAAAAA"
+    encoded = {
+        0: BottomEncodedSequenceV4(
+            chunks=(
+                BottomEncodedChunkV4(
+                    span=ChunkSpan(0, 6),
+                    hidden=torch.arange(16, dtype=torch.float32).reshape(8, 2),
+                    attention_mask=torch.ones(8, dtype=torch.bool),
+                ),
+            ),
+            global_residual=torch.tensor([1.0, 2.0]),
+        ),
+        1: BottomEncodedSequenceV4(
+            chunks=(
+                BottomEncodedChunkV4(
+                    span=ChunkSpan(0, 6),
+                    hidden=torch.arange(16, 32, dtype=torch.float32).reshape(8, 2),
+                    attention_mask=torch.ones(8, dtype=torch.bool),
+                ),
+            ),
+            global_residual=torch.tensor([3.0, 4.0]),
+        ),
+    }
+    payload = assemble_frozen_bottom_encoder_chunk_cache_v4(
+        [_row("cache-row", "TRAIN", 6, 1)],
+        sequence_to_index={source: 0, candidate: 1},
+        encoded=encoded,
+        model_id="model",
+        pretrained_parameter_count=1,
+        attention_backend="PYTORCH_SDPA_AUTO",
+    )
+    reconstructed = cached_bottom_sequences_v4(payload, [0, 1])
+    assert reconstructed[0].chunks[0].span == ChunkSpan(0, 6)
+    assert torch.equal(reconstructed[0].chunks[0].attention_mask, torch.ones(8, dtype=torch.bool))
+    assert torch.equal(reconstructed[1].global_residual, torch.tensor([3.0, 4.0], dtype=torch.float16))
 
 
 def test_preflight_example_ignores_target_and_uses_structural_placeholders() -> None:

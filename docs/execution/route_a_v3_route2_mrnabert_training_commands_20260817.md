@@ -3983,3 +3983,15 @@ BF16-only、无CPU fallback及无设备重映射。两份冻结cache config已�
 diff-check均PASS。没有生成实际authorization，没有运行cache/preflight/optimizer或任何outcome metric，
 Development TEST/new Evaluation read仍为0。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_launch_authorization_binding_v1.json`。
+
+## Critic V4 cache/online CUDA equivalence focused record（2026-08-25）
+
+formal preflight现在在任何parameter/memory measurement之前，对实际bottom-six cache和共享online encoder执行
+冻结8-sequence、length-stratified equivalence。max/mean tolerance固定为0.02/0.005，attention backend固定
+`PYTORCH_SDPA_AUTO`；artifact只记录cache sequence index和length，不复制raw sequence。失败会形成terminal
+preflight PAUSE并禁止screen授权，不会为了进入显存测量而忽略数值漂移。
+
+本地focused/adjacent 39/39、完整Critic V4 82/82、精确V3.3.2 96/96 PASS，compile/JSON/diff-check PASS。
+本项尚未在A100执行；cache、preflight、optimizer和outcome metric均未产生，protected read=0，下一C3检查仍
+不早于本地01:44:53。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_cache_online_preflight_binding_v1.json`。

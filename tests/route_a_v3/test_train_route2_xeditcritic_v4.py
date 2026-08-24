@@ -43,6 +43,7 @@ def _authorization(config: dict) -> dict:
             "bottom_six_cache_terminal_complete": True,
             "formal_parameter_preflight_passed": True,
             "formal_memory_preflight_passed": True,
+            "cache_online_equivalence_passed": True,
         },
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,

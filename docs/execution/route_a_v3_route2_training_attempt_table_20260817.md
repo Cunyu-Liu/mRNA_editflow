@@ -2999,3 +2999,19 @@ Critic bottom-six和SetFlow source-token cache builder仍可在没有C3 read-onc
 当前只实现并验证代码；授权未materialize，cache/preflight/optimizer/inference均未运行，protected read=0。
 下一C3远端检查仍不得早于本地01:44:53。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_launch_authorization_binding_v1.json`。
+
+## Critic V4 cache/online equivalence preflight binding（2026-08-25）
+
+补齐协议明确要求但此前仅有共享函数/单元测试、没有正式CUDA执行入口的bottom-six cache/online数值一致门。
+Critic formal preflight现在先按outcome-free unique-sequence geometry选取8个长度分层等距quantile，覆盖最短至
+最长序列；只保留cache index与length，不在artifact写raw sequence。它从实际float16 cache重建chunk/span/mask/
+special offset/global residual，再用相同mRNABERT revision、相同SDPA backend和共享bottom-six forward在线编码。
+
+max absolute tolerance固定0.02，mean absolute tolerance固定0.005。任一超限会先写
+`XEDITCRITIC_V4_PREFLIGHT_PAUSE_CACHE_ONLINE_MISMATCH`并跳过参数量/显存测量；只有alignment PASS、参数量和
+20–35GB显存preflight均通过时，screen authorizer才写`cache_online_equivalence_passed=true`。该门不读取target、
+Validation metric、Development TEST或Evaluation outcome。
+
+本地定向/相邻39/39、完整Critic V4 82/82、精确V3.3.2 96/96、compile/JSON/diff-check PASS。正式CUDA
+alignment尚未执行，cache/preflight/optimizer仍为0，screen未授权，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_cache_online_preflight_binding_v1.json`。

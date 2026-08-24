@@ -187,6 +187,7 @@ def require_screen_launch_authorization_v4(
         "bottom_six_cache_terminal_complete",
         "formal_parameter_preflight_passed",
         "formal_memory_preflight_passed",
+        "cache_online_equivalence_passed",
     )
     _require(all(barriers.get(key) is True for key in required_true), "a Critic V4 launch barrier is not satisfied")
     _require(int(authorization.get("development_test_outcome_reads", -1)) == 0, "launch authorization reports a Development TEST read")

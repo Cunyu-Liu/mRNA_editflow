@@ -308,6 +308,7 @@ def build_screen_launch_authorization_v4(
         "a100_current_head_v332_tests_passed": True,
     }
     if component == "critic":
+        alignment = preflight.get("cache_online_alignment", {})
         _require(
             preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
             and preflight.get("passed") is True
@@ -321,6 +322,17 @@ def build_screen_launch_authorization_v4(
             and int(preflight.get("selected_physical_batch", -1)) in {4, 8, 16, 32},
             "Critic V4 formal parameter/memory preflight did not pass",
         )
+        _require(
+            alignment.get("passed") is True
+            and int(alignment.get("sequence_count", -1)) == 8
+            and float(alignment.get("maximum_absolute_tolerance", -1)) == 0.02
+            and float(alignment.get("mean_absolute_tolerance", -1)) == 0.005
+            and float(alignment.get("maximum_absolute_difference", float("inf"))) <= 0.02
+            and float(alignment.get("mean_absolute_difference", float("inf"))) <= 0.005
+            and alignment.get("target_value_accessed") is False
+            and alignment.get("validation_metric_read") is False,
+            "Critic V4 cache/online equivalence did not pass",
+        )
         require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
             preflight.get("bottom_six_cache_identity"),
             expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
@@ -333,6 +345,7 @@ def build_screen_launch_authorization_v4(
             "bottom_six_cache_terminal_complete": True,
             "formal_parameter_preflight_passed": True,
             "formal_memory_preflight_passed": True,
+            "cache_online_equivalence_passed": True,
         }
         schema = "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
         status = "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"

@@ -95,6 +95,18 @@
     "cpu_fallback": false,
     "artificial_padding_or_unused_tensor": false
   },
+  "cache_online_alignment": {
+    "sequence_count": 8,
+    "selection": "LENGTH_SORTED_EVEN_QUANTILES_OVER_LEXICOGRAPHIC_CACHE_SEQUENCE_INDICES",
+    "maximum_absolute_tolerance": 0.02,
+    "mean_absolute_tolerance": 0.005,
+    "maximum_sequences_per_batch": 8,
+    "batch_token_budget": 4096,
+    "attention_backend": "PYTORCH_SDPA_AUTO",
+    "raw_sequence_payload_written": 0,
+    "target_value_accessed": false,
+    "validation_metric_read": false
+  },
   "training": {
     "screen_seed": 20260907,
     "optimizer": "AdamW",

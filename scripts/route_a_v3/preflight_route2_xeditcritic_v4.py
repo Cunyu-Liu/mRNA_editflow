@@ -20,10 +20,13 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_bottom_encoder_chunk_cache_v4 import (
+    BottomEncodedChunkV4,
+    BottomEncodedSequenceV4,
     load_frozen_bottom_encoder_chunk_cache_v4,
     require_frozen_bottom_encoder_chunk_cache_identity_v4,
 )
 from core.route2_development_projection_v3 import load_projection_rows
+from core.route2_mrnabert_edit_site_features_v3 import ChunkSpan
 from core.route2_xeditcritic_batch_v4 import (
     FrozenBottomEncoderChunkCacheViewV4,
     XEditCriticCollatorV4,
@@ -43,6 +46,10 @@ from core.route2_xeditcritic_v4 import (
 )
 from scripts.route_a_v3.route2_mrnabert_upper_six_encoder_v4 import (
     TrainableMRNABERTUpperSixEncoderV4,
+)
+from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
+    FrozenMRNABERTBottomSixEncoderV4,
+    compare_bottom_encoded_sequences_v4,
 )
 from scripts.route_a_v3.train_route2_xeditcritic_v3 import require_cuda
 
@@ -101,6 +108,127 @@ def select_train_geometry_records_v4(
     )[:count]
     _require(len({str(row["canonical_record_id"]) for row in selected}) == count, "preflight geometry repeats a record")
     return selected
+
+
+def select_cache_online_alignment_sequences_v4(
+    rows: Sequence[Mapping[str, Any]],
+    cache_payload: Mapping[str, Any],
+    *,
+    count: int,
+) -> dict[int, str]:
+    """Select fixed length-stratified sequence indices without reading a target."""
+
+    _require(count >= 2, "cache/online alignment requires at least two sequences")
+    _require(
+        all(str(row.get("split")) in {"TRAIN", "VALIDATION"} for row in rows),
+        "protected split entered cache/online alignment",
+    )
+    sequences = sorted(
+        {
+            str(sequence)
+            for row in rows
+            for sequence in (row["source_sequence"], row["candidate_sequence"])
+        }
+    )
+    _require(len(sequences) == int(cache_payload["sequence_lengths"].numel()), "alignment projection/cache sequence count changed")
+    _require(len(sequences) >= count, "alignment cohort exceeds unique sequences")
+    by_length = sorted(range(len(sequences)), key=lambda index: (len(sequences[index]), sequences[index]))
+    ranks = [round(index * (len(by_length) - 1) / (count - 1)) for index in range(count)]
+    _require(len(set(ranks)) == count, "alignment quantile ranks are duplicated")
+    selected_indices = [by_length[rank] for rank in ranks]
+    selected = {index: sequences[index] for index in selected_indices}
+    _require(
+        all(
+            int(cache_payload["sequence_lengths"][index].item()) == len(sequence)
+            for index, sequence in selected.items()
+        ),
+        "alignment sequence length differs from cache",
+    )
+    return selected
+
+
+def cached_bottom_sequences_v4(
+    cache_payload: Mapping[str, Any], sequence_indices: Sequence[int]
+) -> dict[int, BottomEncodedSequenceV4]:
+    """Reconstruct selected cached sequences without adding raw sequence payload."""
+
+    result: dict[int, BottomEncodedSequenceV4] = {}
+    sequence_count = int(cache_payload["sequence_lengths"].numel())
+    for sequence_index in sequence_indices:
+        _require(0 <= int(sequence_index) < sequence_count, "alignment sequence index is out of range")
+        chunk_start = int(cache_payload["sequence_chunk_offsets"][sequence_index].item())
+        chunk_end = int(cache_payload["sequence_chunk_offsets"][sequence_index + 1].item())
+        chunks: list[BottomEncodedChunkV4] = []
+        for chunk_index in range(chunk_start, chunk_end):
+            token_start = int(cache_payload["chunk_token_offsets"][chunk_index].item())
+            token_end = int(cache_payload["chunk_token_offsets"][chunk_index + 1].item())
+            chunks.append(
+                BottomEncodedChunkV4(
+                    span=ChunkSpan(
+                        int(cache_payload["chunk_starts"][chunk_index].item()),
+                        int(cache_payload["chunk_ends"][chunk_index].item()),
+                    ),
+                    hidden=cache_payload["token_hidden"][token_start:token_end],
+                    attention_mask=cache_payload["token_attention_mask"][token_start:token_end],
+                    special_token_offset=int(
+                        cache_payload["chunk_special_token_offsets"][chunk_index].item()
+                    ),
+                )
+            )
+        _require(bool(chunks), "alignment cached sequence has no chunks")
+        result[int(sequence_index)] = BottomEncodedSequenceV4(
+            chunks=tuple(chunks),
+            global_residual=cache_payload["sequence_global_residuals"][sequence_index],
+        )
+    return result
+
+
+def run_cache_online_alignment_v4(
+    config: Mapping[str, Any],
+    rows: Sequence[Mapping[str, Any]],
+    cache_payload: Mapping[str, Any],
+    *,
+    device: torch.device,
+) -> dict[str, Any]:
+    """Run the frozen CUDA cache/online equivalence check before memory preflight."""
+
+    settings = config["cache_online_alignment"]
+    selected = select_cache_online_alignment_sequences_v4(
+        rows,
+        cache_payload,
+        count=int(settings["sequence_count"]),
+    )
+    _require(
+        str(cache_payload["attention_backend"]) == str(settings["attention_backend"]),
+        "cache/online attention backend changed",
+    )
+    cached = cached_bottom_sequences_v4(cache_payload, sorted(selected))
+    encoder = FrozenMRNABERTBottomSixEncoderV4(
+        Path(config["mrnabert_model_path"]),
+        device,
+        maximum_sequences_per_batch=int(settings["maximum_sequences_per_batch"]),
+        batch_token_budget=int(settings["batch_token_budget"]),
+        attention_backend=str(settings["attention_backend"]),
+    )
+    online = encoder.encode_online(selected)
+    comparison = compare_bottom_encoded_sequences_v4(
+        cached,
+        online,
+        maximum_absolute_tolerance=float(settings["maximum_absolute_tolerance"]),
+        mean_absolute_tolerance=float(settings["mean_absolute_tolerance"]),
+    )
+    result = {
+        **comparison,
+        "selection": "LENGTH_SORTED_EVEN_QUANTILES_OVER_LEXICOGRAPHIC_CACHE_SEQUENCE_INDICES",
+        "selected_sequence_indices": sorted(selected),
+        "selected_sequence_lengths": [len(selected[index]) for index in sorted(selected)],
+        "raw_sequence_payload_written": 0,
+        "target_value_accessed": False,
+        "validation_metric_read": False,
+    }
+    del encoder, online, cached
+    torch.cuda.empty_cache()
+    return result
 
 
 def build_preflight_vocabs_v4(
@@ -360,6 +488,34 @@ def run(
         expected_unique_sequence_count=43730,
         expected_embedding_width=int(config["architecture"]["pretrained_width"]),
     )
+    cache_online_alignment = run_cache_online_alignment_v4(
+        config,
+        projection_rows,
+        cache_payload,
+        device=device,
+    )
+    if cache_online_alignment["passed"] is not True:
+        summary = {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_preflight.v1",
+            "status": "XEDITCRITIC_V4_PREFLIGHT_PAUSE_CACHE_ONLINE_MISMATCH",
+            "passed": False,
+            "git_head": current_head,
+            "physical_gpu_index": physical_gpu_index,
+            "cuda_device_name": torch.cuda.get_device_name(device),
+            "bottom_six_cache_identity": cache_identity,
+            "cache_online_alignment": cache_online_alignment,
+            "target_value_accessed": False,
+            "validation_metric_read": False,
+            "memory_preflight_executed": False,
+            "cpu_fallback_used": False,
+            "elapsed_seconds": time.time() - started,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+            "authorization_path": str(authorization_path),
+        }
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return summary
     cache = FrozenBottomEncoderChunkCacheViewV4(
         cache_payload, set(str(value) for value in cache_payload["record_ids"])
     )
@@ -434,6 +590,7 @@ def run(
         "selected_train_record_ids": selected_ids,
         "selected_train_record_count": len(selected_ids),
         "bottom_six_cache_identity": cache_identity,
+        "cache_online_alignment": cache_online_alignment,
         "target_value_accessed": False,
         "validation_metric_read": False,
         "measurements": {

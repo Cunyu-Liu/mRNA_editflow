@@ -1,0 +1,51 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_cache_online_preflight_binding.v1",
+  "status": "XEDITCRITIC_V4_CACHE_ONLINE_EQUIVALENCE_RUNNER_IMPLEMENTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T01:24:45+08:00",
+  "implementation_parent_git_head": "da0d80d3dee07955cbc595bc919bdda40990a395",
+  "frozen_alignment": {
+    "sequence_count": 8,
+    "selection": "LENGTH_SORTED_EVEN_QUANTILES_OVER_LEXICOGRAPHIC_CACHE_SEQUENCE_INDICES",
+    "minimum_and_maximum_length_covered": true,
+    "maximum_absolute_tolerance": 0.02,
+    "mean_absolute_tolerance": 0.005,
+    "attention_backend": "PYTORCH_SDPA_AUTO",
+    "maximum_sequences_per_batch": 8,
+    "batch_token_budget": 4096,
+    "shared_bottom_six_forward": true,
+    "raw_sequence_payload_written": 0,
+    "target_value_accessed": false,
+    "validation_metric_read": false
+  },
+  "execution_order": {
+    "runs_inside_formal_critic_preflight": true,
+    "runs_before_parameter_count_and_memory_measurement": true,
+    "numeric_failure_status": "XEDITCRITIC_V4_PREFLIGHT_PAUSE_CACHE_ONLINE_MISMATCH",
+    "numeric_failure_skips_memory_preflight": true,
+    "screen_authorization_requires_pass": true,
+    "screen_launch_barrier": "cache_online_equivalence_passed"
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "39/39 PASS",
+    "complete_critic_v4_related_tests": "82/82 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_state": {
+    "bottom_six_cache_materialized": false,
+    "cache_online_cuda_alignment_executed": false,
+    "formal_preflight_executed": false,
+    "screen_authorized": false,
+    "optimizer_attempt_created": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "active_c3_barrier": {
+    "last_remote_observation": "2026-08-25T00:47:08+08:00",
+    "terminal_count": 0,
+    "next_local_check_not_before": "2026-08-25T01:44:53+08:00"
+  },
+  "claim_effect": "PROSPECTIVE_NUMERICAL_EQUIVALENCE_GATE_ONLY_NO_EMPIRICAL_MODEL_CLAIM"
+}
