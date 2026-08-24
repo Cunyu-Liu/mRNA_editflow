@@ -2665,3 +2665,15 @@ F2/F3与protected outcome状态不变。
 C2 full/F3 training/C2 source-only分别在12:31:11/12:35:16/12:41:59保持RUNNING，elapsed分别为
 9,751/11,737/9,553秒，均无terminal/failure；下一窗口分别为13:01:11/13:05:16/13:11:59。未读active
 metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
+
+## XEditFlow V4 multi-round SMC compute semantics（2026-08-24）
+
+修复一处正式执行前可达的预算语义矛盾：冻结协议允许首轮32粒子未得到32个unique candidates时，在剩余
+320-forward ceiling内继续采样；旧`MatchedComputeRecordV4`却把累计trajectory count硬限制为32。现在每轮仍
+严格32粒子，累计trajectory count可表示完整轮数，candidate cap仍严格为32，所有primary/replay、root mode prior、
+value、mode和三名critic member forward仍分别计费且总量不得超过320。两轮合成测试累计64 trajectories、2 candidates、
+92 forward-equivalents并剩余228。
+
+本地focused/相邻17/17，完整XEditFlow/guidance 204/204，精确V3.3.2 cohort 96/96 PASS。本项未启动SMC或
+optimizer attempt，protected outcome read=0，claim不变；A100 current-HEAD测试等待五个旧C3 launch-head jobs
+terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_multiround_compute_v1.json`。

@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 import torch
@@ -41,6 +41,215 @@ class BatchedModeRateRowV4:
     actions: tuple[LegalAction, ...]
     rates: tuple[float, ...]
     trajectory_mode_id: int
+
+
+def combine_primary_and_replay_compute_v4(
+    primary: Mapping[str, Any],
+    replay: Mapping[str, Any],
+    *,
+    replay_ok: bool,
+) -> dict[str, Any]:
+    """Count both executions while retaining one 32-particle sample round."""
+
+    _require(
+        primary.get("schema_version")
+        == replay.get("schema_version")
+        == "MatchedComputeRecordV4",
+        "V4 primary/replay compute schema differs",
+    )
+    _require(
+        str(primary.get("source_key")) == str(replay.get("source_key")),
+        "V4 primary/replay compute source differs",
+    )
+    _require(
+        int(primary.get("trajectory_count", -1))
+        == int(replay.get("trajectory_count", -2))
+        == 32,
+        "V4 primary/replay is not one 32-particle round",
+    )
+    primary_failures = primary["failure_counters"]
+    replay_failures = replay["failure_counters"]
+    record = MatchedComputeRecordV4(
+        source_key=str(primary["source_key"]),
+        trunk_forwards=int(primary["trunk_forwards"])
+        + int(replay["trunk_forwards"]),
+        mode_forwards=int(primary["mode_forwards"])
+        + int(replay["mode_forwards"]),
+        value_forwards=int(primary["value_forwards"])
+        + int(replay["value_forwards"]),
+        critic_forwards_by_member=[
+            int(left) + int(right)
+            for left, right in zip(
+                primary["critic_forwards_by_member"],
+                replay["critic_forwards_by_member"],
+                strict=True,
+            )
+        ],
+        candidate_count=int(primary["candidate_count"]),
+        trajectory_count=32,
+        wall_time_seconds=float(primary["wall_time_seconds"])
+        + float(replay["wall_time_seconds"]),
+        peak_vram_mb=max(
+            float(primary.get("peak_vram_mb", 0.0)),
+            float(replay.get("peak_vram_mb", 0.0)),
+        ),
+        edit_budget_violation_count=int(
+            primary_failures["edit_budget_violation_count"]
+        )
+        + int(replay_failures["edit_budget_violation_count"]),
+        candidate_budget_violation_count=int(
+            primary_failures["candidate_budget_violation_count"]
+        )
+        + int(replay_failures["candidate_budget_violation_count"]),
+        replay_failure_count=int(
+            primary_failures["replay_failure_count"]
+        )
+        + int(replay_failures["replay_failure_count"])
+        + int(not replay_ok),
+        numerical_failure_count=int(
+            primary_failures["numerical_failure_count"]
+        )
+        + int(replay_failures["numerical_failure_count"]),
+    )
+    result = record.to_dict()
+    result.update(
+        {
+            "primary_forward_equivalents": int(
+                primary["total_forward_equivalents"]
+            ),
+            "replay_forward_equivalents": int(
+                replay["total_forward_equivalents"]
+            ),
+            "replay_forwards_counted": True,
+        }
+    )
+    return result
+
+
+def merge_smc_rounds_v4(
+    round_results: Sequence[Mapping[str, Any]],
+    *,
+    source_key: str,
+    prior_trunk_forwards: int,
+    prior_mode_forwards: int,
+    terminal_critic_forwards_by_member: Sequence[int] = (1, 1, 1),
+) -> dict[str, Any]:
+    """Merge mode-fixed rounds and retain every charged V4 forward."""
+
+    _require(bool(round_results), "V4 SMC round collection is empty")
+    _require(
+        prior_trunk_forwards >= 0 and prior_mode_forwards >= 0,
+        "V4 root-mode prior compute is invalid",
+    )
+    critic_counts = [int(value) for value in terminal_critic_forwards_by_member]
+    _require(
+        len(critic_counts) == 3 and min(critic_counts) >= 0,
+        "V4 terminal critic forward reservation differs",
+    )
+    grouped: dict[str, list[Mapping[str, Any]]] = {}
+    trunk = int(prior_trunk_forwards)
+    mode = int(prior_mode_forwards)
+    value = 0
+    trajectories = 0
+    wall_time = 0.0
+    peak_vram = 0.0
+    failure_totals = {
+        "edit_budget_violation_count": 0,
+        "candidate_budget_violation_count": 0,
+        "replay_failure_count": 0,
+        "numerical_failure_count": 0,
+    }
+    for result in round_results:
+        _require(
+            result.get("status") == "XEDITFLOW_V4_SMC_COMPLETE"
+            and result.get("source_key") == source_key
+            and result.get("setflow_mode_is_fixed_trajectory_state") is True
+            and result.get("free_action_ratio_head_used") is False,
+            "V4 SMC round identity or mechanism differs",
+        )
+        compute = result["matched_compute"]
+        _require(
+            compute.get("schema_version") == "MatchedComputeRecordV4"
+            and int(compute.get("trajectory_count", -1)) == 32,
+            "V4 SMC round compute identity differs",
+        )
+        trunk += int(compute["trunk_forwards"])
+        mode += int(compute["mode_forwards"])
+        value += int(compute["value_forwards"])
+        trajectories += int(compute["trajectory_count"])
+        wall_time += float(compute["wall_time_seconds"])
+        peak_vram = max(peak_vram, float(compute.get("peak_vram_mb", 0.0)))
+        for key in failure_totals:
+            failure_totals[key] += int(compute["failure_counters"][key])
+        for candidate in result["candidates"]:
+            grouped.setdefault(str(candidate["candidate_sequence"]), []).append(
+                candidate
+            )
+    candidates = []
+    for sequence, members in grouped.items():
+        weights = np.asarray(
+            [float(row["merged_log_weight"]) for row in members], dtype=float
+        )
+        _require(
+            np.all(np.isfinite(weights)),
+            "V4 SMC round candidate mass is nonfinite",
+        )
+        maximum = float(np.max(weights))
+        merged_weight = maximum + math.log(
+            float(np.exp(weights - maximum).sum())
+        ) - math.log(len(round_results))
+        representative = dict(
+            max(members, key=lambda row: float(row["merged_log_weight"]))
+        )
+        representative.update(
+            {
+                "candidate_sequence": sequence,
+                "merged_log_weight": merged_weight,
+                "sampling_round_multiplicity": len(members),
+                "particle_multiplicity": sum(
+                    int(row["particle_multiplicity"]) for row in members
+                ),
+                "contributing_mode_ids": sorted(
+                    {
+                        int(mode_id)
+                        for row in members
+                        for mode_id in row.get("contributing_mode_ids", ())
+                    }
+                ),
+            }
+        )
+        candidates.append(representative)
+    candidates.sort(
+        key=lambda row: (
+            -float(row["merged_log_weight"]),
+            str(row["candidate_sequence"]),
+        )
+    )
+    candidates = candidates[:32]
+    compute = MatchedComputeRecordV4(
+        source_key=source_key,
+        trunk_forwards=trunk,
+        mode_forwards=mode,
+        value_forwards=value,
+        critic_forwards_by_member=critic_counts,
+        candidate_count=len(candidates),
+        trajectory_count=trajectories,
+        wall_time_seconds=wall_time,
+        peak_vram_mb=peak_vram,
+        **failure_totals,
+    ).to_dict()
+    return {
+        "source_key": source_key,
+        "sampling_round_count": len(round_results),
+        "particle_count_per_round": 32,
+        "trajectory_count": trajectories,
+        "candidates": candidates,
+        "matched_compute": compute,
+        "root_mode_prior_forwards_counted": True,
+        "terminal_critic_forwards_reserved_by_member": critic_counts,
+        "remaining_forward_equivalents": 320
+        - int(compute["total_forward_equivalents"]),
+    }
 
 
 def sample_mode_base_proposal_v4(

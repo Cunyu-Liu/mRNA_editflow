@@ -26,6 +26,8 @@ from core.route2_xeditflow_guidance_v4 import (
 )
 from core.route2_xeditflow_smc_runtime_v4 import (
     BatchedModeRateRowV4,
+    combine_primary_and_replay_compute_v4,
+    merge_smc_rounds_v4,
     run_batched_mode_fixed_potential_smc_v4,
 )
 
@@ -186,6 +188,51 @@ def test_v4_matched_compute_charges_trunk_mode_value_and_each_critic() -> None:
     record.mode_forwards += 51
     with pytest.raises(Exception, match="ceiling"):
         record.to_dict()
+
+
+def test_v4_additional_smc_rounds_count_trajectories_and_all_forwards() -> None:
+    def round_result(sequence: str) -> dict:
+        compute = MatchedComputeRecordV4(
+            "source",
+            trunk_forwards=2,
+            mode_forwards=16,
+            value_forwards=2,
+            candidate_count=1,
+            trajectory_count=32,
+        ).to_dict()
+        combined = combine_primary_and_replay_compute_v4(
+            compute, compute, replay_ok=True
+        )
+        return {
+            "status": "XEDITFLOW_V4_SMC_COMPLETE",
+            "source_key": "source",
+            "setflow_mode_is_fixed_trajectory_state": True,
+            "free_action_ratio_head_used": False,
+            "matched_compute": combined,
+            "candidates": [
+                {
+                    "candidate_sequence": sequence,
+                    "merged_log_weight": 0.0,
+                    "particle_multiplicity": 32,
+                    "contributing_mode_ids": list(range(8)),
+                }
+            ],
+        }
+
+    merged = merge_smc_rounds_v4(
+        [round_result("A"), round_result("C")],
+        source_key="source",
+        prior_trunk_forwards=1,
+        prior_mode_forwards=8,
+    )
+    assert merged["sampling_round_count"] == 2
+    assert merged["particle_count_per_round"] == 32
+    assert merged["trajectory_count"] == 64
+    assert merged["matched_compute"]["trajectory_count"] == 64
+    assert merged["matched_compute"]["sampling_round_count"] == 2
+    assert merged["matched_compute"]["critic_forwards_by_member"] == [1, 1, 1]
+    assert merged["matched_compute"]["total_forward_equivalents"] == 92
+    assert merged["remaining_forward_equivalents"] == 228
 
 
 def test_v4_smc_replays_and_rejects_within_trajectory_mode_change() -> None:

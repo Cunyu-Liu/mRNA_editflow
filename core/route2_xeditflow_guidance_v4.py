@@ -306,7 +306,10 @@ class MatchedComputeRecordV4:
         )
         _require(min(integer_counters) >= 0, "matched-compute V4 counter is negative")
         _require(self.candidate_count <= 32, "matched-compute V4 candidate cap exceeded")
-        _require(self.trajectory_count <= 32, "matched-compute V4 trajectory cap exceeded")
+        _require(
+            self.trajectory_count == 0 or self.trajectory_count % 32 == 0,
+            "matched-compute V4 trajectory count is not whole 32-particle rounds",
+        )
         _require(
             self.total_forward_equivalents <= 320,
             "matched-compute V4 forward ceiling exceeded",
@@ -332,7 +335,8 @@ class MatchedComputeRecordV4:
             "candidate_count": self.candidate_count,
             "candidate_cap": 32,
             "trajectory_count": self.trajectory_count,
-            "trajectory_cap": 32,
+            "particle_count_per_round": 32,
+            "sampling_round_count": self.trajectory_count // 32,
             "wall_time_seconds": self.wall_time_seconds,
             "peak_vram_mb": self.peak_vram_mb,
             "failure_counters": {

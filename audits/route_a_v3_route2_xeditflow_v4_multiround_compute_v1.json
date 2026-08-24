@@ -1,0 +1,47 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_multiround_compute_audit.v1",
+  "status": "IMPLEMENTED_NOT_EXECUTED_IN_FORMAL_SMC",
+  "date": "2026-08-24",
+  "problem": {
+    "reachable_condition": "Fewer than 32 unique terminal candidates after one frozen 32-particle round",
+    "previous_failure": "MatchedComputeRecordV4 treated 32 accumulated trajectories as a global cap, so a protocol-authorized additional round could not be represented",
+    "scientific_consequence": "The runtime could not continue sampling within the matched 320-forward ceiling even though the frozen protocol explicitly permits it"
+  },
+  "implementation": {
+    "compute_schema": "core/route2_xeditflow_guidance_v4.py::MatchedComputeRecordV4",
+    "primary_replay_accounting": "core/route2_xeditflow_smc_runtime_v4.py::combine_primary_and_replay_compute_v4",
+    "round_merger": "core/route2_xeditflow_smc_runtime_v4.py::merge_smc_rounds_v4",
+    "test": "tests/route_a_v3/test_route2_xeditflow_guidance_v4.py::test_v4_additional_smc_rounds_count_trajectories_and_all_forwards"
+  },
+  "frozen_semantics": {
+    "particles_per_round": 32,
+    "candidate_cap_per_source": 32,
+    "forward_equivalent_ceiling_per_source": 320,
+    "additional_rounds_allowed_only_within_remaining_compute": true,
+    "trajectory_count_means_accumulated_generated_trajectories": true,
+    "primary_and_fixed_seed_replay_forwards_both_charged": true,
+    "root_mode_prior_forwards_charged": true,
+    "each_terminal_critic_member_forward_charged": true,
+    "free_action_ratio_head_allowed": false,
+    "trajectory_mode_fixed": true
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "17/17 PASS",
+    "all_xeditflow_and_guidance_tests": "204/204 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "two_round_synthetic_example": {
+      "accumulated_trajectories": 64,
+      "unique_candidates": 2,
+      "charged_forward_equivalents": 92,
+      "remaining_forward_equivalents": 228
+    },
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "formal_smc_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

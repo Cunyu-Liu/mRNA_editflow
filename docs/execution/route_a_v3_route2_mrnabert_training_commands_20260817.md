@@ -3707,3 +3707,14 @@ final pass8、模型拓扑、八mode、endpoint vocab、真实参数更新和无
 完整XEditFlow/guidance 202/202、精确V3.3.2 96/96、compile/diff-check PASS；attempt/protected read均不变，
 A100 current-HEAD测试等待旧C3。审计：
 `audits/route_a_v3_route2_xeditflow_v4_value_checkpoint_loader_v1.json`。
+
+## XEditFlow V4 multi-round SMC matched-compute修复（2026-08-24）
+
+`MatchedComputeRecordV4`现将`trajectory_count`解释为累计生成轨迹，并要求其为32粒子完整轮的整数倍；
+`candidate_count`仍不超过32，`total_forward_equivalents`仍不超过320。新增primary+fixed-seed replay合并与多轮
+candidate/compute合并函数，重放forward、root mode prior、shared trunk、八mode、value和三名critic member全部
+分别计费。该实现允许首轮unique不足时在剩余算力内继续采样，同时不会靠拒绝重复或额外免费forward提高diversity。
+
+本地focused/相邻17/17，完整XEditFlow/guidance 204/204，精确V3.3.2 96/96 PASS；未启动正式SMC、未新增
+optimizer attempt、protected read=0。A100 current-HEAD测试仍等待旧C3全部terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_multiround_compute_v1.json`。
