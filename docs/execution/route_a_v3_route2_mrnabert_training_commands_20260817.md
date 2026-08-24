@@ -3969,3 +3969,17 @@ screen、confirmation、all-Development refit及全部LOSO；GPU6/7、扩大scop
 没有运行GPU/cache/preflight/optimizer/inference或读取Validation metric，protected read=0；A100验证继续等待
 五项C3 terminal barrier，下一远端检查仍不早于本地01:44:53。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_gpu_scope_binding_v1.json`。
+
+## V4 cache launch authorization focused record（2026-08-25）
+
+两条V4 cache builder现在都必须显式接收`--authorization`。授权由现有stage authorizer的`--stage cache`
+路径生成，并同时要求C3五项terminal/read-once、A100精确current-HEAD clean fast-forward、Critic/SetFlow focused
+测试和精确V3.3.2 96/96。cache尚不存在时不再伪用preflight授权；cache完成后才沿用既有`--stage preflight`
+路径核对terminal cache summary。
+
+builder在任何projection load之前验证authorization component与Git HEAD，并在CUDA初始化前验证物理GPU0–5、
+BF16-only、无CPU fallback及无设备重映射。两份冻结cache config已显式写入同一策略。直接fail-closed及相邻测试
+23/23、完整Critic V4 74/74、完整SetFlow V4 59/59、精确V3.3.2 96/96 PASS；Python compile、JSON与
+diff-check均PASS。没有生成实际authorization，没有运行cache/preflight/optimizer或任何outcome metric，
+Development TEST/new Evaluation read仍为0。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_launch_authorization_binding_v1.json`。

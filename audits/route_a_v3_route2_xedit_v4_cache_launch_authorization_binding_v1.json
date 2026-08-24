@@ -1,0 +1,69 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_launch_authorization_binding.v1",
+  "status": "XEDIT_V4_CACHE_LAUNCH_BARRIERS_IMPLEMENTED_AND_TESTED",
+  "recorded_at": "2026-08-25T01:16:18+08:00",
+  "implementation_parent_git_head": "0265dc1f80f4356216f8c63652db02e9aa2171b5",
+  "authorized_components": [
+    "XEditCritic V4 frozen bottom-six cache",
+    "XEditSetFlow V4 reused V3 source-token cache"
+  ],
+  "required_pre_cache_barriers": {
+    "all_five_c3_jobs_terminal": true,
+    "c3_terminal_summaries_read_exactly_once": true,
+    "a100_synchronized_to_exact_current_head": true,
+    "a100_critic_focused_tests_passed": true,
+    "a100_setflow_focused_tests_passed": true,
+    "a100_exact_v332_96_passed": true,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "runtime_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "cuda_visible_devices_remapping_forbidden": true,
+    "authorization_and_git_head_checked_before_projection_load": true
+  },
+  "implementation": {
+    "authorizer": "scripts/route_a_v3/authorize_route2_xedit_v4_screen_stages.py --stage cache",
+    "critic_builder": "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py",
+    "setflow_builder": "scripts/route_a_v3/build_route2_xeditsetflow_source_token_cache_v3.py",
+    "critic_config": "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json",
+    "setflow_config": "configs/route_a_v3_route2_xeditsetflow_v3_source_token_cache_v1.json",
+    "cache_summary_provenance": [
+      "Git HEAD",
+      "cache launch authorization status",
+      "physical GPU index",
+      "CUDA device name",
+      "BF16 forward precision",
+      "CPU fallback false"
+    ]
+  },
+  "verification": {
+    "direct_authorization_and_cache_fail_closed_tests": "23/23 PASS",
+    "critic_v4_related_tests": "74/74 PASS",
+    "setflow_v4_related_tests": "59/59 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "execution_state": {
+    "cache_launch_authorization_materialized": false,
+    "critic_cache_builder_executed": false,
+    "setflow_cache_builder_executed": false,
+    "formal_preflight_executed": false,
+    "optimizer_attempt_created": false,
+    "validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "a100_current_head_sync_executed": false
+  },
+  "active_c3_barrier": {
+    "last_remote_observation": "2026-08-25T00:47:08+08:00",
+    "terminal_count": 0,
+    "next_remote_check_not_before": "2026-08-25T01:47:08+08:00",
+    "next_local_check_not_before": "2026-08-25T01:44:53+08:00"
+  },
+  "claim_effect": "EXECUTION_ORDER_AND_PROVENANCE_EVIDENCE_ONLY_NO_EMPIRICAL_MODEL_CLAIM"
+}

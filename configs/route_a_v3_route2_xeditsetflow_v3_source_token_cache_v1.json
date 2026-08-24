@@ -18,6 +18,12 @@
   "batch_token_budget": 4096,
   "attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
   "device": "cuda:0",
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "cuda_visible_devices_remapping_forbidden": true
+  },
   "progress_every_batches": 500,
   "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
   "summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.summary.json"

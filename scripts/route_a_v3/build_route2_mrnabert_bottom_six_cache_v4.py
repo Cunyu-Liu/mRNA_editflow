@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -23,6 +24,10 @@ from core.route2_development_projection_v3 import load_projection_rows
 from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
     FrozenMRNABERTBottomSixEncoderV4,
 )
+from scripts.route_a_v3.authorize_route2_xedit_v4_screen_stages import (
+    require_cache_launch_authorization_v4,
+    require_cache_runtime_policy_v4,
+)
 
 
 class BottomSixCacheBuildV4Error(RuntimeError):
@@ -34,14 +39,34 @@ def _require(condition: bool, message: str) -> None:
         raise BottomSixCacheBuildV4Error(message)
 
 
-def build(config: Mapping[str, Any]) -> dict[str, Any]:
+def _git_head() -> str:
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def build(
+    config: Mapping[str, Any], authorization: Mapping[str, Any]
+) -> dict[str, Any]:
+    current_head = _git_head()
+    require_cache_launch_authorization_v4(
+        "critic", authorization, current_git_head=current_head
+    )
+    physical_gpu_index = require_cache_runtime_policy_v4(config)
     output_path = Path(config["output_path"])
     summary_path = Path(config["summary_path"])
     _require(not output_path.exists(), f"V4 bottom-six cache already exists: {output_path}")
     _require(not summary_path.exists(), f"V4 bottom-six summary already exists: {summary_path}")
+    _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
-    device = torch.device(str(config.get("device", "cuda:0")))
-    _require(device.type == "cuda" and 0 <= int(device.index or 0) <= 5, "V4 cache construction requires physical GPU 0–5")
+    _require(physical_gpu_index < torch.cuda.device_count(), "selected physical GPU is unavailable")
+    device = torch.device(f"cuda:{physical_gpu_index}")
+    torch.cuda.set_device(device)
+    _require(torch.cuda.is_bf16_supported(), "BF16 is unavailable on selected GPU")
     rows = load_projection_rows([Path(path) for path in config["projection_paths"]])
     _require(len(rows) == int(config["expected_record_count"]), "V4 projection record count changed")
     _require(all(str(row["split"]) in {"TRAIN", "VALIDATION"} for row in rows), "protected split entered V4 cache construction")
@@ -113,6 +138,12 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
         "trainable_encoder_blocks": payload["trainable_encoder_blocks"],
         "model_id": str(config["model_id"]),
         "attention_backend": encoder.attention_backend,
+        "git_head": current_head,
+        "cache_launch_authorization_status": authorization["status"],
+        "physical_gpu_index": physical_gpu_index,
+        "cuda_device_name": torch.cuda.get_device_name(device),
+        "forward_precision": "BF16",
+        "cpu_fallback": False,
         "projection_paths": list(config["projection_paths"]),
         "raw_sequence_payload_written": 0,
         "label_or_outcome_payload_written": 0,
@@ -133,9 +164,11 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--authorization", required=True, type=Path)
     arguments = parser.parse_args()
     config = json.loads(arguments.config.read_text(encoding="utf-8"))
-    print(json.dumps(build(config), indent=2, sort_keys=True))
+    authorization = json.loads(arguments.authorization.read_text(encoding="utf-8"))
+    print(json.dumps(build(config, authorization), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

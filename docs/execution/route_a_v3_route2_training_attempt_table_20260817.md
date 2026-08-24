@@ -2982,3 +2982,20 @@ formal preflight与通用trainer此前只调用CUDA/A100检查，没有直接消
 启动GPU、cache、preflight、optimizer、inference或Validation metric；Development TEST/new Evaluation outcome
 read均为0。A100 current-HEAD同步仍等待五个C3旧作业全部terminal；下一允许远端检查不早于本地01:44:53。
 审计：`audits/route_a_v3_route2_xeditcritic_v4_gpu_scope_binding_v1.json`。
+
+## V4 cache-launch authorization and GPU binding（2026-08-25）
+
+补齐cache构建前的严格顺序硬门。此前A100 sync/test audit与preflight authorizer schema已经相互匹配，但
+Critic bottom-six和SetFlow source-token cache builder仍可在没有C3 read-once及A100 current-HEAD PASS证据时被
+直接调用；SetFlow builder也只检查CUDA类型，未绑定物理GPU0–5。现有stage authorizer新增`cache`阶段，只有
+五个C3 terminal summary一次性读取完成、旧作业terminal后A100 fast-forward至精确HEAD、Critic/SetFlow focused
+和精确V3.3.2 96项全部通过、protected read为0时，才能分别生成两条cache launch authorization。
+
+两条builder在任何projection load或CUDA初始化前验证授权schema、component、精确Git HEAD与四项barrier，随后
+共同要求GPU scope精确0–5、BF16-only、CPU fallback=false且禁止`CUDA_VISIBLE_DEVICES`重映射。GPU6、授权缺失、
+旧HEAD或策略漂移均fail closed；terminal summary将记录HEAD、授权状态、物理GPU、设备名和BF16 provenance。
+
+本地直接授权/入口23/23、Critic V4 74/74、SetFlow V4 59/59、精确V3.3.2 96/96、compile/JSON/diff-check PASS。
+当前只实现并验证代码；授权未materialize，cache/preflight/optimizer/inference均未运行，protected read=0。
+下一C3远端检查仍不得早于本地01:44:53。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_launch_authorization_binding_v1.json`。

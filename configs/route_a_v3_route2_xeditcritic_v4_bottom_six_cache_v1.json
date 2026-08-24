@@ -21,6 +21,12 @@
   "attention_backend": "PYTORCH_SDPA_AUTO",
   "cache_dtype": "FLOAT16",
   "device": "cuda:0",
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "cuda_visible_devices_remapping_forbidden": true
+  },
   "progress_every_batches": 1000,
   "raw_sequence_payload_written": 0,
   "label_or_outcome_payload_written": 0,

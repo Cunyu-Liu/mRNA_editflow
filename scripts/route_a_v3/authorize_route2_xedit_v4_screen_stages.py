@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -90,6 +91,115 @@ def _require_common_barriers(
         and protected.get("new_final_evaluation_outcomes_accessed") is False,
         "A100 synchronization audit reports a protected outcome read",
     )
+
+
+def build_cache_launch_authorization_v4(
+    component: str,
+    c3_reference: Mapping[str, Any],
+    a100_audit: Mapping[str, Any],
+    *,
+    current_git_head: str,
+) -> dict[str, Any]:
+    """Authorize one cache build only after C3 read-once and A100 current-HEAD tests."""
+
+    _require(component in {"critic", "setflow"}, "unknown V4 component")
+    _require_common_barriers(
+        c3_reference, a100_audit, current_git_head=current_git_head
+    )
+    prefix = "XEDITCRITIC" if component == "critic" else "XEDITSETFLOW"
+    return {
+        "schema_version": (
+            f"route_a_v3_route2_xedit{component}_v4_cache_launch_authorization.v1"
+        ),
+        "status": f"{prefix}_V4_CACHE_LAUNCH_AUTHORIZED",
+        "authorized_git_head": current_git_head,
+        "component": component,
+        "barriers": {
+            "all_five_c3_jobs_terminal": True,
+            "c3_terminal_summaries_read_exactly_once": True,
+            "a100_current_head_focused_tests_passed": True,
+            "a100_current_head_v332_tests_passed": True,
+        },
+        "gpu_policy": {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+            "cuda_visible_devices_remapping_forbidden": True,
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def require_cache_launch_authorization_v4(
+    component: str,
+    authorization: Mapping[str, Any],
+    *,
+    current_git_head: str,
+) -> None:
+    """Fail closed before a Critic or SetFlow cache builder reads a projection."""
+
+    _require(component in {"critic", "setflow"}, "unknown V4 component")
+    prefix = "XEDITCRITIC" if component == "critic" else "XEDITSETFLOW"
+    _require(
+        authorization.get("schema_version")
+        == f"route_a_v3_route2_xedit{component}_v4_cache_launch_authorization.v1"
+        and authorization.get("status")
+        == f"{prefix}_V4_CACHE_LAUNCH_AUTHORIZED"
+        and authorization.get("component") == component,
+        f"{component} V4 cache launch authorization is absent",
+    )
+    _require(
+        str(authorization.get("authorized_git_head")) == str(current_git_head),
+        f"{component} V4 cache authorization is for another Git HEAD",
+    )
+    barriers = authorization.get("barriers", {})
+    required = (
+        "all_five_c3_jobs_terminal",
+        "c3_terminal_summaries_read_exactly_once",
+        "a100_current_head_focused_tests_passed",
+        "a100_current_head_v332_tests_passed",
+    )
+    _require(
+        all(barriers.get(key) is True for key in required),
+        f"{component} V4 cache launch barrier is incomplete",
+    )
+    _require(
+        authorization.get("gpu_policy")
+        == {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+            "cuda_visible_devices_remapping_forbidden": True,
+        },
+        f"{component} V4 cache authorization GPU policy changed",
+    )
+    _require(
+        int(authorization.get("development_test_outcome_reads", -1)) == 0
+        and int(authorization.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        f"{component} V4 cache authorization reports a protected outcome read",
+    )
+
+
+def require_cache_runtime_policy_v4(config: Mapping[str, Any]) -> int:
+    """Return the frozen physical GPU index after validating a cache config."""
+
+    _require(
+        config.get("gpu_policy")
+        == {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+            "cuda_visible_devices_remapping_forbidden": True,
+        },
+        "V4 cache GPU policy changed",
+    )
+    device = str(config.get("device", ""))
+    _require(
+        re.fullmatch(r"cuda:[0-5]", device) is not None,
+        "V4 cache device is outside physical GPU 0–5",
+    )
+    return int(device.removeprefix("cuda:"))
 
 
 def _require_cache(
@@ -285,21 +395,38 @@ def build_screen_launch_authorization_v4(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--component", choices=("critic", "setflow"), required=True)
-    parser.add_argument("--stage", choices=("preflight", "screen"), required=True)
-    parser.add_argument("--screen-config", type=Path, required=True)
+    parser.add_argument("--stage", choices=("cache", "preflight", "screen"), required=True)
+    parser.add_argument("--screen-config", type=Path)
     parser.add_argument("--c3-reference", type=Path, required=True)
     parser.add_argument("--a100-audit", type=Path, required=True)
-    parser.add_argument("--cache-summary", type=Path, required=True)
+    parser.add_argument("--cache-summary", type=Path)
     parser.add_argument("--preflight", type=Path)
     parser.add_argument("--source-data-audit", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     _require(not arguments.output.exists(), f"authorization output exists: {arguments.output}")
     head = _git_head()
+    c3_reference = _read(arguments.c3_reference)
+    a100_audit = _read(arguments.a100_audit)
+    if arguments.stage == "cache":
+        result = build_cache_launch_authorization_v4(
+            arguments.component,
+            c3_reference,
+            a100_audit,
+            current_git_head=head,
+        )
+        arguments.output.parent.mkdir(parents=True, exist_ok=True)
+        partial = arguments.output.with_suffix(arguments.output.suffix + ".partial")
+        partial.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        os.replace(partial, arguments.output)
+        print(json.dumps(result, sort_keys=True))
+        return
+    _require(arguments.screen_config is not None, "preflight/screen authorization requires a screen config")
+    _require(arguments.cache_summary is not None, "preflight/screen authorization requires a cache summary")
     common = (
         arguments.component,
-        _read(arguments.c3_reference),
-        _read(arguments.a100_audit),
+        c3_reference,
+        a100_audit,
         _read(arguments.cache_summary),
     )
     if arguments.stage == "preflight":

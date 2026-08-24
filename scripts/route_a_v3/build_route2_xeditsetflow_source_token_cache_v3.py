@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -20,6 +21,10 @@ from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_source_token_cache_v3 import assemble_source_token_cache_v3
 from core.route2_xeditsetflow_training_v3 import setflow_records_from_projection_rows
 from scripts.route_a_v3.route2_mrnabert_edit_site_encoder_v3 import FrozenMRNABERTEditSiteEncoderV3
+from scripts.route_a_v3.authorize_route2_xedit_v4_screen_stages import (
+    require_cache_launch_authorization_v4,
+    require_cache_runtime_policy_v4,
+)
 
 
 class SetFlowSourceCacheBuildError(RuntimeError):
@@ -31,14 +36,34 @@ def _require(condition: bool, message: str) -> None:
         raise SetFlowSourceCacheBuildError(message)
 
 
-def build(config: Mapping[str, Any]) -> dict[str, Any]:
+def _git_head() -> str:
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def build(
+    config: Mapping[str, Any], authorization: Mapping[str, Any]
+) -> dict[str, Any]:
+    current_head = _git_head()
+    require_cache_launch_authorization_v4(
+        "setflow", authorization, current_git_head=current_head
+    )
+    physical_gpu_index = require_cache_runtime_policy_v4(config)
     output_path = Path(config["output_path"])
     summary_path = Path(config["summary_path"])
     _require(not output_path.exists(), f"source-token cache already exists: {output_path}")
     _require(not summary_path.exists(), f"source-token cache summary already exists: {summary_path}")
+    _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
-    device = torch.device(str(config["device"]))
-    _require(device.type == "cuda", "source-token cache construction requires CUDA")
+    _require(physical_gpu_index < torch.cuda.device_count(), "selected physical GPU is unavailable")
+    device = torch.device(f"cuda:{physical_gpu_index}")
+    torch.cuda.set_device(device)
+    _require(torch.cuda.is_bf16_supported(), "BF16 is unavailable on selected GPU")
     rows = load_projection_rows([Path(path) for path in config["projection_paths"]])
     records, eligibility = setflow_records_from_projection_rows(rows)
     _require(len(records) == int(config["expected_eligible_record_count"]), "eligible SetFlow record count changed")
@@ -96,6 +121,12 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
         "pretrained_parameter_count": encoder.parameter_count,
         "model_id": str(config["model_id"]),
         "attention_backend": encoder.attention_backend,
+        "git_head": current_head,
+        "cache_launch_authorization_status": authorization["status"],
+        "physical_gpu_index": physical_gpu_index,
+        "cuda_device_name": torch.cuda.get_device_name(device),
+        "forward_precision": "BF16",
+        "cpu_fallback": False,
         "development_test_record_count": 0,
         "development_test_outcomes_accessed": False,
         "evaluation_record_count": 0,
@@ -111,9 +142,11 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--authorization", required=True, type=Path)
     args = parser.parse_args()
     config = json.loads(args.config.read_text(encoding="utf-8"))
-    print(json.dumps(build(config), indent=2, sort_keys=True))
+    authorization = json.loads(args.authorization.read_text(encoding="utf-8"))
+    print(json.dumps(build(config, authorization), indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

@@ -6,9 +6,14 @@ from pathlib import Path
 
 import pytest
 
+from scripts.route_a_v3 import build_route2_mrnabert_bottom_six_cache_v4
+from scripts.route_a_v3 import build_route2_xeditsetflow_source_token_cache_v3
 from scripts.route_a_v3.authorize_route2_xedit_v4_screen_stages import (
+    build_cache_launch_authorization_v4,
     build_preflight_authorization_v4,
     build_screen_launch_authorization_v4,
+    require_cache_launch_authorization_v4,
+    require_cache_runtime_policy_v4,
 )
 
 
@@ -116,6 +121,119 @@ def _flow_cache_receipt():
         "tokenization_policy": "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
         "chunk_policy": "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
     }
+
+
+def test_cache_launch_authorization_binds_c3_a100_head_and_gpu_policy() -> None:
+    authorization = build_cache_launch_authorization_v4(
+        "critic", _c3(), _a100(), current_git_head=HEAD
+    )
+    require_cache_launch_authorization_v4(
+        "critic", authorization, current_git_head=HEAD
+    )
+    assert authorization["barriers"] == {
+        "all_five_c3_jobs_terminal": True,
+        "c3_terminal_summaries_read_exactly_once": True,
+        "a100_current_head_focused_tests_passed": True,
+        "a100_current_head_v332_tests_passed": True,
+    }
+    with pytest.raises(Exception, match="another Git HEAD"):
+        require_cache_launch_authorization_v4(
+            "critic", authorization, current_git_head="b" * 40
+        )
+
+
+def test_cache_launch_authorization_rejects_incomplete_or_protected_evidence() -> None:
+    incomplete = _c3()
+    incomplete["terminal_summaries_read_count"] = 4
+    with pytest.raises(Exception, match="read-once"):
+        build_cache_launch_authorization_v4(
+            "setflow", incomplete, _a100(), current_git_head=HEAD
+        )
+    protected = _a100()
+    protected["protected_data"]["development_test_outcomes_accessed"] = True
+    with pytest.raises(Exception, match="protected outcome"):
+        build_cache_launch_authorization_v4(
+            "critic", _c3(), protected, current_git_head=HEAD
+        )
+
+
+def test_cache_runtime_policy_is_exact_gpu_zero_to_five_bf16_no_cpu_fallback() -> None:
+    config = {
+        "device": "cuda:5",
+        "gpu_policy": {
+            "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+            "cuda_bf16_only": True,
+            "cpu_fallback": False,
+            "cuda_visible_devices_remapping_forbidden": True,
+        },
+    }
+    assert require_cache_runtime_policy_v4(config) == 5
+    config["device"] = "cuda:6"
+    with pytest.raises(Exception, match="outside physical GPU"):
+        require_cache_runtime_policy_v4(config)
+    config["device"] = "cuda:0"
+    config["gpu_policy"]["cpu_fallback"] = True
+    with pytest.raises(Exception, match="GPU policy changed"):
+        require_cache_runtime_policy_v4(config)
+
+
+def test_cache_builders_require_authorization_before_projection_and_bind_runtime() -> None:
+    cache_configs = (
+        ROOT / "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json",
+        ROOT / "configs/route_a_v3_route2_xeditsetflow_v3_source_token_cache_v1.json",
+    )
+    for path in cache_configs:
+        config = json.loads(path.read_text(encoding="utf-8"))
+        assert require_cache_runtime_policy_v4(config) == 0
+
+    builders = (
+        ROOT / "scripts/route_a_v3/build_route2_mrnabert_bottom_six_cache_v4.py",
+        ROOT / "scripts/route_a_v3/build_route2_xeditsetflow_source_token_cache_v3.py",
+    )
+    for path in builders:
+        source = path.read_text(encoding="utf-8")
+        assert "parser.add_argument(\"--authorization\", required=True" in source
+        assert "CUDA_VISIBLE_DEVICES remapping is forbidden" in source
+        assert "torch.cuda.is_bf16_supported()" in source
+        assert source.index("require_cache_launch_authorization_v4(") < source.index(
+            "load_projection_rows("
+        )
+
+
+def test_cache_builders_fail_before_config_cuda_or_projection_without_authorization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for module in (
+        build_route2_mrnabert_bottom_six_cache_v4,
+        build_route2_xeditsetflow_source_token_cache_v3,
+    ):
+        monkeypatch.setattr(module, "_git_head", lambda: HEAD)
+        with pytest.raises(Exception, match="launch authorization is absent"):
+            module.build({}, {})
+
+
+def test_cache_builders_reject_gpu_six_before_cuda_initialization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for component, module in (
+        ("critic", build_route2_mrnabert_bottom_six_cache_v4),
+        ("setflow", build_route2_xeditsetflow_source_token_cache_v3),
+    ):
+        monkeypatch.setattr(module, "_git_head", lambda: HEAD)
+        authorization = build_cache_launch_authorization_v4(
+            component, _c3(), _a100(), current_git_head=HEAD
+        )
+        config = {
+            "device": "cuda:6",
+            "gpu_policy": {
+                "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+                "cuda_bf16_only": True,
+                "cpu_fallback": False,
+                "cuda_visible_devices_remapping_forbidden": True,
+            },
+        }
+        with pytest.raises(Exception, match="outside physical GPU"):
+            module.build(config, authorization)
 
 
 def test_preflight_authorizations_supply_exact_runner_barriers() -> None:
