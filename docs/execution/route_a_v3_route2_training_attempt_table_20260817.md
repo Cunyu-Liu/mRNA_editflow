@@ -2896,3 +2896,15 @@ CUDA query确认五个PID仍分别位于登记的GPU3/0/5/1/2，显存占用为
 A100 current-HEAD sync继续等待五项自然terminal。没有代码变化，因此没有重复已通过的focused/V3.3.2 cohort；
 未新增optimizer attempt，论文claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_234725.json`。
+
+## V4 A100 current-HEAD preflight gate binding（2026-08-24）
+
+发现并修复一个会影响正式实验归属的授权缺口：原preflight authorizer只要求Critic/SetFlow focused
+`failed=0`，没有证明测试实际运行，也没有绑定测试时Git HEAD或要求同步后的远端工作树干净。因此“0 tests、
+0 failures”或在另一HEAD上执行的测试证据理论上可能误授权V4 preflight。
+
+现在授权必须同时满足：sync head与授权HEAD相同、旧launch jobs在sync前为0、远端工作树sync后clean、
+未改写shared history、verification明确绑定同一HEAD、Critic和SetFlow focused各有正的passed count且failed=0、
+精确V3.3.2为96/96。相关authorization/preflight focused 12/12、精确V3.3.2 96/96、compile/diff-check PASS。
+未执行A100 sync、preflight、screen或optimizer，protected read=0；下一C3本地窗口仍不早于00:44:44。
+审计：`audits/route_a_v3_route2_xedit_v4_a100_current_head_gate_binding_v1.json`。

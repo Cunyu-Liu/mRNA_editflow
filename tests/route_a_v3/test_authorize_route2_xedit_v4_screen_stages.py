@@ -33,10 +33,14 @@ def _a100():
         "repository_sync": {
             "head_after": HEAD,
             "old_launch_jobs_active_before_sync": False,
+            "remote_worktree_clean_after": True,
             "shared_history_rewritten": False,
         },
         "a100_current_head_verification": {
+            "verified_git_head": HEAD,
+            "critic_focused_total_passed": 100,
             "critic_focused_failed": 0,
+            "setflow_focused_passed": 60,
             "setflow_focused_failed": 0,
             "exact_v332_passed": 96,
             "exact_v332_failed": 0,
@@ -96,6 +100,29 @@ def test_preflight_authorization_rejects_old_head_or_incomplete_c3() -> None:
     with pytest.raises(Exception, match="read-once"):
         build_preflight_authorization_v4(
             "setflow", c3, _a100(), _flow_cache(), current_git_head=HEAD
+        )
+
+
+def test_preflight_authorization_requires_clean_tested_current_head() -> None:
+    no_tests = _a100()
+    no_tests["a100_current_head_verification"]["critic_focused_total_passed"] = 0
+    with pytest.raises(Exception, match="did not run and pass"):
+        build_preflight_authorization_v4(
+            "critic", _c3(), no_tests, _critic_cache(), current_git_head=HEAD
+        )
+
+    wrong_test_head = _a100()
+    wrong_test_head["a100_current_head_verification"]["verified_git_head"] = "b" * 40
+    with pytest.raises(Exception, match="did not run and pass"):
+        build_preflight_authorization_v4(
+            "critic", _c3(), wrong_test_head, _critic_cache(), current_git_head=HEAD
+        )
+
+    dirty = _a100()
+    dirty["repository_sync"]["remote_worktree_clean_after"] = False
+    with pytest.raises(Exception, match="not synchronized"):
+        build_preflight_authorization_v4(
+            "setflow", _c3(), dirty, _flow_cache(), current_git_head=HEAD
         )
 
 

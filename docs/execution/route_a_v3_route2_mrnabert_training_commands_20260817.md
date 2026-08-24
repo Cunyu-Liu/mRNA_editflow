@@ -3894,3 +3894,13 @@ C3 launch-head jobs全部自然terminal。
 下一远端/本地窗口分别不早于2026-08-25 00:47:25/00:44:44。无代码变化，故不重复已通过的
 focused/V3.3.2测试；A100 current-HEAD sync仍受五项terminal barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_234725.json`。
+
+## V4 A100 sync/test receipt binding focused record（2026-08-24）
+
+V4 preflight/screen authorization现拒绝三类不充分A100证据：同步后工作树dirty、focused tests没有实际通过项，
+以及tests绑定的Git HEAD与授权HEAD不同。合法receipt必须记录clean remote worktree、同一verified HEAD、Critic与
+SetFlow focused各自`passed>0/failed=0`及精确V3.3.2 `96/96`；仅有`failed=0`不再足够。
+
+authorization/preflight focused 12/12、精确本地V3.3.2 96/96、compile/diff-check PASS。尚未解除C3 barrier，
+因此没有A100 current-HEAD sync、cache/preflight/screen执行或optimizer attempt；Development TEST/new Evaluation
+read保持0。审计：`audits/route_a_v3_route2_xedit_v4_a100_current_head_gate_binding_v1.json`。

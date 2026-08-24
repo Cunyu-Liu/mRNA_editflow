@@ -63,15 +63,19 @@ def _require_common_barriers(
     _require(
         str(sync.get("head_after")) == str(current_git_head)
         and sync.get("old_launch_jobs_active_before_sync") is False
+        and sync.get("remote_worktree_clean_after") is True
         and sync.get("shared_history_rewritten") is False,
         "A100 is not synchronized to the exact current HEAD after old jobs terminal",
     )
     _require(
-        int(verification.get("critic_focused_failed", -1)) == 0
+        str(verification.get("verified_git_head")) == str(current_git_head)
+        and int(verification.get("critic_focused_total_passed", 0)) > 0
+        and int(verification.get("critic_focused_failed", -1)) == 0
+        and int(verification.get("setflow_focused_passed", 0)) > 0
         and int(verification.get("setflow_focused_failed", -1)) == 0
         and int(verification.get("exact_v332_failed", -1)) == 0
         and int(verification.get("exact_v332_passed", -1)) == 96,
-        "A100 current-HEAD focused or V3.3.2 tests did not pass",
+        "A100 current-HEAD focused or V3.3.2 tests did not run and pass",
     )
     protected = a100_audit.get("protected_data", {})
     _require(

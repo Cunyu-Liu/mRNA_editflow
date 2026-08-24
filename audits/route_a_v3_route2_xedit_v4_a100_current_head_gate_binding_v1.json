@@ -1,0 +1,38 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_a100_current_head_gate_binding.v1",
+  "status": "V4_A100_CURRENT_HEAD_PREFLIGHT_GATE_HARDENED_NOT_EXECUTED",
+  "recorded_at_local": "2026-08-24T23:50:40+08:00",
+  "git_head_before_delivery": "4db7fad",
+  "failure_prevented": "An audit with zero focused tests and zero failures, tests executed at another Git HEAD, or a dirty remote worktree could previously authorize formal V4 preflight.",
+  "required_a100_evidence": {
+    "repository_head_after_equals_authorized_head": true,
+    "old_launch_jobs_active_before_sync": false,
+    "remote_worktree_clean_after": true,
+    "shared_history_rewritten": false,
+    "verification_git_head_equals_authorized_head": true,
+    "critic_focused_total_passed_positive": true,
+    "critic_focused_failed": 0,
+    "setflow_focused_passed_positive": true,
+    "setflow_focused_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0
+  },
+  "verification": {
+    "authorization_and_preflight_focused": "12/12 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "a100_sync_performed": false,
+    "preflight_authorization_created": false,
+    "preflight_executed": false,
+    "screen_authorization_created": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "next_remote_c3_check_not_before_local": "2026-08-25T00:44:44+08:00",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}
