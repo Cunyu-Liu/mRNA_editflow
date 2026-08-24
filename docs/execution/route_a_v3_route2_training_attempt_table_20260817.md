@@ -3153,3 +3153,13 @@ post-TEST协议的`formal_preflight_path`仍指向从未由V4 preflight生成的
 partial不覆盖。seed、study folds、passes与gate均未改。本地focused=14/14、Critic V4相关=90/90、精确V3.3.2
 =96/96、compile/JSON PASS。TEST/refit/LOSO均未授权或执行，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_preflight_binding_v1.json`。
+
+## Critic V4 readiness receipt gate closure（2026-08-25）
+
+readiness composer此前只检查post-TEST receipt schema与“不含TEST metrics”，没有重新要求receipt自身为AUTHORIZED、
+精确三seed、TEST access恰为1以及无持久TEST projection/cache。现这些冻结字段全部成为guidance readiness硬门；
+`POSTTEST_NOT_AUTHORIZED`或任一字段矛盾均不能传递frozen TEST PASS。
+
+本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile PASS。TEST access仍为0，readiness与
+guidance均未授权或materialize，claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_readiness_receipt_gate_v1.json`。

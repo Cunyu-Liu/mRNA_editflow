@@ -14,7 +14,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from core.route2_xeditcritic_gate_v4 import adjudicate_critic_readiness_v4
+from core.route2_xeditcritic_gate_v4 import (
+    CONFIRMATION_SEEDS_V4,
+    adjudicate_critic_readiness_v4,
+)
 
 
 def _require(condition: bool, message: str) -> None:
@@ -37,7 +40,16 @@ def compose_readiness_v4(
     _require(
         posttest_receipt.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1"
-        and posttest_receipt.get("development_test_metrics_in_receipt") is False,
+        and posttest_receipt.get("status") == "XEDITCRITIC_V4_POSTTEST_AUTHORIZED"
+        and posttest_receipt.get("required_seeds") == list(CONFIRMATION_SEEDS_V4)
+        and posttest_receipt.get("frozen_test_gate_status")
+        == "XEDITCRITIC_V4_FROZEN_TEST_PASS"
+        and posttest_receipt.get("all_development_refit_authorized") is True
+        and int(posttest_receipt.get("development_test_access_event_count", -1)) == 1
+        and posttest_receipt.get("general_test_projection_persisted") is False
+        and posttest_receipt.get("test_bottom_six_cache_persisted") is False
+        and posttest_receipt.get("development_test_metrics_in_receipt") is False
+        and posttest_receipt.get("new_final_evaluation_outcomes_accessed") is False,
         "Critic V4 outcome-free posttest receipt is absent",
     )
     _require(

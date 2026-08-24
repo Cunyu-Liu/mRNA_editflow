@@ -291,9 +291,14 @@ def test_v4_loso_collector_and_readiness_close_exact_terminal_package(tmp_path: 
     receipt = {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_authorization_receipt.v1",
         "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED",
+        "required_seeds": list(CONFIRMATION_SEEDS_V4),
         "frozen_test_gate_status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
         "all_development_refit_authorized": True,
+        "development_test_access_event_count": 1,
+        "general_test_projection_persisted": False,
+        "test_bottom_six_cache_persisted": False,
         "development_test_metrics_in_receipt": False,
+        "new_final_evaluation_outcomes_accessed": False,
     }
     refit = {
         "status": "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE",
@@ -306,6 +311,14 @@ def test_v4_loso_collector_and_readiness_close_exact_terminal_package(tmp_path: 
     readiness = compose_readiness_v4(three, receipt, refit, loso)
     assert readiness["status"] == "CRITIC_V4_READY_FOR_GUIDANCE"
     assert readiness["guidance_authorized"] is True
+
+    receipt["status"] = "XEDITCRITIC_V4_POSTTEST_NOT_AUTHORIZED"
+    try:
+        compose_readiness_v4(three, receipt, refit, loso)
+    except Exception as error:
+        assert "posttest receipt is absent" in str(error)
+    else:
+        raise AssertionError("non-authorizing frozen TEST receipt reached readiness")
 
 
 def test_v4_loso_technical_failure_is_terminal_no_go(tmp_path: Path) -> None:

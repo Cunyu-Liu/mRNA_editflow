@@ -4110,3 +4110,11 @@ refit/LOSO runtime现在消费与screen authorizer/trainer相同的正式Critic 
 本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile/JSON PASS。Development TEST access=0，
 未启动post-TEST optimizer或new Evaluation read。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_posttest_preflight_binding_v1.json`。
+
+## Critic V4 readiness receipt strict gate focused record（2026-08-25）
+
+guidance readiness现在只接受精确AUTHORIZED post-TEST receipt，并复核三seed、frozen TEST PASS、access=1、无持久
+TEST projection/cache、无metrics receipt与无new Evaluation read；NO-GO receipt不能进入readiness。
+
+本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile PASS。未运行TEST/refit/LOSO/readiness，
+protected read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_readiness_receipt_gate_v1.json`。

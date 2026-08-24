@@ -1,0 +1,31 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_readiness_receipt_gate_audit.v1",
+  "status": "XEDITCRITIC_V4_READINESS_RECEIPT_GATE_CLOSED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T03:03:00+08:00",
+  "head_before_change": "6cd64d23c91f12abe2f56e1252f4b25d9f0e7626",
+  "required_receipt_fields": {
+    "status": "XEDITCRITIC_V4_POSTTEST_AUTHORIZED",
+    "required_seeds": [20260908, 20260909, 20260910],
+    "frozen_test_gate_status": "XEDITCRITIC_V4_FROZEN_TEST_PASS",
+    "all_development_refit_authorized": true,
+    "development_test_access_event_count": 1,
+    "general_test_projection_persisted": false,
+    "test_bottom_six_cache_persisted": false,
+    "development_test_metrics_in_receipt": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "verification": {
+    "focused_posttest_readiness_tests": "14 passed",
+    "critic_v4_related_tests": "90 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "development_test_access_events": 0,
+    "readiness_materialized": false,
+    "guidance_authorized": false,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_GUIDANCE_AUTHORIZATION_CLOSURE_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}
