@@ -3598,3 +3598,14 @@ V4 gate额外要求mode固定、无free action-ratio、`MatchedComputeRecordV4`�
 independent evaluator不进梯度。critic self-score提高但measured/evaluator证据失败会标记reward exploitation。
 本项不运行generation或gate；focused=12/12、完整XEditFlow=133/133、V3.3.2=96/96，compile/diff-check PASS。
 审计：`audits/route_a_v3_route2_xeditflow_v4_three_seed_gate_v1.json`。
+
+## XEditFlow V4 batched mode-fixed SMC执行层（2026-08-24）
+
+`core/route2_xeditflow_smc_runtime_v4.py`已补齐32-particle、mode-fixed、batched scalar-potential SMC。mode从root
+进入粒子state并随完整lineage重采样，不能逐action重选；formal rate/value provider要求CUDA/BF16，rate始终先经过
+hard-legality约束。compute记录分别统计trunk、八个mode head、value与三名critic member，执行320/source ceiling。
+
+本地验证：XEditFlow/guidance focused与相邻180/180，精确V3.3.2 cohort 96/96，compile/diff-check PASS。本项没有
+创建readiness或guidance artifact、没有训练value或运行SMC，protected read仍为0。A100 current-HEAD验证继续受五个
+旧launch-head C3作业terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditflow_v4_batched_smc_runtime_v1.json`。

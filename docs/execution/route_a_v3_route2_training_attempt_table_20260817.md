@@ -1678,6 +1678,19 @@ C2 full/F3 training/C2 source-only分别在12:00:54/12:04:56/12:11:01保持RUNNI
 7,933/9,917/7,695秒，均无terminal/failure；下一窗口分别为12:30:54/12:34:56/12:41:01。未读active
 metric、未新增attempt或叠加GPU任务；protected outcome read=0，A100 HEAD=`22317ed`。
 
+## XEditFlow V4 batched mode-fixed SMC runtime（2026-08-24）
+
+已新增独立V4 batched SMC执行核心，避免复用只支持单模式、V2计费schema的V3 runner。32个粒子各自携带
+trajectory-fixed mode，action与stratified resampling均复制完整mode state；base proposal只覆盖hard-legal actions，
+importance weight严格为单一scalar potential difference，不存在free action-ratio head。正式SetFlow provider要求
+CUDA/BF16，并从同一次trunk forward中按粒子的固定mode选择rate。
+
+`MatchedComputeRecordV4`在该runtime中分别计费每个batched trunk调用、8个mode head、value调用，并保留三名critic
+member的独立计费槽及320 forward-equivalents/source硬上限。本项不新增optimizer attempt，不创建guidance授权，
+不运行SMC。focused/相邻=180/180、V3.3.2=96/96、compile/diff-check PASS；A100 current-HEAD测试仍等待五个
+旧C3 launch-head jobs自然terminal。Development TEST本阶段追加读取=0，new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditflow_v4_batched_smc_runtime_v1.json`。
+
 ## XEditFlow V4 guidance authorization/invariant implementation（2026-08-24）
 
 本逻辑任务只实现未来V4 guidance的联合授权与fixed-mode scalar-potential/compute接口，不执行参数更新，因此

@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_batched_smc_runtime_audit.v1",
+  "status": "IMPLEMENTED_NOT_AUTHORIZED_OR_EXECUTED",
+  "date": "2026-08-24",
+  "scope": "XEditFlow V4 mode-fixed batched scalar-potential SMC runtime",
+  "implementation": {
+    "runtime": "core/route2_xeditflow_smc_runtime_v4.py",
+    "particle_count": 32,
+    "candidate_cap": 32,
+    "latent_mode_count": 8,
+    "mode_is_part_of_particle_state": true,
+    "mode_resampled_per_action": false,
+    "resampling_copies_complete_mode_state": true,
+    "scalar_potential_difference_only": true,
+    "free_action_ratio_head_used": false,
+    "hard_legality_before_sampling": true,
+    "forward_equivalent_ceiling_per_source": 320,
+    "trunk_mode_value_and_each_critic_member_separately_chargeable": true,
+    "formal_provider_requires_cuda_bf16": true,
+    "cpu_fallback": false
+  },
+  "tests": {
+    "focused_and_adjacent_command": "python -m pytest -q tests/route_a_v3/*xeditflow*.py tests/route_a_v3/*guidance*.py",
+    "focused_and_adjacent_passed": 180,
+    "v332_command": "python -m pytest -q tests/route_a_v3/*v332*.py",
+    "v332_passed": 96,
+    "compileall_passed": true,
+    "diff_check_passed": true,
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "guidance_authorization_created": false,
+    "value_training_started": false,
+    "smc_started": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}

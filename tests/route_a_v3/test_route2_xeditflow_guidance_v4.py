@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from core.route2_legal_xeditflow import FlowState, LegalAction
+from core.route2_legal_xeditflow import FlowState, LegalAction, legal_actions
 from core.route2_xeditflow_gate_v4 import (
     GUIDANCE_GRID_V4,
     adjudicate_guided_three_seed_v4,
@@ -23,6 +23,10 @@ from core.route2_xeditflow_guidance_v4 import (
     potential_guided_rates_v4,
     run_mode_fixed_scalar_potential_smc_v4,
     validate_mode_fixed_transition_v4,
+)
+from core.route2_xeditflow_smc_runtime_v4 import (
+    BatchedModeRateRowV4,
+    run_batched_mode_fixed_potential_smc_v4,
 )
 
 
@@ -222,6 +226,74 @@ def test_v4_smc_replays_and_rejects_within_trajectory_mode_change() -> None:
     with pytest.raises(Exception, match="changed latent mode"):
         run_mode_fixed_scalar_potential_smc_v4(
             _root(), changed_provider, **kwargs
+        )
+
+
+def test_v4_batched_smc_keeps_mode_and_separately_charges_networks() -> None:
+    def rates(states):
+        rows = []
+        for state in states:
+            actions = tuple(legal_actions(state.flow_state))
+            rows.append(
+                BatchedModeRateRowV4(
+                    actions=actions,
+                    rates=(1.0,) * len(actions),
+                    trajectory_mode_id=state.trajectory_mode_id,
+                )
+            )
+        return rows
+
+    def values(states):
+        return [float(state.trajectory_mode_id) / 10.0 for state in states]
+
+    kwargs = {
+        "source_key": "source",
+        "particle_mode_ids": tuple(range(8)) * 4,
+        "particle_seeds": tuple(range(200, 232)),
+        "resampling_seed": 20260921,
+        "beta_max": 1.0,
+    }
+    first = run_batched_mode_fixed_potential_smc_v4(
+        _root(), rates, values, **kwargs
+    )
+    second = run_batched_mode_fixed_potential_smc_v4(
+        _root(), rates, values, **kwargs
+    )
+    assert first["candidates"] == second["candidates"]
+    assert first["resampling_events"] == second["resampling_events"]
+    assert first["setflow_mode_is_fixed_trajectory_state"] is True
+    compute = first["matched_compute"]
+    assert compute["trunk_forwards"] == 1
+    assert compute["mode_forwards"] == 8
+    assert compute["value_forwards"] == 1
+    assert compute["trajectory_count"] == 32
+    assert compute["all_network_forwards_separately_charged"] is True
+
+
+def test_v4_batched_smc_rejects_rate_provider_mode_drift() -> None:
+    def rates(states):
+        rows = []
+        for state in states:
+            actions = tuple(legal_actions(state.flow_state))
+            rows.append(
+                BatchedModeRateRowV4(
+                    actions=actions,
+                    rates=(1.0,) * len(actions),
+                    trajectory_mode_id=(state.trajectory_mode_id + 1) % 8,
+                )
+            )
+        return rows
+
+    with pytest.raises(Exception, match="changed the trajectory mode"):
+        run_batched_mode_fixed_potential_smc_v4(
+            _root(),
+            rates,
+            lambda states: [0.0] * len(states),
+            source_key="source",
+            particle_mode_ids=tuple(range(8)) * 4,
+            particle_seeds=tuple(range(300, 332)),
+            resampling_seed=20260922,
+            beta_max=1.0,
         )
 
 
