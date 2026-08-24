@@ -102,6 +102,48 @@ def validate_source_token_cache_v3(payload: Mapping[str, Any]) -> None:
         _require(int(record_indices.max().item()) < lengths.numel(), "record source index is out of range")
 
 
+def require_source_token_cache_identity_v3(
+    payload: Mapping[str, Any],
+    *,
+    expected_model_id: str,
+    expected_record_count: int,
+    expected_unique_source_count: int,
+    expected_token_count: int,
+    expected_maximum_source_length: int,
+    expected_embedding_width: int = 768,
+) -> dict[str, Any]:
+    """Bind the raw-sequence-free token payload to the frozen source encoder."""
+
+    validate_source_token_cache_v3(payload)
+    lengths = payload["sequence_lengths"]
+    hidden = payload["source_token_hidden"]
+    _require(str(payload.get("model_id")) == str(expected_model_id), "source-token cache mRNABERT revision changed")
+    _require(len(payload["record_ids"]) == int(expected_record_count), "source-token cache record count changed")
+    _require(int(lengths.numel()) == int(expected_unique_source_count), "source-token cache unique source count changed")
+    _require(int(hidden.shape[0]) == int(expected_token_count), "source-token cache token count changed")
+    _require(int(lengths.max().item()) == int(expected_maximum_source_length), "source-token cache maximum source length changed")
+    _require(int(payload.get("embedding_width", -1)) == int(expected_embedding_width), "source-token cache embedding width changed")
+    _require(
+        payload.get("tokenization_policy")
+        == "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+        "source-token cache tokenization policy changed",
+    )
+    _require(
+        payload.get("chunk_policy") == "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
+        "source-token cache chunk policy changed",
+    )
+    return {
+        "model_id": str(payload["model_id"]),
+        "record_count": len(payload["record_ids"]),
+        "unique_source_count": int(lengths.numel()),
+        "token_count": int(hidden.shape[0]),
+        "maximum_source_length": int(lengths.max().item()),
+        "embedding_width": int(payload["embedding_width"]),
+        "tokenization_policy": str(payload["tokenization_policy"]),
+        "chunk_policy": str(payload["chunk_policy"]),
+    }
+
+
 class SourceTokenCacheIndexV3:
     """Record-aligned access without reconstructing or storing source strings."""
 

@@ -28,6 +28,7 @@ from core.route2_experiment_ledger import (
 from core.route2_source_token_cache_v3 import (
     SourceTokenCacheIndexV3,
     load_source_token_cache_v3,
+    require_source_token_cache_identity_v3,
 )
 from core.route2_xeditsetflow_runtime_v4 import (
     build_setflow_screen_model_v4,
@@ -227,6 +228,17 @@ def train(
     )
     vocabs = setflow_source_vocabs_v4(train_records)
     cache_payload = load_source_token_cache_v3(Path(config["source_token_cache_path"]))
+    source_token_cache_identity = require_source_token_cache_identity_v3(
+        cache_payload,
+        expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        expected_record_count=84218,
+        expected_unique_source_count=19303,
+        expected_token_count=2817781,
+        expected_maximum_source_length=837,
+        expected_embedding_width=int(
+            config["architecture"]["frozen_source_mrnabert_width"]
+        ),
+    )
     cache = SourceTokenCacheIndexV3(cache_payload)
     model, capacity = build_setflow_screen_model_v4(
         config, vocabs, run_id=run_id
@@ -513,6 +525,7 @@ def train(
         "optimizer_update_count": update_count,
         "trainable_parameter_count": int(capacity["trainable_parameter_count"]),
         "frozen_pretrained_parameter_count": frozen_pretrained_count,
+        "source_token_cache_identity": source_token_cache_identity,
         "parameter_changed": parameter_changed,
         "passes": pass_rows,
         "wall_time_seconds": elapsed,

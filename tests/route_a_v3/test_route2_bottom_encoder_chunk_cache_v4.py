@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from core.route2_bottom_encoder_chunk_cache_v4 import (
     FrozenBottomEncoderChunkCacheV4Error,
     assemble_frozen_bottom_encoder_chunk_cache_v4,
     materialize_bottom_chunk_batch_v4,
+    require_frozen_bottom_encoder_chunk_cache_identity_v4,
     validate_frozen_bottom_encoder_chunk_cache_v4,
 )
 from core.route2_mrnabert_edit_site_features_v3 import (
@@ -93,6 +95,47 @@ def test_v4_cache_keeps_ragged_edits_and_raw_outcome_payloads_absent() -> None:
     assert source not in repr(payload)
     assert candidate not in repr(payload)
     assert "direction_normalized_delta" not in repr(payload)
+
+
+def test_v4_cache_identity_binds_encoder_revision_width_and_local_policy() -> None:
+    source = "AAAA"
+    candidate = "ACAA"
+    payload = assemble_frozen_bottom_encoder_chunk_cache_v4(
+        [_row("identity", source, candidate, [1])],
+        sequence_to_index={source: 0, candidate: 1},
+        encoded={0: _encoded(source, 1.0), 1: _encoded(candidate, 2.0)},
+        model_id="fixed-mrnabert",
+        pretrained_parameter_count=113_389_056,
+        attention_backend="PYTORCH_SDPA_AUTO",
+    )
+    identity = require_frozen_bottom_encoder_chunk_cache_identity_v4(
+        payload,
+        expected_model_id="fixed-mrnabert",
+        expected_record_count=1,
+        expected_embedding_width=4,
+    )
+    assert identity["chunk_length"] == 1000
+    assert identity["chunk_overlap"] == 64
+    assert identity["local_context_radius"] == 32
+
+    wrong_revision = copy.deepcopy(payload)
+    wrong_revision["model_id"] = "another-model"
+    with pytest.raises(FrozenBottomEncoderChunkCacheV4Error, match="revision"):
+        require_frozen_bottom_encoder_chunk_cache_identity_v4(
+            wrong_revision,
+            expected_model_id="fixed-mrnabert",
+            expected_record_count=1,
+            expected_embedding_width=4,
+        )
+    wrong_radius = copy.deepcopy(payload)
+    wrong_radius["local_context_radius"] = 16
+    with pytest.raises(FrozenBottomEncoderChunkCacheV4Error, match="local radius"):
+        require_frozen_bottom_encoder_chunk_cache_identity_v4(
+            wrong_radius,
+            expected_model_id="fixed-mrnabert",
+            expected_record_count=1,
+            expected_embedding_width=4,
+        )
 
 
 def test_v4_cache_rejects_development_test_before_any_tensor_is_assembled() -> None:

@@ -22,6 +22,7 @@ from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_source_token_cache_v3 import (
     SourceTokenCacheIndexV3,
     load_source_token_cache_v3,
+    require_source_token_cache_identity_v3,
 )
 from core.route2_xeditsetflow_runtime_v4 import build_setflow_screen_model_v4
 from core.route2_xeditsetflow_training_v4 import (
@@ -177,6 +178,17 @@ def run_preflight(
         "SetFlow V4 outcome-free endpoint vocabulary changed",
     )
     cache_payload = load_source_token_cache_v3(Path(config["source_token_cache_path"]))
+    source_token_cache_identity = require_source_token_cache_identity_v3(
+        cache_payload,
+        expected_model_id="YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        expected_record_count=84218,
+        expected_unique_source_count=19303,
+        expected_token_count=2817781,
+        expected_maximum_source_length=837,
+        expected_embedding_width=int(
+            config["architecture"]["frozen_source_mrnabert_width"]
+        ),
+    )
     cache = SourceTokenCacheIndexV3(cache_payload)
     for record in [*train_records, *validation_records]:
         _require(
@@ -256,6 +268,7 @@ def run_preflight(
             field: len(vocab) for field, vocab in vocabs.items()
         },
         "source_cache_record_count": len(cache_payload["record_ids"]),
+        "source_token_cache_identity": source_token_cache_identity,
         "source_cache_raw_sequence_payload_written": int(
             cache_payload["raw_sequence_payload_written"]
         ),
@@ -278,6 +291,7 @@ def run_preflight(
             single_capacity["trainable_parameter_count"]
         ),
         "physical_and_effective_batch_size": 32,
+        "source_token_cache_identity": source_token_cache_identity,
         "selected_train_source_indices": selected_indices,
         "selection_uses_outcome_free_geometry_only": True,
         "optimizer_state_materialized": True,

@@ -57,6 +57,14 @@ def _critic_cache():
         "schema_version": "route_a_v3_route2_frozen_bottom_encoder_chunk_cache_summary.v4",
         "status": "XEDITCRITIC_V4_BOTTOM_SIX_CACHE_COMPLETE",
         "record_count": 107873,
+        "unique_sequence_count": 43730,
+        "embedding_width": 768,
+        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+        "chunk_nucleotides": 1000,
+        "chunk_overlap": 64,
+        "local_context_radius": 32,
+        "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+        "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
         "raw_sequence_payload_written": 0,
         "label_or_outcome_payload_written": 0,
         "development_test_outcomes_accessed": False,
@@ -68,6 +76,13 @@ def _flow_cache():
     return {
         "schema_version": "route_a_v3_route2_setflow_source_token_cache_summary.v3",
         "status": "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE",
+        "projection_record_count": 107873,
+        "eligible_record_count": 84218,
+        "unique_source_count": 19303,
+        "unique_source_token_count": 2817781,
+        "maximum_source_length": 837,
+        "embedding_width": 768,
+        "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
         "raw_sequence_payload_written": 0,
         "outcome_value_access_count": 0,
         "development_test_outcomes_accessed": False,
@@ -123,6 +138,22 @@ def test_preflight_authorization_requires_clean_tested_current_head() -> None:
     with pytest.raises(Exception, match="not synchronized"):
         build_preflight_authorization_v4(
             "setflow", _c3(), dirty, _flow_cache(), current_git_head=HEAD
+        )
+
+
+def test_preflight_authorization_rejects_wrong_cache_identity() -> None:
+    critic_cache = _critic_cache()
+    critic_cache["local_context_radius"] = 16
+    with pytest.raises(Exception, match="not terminal and isolated"):
+        build_preflight_authorization_v4(
+            "critic", _c3(), _a100(), critic_cache, current_git_head=HEAD
+        )
+
+    flow_cache = _flow_cache()
+    flow_cache["model_id"] = "another-model"
+    with pytest.raises(Exception, match="not terminal and isolated"):
+        build_preflight_authorization_v4(
+            "setflow", _c3(), _a100(), flow_cache, current_git_head=HEAD
         )
 
 

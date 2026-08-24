@@ -349,6 +349,47 @@ def validate_frozen_bottom_encoder_chunk_cache_v4(payload: Mapping[str, Any]) ->
                 _require(end - start <= 2 * V4_LOCAL_RADIUS + 1, f"{side} local token window exceeds radius 32")
 
 
+def require_frozen_bottom_encoder_chunk_cache_identity_v4(
+    payload: Mapping[str, Any],
+    *,
+    expected_model_id: str,
+    expected_record_count: int,
+    expected_embedding_width: int = 768,
+) -> dict[str, Any]:
+    """Bind a valid tensor cache to the frozen V4 encoder and chunk policy."""
+
+    validate_frozen_bottom_encoder_chunk_cache_v4(payload)
+    _require(str(payload.get("model_id")) == str(expected_model_id), "bottom-six cache mRNABERT revision changed")
+    _require(len(payload["record_ids"]) == int(expected_record_count), "bottom-six cache record count changed")
+    _require(int(payload.get("embedding_width", -1)) == int(expected_embedding_width), "bottom-six cache embedding width changed")
+    _require(payload.get("frozen_encoder_blocks") == [0, 1, 2, 3, 4, 5], "bottom-six cache frozen block scope changed")
+    _require(payload.get("trainable_encoder_blocks") == [6, 7, 8, 9, 10, 11], "bottom-six cache upper block scope changed")
+    _require(int(payload.get("chunk_length", -1)) == CHUNK_NUCLEOTIDES, "bottom-six cache chunk length changed")
+    _require(int(payload.get("chunk_overlap", -1)) == CHUNK_OVERLAP, "bottom-six cache chunk overlap changed")
+    _require(int(payload.get("local_context_radius", -1)) == V4_LOCAL_RADIUS, "bottom-six cache local radius changed")
+    _require(
+        payload.get("tokenization_policy")
+        == "UTR_SINGLE_NUCLEOTIDE_SPACE_SEPARATED_DNA_ALPHABET_ONE_LEADING_SPECIAL",
+        "bottom-six cache tokenization policy changed",
+    )
+    offsets = payload["chunk_special_token_offsets"]
+    _require(
+        bool(torch.all(offsets == LEADING_SPECIAL_TOKENS).item()),
+        "bottom-six cache special-token offset changed",
+    )
+    return {
+        "model_id": str(payload["model_id"]),
+        "record_count": len(payload["record_ids"]),
+        "embedding_width": int(payload["embedding_width"]),
+        "frozen_encoder_blocks": list(payload["frozen_encoder_blocks"]),
+        "trainable_encoder_blocks": list(payload["trainable_encoder_blocks"]),
+        "chunk_length": int(payload["chunk_length"]),
+        "chunk_overlap": int(payload["chunk_overlap"]),
+        "local_context_radius": int(payload["local_context_radius"]),
+        "special_token_offset": LEADING_SPECIAL_TOKENS,
+    }
+
+
 def materialize_bottom_chunk_batch_v4(
     payload: Mapping[str, Any], record_indices: Sequence[int]
 ) -> dict[str, torch.Tensor]:

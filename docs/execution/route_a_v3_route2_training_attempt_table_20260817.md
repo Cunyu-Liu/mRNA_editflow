@@ -2908,3 +2908,20 @@ A100 current-HEAD sync继续等待五项自然terminal。没有代码变化，�
 精确V3.3.2为96/96。相关authorization/preflight focused 12/12、精确V3.3.2 96/96、compile/diff-check PASS。
 未执行A100 sync、preflight、screen或optimizer，protected read=0；下一C3本地窗口仍不早于00:44:44。
 审计：`audits/route_a_v3_route2_xedit_v4_a100_current_head_gate_binding_v1.json`。
+
+## V4 frozen cache payload identity binding（2026-08-25）
+
+补齐summary授权与实际tensor payload之间的身份绑定。Critic bottom-six cache现在必须在authorizer、formal
+preflight和正式trainer三处同时匹配冻结mRNABERT revision、107,873 records、43,730 unique sequences、
+width768、blocks0–5/6–11、chunk1000/overlap64/radius32及special offset1；preflight与terminal run summary
+均写入同一identity receipt。
+
+SetFlow复用的4.3GB V3 source-token cache也必须匹配同一revision、84,218 records、19,303 unique sources、
+2,817,781 tokens、maximum length837、width768和complete-chunk policy；preflight、source data audit及terminal
+training summary保留identity。错误model revision或radius会在formal preflight参数/显存测量前失败；正式trainer
+还会在模型构建和参数更新前复核实际payload。
+
+项目要求Python≥3.10；默认macOS Python3.9的`zip(strict=True)`失败不作为正式实现失败，也没有据此降级代码。
+正确Python3.13下双cache focused35/35、完整Critic V4 108/108、完整SetFlow V4 67/67、精确V3.3.2
+96/96、compile/diff-check PASS。未materialize cache、preflight、screen或optimizer，protected read=0。
+审计：`audits/route_a_v3_route2_xedit_v4_frozen_cache_identity_binding_v1.json`。

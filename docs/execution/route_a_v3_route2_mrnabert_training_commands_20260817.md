@@ -3904,3 +3904,16 @@ SetFlow focused各自`passed>0/failed=0`及精确V3.3.2 `96/96`；仅有`failed=
 authorization/preflight focused 12/12、精确本地V3.3.2 96/96、compile/diff-check PASS。尚未解除C3 barrier，
 因此没有A100 current-HEAD sync、cache/preflight/screen执行或optimizer attempt；Development TEST/new Evaluation
 read保持0。审计：`audits/route_a_v3_route2_xedit_v4_a100_current_head_gate_binding_v1.json`。
+
+## V4 frozen cache identity focused record（2026-08-25）
+
+V4 preflight不再只相信cache summary的schema/status。Critic实际bottom-six payload须逐项匹配冻结model ID、
+record/sequence count、width、bottom/top block scope、chunk/overlap/radius与special-token offset；SetFlow实际
+source-token payload须匹配同一model ID、84,218 record、19,303 source、2,817,781 tokens、length837、width768
+和complete-chunk policy。两条trainer会再次核验实际payload，并把identity写入terminal summary。
+
+正确Python3.13（项目requires-python≥3.10）下，双cache定向35/35、Critic V4 108/108、SetFlow V4 67/67、
+V3.3.2 96/96 PASS，compile/diff-check PASS。默认Python3.9不满足项目版本要求，其`zip(strict=True)`失败未被
+计作正式路径失败、也未触发兼容性改写。没有GPU/cache/preflight/optimizer执行，protected read=0；A100验证与
+下一C3检查仍分别等待terminal barrier和本地00:44:44窗口。审计：
+`audits/route_a_v3_route2_xedit_v4_frozen_cache_identity_binding_v1.json`。

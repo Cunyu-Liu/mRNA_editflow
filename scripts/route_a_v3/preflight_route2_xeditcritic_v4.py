@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_bottom_encoder_chunk_cache_v4 import (
     load_frozen_bottom_encoder_chunk_cache_v4,
+    require_frozen_bottom_encoder_chunk_cache_identity_v4,
 )
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_xeditcritic_batch_v4 import (
@@ -350,6 +351,12 @@ def run(
     cache_payload = load_frozen_bottom_encoder_chunk_cache_v4(
         Path(config["bottom_six_cache"])
     )
+    cache_identity = require_frozen_bottom_encoder_chunk_cache_identity_v4(
+        cache_payload,
+        expected_model_id=str(config["model_id"]),
+        expected_record_count=int(config["data_geometry"]["expected_record_count"]),
+        expected_embedding_width=int(config["architecture"]["pretrained_width"]),
+    )
     cache = FrozenBottomEncoderChunkCacheViewV4(
         cache_payload, set(str(value) for value in cache_payload["record_ids"])
     )
@@ -423,6 +430,7 @@ def run(
         "geometry_selection": "TRAIN_ONLY_DESCENDING_EDIT_COUNT_THEN_SEQUENCE_LENGTH_THEN_RECORD_ID",
         "selected_train_record_ids": selected_ids,
         "selected_train_record_count": len(selected_ids),
+        "bottom_six_cache_identity": cache_identity,
         "target_value_accessed": False,
         "validation_metric_read": False,
         "measurements": {

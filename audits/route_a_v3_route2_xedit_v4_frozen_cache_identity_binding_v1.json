@@ -1,0 +1,59 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_frozen_cache_identity_binding.v1",
+  "status": "V4_CRITIC_AND_SETFLOW_CACHE_IDENTITIES_BOUND_NOT_MATERIALIZED",
+  "recorded_at_local": "2026-08-25T00:05:07+08:00",
+  "git_head_before_delivery": "42d2adc",
+  "critic_bottom_six_cache_identity": {
+    "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+    "record_count": 107873,
+    "unique_sequence_count": 43730,
+    "embedding_width": 768,
+    "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+    "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+    "chunk_length": 1000,
+    "chunk_overlap": 64,
+    "local_context_radius": 32,
+    "special_token_offset": 1,
+    "bound_in_summary_authorization": true,
+    "bound_in_preflight_payload": true,
+    "bound_in_training_payload": true,
+    "written_to_preflight_and_terminal_run_summary": true
+  },
+  "setflow_source_token_cache_identity": {
+    "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+    "record_count": 84218,
+    "unique_source_count": 19303,
+    "token_count": 2817781,
+    "maximum_source_length": 837,
+    "embedding_width": 768,
+    "chunk_policy": "ONE_COMPLETE_CHUNK_MAXIMUM_1000_NUCLEOTIDES",
+    "bound_in_summary_authorization": true,
+    "bound_in_preflight_payload": true,
+    "bound_in_training_payload": true,
+    "written_to_preflight_and_terminal_training_summary": true
+  },
+  "verification": {
+    "supported_local_python": "3.13.5",
+    "project_python_requirement": ">=3.10",
+    "dual_cache_focused": "35/35 PASS",
+    "complete_critic_v4_focused": "108/108 PASS",
+    "complete_setflow_v4_focused": "67/67 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "unsupported_python_3_9_result_used_as_formal_evidence": false,
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "critic_cache_materialized": false,
+    "setflow_cache_rebuilt": false,
+    "preflight_executed": false,
+    "screen_executed": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "large_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+  "next_remote_c3_check_not_before_local": "2026-08-25T00:44:44+08:00",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

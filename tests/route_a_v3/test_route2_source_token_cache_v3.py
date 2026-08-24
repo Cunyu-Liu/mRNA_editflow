@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import copy
+
+import pytest
 import torch
 
 from core.route2_mrnabert_edit_site_features_v3 import extract_nucleotide_token_hidden
-from core.route2_source_token_cache_v3 import assemble_source_token_cache_v3
+from core.route2_source_token_cache_v3 import (
+    SourceTokenCacheV3Error,
+    assemble_source_token_cache_v3,
+    require_source_token_cache_identity_v3,
+)
 
 
 def test_nucleotide_token_extraction_excludes_both_special_tokens() -> None:
@@ -36,3 +43,28 @@ def test_source_cache_is_ragged_shared_float16_and_has_no_raw_sequence() -> None
     assert payload["source_token_hidden"].dtype == torch.float16
     assert payload["raw_sequence_payload_written"] == 0
     assert first not in repr(payload) and second not in repr(payload)
+
+    identity = require_source_token_cache_identity_v3(
+        payload,
+        expected_model_id="frozen-model",
+        expected_record_count=3,
+        expected_unique_source_count=2,
+        expected_token_count=10,
+        expected_maximum_source_length=6,
+        expected_embedding_width=3,
+    )
+    assert identity["unique_source_count"] == 2
+    assert identity["token_count"] == 10
+
+    wrong_model = copy.deepcopy(payload)
+    wrong_model["model_id"] = "another-model"
+    with pytest.raises(SourceTokenCacheV3Error, match="revision"):
+        require_source_token_cache_identity_v3(
+            wrong_model,
+            expected_model_id="frozen-model",
+            expected_record_count=3,
+            expected_unique_source_count=2,
+            expected_token_count=10,
+            expected_maximum_source_length=6,
+            expected_embedding_width=3,
+        )

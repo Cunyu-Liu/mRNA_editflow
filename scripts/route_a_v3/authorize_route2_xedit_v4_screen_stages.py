@@ -95,6 +95,15 @@ def _require_cache(
             == "route_a_v3_route2_frozen_bottom_encoder_chunk_cache_summary.v4"
             and cache.get("status") == "XEDITCRITIC_V4_BOTTOM_SIX_CACHE_COMPLETE"
             and int(cache.get("record_count", -1)) == 107873
+            and int(cache.get("unique_sequence_count", -1)) == 43730
+            and int(cache.get("embedding_width", -1)) == 768
+            and str(cache.get("model_id"))
+            == "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40"
+            and int(cache.get("chunk_nucleotides", -1)) == 1000
+            and int(cache.get("chunk_overlap", -1)) == 64
+            and int(cache.get("local_context_radius", -1)) == 32
+            and cache.get("frozen_encoder_blocks") == [0, 1, 2, 3, 4, 5]
+            and cache.get("trainable_encoder_blocks") == [6, 7, 8, 9, 10, 11]
             and int(cache.get("raw_sequence_payload_written", -1)) == 0
             and int(cache.get("label_or_outcome_payload_written", -1)) == 0,
             "Critic V4 bottom-six cache is not terminal and isolated",
@@ -104,6 +113,14 @@ def _require_cache(
             cache.get("schema_version")
             == "route_a_v3_route2_setflow_source_token_cache_summary.v3"
             and cache.get("status") == "XEDITSETFLOW_V3_SOURCE_TOKEN_CACHE_COMPLETE"
+            and int(cache.get("projection_record_count", -1)) == 107873
+            and int(cache.get("eligible_record_count", -1)) == 84218
+            and int(cache.get("unique_source_count", -1)) == 19303
+            and int(cache.get("unique_source_token_count", -1)) == 2817781
+            and int(cache.get("maximum_source_length", -1)) == 837
+            and int(cache.get("embedding_width", -1)) == 768
+            and str(cache.get("model_id"))
+            == "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40"
             and int(cache.get("raw_sequence_payload_written", -1)) == 0
             and int(cache.get("outcome_value_access_count", -1)) == 0,
             "SetFlow source-token cache is not terminal and isolated",

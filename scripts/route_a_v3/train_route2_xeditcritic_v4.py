@@ -23,6 +23,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_bottom_encoder_chunk_cache_v4 import (
     load_frozen_bottom_encoder_chunk_cache_v4,
+    require_frozen_bottom_encoder_chunk_cache_identity_v4,
 )
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_experiment_ledger import (
@@ -782,6 +783,7 @@ def run(
         neutral_studies = (
             {str(config["held_out_study"])} if run_stage == "LOSO" else set()
         )
+        bottom_six_cache_identity: dict[str, Any] | None = None
         if spec.model_kind == "C0-V4":
             train_dataset: XEditCriticDatasetV3 = XEditCriticDatasetV3(
                 train_records,
@@ -809,6 +811,16 @@ def run(
         else:
             cache_payload = load_frozen_bottom_encoder_chunk_cache_v4(
                 Path(config["bottom_six_cache"])
+            )
+            bottom_six_cache_identity = (
+                require_frozen_bottom_encoder_chunk_cache_identity_v4(
+                    cache_payload,
+                    expected_model_id=str(config["model_id"]),
+                    expected_record_count=int(geometry["expected_record_count"]),
+                    expected_embedding_width=int(
+                        config["architecture"]["pretrained_width"]
+                    ),
+                )
             )
             cache = FrozenBottomEncoderChunkCacheViewV4(
                 cache_payload, set(record_by_id)
@@ -1052,6 +1064,7 @@ def run(
             "cuda_device_name": torch.cuda.get_device_name(device),
             "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
             "capacity": capacity,
+            "bottom_six_cache_identity": bottom_six_cache_identity,
             "train_record_count": len(train_records),
             "validation_record_count": len(validation_records),
             "pass_count": 8,
