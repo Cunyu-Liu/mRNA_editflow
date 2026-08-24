@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 import time
@@ -79,8 +80,10 @@ def validate_smc_run_config_v4(config: Mapping[str, Any]) -> None:
         int(config.get("forward_equivalent_ceiling_per_source", -1)) == 320,
         "V4 SMC compute ceiling changed",
     )
+    critic_forwards = list(config.get("terminal_critic_forwards_by_member", ()))
     _require(
-        list(config.get("terminal_critic_forwards_by_member", ())) == [1, 1, 1],
+        len(critic_forwards) == 3
+        and all(int(value) in {1, 2, 4, 8} for value in critic_forwards),
         "V4 SMC terminal critic reservation changed",
     )
     _require(
@@ -122,6 +125,30 @@ def maximum_round_forward_equivalents_v4(edit_budget: int) -> int:
     return 2 * edit_budget * (1 + 8 + 1)
 
 
+def terminal_critic_forward_reservation_v4(
+    refit_manifest: Mapping[str, Any],
+) -> tuple[int, int, int]:
+    """Derive actual per-member terminal batches from frozen physical batches."""
+
+    refit_rows = sorted(
+        refit_manifest.get("checkpoints", ()),
+        key=lambda row: int(row["seed"]),
+    )
+    _require(
+        refit_manifest.get("status")
+        == "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE"
+        and [int(row["seed"]) for row in refit_rows]
+        == [20260908, 20260909, 20260910],
+        "V4 SMC critic refit manifest differs",
+    )
+    physical_batches = [int(row.get("physical_batch_size", -1)) for row in refit_rows]
+    _require(
+        all(value in {4, 8, 16, 32} for value in physical_batches),
+        "V4 SMC critic refit physical batch differs",
+    )
+    return tuple(math.ceil(32 / value) for value in physical_batches)
+
+
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_smc_run_config_v4(config)
     _require(output_dir == Path(str(config["output_dir"])), "V4 SMC output differs from config")
@@ -134,6 +161,15 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     _require(
         authorization["guidance_authorized"] is True,
         "V4 SMC remains blocked before joint readiness",
+    )
+    refit_manifest = _json(Path(config["critic_refit_manifest_path"]))
+    expected_critic_reservation = terminal_critic_forward_reservation_v4(
+        refit_manifest
+    )
+    _require(
+        expected_critic_reservation
+        == tuple(int(value) for value in config["terminal_critic_forwards_by_member"]),
+        "V4 SMC terminal critic reservation does not match physical batches",
     )
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
     _require(

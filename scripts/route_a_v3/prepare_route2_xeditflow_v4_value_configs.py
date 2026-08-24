@@ -29,6 +29,7 @@ from scripts.route_a_v3.score_route2_xeditflow_value_rollouts_v4 import (
     validate_value_critic_score_config_v4,
 )
 from scripts.route_a_v3.run_route2_xeditflow_smc_v4 import (
+    terminal_critic_forward_reservation_v4,
     validate_smc_run_config_v4,
 )
 
@@ -128,6 +129,9 @@ def build_value_configs_v4(
         sorted(int(row["seed"]) for row in checkpoints)
         == list(CRITIC_SEEDS_V4),
         "V4 critic refit checkpoint seeds differ",
+    )
+    critic_forwards_by_member = list(
+        terminal_critic_forward_reservation_v4(critic_refit_manifest)
     )
     _selected_checkpoint_pass_v4(setflow_confirmation, seed=20260912)
     _require(
@@ -338,6 +342,7 @@ def build_value_configs_v4(
         smc_config = {
             "schema_version": "route_a_v3_route2_xeditflow_smc_run_config.v4",
             "critic_readiness_path": str(protocol["critic_readiness_path"]),
+            "critic_refit_manifest_path": str(protocol["critic_refit_manifest_path"]),
             "setflow_confirmation_path": str(protocol["setflow_confirmation_path"]),
             "setflow_runtime_config_path": str(
                 protocol["setflow_confirmation_runtime_config_paths"]["20260912"]
@@ -359,7 +364,7 @@ def build_value_configs_v4(
             "ess_threshold": 16.0,
             "resampling": "STRATIFIED",
             "forward_equivalent_ceiling_per_source": 320,
-            "terminal_critic_forwards_by_member": [1, 1, 1],
+            "terminal_critic_forwards_by_member": critic_forwards_by_member,
             "maximum_sampling_rounds": 32,
             "action_space": "SUB+STOP",
             "replay_check": True,

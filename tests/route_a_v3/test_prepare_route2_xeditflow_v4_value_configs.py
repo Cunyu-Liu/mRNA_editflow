@@ -70,7 +70,11 @@ def _refit() -> dict:
         "refit_pass_count": 8,
         "loso_authorized": True,
         "checkpoints": [
-            {"seed": seed, "checkpoint_path": f"/mnt/refit-{seed}.pt"}
+            {
+                "seed": seed,
+                "checkpoint_path": f"/mnt/refit-{seed}.pt",
+                "physical_batch_size": 8,
+            }
             for seed in (20260908, 20260909, 20260910)
         ],
         "development_test_outcomes_accessed_during_refit": False,
@@ -139,7 +143,7 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
         row["smc_config"]["decoder_seed_base"] == 20261001
         and row["smc_config"]["physical_gpu_index"] == 5
         and row["smc_config"]["terminal_critic_forwards_by_member"]
-        == [1, 1, 1]
+        == [4, 4, 4]
         for row in payload["guidance_jobs"]
     )
     assert payload["beta_max_used_in_value_target_or_training"] is False

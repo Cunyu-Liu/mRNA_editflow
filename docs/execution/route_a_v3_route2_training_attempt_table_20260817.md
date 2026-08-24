@@ -2683,11 +2683,22 @@ terminal。审计：`audits/route_a_v3_route2_xeditflow_v4_multiround_compute_v1
 正式runner已连接冻结SetFlow seed20260912 checkpoint、六个`kappa×temperature` final-pass-8 value checkpoints、
 root mode prior、32-particle SMC、完整fixed-seed replay和多轮matched-compute合并。decoder seed base现前瞻固定为
 20261001，18个组合共享相同seed streams；每source候选仍封顶32，总forward ceiling仍为320。三名critic member
-各1次终态batch forward只在generation阶段预留，并明确标为pending，不能冒充已执行scoring。
+的终态forward按各自refit冻结的physical batch动态预留为`ceil(32/batch)`，并明确标为pending，不能冒充已执行scoring。
 
 本地focused/相邻29/29，完整XEditFlow/guidance 218/218，精确V3.3.2 96/96 PASS。config未materialize、SMC/
 critic scoring/optimizer均未启动，protected read=0，claim不变；A100 current-HEAD测试等待五个旧C3作业terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。
+
+## XEditFlow V4 terminal critic dynamic compute reservation（2026-08-24）
+
+正式执行前发现固定`[1,1,1]` reservation只在三名critic physical batch均为32时成立；V4合法preflight还可能
+冻结4/8/16。refit manifest现保留每seed的physical batch，SMC config按seed顺序动态计算`ceil(32/batch)`，即
+batch4/8/16/32分别预留8/4/2/1次forward；runner再次从manifest独立推导并要求完全一致。这样不会因大critic的
+真实microbatch数低估matched compute。
+
+本地focused/相邻35/35、Critic V4 77/77、XEditFlow/guidance 219/219、精确V3.3.2 96/96 PASS。未materialize
+config、未执行SMC/scoring/optimizer，protected read=0，claim不变；A100 current-HEAD测试仍等待旧C3全部terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_dynamic_critic_compute_v1.json`。
 
 ## 21:46 C3 five-job scheduled health（2026-08-24）
 

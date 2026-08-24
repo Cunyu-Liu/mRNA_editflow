@@ -24,7 +24,9 @@
     "resampling": "STRATIFIED",
     "fixed_seed_full_replay": true,
     "forward_equivalent_ceiling_per_source": 320,
-    "terminal_critic_forwards_reserved_by_member": [1, 1, 1],
+    "terminal_critic_forwards_reserved_by_member": "CEIL_32_CANDIDATE_CAP_DIVIDED_BY_EACH_FROZEN_MEMBER_PHYSICAL_BATCH_SIZE",
+    "allowed_member_physical_batches": [4, 8, 16, 32],
+    "allowed_member_forward_reservations": [8, 4, 2, 1],
     "critic_reservation_marked_pending_until_scoring": true,
     "mode_selected_from_root_prior_once_per_trajectory": true,
     "mode_fixed_through_resampling": true,
@@ -36,8 +38,9 @@
     "cpu_fallback_allowed": false
   },
   "verification": {
-    "focused_and_adjacent_tests": "29/29 PASS",
-    "all_xeditflow_and_guidance_tests": "218/218 PASS",
+    "focused_and_adjacent_tests": "35/35 PASS_AFTER_DYNAMIC_CRITIC_RESERVATION_FIX",
+    "all_xeditcritic_v4_tests": "77/77 PASS",
+    "all_xeditflow_and_guidance_tests": "219/219 PASS",
     "exact_local_v332_cohort": "96/96 PASS",
     "compile_json_diff_check": "PASS",
     "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"

@@ -181,6 +181,7 @@ def test_v4_refit_adjudicator_requires_exact_three_terminal_jobs(tmp_path: Path)
                 "validation_record_count": 0,
                 "pass_count": 8,
                 "selected_pass": 8,
+                "physical_batch_size": 8,
                 "checkpoint_path": f"/mnt/{seed}.pt",
                 "development_test_outcome_reads": 0,
                 "new_final_evaluation_outcome_reads": 0,
@@ -203,6 +204,9 @@ def test_v4_refit_adjudicator_requires_exact_three_terminal_jobs(tmp_path: Path)
     )
     assert result["status"] == "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE"
     assert result["loso_authorized"] is True
+    assert {
+        row["physical_batch_size"] for row in result["checkpoints"]
+    } == {8}
 
 
 def _loso_manifest(tmp_path: Path) -> dict:

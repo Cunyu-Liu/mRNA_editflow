@@ -3731,6 +3731,16 @@ optimizer attempt、protected read=0。A100 current-HEAD测试仍等待旧C3全�
 执行，protected read=0。A100 current-HEAD测试等待旧C3全部terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_formal_smc_runner_v1.json`。
 
+## XEditFlow V4 terminal critic physical-batch计费修复（2026-08-24）
+
+refit adjudicator现把每个20260908/09/10 member的冻结`physical_batch_size`写入轻量manifest。guidance config
+producer据此按`ceil(32/physical_batch_size)`预留每成员终态forward，runner在CUDA执行前重新推导并拒绝任何不一致；
+合法batch4/8/16/32分别对应8/4/2/1次最大reservation。正式scorer随后必须按实际candidate count闭合预留值。
+
+本地focused/相邻35/35、Critic V4 77/77、XEditFlow/guidance 219/219、精确V3.3.2 96/96 PASS。未新增
+attempt或protected read；A100 current-HEAD测试等待旧C3 terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_dynamic_critic_compute_v1.json`。
+
 ## 21:46 C3 long-interval health（2026-08-24）
 
 五个C3作业在远端21:46:08均无terminal/failure且PID仍活跃，screen gate不存在，launch HEAD=`4047f55`。

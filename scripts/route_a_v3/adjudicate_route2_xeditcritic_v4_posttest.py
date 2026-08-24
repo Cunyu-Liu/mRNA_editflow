@@ -78,12 +78,17 @@ def adjudicate_refits_v4(manifest: Mapping[str, Any]) -> dict[str, Any]:
             and int(terminal.get("validation_record_count", -1)) == 0
             and int(terminal.get("pass_count", -1)) == 8
             and int(terminal.get("selected_pass", -1)) == 8
+            and int(terminal.get("physical_batch_size", -1)) in {4, 8, 16, 32}
             and terminal.get("development_test_outcome_reads") == 0
             and terminal.get("new_final_evaluation_outcome_reads") == 0,
             "Critic V4 refit terminal identity changed",
         )
         completed.append(
-            {"seed": int(job["seed"]), "checkpoint_path": terminal["checkpoint_path"]}
+            {
+                "seed": int(job["seed"]),
+                "checkpoint_path": terminal["checkpoint_path"],
+                "physical_batch_size": int(terminal["physical_batch_size"]),
+            }
         )
     passed = not failures and {row["seed"] for row in completed} == set(CONFIRMATION_SEEDS_V4)
     return {

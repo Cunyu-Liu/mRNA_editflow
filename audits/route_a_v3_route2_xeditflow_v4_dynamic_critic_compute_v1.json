@@ -1,0 +1,36 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_dynamic_critic_compute_audit.v1",
+  "status": "IMPLEMENTED_NOT_EXECUTED",
+  "date": "2026-08-24",
+  "problem": {
+    "previous_assumption": "One terminal batch forward per critic member and source",
+    "reachable_failure": "Critic V4 preflight may freeze physical batch 4, 8, or 16 rather than 32",
+    "consequence": "A fixed [1,1,1] reservation would undercount actual terminal critic forwards and could violate the matched 320-forward ceiling"
+  },
+  "implementation": {
+    "refit_manifest_change": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_posttest.py retains each seed physical_batch_size",
+    "reservation_derivation": "scripts/route_a_v3/run_route2_xeditflow_smc_v4.py::terminal_critic_forward_reservation_v4",
+    "config_binding": "scripts/route_a_v3/prepare_route2_xeditflow_v4_value_configs.py",
+    "formula_at_candidate_cap": "CEIL(32 / FROZEN_MEMBER_PHYSICAL_BATCH_SIZE)",
+    "allowed_physical_batches": [4, 8, 16, 32],
+    "corresponding_maximum_forwards_per_member": [8, 4, 2, 1],
+    "member_order": [20260908, 20260909, 20260910]
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "35/35 PASS",
+    "all_xeditcritic_v4_tests": "77/77 PASS",
+    "all_xeditflow_and_guidance_tests": "219/219 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_diff_check": "PASS",
+    "a100_current_head_tests": "PENDING_OLD_C3_LAUNCH_HEAD_TERMINAL_BARRIER"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "formal_smc_started": false,
+    "terminal_critic_scoring_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "claim_changed": false
+  }
+}
