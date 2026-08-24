@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_mode_information_numeric_test.v1",
+  "status": "XEDITSETFLOW_V4_MODE_INFORMATION_NUMERIC_REFERENCE_PASS",
+  "recorded_at": "2026-08-25T03:25:39+08:00",
+  "scope": {
+    "production_implementation_changed": false,
+    "test_changed": true,
+    "optimizer_attempt_added": false,
+    "development_validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "numeric_reference": {
+    "mode_count": 2,
+    "raw_router_logits": [
+      "log(3)",
+      0.0
+    ],
+    "softmax_prior": [
+      0.75,
+      0.25
+    ],
+    "smoothed_prior": [
+      0.625,
+      0.375
+    ],
+    "candidate_posteriors": [
+      [0.9, 0.1],
+      [0.1, 0.9]
+    ],
+    "aggregate_posterior": [
+      0.5,
+      0.5
+    ],
+    "aggregate_balance_kl": 0.0,
+    "expected_mode_information_loss": "-(0.9*log(1.8)+0.1*log(0.2))",
+    "absolute_tolerance": 1e-7
+  },
+  "focused_tests": {
+    "direct_model_and_loss": {
+      "passed": 7,
+      "failed": 0
+    },
+    "setflow_v4_combined": {
+      "passed": 73,
+      "failed": 0
+    },
+    "exact_v3_3_2": {
+      "passed": 96,
+      "failed": 0
+    }
+  },
+  "project_state": {
+    "c3_terminal_read_once_complete": false,
+    "a100_current_head_sync_complete": false,
+    "v4_optimizer_attempts": 0,
+    "next_c3_local_check_not_before": "2026-08-25T03:45:51+08:00"
+  },
+  "claim_effect": "NONE_NUMERIC_MECHANICS_ONLY_V4_PERFORMANCE_REMAINS_NOT_ESTABLISHED"
+}

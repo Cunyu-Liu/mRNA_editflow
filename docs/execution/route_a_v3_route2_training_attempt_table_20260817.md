@@ -3216,3 +3216,14 @@ source-level target及三项冻结权重；但测试此前只检查config中的`
 和gate均未修改；没有新增optimizer attempt或读取Validation/protected outcome。C3仍等待自然terminal，A100
 current-HEAD sync与V4正式运行保持关闭，科学claim不变。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_gradient_isolation_test_v1.json`。
+
+## XEditSetFlow V4 mode-information numeric reference（2026-08-25）
+
+冻结测试要求包含smoothed mode prior、mode posterior与information loss的数值正确性。既有测试仅覆盖prior归一化/
+下界、information finite及single-mode精确为0，缺少可手算多mode参考。现加入双mode解析例：router logits
+`[log(3),0]`须产生平滑prior `[0.625,0.375]`；两候选posterior固定为`[0.9,0.1]`与`[0.1,0.9]`，aggregate
+严格为均匀，information loss与解析KL表达式在`1e-7`内一致。
+
+直接model/loss focused=7/7、完整SetFlow V4 focused=73/73、精确V3.3.2=96/96。生产公式未改，未启动
+optimizer或读取Validation/protected outcome；C3、A100 sync与V4正式运行状态不变，论文性能claim不变。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_mode_information_numeric_test_v1.json`。

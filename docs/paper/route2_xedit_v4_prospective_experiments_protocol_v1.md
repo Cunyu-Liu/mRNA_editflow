@@ -218,3 +218,10 @@ objective, whose inputs are the SetFlow output, the source-level target batch,
 and the three preregistered component weights. The runner has no critic
 prediction, critic reward, independent-evaluator, or outcome dependency in that
 graph. This verifies method separation but adds no performance evidence.
+
+The latent-mode regularizer now has an analytic two-mode test. Known router
+logits must produce the exact smoothed prior, known candidate-specific action
+masses must produce the expected mode posteriors, and the implementation's
+mutual-information and aggregate-balance terms must equal the hand-computed KL
+expression. This verifies the preregistered objective numerically without
+reading a model-selection outcome.

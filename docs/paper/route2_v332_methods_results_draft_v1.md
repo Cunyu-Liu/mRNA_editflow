@@ -1060,3 +1060,8 @@ SetFlow objective, with no critic prediction, critic reward, independent
 evaluator, or outcome input. This strengthens the prospective separation
 evidence only. It does not change the unexecuted status of V4 or establish any
 ranking or generation advantage.
+
+The SetFlow V4 mode prior, candidate-conditioned mode posterior, mutual
+information, and aggregate-mode balance also have a hand-computed two-mode
+numeric reference. The production formula required no change. This is objective
+correctness evidence, not an observed recovery, diversity, or NLL result.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 import pytest
 
@@ -145,6 +147,27 @@ def test_single_mode_control_has_exact_zero_information_loss() -> None:
     output["mode_prior"] = torch.ones(2, 1)
     loss = mixture_setflow_loss_v4(output, batch)
     assert loss.mode_information.item() == 0.0
+
+
+def test_smoothed_prior_and_mode_information_match_hand_calculation() -> None:
+    model = _model(modes=2)
+    with torch.no_grad():
+        model.mode_router.weight.zero_()
+        model.mode_router.bias.copy_(torch.tensor([math.log(3.0), 0.0]))
+    prior = model(_batch())["mode_prior"]
+    assert torch.allclose(
+        prior,
+        torch.tensor([[0.625, 0.375], [0.625, 0.375]]),
+        atol=1e-7,
+    )
+
+    output, batch = _loss_bundle((0, 1))
+    loss = mixture_setflow_loss_v4(output, batch)
+    expected_mutual_information = 0.9 * math.log(1.8) + 0.1 * math.log(0.2)
+    assert loss.mode_information.item() == pytest.approx(
+        -expected_mutual_information,
+        abs=1e-7,
+    )
 
 
 def test_common_nll_uses_mixture_mass_and_excludes_structural_state() -> None:
