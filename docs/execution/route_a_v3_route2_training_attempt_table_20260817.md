@@ -1962,6 +1962,17 @@ failure artifact或screen gate；下一统一窗口`>=12:45:26`。
 代码变化、A100 sync或重复测试，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_114526.json`。
 
+## C3 screen delayed long-interval health（2026-08-24）
+
+用户方法容量讨论期间没有后台频繁轮询；上一远端观察11:45:26后，于15:20:19完成一次延后但未提前的
+健康检查。C3 full/source-only/edit-metadata-only/no-candidate/permutation均alive、ledger `RUNNING/BF16`；
+elapsed为44,679/44,679/44,680/44,251/43,870秒，CUDA显存为2,190/2,120/2,190/2,120/
+1,846 MiB。无terminal summary、failure artifact或screen gate；下一统一窗口`>=16:20:19`。
+
+未读stdout、stderr、active curve、metric或terminal payload；不依据墙钟时间单独制造停滞结论。无新增attempt、
+代码变化、A100 sync或重复测试，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_152019.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

@@ -3078,3 +3078,14 @@ failure或screen gate。
 下一统一窗口`>=12:45:26`。不读stdout、stderr、curve或metric，不把有限健康字段解释为停滞；无代码变化，
 不重复测试，不做A100 current-HEAD sync。protected read=0；审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_114526.json`。
+
+## C3 screen 15:20:19 delayed health（2026-08-24）
+
+用户方法容量讨论中没有后台轮询；连接前本地时钟15:17:47，远端15:20:19，已远晚于12:45:26窗口。
+full/source/edit/no-candidate/permutation五个PID仍存活，elapsed为44,679/44,679/44,680/44,251/
+43,870秒；GPU3/0/5/1/2进程显存为2,190/2,120/2,190/2,120/1,846 MiB，ledger均为
+`RUNNING/BF16`，无summary、failure或screen gate。
+
+下一统一窗口`>=16:20:19`。不读stdout、stderr、curve或metric，不因墙钟时间单独判停滞；无代码变化，
+不重复测试，不做A100 current-HEAD sync。protected read=0；审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_152019.json`。
