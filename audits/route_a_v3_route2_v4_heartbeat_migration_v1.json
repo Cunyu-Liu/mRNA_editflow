@@ -1,0 +1,42 @@
+{
+  "schema_version": "route_a_v3_route2_v4_heartbeat_migration.v1",
+  "status": "ROUTE2_HEARTBEAT_UPDATED_TO_V4_LOW_FREQUENCY_PROTOCOL",
+  "recorded_at": "2026-08-25T03:29:42+08:00",
+  "automation": {
+    "automation_id": "route2",
+    "kind": "heartbeat",
+    "status": "ACTIVE",
+    "existing_automation_updated": true,
+    "duplicate_automation_created": false,
+    "previous_interval_minutes": 560,
+    "current_interval_minutes": 60,
+    "notification_policy": "failed_runs_only",
+    "target_thread_preserved": true
+  },
+  "prompt_authority": {
+    "main_contract_highest": true,
+    "v3_3_2_execution_prompt_active": true,
+    "xeditcritic_v4_xeditsetflow_v4_protocol_active": true,
+    "v3_c3_read_only_history": true,
+    "c3_never_authorizes_confirmation_or_test": true,
+    "development_test_and_new_evaluation_protected": true,
+    "a100_old_head_sync_barrier_preserved": true,
+    "strict_terminal_no_go_preserved": true
+  },
+  "scope": {
+    "remote_experiment_checked": false,
+    "optimizer_attempt_added": false,
+    "development_validation_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "model_or_gate_changed": false
+  },
+  "focused_verification": {
+    "automation_update_result": "SUCCESS",
+    "persisted_automation_id": "route2",
+    "persisted_status": "ACTIVE",
+    "persisted_interval_minutes": 60,
+    "persisted_prompt_mentions_v4_protocol": true
+  },
+  "claim_effect": "NONE_EXECUTION_SCHEDULING_ONLY_MODEL_ADVANTAGE_REMAINS_NOT_ESTABLISHED"
+}

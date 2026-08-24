@@ -1065,3 +1065,8 @@ The SetFlow V4 mode prior, candidate-conditioned mode posterior, mutual
 information, and aggregate-mode balance also have a hand-computed two-mode
 numeric reference. The production formula required no change. This is objective
 correctness evidence, not an observed recovery, diversity, or NLL result.
+
+The recurring Route 2 executor now uses the V4 protocol and the preregistered
+60-minute cadence for long-running jobs. This corrects execution scheduling only;
+no remote result or protected outcome was read during the migration, so the
+manuscript evidence and submission-readiness verdict are unchanged.

@@ -225,3 +225,10 @@ masses must produce the expected mode posteriors, and the implementation's
 mutual-information and aggregate-balance terms must equal the hand-computed KL
 expression. This verifies the preregistered objective numerically without
 reading a model-selection outcome.
+
+The active Route 2 heartbeat has been migrated from its stale V3-only prompt
+and 560-minute interval to the same V4 authority and the frozen 60-minute
+cadence for jobs older than four hours. This is execution-governance evidence:
+it preserves terminal-only observation, the C3 read-only boundary, protected
+outcomes, and the current-HEAD synchronization barrier, but provides no model
+performance evidence.

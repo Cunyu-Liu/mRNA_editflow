@@ -3227,3 +3227,14 @@ current-HEAD sync与V4正式运行保持关闭，科学claim不变。审计：
 直接model/loss focused=7/7、完整SetFlow V4 focused=73/73、精确V3.3.2=96/96。生产公式未改，未启动
 optimizer或读取Validation/protected outcome；C3、A100 sync与V4正式运行状态不变，论文性能claim不变。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_mode_information_numeric_test_v1.json`。
+
+## Route 2 heartbeat V4 authority and cadence migration（2026-08-25）
+
+检查现有`route2` heartbeat发现其prompt仍只引用V3 method-repair协议，且调度间隔为560分钟；这会漏过当前
+超过4小时训练所冻结的60分钟低频窗口。现通过Codex automation接口更新同一heartbeat，而非创建重复任务：状态
+保持ACTIVE、通知仍为failed-runs-only、目标线程不变，间隔改为60分钟，prompt改以主合同、V3.3.2执行提示词和
+XEditCritic V4 + XEditSetFlow V4前瞻协议为权威，并明确C3只读且永不触发confirmation/TEST。
+
+持久化配置复读确认automation id=`route2`、interval=60、V4/C3/A100/protected-read/NO-GO纪律均存在。本项没有
+SSH、训练、metric/outcome读取或模型/gate变更，不新增training attempt，论文claim不变。审计：
+`audits/route_a_v3_route2_v4_heartbeat_migration_v1.json`。
