@@ -39,6 +39,7 @@ PROTOCOL = ROOT / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.j
 
 def _critic_ready() -> dict[str, object]:
     return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
         "status": "CRITIC_V4_READY_FOR_GUIDANCE",
         "three_seed_passed": True,
         "frozen_test_passed": True,
@@ -54,8 +55,16 @@ def _critic_ready() -> dict[str, object]:
 
 def _setflow_ready() -> dict[str, object]:
     return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
         "status": "XEDITSETFLOW_V4_G0_READY",
         "required_seeds": [20260912, 20260913, 20260914],
+        "seed_results": {
+            str(seed): {"passed": True}
+            for seed in (20260912, 20260913, 20260914)
+        },
+        "additional_seed_authorized": False,
+        "development_test_authorized": False,
+        "guidance_authorized": False,
         "critic_used": False,
         "independent_evaluator_used": False,
         "development_test_outcome_reads": 0,
@@ -92,6 +101,41 @@ def test_v4_guidance_requires_exact_joint_readiness_and_does_not_reopen_test() -
     flow = _setflow_ready()
     flow["critic_used"] = True
     assert authorize_xeditflow_guidance_v4(_critic_ready(), flow)["guidance_authorized"] is False
+
+
+@pytest.mark.parametrize(
+    ("side", "field", "value"),
+    (
+        ("critic", "schema_version", "wrong.v1"),
+        ("setflow", "schema_version", "wrong.v1"),
+        ("setflow", "additional_seed_authorized", True),
+        ("setflow", "development_test_authorized", True),
+        ("setflow", "guidance_authorized", True),
+    ),
+)
+def test_v4_guidance_rejects_noncanonical_readiness_receipts(
+    side: str, field: str, value: object
+) -> None:
+    critic = _critic_ready()
+    setflow = _setflow_ready()
+    target = critic if side == "critic" else setflow
+    target[field] = value
+    assert authorize_xeditflow_guidance_v4(critic, setflow)["guidance_authorized"] is False
+
+
+def test_v4_guidance_requires_all_and_only_frozen_setflow_seed_passes() -> None:
+    for seed in (20260912, 20260913, 20260914):
+        setflow = _setflow_ready()
+        setflow["seed_results"][str(seed)]["passed"] = False
+        assert (
+            authorize_xeditflow_guidance_v4(_critic_ready(), setflow)[
+                "guidance_authorized"
+            ]
+            is False
+        )
+    setflow = _setflow_ready()
+    setflow["seed_results"]["20260915"] = {"passed": True}
+    assert authorize_xeditflow_guidance_v4(_critic_ready(), setflow)["guidance_authorized"] is False
 
 
 def _screen_results() -> dict[tuple[float, float, float], dict[str, object]]:

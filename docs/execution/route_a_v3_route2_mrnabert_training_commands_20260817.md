@@ -4118,3 +4118,13 @@ TEST projection/cache、无metrics receipt与无new Evaluation read；NO-GO rece
 
 本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile PASS。未运行TEST/refit/LOSO/readiness，
 protected read=0。审计：`audits/route_a_v3_route2_xeditcritic_v4_readiness_receipt_gate_v1.json`。
+
+## XEditFlow V4 joint readiness receipt gate focused record（2026-08-25）
+
+V4 guidance联合授权现在绑定精确Critic readiness与SetFlow confirmation schema；SetFlow侧还必须包含且仅包含
+20260912/13/14三枚逐seed PASS，并保持additional-seed、Development TEST和预先guidance授权均为false。只有
+原子TEST后的Critic readiness与完整SetFlow G0 readiness同时成立，才可能发布联合授权。
+
+本地guidance focused=19/19、精确V3.3.2=96/96。未materialize guidance authorization、未启动guidance screen，
+Development TEST access event=0、new Evaluation read=0；A100 current-HEAD验证继续等待五项C3自然terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_joint_readiness_receipt_gate_v1.json`。

@@ -76,7 +76,9 @@ def authorize_xeditflow_guidance_v4(
     """
 
     critic_ready = (
-        critic_readiness.get("status") == "CRITIC_V4_READY_FOR_GUIDANCE"
+        critic_readiness.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1"
+        and critic_readiness.get("status") == "CRITIC_V4_READY_FOR_GUIDANCE"
         and critic_readiness.get("three_seed_passed") is True
         and critic_readiness.get("frozen_test_passed") is True
         and critic_readiness.get("all_development_refit_complete") is True
@@ -88,10 +90,23 @@ def authorize_xeditflow_guidance_v4(
         is False
         and critic_readiness.get("new_final_evaluation_outcomes_accessed") is False
     )
+    setflow_seed_results = setflow_confirmation.get("seed_results")
     setflow_ready = (
-        setflow_confirmation.get("status") == "XEDITSETFLOW_V4_G0_READY"
+        setflow_confirmation.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1"
+        and setflow_confirmation.get("status") == "XEDITSETFLOW_V4_G0_READY"
         and setflow_confirmation.get("required_seeds")
         == [20260912, 20260913, 20260914]
+        and isinstance(setflow_seed_results, Mapping)
+        and set(setflow_seed_results) == {"20260912", "20260913", "20260914"}
+        and all(
+            isinstance(setflow_seed_results[str(seed)], Mapping)
+            and setflow_seed_results[str(seed)].get("passed") is True
+            for seed in (20260912, 20260913, 20260914)
+        )
+        and setflow_confirmation.get("additional_seed_authorized") is False
+        and setflow_confirmation.get("development_test_authorized") is False
+        and setflow_confirmation.get("guidance_authorized") is False
         and int(setflow_confirmation.get("development_test_outcome_reads", -1)) == 0
         and int(setflow_confirmation.get("new_final_evaluation_outcome_reads", -1))
         == 0

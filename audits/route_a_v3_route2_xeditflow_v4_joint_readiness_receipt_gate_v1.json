@@ -1,0 +1,34 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_joint_readiness_receipt_gate_audit.v1",
+  "status": "XEDITFLOW_V4_JOINT_READINESS_RECEIPT_GATE_CLOSED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T02:58:34+08:00",
+  "head_before_change": "7a84a37b26e83bc15173777b676edf05ee2d04fe",
+  "required_critic_receipt": {
+    "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
+    "status": "CRITIC_V4_READY_FOR_GUIDANCE",
+    "atomic_development_test_access_event_count": 1,
+    "protected_outcome_state_required": true
+  },
+  "required_setflow_receipt": {
+    "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
+    "status": "XEDITSETFLOW_V4_G0_READY",
+    "required_seeds": [20260912, 20260913, 20260914],
+    "all_and_only_required_seed_results_must_pass": true,
+    "additional_seed_authorized": false,
+    "development_test_authorized": false,
+    "preexisting_guidance_authorized": false,
+    "protected_outcome_state_required": true
+  },
+  "verification": {
+    "focused_xeditflow_guidance_tests": "19 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "guidance_authorization_materialized": false,
+    "guidance_screen_started": false,
+    "development_test_access_events": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_JOINT_AUTHORIZATION_CLOSURE_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

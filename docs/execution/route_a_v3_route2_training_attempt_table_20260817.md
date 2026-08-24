@@ -3163,3 +3163,13 @@ readiness composer此前只检查post-TEST receipt schema与“不含TEST metric
 本地focused=14/14、Critic V4相关=90/90、精确V3.3.2=96/96、compile PASS。TEST access仍为0，readiness与
 guidance均未授权或materialize，claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_readiness_receipt_gate_v1.json`。
+
+## XEditFlow V4 joint readiness receipt gate closure（2026-08-25）
+
+联合guidance authorizer此前检查两个readiness状态及主要protected-read字段，但未绑定精确V4 receipt schema，也未
+复核SetFlow三枚confirmation seed的逐seed PASS集合。现Critic与SetFlow receipt均须匹配冻结schema；SetFlow须
+包含且仅包含20260912/13/14且全部PASS，并明确禁止额外seed、提前Development TEST和预先guidance授权。
+
+本地focused=19/19、精确V3.3.2=96/96。没有新增training attempt，没有执行guidance、TEST或Evaluation读取；
+因此中央训练尝试计数与科学结果不变，A100 current-HEAD测试仍等待五项旧C3作业terminal。审计：
+`audits/route_a_v3_route2_xeditflow_v4_joint_readiness_receipt_gate_v1.json`。
