@@ -358,7 +358,6 @@ def materialize_bottom_chunk_batch_v4(
     _require(bool(record_indices), "physical batch is empty")
     record_count = len(payload["record_ids"])
     ordered_record_indices = [int(index) for index in record_indices]
-    _require(len(set(ordered_record_indices)) == len(ordered_record_indices), "physical batch repeats a record index")
     _require(min(ordered_record_indices) >= 0 and max(ordered_record_indices) < record_count, "physical batch record index is out of range")
     global_edit_indices: list[int] = []
     local_record_edit_offsets = [0]

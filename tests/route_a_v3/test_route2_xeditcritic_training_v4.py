@@ -209,6 +209,49 @@ def test_rng_replay_reproduces_dropout_predictions_and_backpropagates_full_gradi
     assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters())
 
 
+def test_effective_objective_predictions_are_promoted_from_half_to_float32() -> None:
+    class HalfOutputModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.scale = torch.nn.Parameter(torch.tensor(1.0, dtype=torch.float16))
+
+        def forward(self, batch):
+            mean = torch.nn.functional.dropout(
+                batch["values"], p=0.2, training=True
+            ).sum(dim=1) * self.scale
+            return {
+                "mean": mean,
+                "router_balance_loss": mean.sum() * 0.0,
+            }
+
+    torch.manual_seed(17)
+    batches = [
+        {
+            "source_tokens": torch.zeros((8, 1), dtype=torch.long),
+            "values": torch.randn(8, 3, dtype=torch.float16),
+        }
+        for _ in range(4)
+    ]
+    model = HalfOutputModel()
+    predictions, states, first = collect_replayable_predictions_v4(
+        batches,
+        device=torch.device("cpu"),
+        forward=model,
+    )
+    assert predictions.dtype == torch.float32
+    assert all(value.dtype == torch.float16 for value in first)
+    replayed = backward_replayed_prediction_gradient_v4(
+        batches,
+        states,
+        first,
+        torch.ones(32),
+        device=torch.device("cpu"),
+        forward=model,
+        router_balance_weight=0.0,
+    )
+    assert all(value.dtype == torch.float16 for value in replayed)
+
+
 def test_optimizer_groups_cover_each_parameter_once_at_the_three_frozen_rates() -> None:
     class Model(torch.nn.Module):
         def __init__(self) -> None:

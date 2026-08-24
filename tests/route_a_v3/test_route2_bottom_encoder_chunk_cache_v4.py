@@ -157,6 +157,25 @@ def test_physical_batch_materialization_deduplicates_chunks_and_preserves_record
     assert batch["record_candidate_global"].shape == (2, 4)
 
 
+def test_physical_batch_allows_repeated_rows_but_loads_each_chunk_once() -> None:
+    source = "A" * 64
+    candidate = "A" * 10 + "C" + "A" * 53
+    payload = assemble_frozen_bottom_encoder_chunk_cache_v4(
+        [_row("repeated", source, candidate, [10])],
+        sequence_to_index={source: 0, candidate: 1},
+        encoded={0: _encoded(source, 1.0), 1: _encoded(candidate, 2.0)},
+        model_id="fixed-mrnabert",
+        pretrained_parameter_count=113_389_056,
+        attention_backend="PYTORCH_SDPA_AUTO",
+    )
+    batch = materialize_bottom_chunk_batch_v4(payload, [0, 0, 0, 0])
+    assert batch["cache_record_indices"].tolist() == [0, 0, 0, 0]
+    assert batch["cache_chunk_indices"].numel() == 2
+    assert batch["record_edit_offsets"].tolist() == [0, 1, 2, 3, 4]
+    assert batch["edit_source_chunk_indices"].tolist() == [0, 0, 0, 0]
+    assert batch["edit_candidate_chunk_indices"].tolist() == [1, 1, 1, 1]
+
+
 def test_materialized_records_do_not_cross_ragged_edit_boundaries() -> None:
     source = "A" * 96
     candidate_a = "C" * 3 + "A" * 93

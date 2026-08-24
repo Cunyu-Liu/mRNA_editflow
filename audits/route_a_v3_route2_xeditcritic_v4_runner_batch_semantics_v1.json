@@ -1,0 +1,34 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_runner_batch_semantics.v1",
+  "recorded_at_local": "2026-08-24T17:43:03+08:00",
+  "status": "XEDITCRITIC_V4_RUNNER_BATCH_SEMANTICS_IMPLEMENTED_NO_OPTIMIZER_ATTEMPT",
+  "git_head_before_delivery": "f3d777d",
+  "repeat_cap_semantics": {
+    "frozen_sampler_changed": false,
+    "same_record_may_repeat_within_effective_batch": true,
+    "maximum_record_repeats_per_pass": 4,
+    "cache_preserves_one_ragged_mapping_per_batch_row": true,
+    "underlying_source_candidate_chunks_deduplicated_per_physical_batch": true,
+    "repeated_cache_record_supported": true
+  },
+  "precision_semantics": {
+    "formal_forward_precision": "BF16_AUTOCAST",
+    "first_pass_replay_reference_preserves_forward_dtype": true,
+    "effective_batch_prediction_objective_dtype": "FP32",
+    "huber_pairwise_soft_spearman_computed_in_fp32": true,
+    "replayed_prediction_bitwise_check_preserved": true
+  },
+  "verification": {
+    "adjacent_batch_semantics_tests": "24/24 PASS",
+    "complete_local_critic_v4_focused_cohort": "59/59 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

@@ -258,7 +258,9 @@ def collect_replayable_predictions_v4(
             _require(prediction.shape == (batch_size,), "Critic V4 replay prediction geometry changed")
             _require(torch.isfinite(prediction).all().item(), "Critic V4 replay prediction is nonfinite")
             detached = prediction.detach()
-            predictions.append(detached)
+            # Cross-record Huber/ranking/soft-rank arithmetic is deliberately
+            # FP32 even though each formal forward runs under BF16 autocast.
+            predictions.append(detached.float())
             first_pass_predictions.append(detached.clone())
     combined = torch.cat(predictions)
     _require(combined.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 replay did not collect 32 predictions")

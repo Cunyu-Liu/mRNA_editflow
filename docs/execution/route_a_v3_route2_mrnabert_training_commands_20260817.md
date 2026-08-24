@@ -3240,3 +3240,16 @@ optimizer attempts=0、Validation metric read=false、Development TEST/new Evalu
 不授权C3 confirmation/TEST。下一统一远端检查不早于18:43:42。optimizer attempts不变，Development
 TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_174342.json`。
+
+## XEditCritic V4 runner batch semantics（2026-08-24）
+
+已修复formal runner即将使用的repeat-cap/cache边界：冻结task-homogeneous sampler可在pass级按协议重复record，
+cache materializer按batch行展开其ragged edit offsets和global residual，但对重复source/candidate chunk继续使用
+同一物理tensor，不改变sampler或loss权重。该路径覆盖task不足32条唯一record时仍需组成effective batch32的
+可达情形。
+
+训练第一次BF16/no-grad forward的prediction保留原dtype作为第二次forward的bitwise replay reference；用于
+完整effective-batch Huber/pairwise/soft-rank计算的detached predictions显式转FP32，从而避免半精度rank
+arithmetic。相邻定向=24/24、完整本机Critic V4 focused=59/59、精确V3.3.2=96/96；optimizer attempts=0，
+Validation metric read=false，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_runner_batch_semantics_v1.json`。

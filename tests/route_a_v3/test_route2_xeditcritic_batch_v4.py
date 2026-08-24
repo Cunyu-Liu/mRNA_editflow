@@ -119,6 +119,21 @@ def test_v4_collator_uses_complete_permuted_donor_bundle_not_recipient_cache() -
     assert batch["cache_record_indices"].tolist() == [1, 2, 3, 0]
 
 
+def test_v4_collator_allows_repeat_cap_rows_while_deduplicating_chunks() -> None:
+    payload = _payload()
+    view = FrozenBottomEncoderChunkCacheViewV4(
+        payload, {f"record-{index}" for index in range(4)}
+    )
+    examples = [
+        _example(index, cache_record_id="record-0")
+        for index in range(4)
+    ]
+    batch = XEditCriticCollatorV4(view)(examples)
+    assert batch["cache_record_indices"].tolist() == [0, 0, 0, 0]
+    assert batch["cache_chunk_indices"].numel() == 2
+    assert batch["record_edit_offsets"].tolist() == [0, 1, 2, 3, 4]
+
+
 def test_v4_cache_view_requires_exact_projection_coverage() -> None:
     with pytest.raises(XEditCriticBatchV4Error, match="exactly cover"):
         FrozenBottomEncoderChunkCacheViewV4(_payload(), {"record-0"})

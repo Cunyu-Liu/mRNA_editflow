@@ -38,7 +38,6 @@ class FrozenBottomEncoderChunkCacheViewV4:
 
     def materialize(self, record_ids: Sequence[str]) -> dict[str, torch.Tensor]:
         _require(bool(record_ids), "V4 cache batch record ids are empty")
-        _require(len(set(record_ids)) == len(record_ids), "V4 cache batch repeats a donor record")
         try:
             indices = [self.record_index[str(record_id)] for record_id in record_ids]
         except KeyError as exc:

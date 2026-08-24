@@ -2086,6 +2086,19 @@ failure artifact，screen gate不存在；未读active curve、stdout、stderr�
 下一统一远端窗口不早于18:43:42。未新增optimizer attempt，Development TEST/new Evaluation read=0。
 审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260824_174342.json`。
 
+## XEditCritic V4 runner batch semantics（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。冻结sampler保持不变：record每pass最多重复4次，task
+homogeneous effective batch仍固定32。bottom-six cache现在允许同一record合法重复为多个batch行，为每行保留
+独立ragged edit mapping，同时source/candidate底层chunk在物理batch内仍只物化一次；因此没有通过改变采样
+分布绕开真实repeat-cap语义。
+
+BF16 forward的原始dtype继续用于RNG replay bitwise equality，但拼接后的32条prediction先提升为FP32，再计算
+Huber、cross-group pairwise和soft-Spearman objective及prediction gradient。相邻定向=24/24、完整本机
+Critic V4 focused=59/59、精确V3.3.2=96/96。formal runner尚未启动，optimizer attempts=0，Development
+TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_runner_batch_semantics_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
