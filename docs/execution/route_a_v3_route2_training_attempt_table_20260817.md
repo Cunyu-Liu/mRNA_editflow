@@ -3173,3 +3173,13 @@ guidance均未授权或materialize，claim不变。审计：
 本地focused=19/19、精确V3.3.2=96/96。没有新增training attempt，没有执行guidance、TEST或Evaluation读取；
 因此中央训练尝试计数与科学结果不变，A100 current-HEAD测试仍等待五项旧C3作业terminal。审计：
 `audits/route_a_v3_route2_xeditflow_v4_joint_readiness_receipt_gate_v1.json`。
+
+## Critic V4 post-TEST formal projection binding（2026-08-25）
+
+post-TEST refit/LOSO协议此前引用不存在的`train_projection.jsonl`与`validation_projection.jsonl`，与screen、cache
+及唯一正式projection producer使用的`train.jsonl`/`validation.jsonl`不一致。现三条正式路径完全一致，回归测试
+锁定文件名与配置等价性。
+
+本地focused=9/9、精确V3.3.2=96/96。没有新增training attempt，没有访问Development TEST或new Evaluation，
+也没有生成refit/LOSO runtime package；中央结果和论文claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_projection_binding_v1.json`。

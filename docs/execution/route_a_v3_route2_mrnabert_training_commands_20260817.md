@@ -4128,3 +4128,13 @@ V4 guidance联合授权现在绑定精确Critic readiness与SetFlow confirmation
 本地guidance focused=19/19、精确V3.3.2=96/96。未materialize guidance authorization、未启动guidance screen，
 Development TEST access event=0、new Evaluation read=0；A100 current-HEAD验证继续等待五项C3自然terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_joint_readiness_receipt_gate_v1.json`。
+
+## Critic V4 post-TEST projection binding focused record（2026-08-25）
+
+post-TEST协议原先使用未由正式projection producer生成的`train_projection.jsonl`与
+`validation_projection.jsonl`；若frozen TEST PASS，3个refit和42个paired LOSO job会在启动前找不到输入。
+现post-TEST、screen与bottom-six cache三方均绑定实际冻结的`train.jsonl`/`validation.jsonl`。
+
+本地post-TEST focused=9/9、精确V3.3.2=96/96。没有修改projection内容、split或target语义，TEST access=0，
+未materialize post-TEST config或启动optimizer；A100 current-HEAD验证仍等待五项C3自然terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_posttest_projection_binding_v1.json`。

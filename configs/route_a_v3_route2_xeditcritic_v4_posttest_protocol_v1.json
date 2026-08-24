@@ -6,8 +6,8 @@
   "screen_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
   "formal_preflight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight.json",
   "projection_paths": [
-    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train_projection.jsonl",
-    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation_projection.jsonl"
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
   ],
   "bottom_six_cache": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v4/frozen_bottom_six_chunk_cache_v1.pt",
   "required_seeds": [

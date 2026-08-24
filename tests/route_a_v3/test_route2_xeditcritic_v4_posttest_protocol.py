@@ -63,6 +63,11 @@ def test_v4_posttest_protocol_freezes_refit_loso_and_protected_boundaries() -> N
             ROOT / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
         ).read_text(encoding="utf-8")
     )
+    cache = json.loads(
+        (
+            ROOT / "configs/route_a_v3_route2_xeditcritic_v4_bottom_six_cache_v1.json"
+        ).read_text(encoding="utf-8")
+    )
     assert protocol["required_seeds"] == list(CONFIRMATION_SEEDS_V4)
     assert protocol["all_development_refit"]["passes"] == 8
     assert protocol["all_development_refit"]["job_count"] == 3
@@ -79,6 +84,12 @@ def test_v4_posttest_protocol_freezes_refit_loso_and_protected_boundaries() -> N
     )
     assert "atomic_frozen_test_path" not in protocol
     assert protocol["formal_preflight_path"] == screen["preflight_output"]
+    assert protocol["projection_paths"] == screen["projection_paths"]
+    assert protocol["projection_paths"] == cache["projection_paths"]
+    assert [Path(path).name for path in protocol["projection_paths"]] == [
+        "train.jsonl",
+        "validation.jsonl",
+    ]
 
 
 def test_v4_loso_gate_requires_all_three_strict_seed_results() -> None:

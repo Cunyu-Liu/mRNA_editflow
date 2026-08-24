@@ -1,0 +1,34 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_projection_binding_audit.v1",
+  "status": "XEDITCRITIC_V4_POSTTEST_PROJECTION_BINDING_CORRECTED_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T03:01:45+08:00",
+  "head_before_change": "b2666eb1a81686d378daff6a1c9af98732319ce0",
+  "formal_projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
+  ],
+  "bindings": {
+    "posttest_matches_screen": true,
+    "posttest_matches_bottom_six_cache": true,
+    "obsolete_train_projection_suffix_removed": true,
+    "obsolete_validation_projection_suffix_removed": true
+  },
+  "downstream_scope": {
+    "all_development_refit_jobs": 3,
+    "paired_loso_jobs": 42,
+    "projection_content_changed": false,
+    "split_or_target_semantics_changed": false
+  },
+  "verification": {
+    "focused_posttest_tests": "9 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "development_test_access_events": 0,
+    "posttest_configs_materialized": false,
+    "refit_or_loso_optimizer_started": false,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_POSTTEST_INPUT_BINDING_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}
