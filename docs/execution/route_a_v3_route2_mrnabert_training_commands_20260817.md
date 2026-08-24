@@ -3305,3 +3305,19 @@ permutation及两机制消融；PASS只授权三confirmation seeds，不直接�
 完整本机Critic V4 focused=72/72、精确V3.3.2=96/96、compile/JSON/diff-check PASS；screen adjudicated=false、
 confirmation/TEST authorized=false、optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_screen_gate_v1.json`。
+
+## XEditSetFlow V4 source-level data and targets（2026-08-24）
+
+已实现`route2_xeditsetflow_training_v4.py`。source不再由candidate row代表，而按split+source sequence+task+
+endpoint+context聚合；重复measured terminal edit set只计一次。每pass固定4 states/source，empty state用最大
+observed legal budget，两个partial state在存在多个candidate时绑定两个不同真实terminal sets，第四个state绑定
+completed candidate并根据1/3/5预算区分STOP或structural exhaustion。
+
+真实数据可能存在只有一个unique measured candidate的source；实现不会为满足“两个不同candidate”而伪造数据，
+而是对其唯一真实set生成两个不同seeded subset slot，并把single-candidate source count写入后续outcome-free data
+audit。该边界不改变891-source generation benchmark的冻结cohort，也不把singleton当作多候选机制证据。
+
+V4 target schema保留common set-marginal mask，同时按compatible candidate逐一保存positive action set与remaining
+count distribution；structural terminal没有伪STOP。source-data focused=5/5、精确V3.3.2=96/96、compile/
+diff-check PASS；optimizer attempts=0、critic/evaluator use=0、Development TEST/new Evaluation outcome read=0。
+审计：`audits/route_a_v3_route2_xeditsetflow_v4_source_level_data_v1.json`。

@@ -2152,6 +2152,23 @@ screen本身永不授权Development TEST。
 adjudicate，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_screen_gate_v1.json`。
 
+## XEditSetFlow V4 source-level data and targets（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。已实现逐source数据层：source identity由split、source
+sequence、task、endpoint和biological context共同确定；edit≤5且落入1/3/5预算的candidate rows先转换为
+source-relative terminal sets，同一source的重复terminal set去重并等权，candidate row顺序不影响结果。
+
+每source/pass固定构造empty、两个partial和completed/structural共4个状态。多候选source的两个partial anchor
+来自不同真实terminal sets；单候选source不伪造第二个measured candidate，而从唯一真实set构造两个可重放
+subset并在data audit中单独计数。empty state使用source已观测candidate的最大合法预算，使source coverage能同时
+看到该预算内全部measured terminal sets。
+
+collator同时保留common anchor positive mask和每个compatible candidate各自的positive-action mask，不能退化成
+union mass；另构造remaining-edit-count soft target，并严格区分incomplete、completed STOP与structural
+budget exhaustion。source-data focused=5/5、精确V3.3.2=96/96、compile/diff-check PASS。未启动训练，
+critic/evaluator使用=0，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditsetflow_v4_source_level_data_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
