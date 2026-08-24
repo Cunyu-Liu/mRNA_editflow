@@ -2943,3 +2943,15 @@ authorizer及后续trainer只核对preflight状态、参数量和显存，旧式
 compile/diff-check PASS。未materialize/rebuild cache，未执行preflight、screen或optimizer，protected read=0；
 A100 current-HEAD tests仍等待五个旧C3 launch-head作业自然terminal，下一允许远端检查仍为本地00:44:44。
 审计：`audits/route_a_v3_route2_xedit_v4_preflight_cache_receipt_consumption_v1.json`。
+
+## 00:47 C3 five-job scheduled health（2026-08-25）
+
+本地00:44:53已越过校准窗口后执行一次单包SSH；远端时间00:47:08。C3 full、source-only、
+edit-metadata-only、no-candidate-sequence与candidate-bundle-permutation五项PID均仍为活跃CUDA进程，
+elapsed为78,688/78,689/78,689/78,260/77,878秒；五个精确run summary/failure与screen gate均不存在。
+登记GPU3/0/5/1/2的进程内可见CUDA占用为2,190/2,120/2,190/2,120/2,190 MiB。
+
+单包内预置的current-HEAD read-once producer因terminal_count=0明确未执行，没有打开任何terminal payload。
+未读stdout/stderr、active curve、Development TEST或new Evaluation outcome；未新增optimizer attempt，也未同步
+A100 Git worktree。最新远端偏移为+135秒；下一远端/本地窗口分别不早于01:47:08/01:44:53。
+审计：`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_004708.json`。

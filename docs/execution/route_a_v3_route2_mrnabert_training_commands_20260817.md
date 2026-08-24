@@ -3933,3 +3933,15 @@ representation width、encoder scope、token/chunk policy及local radius任一�
 本地receipt-focused 43/43、Critic V4相关57/57、SetFlow V4相关44/44、精确V3.3.2 96/96 PASS，
 compile/diff-check PASS。没有执行cache、preflight、optimizer、inference或outcome-bearing metric；protected read=0，
 A100 current-HEAD验证继续等待五个旧launch-head C3 jobs全部terminal。
+
+## 00:47 C3 long-interval health（2026-08-25）
+
+本地00:44:53越过最近校准窗口后只执行一次远端检查；远端00:47:08时五个C3 PID全部仍活跃，
+五个精确terminal summary、failure artifact及screen gate均不存在。CUDA进程仍位于登记的GPU0/1/2/3/5，
+每项占用2,120或2,190 MiB。随检查包发送的current-HEAD read-once producer只在五项全部terminal时运行；
+本次terminal_count=0，因此没有读取任何terminal JSON，也没有生成C3 V4 reference。
+
+未读取stdout/stderr、active curve、Development TEST outcome或new Evaluation outcome。新偏移为远端比本地快
+135秒；下一远端/本地窗口分别不早于01:47:08/01:44:53。没有V4 cache/preflight/optimizer执行，
+A100 current-HEAD Git sync继续受五项terminal barrier约束。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_004708.json`。
