@@ -3188,3 +3188,18 @@ batch/replay adjacent=13/13，完整本机Critic V4 focused=44/44、精确V3.3.2
 formal八pass runner尚未实现/启动，optimizer attempts=0，Development TEST/new Evaluation outcome read=0；A100
 测试继续受C3 barrier约束。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_non_singleton_batch_replay_v1.json`。
+
+## XEditCritic V4 formal screen config freeze（2026-08-24）
+
+已冻结formal screen config：`c0_v4`、唯一selectable `v4_full`、source-only、edit-metadata-only、
+no-candidate-sequence、complete candidate-bundle permutation、parameter-matched NO-CROSS与NO-MOE共8个run。
+全部固定seed20260907、effective batch32、8 passes、每pass2,802/总22,416 optimizer updates、同一三阶段
+learning rate、loss schedule和final-pass-8 checkpoint，不增加screen seed。
+
+launch同时受五项硬屏障约束：五个C3 jobs全部terminal且摘要只读一次、A100 current-HEAD sync/tests通过、
+bottom-six cache完整、formal exact parameter/20–35GiB memory preflight通过。C3只作为Validation reference，
+永不授权TEST。当前五项屏障均未全部满足，screen launch=false、optimizer attempt=0。
+
+screen-config focused=5/5，完整本机Critic V4 focused=49/49、精确V3.3.2=96/96，JSON/diff-check PASS；
+Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_screen_config_freeze_v1.json`。

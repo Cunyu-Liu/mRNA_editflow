@@ -1,0 +1,141 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_config.v1",
+  "status": "FROZEN_BEFORE_V4_PARAMETER_UPDATE_OR_VALIDATION_OUTCOME_READ",
+  "protocol": "configs/route_a_v3_route2_xedit_v4_method_repair_protocol_v1.json",
+  "projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
+  ],
+  "bottom_six_cache": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v4/frozen_bottom_six_chunk_cache_v1.pt",
+  "bottom_six_cache_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v4/frozen_bottom_six_chunk_cache_v1.summary.json",
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907",
+  "preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight.json",
+  "screen_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/screen_gate.json",
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
+  "launch_barrier": {
+    "all_c3_jobs_must_be_terminal": true,
+    "c3_terminal_summaries_must_be_read_exactly_once": true,
+    "a100_current_head_sync_and_tests_must_pass": true,
+    "bottom_six_cache_must_be_terminal_complete": true,
+    "formal_parameter_and_memory_preflight_must_pass": true,
+    "c3_can_authorize_v4_downstream": false,
+    "c3_required_run_ids": [
+      "c3",
+      "c3_source_only",
+      "c3_edit_metadata_only",
+      "c3_no_candidate_sequence",
+      "c3_candidate_bundle_permutation"
+    ]
+  },
+  "c3_reference": {
+    "preferred_terminal_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/c3/run_summary.json",
+    "technical_failure_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/c3/failure.json",
+    "predeclared_fallback_terminal_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/c2/run_summary.json",
+    "role": "HISTORICAL_VALIDATION_REFERENCE_ONLY_NEVER_TEST_AUTHORIZATION"
+  },
+  "required_screen_runs": [
+    {"run_id": "c0_v4", "model": "C0-V4", "control": "NONE", "mechanism": "RAW_BASELINE", "selectable": false},
+    {"run_id": "v4_full", "model": "V4-FULL", "control": "NONE", "mechanism": "FULL", "selectable": true},
+    {"run_id": "v4_source_only", "model": "V4-FULL", "control": "SOURCE_ONLY", "mechanism": "FULL", "selectable": false},
+    {"run_id": "v4_edit_metadata_only", "model": "V4-FULL", "control": "EDIT_METADATA_ONLY", "mechanism": "FULL", "selectable": false},
+    {"run_id": "v4_no_candidate_sequence", "model": "V4-FULL", "control": "NO_CANDIDATE_SEQUENCE", "mechanism": "FULL", "selectable": false},
+    {"run_id": "v4_candidate_bundle_permutation", "model": "V4-FULL", "control": "NONE", "mechanism": "FULL", "candidate_bundle_permutation": true, "selectable": false},
+    {"run_id": "v4_no_cross", "model": "V4-FULL", "control": "NONE", "mechanism": "NO_CROSS", "selectable": false},
+    {"run_id": "v4_no_moe", "model": "V4-FULL", "control": "NONE", "mechanism": "NO_MOE", "selectable": false}
+  ],
+  "data_geometry": {
+    "expected_record_count": 107873,
+    "expected_train_count": 89580,
+    "expected_validation_count": 18293,
+    "withheld_development_test_record_count": 18292,
+    "task_count": 9,
+    "study_count": 7,
+    "effective_batch_size": 32,
+    "updates_per_pass": 2802,
+    "pass_count": 8,
+    "total_optimizer_updates": 22416,
+    "maximum_record_repeats_per_pass": 4,
+    "task_sampling": "SQRT_TASK_SIZE_TASK_HOMOGENEOUS_SOURCE_GROUP_BALANCED"
+  },
+  "architecture": {
+    "pretrained_width": 768,
+    "trainable_mrnabert_blocks": [6, 7, 8, 9, 10, 11],
+    "edit_block_count": 12,
+    "model_width": 768,
+    "attention_heads": 12,
+    "ffn_width": 3072,
+    "semantic_expert_count": 4,
+    "semantic_expert_bottleneck_width": 256,
+    "semantic_router_top_k": 2,
+    "local_context_radius": 32,
+    "readout_hidden_width": 2560,
+    "raw_hidden_dim": 65,
+    "raw_depth": 2,
+    "dropout": 0.1,
+    "local_geometry_proxy_trainable_parameter_count": 173692549,
+    "minimum_trainable_parameter_count": 120000000,
+    "maximum_trainable_parameter_count": 180000000,
+    "design_target_minimum_trainable_parameter_count": 165000000,
+    "design_target_maximum_trainable_parameter_count": 175000000
+  },
+  "memory_preflight": {
+    "outcome_free_train_geometry_only": true,
+    "physical_batch_candidates": [4, 8, 16, 32],
+    "choose_largest_within_maximum": true,
+    "minimum_physical_batch": 4,
+    "minimum_peak_allocated_gib": 20.0,
+    "maximum_peak_allocated_gib": 35.0,
+    "measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
+    "activation_checkpointing": true,
+    "attention_backend": "PYTORCH_SDPA_AUTO",
+    "precision": "BF16",
+    "cpu_fallback": false,
+    "artificial_padding_or_unused_tensor": false
+  },
+  "training": {
+    "screen_seed": 20260907,
+    "optimizer": "AdamW",
+    "learning_rates": {
+      "new_head_and_v4_trunk": 0.0002,
+      "semantic_experts_and_router": 0.0001,
+      "mrnabert_top_six": 0.00001
+    },
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "huber_delta": 1.0,
+    "target_scale_floor": 0.001,
+    "warmup_fraction": 0.05,
+    "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+    "soft_rank_temperature": 0.2,
+    "pass_1_2_loss": {"huber": 1.0, "pairwise": 0.25, "soft_spearman": 0.0, "router_balance": 0.0},
+    "pass_3_8_loss": {"huber": 1.0, "pairwise": 0.5, "soft_spearman": 0.25, "router_balance": 0.01},
+    "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
+    "pcgrad": false
+  },
+  "screen_gate": {
+    "minimum_task_macro_spearman_formula": "MAX(0.30,C3_REFERENCE+0.05,C0_V4+0.10)",
+    "maximum_task_macro_standardized_mae": 1.7,
+    "mae_must_not_exceed_c0_v4": true,
+    "minimum_positive_tasks": 8,
+    "minimum_tasks_won_over_c0_v4": 6,
+    "must_beat_source_only_edit_metadata_only_no_candidate_sequence": true,
+    "minimum_permutation_aggregate_margin": 0.05,
+    "minimum_permutation_wins_of_six_tasks": 5,
+    "minimum_no_cross_margin": 0.02,
+    "minimum_no_moe_margin": 0.02,
+    "prediction_spread_finite_nonzero": true,
+    "maximum_development_test_outcome_reads": 0,
+    "maximum_new_evaluation_outcome_reads": 0,
+    "failure_status": "XEDITCRITIC_V4_SCREEN_NO_GO"
+  },
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false
+  },
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "additional_screen_seed_authorized": false
+}

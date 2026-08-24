@@ -2044,6 +2044,16 @@ batch/replay adjacent=13/13，完整本机Critic V4 focused=44/44、精确V3.3.2
 optimizer attempts=0，A100 tests等待C3 barrier；Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_non_singleton_batch_replay_v1.json`。
 
+## XEditCritic V4 screen config freeze（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。formal screen固定8个run、seed20260907、8 passes、
+2,802 updates/pass与22,416总updates、final-pass-8 checkpoint。C3 terminal/read-once、A100 current-HEAD
+tests、bottom-six cache和formal parameter/memory preflight均为启动硬屏障；当前screen launch未授权。
+
+screen-config focused=5/5，完整本机Critic V4 focused=49/49、精确V3.3.2=96/96，JSON/diff-check PASS；
+optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_screen_config_freeze_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV
