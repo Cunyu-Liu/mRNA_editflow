@@ -3082,3 +3082,16 @@ NO-GO语义。本地focused=17/17、SetFlow V4相关=67/67、精确V3.3.2=96/96�
 screen gate、optimizer或读取任何metric/outcome；Critic/independent evaluator使用仍为0。A100 current-HEAD测试等待
 五项旧C3作业terminal。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_atomic_terminal_validation_chain_v1.json`。
+
+## V4 atomic three-seed confirmation config packages（2026-08-25）
+
+Critic与SetFlow的screen PASS后config producer原先先创建最终`runtime_config_root`，再逐个写三seed config和
+manifest；中断会留下不完整final目录，同时因目录已存在而永久阻止合法重跑。现两条路径都先在兄弟`.partial`
+目录写完整三seed package，manifest内路径预先指向最终目录，全部完成后一次原子发布；既有final或partial以及
+既有run root均fail closed。
+
+Critic仍只允许20260908/09/10的V4-FULL+C0，SetFlow仍只允许20260912/13/14的V4 full；没有改变passes、
+checkpoint、额外seed禁令或screen gate。本地focused=8/8、Critic+SetFlow V4相关=154/154、精确V3.3.2=96/96、
+compile PASS。未materialize config/authorization，未启动confirmation optimizer或读取protected outcome；A100
+current-HEAD测试仍等待五项旧C3 terminal。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_confirmation_config_packages_v1.json`。

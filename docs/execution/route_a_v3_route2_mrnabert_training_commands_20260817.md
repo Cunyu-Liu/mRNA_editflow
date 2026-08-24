@@ -4052,3 +4052,14 @@ screen gate全部使用partial加原子替换；任何既有final/partial均fail
 裁决、GPU或optimizer，未读取active/terminal metric、Development TEST或new Evaluation。A100 current-HEAD验证
 继续等待C3五项自然terminal，下一远端检查仍不早于本地02:45:28。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_atomic_terminal_validation_chain_v1.json`。
+
+## V4 confirmation config-package atomic publication focused record（2026-08-25）
+
+两条三seed confirmation config producer现在都只在screen PASS后把完整config+manifest写入兄弟`.partial`目录，
+然后原子发布最终config root；中断目录不覆盖、不删除，最终目录不增量补写。Critic seed/model组合与SetFlow
+seed/full-only组合保持冻结，Development TEST和guidance仍未授权。
+
+本地focused=8/8、合并Critic/SetFlow V4相关=154/154、精确V3.3.2=96/96、compile PASS。尚未materialize
+confirmation package、authorization或optimizer，protected read=0；A100 current-HEAD验证继续等待五项C3自然
+terminal，下一远端检查仍不早于本地02:45:28。审计：
+`audits/route_a_v3_route2_xedit_v4_atomic_confirmation_config_packages_v1.json`。

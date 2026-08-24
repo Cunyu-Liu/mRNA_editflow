@@ -7,6 +7,7 @@ import pytest
 
 from scripts.route_a_v3.prepare_route2_xeditsetflow_v4_confirmation_configs import (
     build_confirmation_configs_v4,
+    materialize_confirmation_configs_v4,
 )
 
 
@@ -69,3 +70,25 @@ def test_screen_no_go_or_missing_selected_checkpoint_hard_fails() -> None:
     gate["selected_checkpoint_pass"] = None
     with pytest.raises(RuntimeError):
         build_confirmation_configs_v4(BASE, PROTOCOL, gate)
+
+
+def test_setflow_confirmation_config_package_is_atomically_published(
+    tmp_path: Path,
+) -> None:
+    protocol = json.loads(json.dumps(PROTOCOL))
+    protocol["runtime_config_root"] = str(tmp_path / "configs")
+    protocol["run_root"] = str(tmp_path / "runs")
+    configs = build_confirmation_configs_v4(BASE, protocol, _gate())
+    manifest = materialize_confirmation_configs_v4(configs, protocol)
+    root = Path(protocol["runtime_config_root"])
+    assert not root.with_name(root.name + ".partial").exists()
+    assert json.loads((root / "manifest.json").read_text()) == manifest
+    assert all(Path(path).is_file() for path in manifest["config_paths"])
+
+    stale_protocol = dict(protocol)
+    stale_protocol["runtime_config_root"] = str(tmp_path / "second_configs")
+    stale = Path(stale_protocol["runtime_config_root"] + ".partial")
+    stale.mkdir()
+    with pytest.raises(RuntimeError, match="partial config root exists"):
+        materialize_confirmation_configs_v4(configs, stale_protocol)
+    assert stale.is_dir()

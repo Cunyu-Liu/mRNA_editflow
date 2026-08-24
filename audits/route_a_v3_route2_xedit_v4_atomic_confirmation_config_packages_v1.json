@@ -1,0 +1,38 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_atomic_confirmation_config_packages_audit.v1",
+  "status": "XEDIT_V4_ATOMIC_CONFIRMATION_CONFIG_PACKAGES_IMPLEMENTED_NOT_MATERIALIZED",
+  "recorded_at": "2026-08-25T02:35:00+08:00",
+  "head_before_change": "ce44afea8a4e8b44a5e06b91a91e38e4f9ae5260",
+  "components": {
+    "critic": {
+      "seeds": [20260908, 20260909, 20260910],
+      "run_ids": ["v4_full", "c0_v4"]
+    },
+    "setflow": {
+      "seeds": [20260912, 20260913, 20260914],
+      "run_ids": ["v4_full"]
+    }
+  },
+  "publication_protocol": {
+    "staging_directory_suffix": ".partial",
+    "all_three_configs_and_manifest_written_before_publication": true,
+    "atomic_directory_replace": true,
+    "existing_final_or_partial_directory_rejected": true,
+    "frozen_seed_model_or_gate_semantics_changed": false
+  },
+  "verification": {
+    "focused_config_tests": "8 passed",
+    "combined_critic_setflow_v4_related_tests": "154 passed",
+    "exact_v3_3_2_cohort": "96 passed",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_OLD_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "confirmation_configs_materialized": false,
+    "confirmation_authorizations_materialized": false,
+    "confirmation_optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "SOFTWARE_CONFIGURATION_ATOMICITY_ONLY_NO_PERFORMANCE_CLAIM_CHANGE"
+}

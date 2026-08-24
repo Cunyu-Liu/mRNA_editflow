@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -97,28 +98,24 @@ def build_confirmation_configs_v4(
     return result
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-config", required=True, type=Path)
-    parser.add_argument("--protocol", required=True, type=Path)
-    parser.add_argument("--screen-gate", required=True, type=Path)
-    arguments = parser.parse_args()
-    base = json.loads(arguments.base_config.read_text(encoding="utf-8"))
-    protocol = json.loads(arguments.protocol.read_text(encoding="utf-8"))
-    screen_gate = json.loads(arguments.screen_gate.read_text(encoding="utf-8"))
-    configs = build_confirmation_configs_v4(base, protocol, screen_gate)
+def materialize_confirmation_configs_v4(
+    configs: list[dict[str, Any]],
+    protocol: Mapping[str, Any],
+) -> dict[str, Any]:
     config_root = Path(str(protocol["runtime_config_root"]))
     run_root = Path(str(protocol["run_root"]))
+    staging = config_root.with_name(config_root.name + ".partial")
     _require(not config_root.exists(), f"SetFlow V4 config root exists: {config_root}")
+    _require(not staging.exists(), f"SetFlow V4 partial config root exists: {staging}")
     _require(not run_root.exists(), f"SetFlow V4 confirmation root exists: {run_root}")
-    config_root.mkdir(parents=True)
+    staging.mkdir(parents=True)
     paths = []
     for config in configs:
-        path = config_root / f"seed_{config['training_seed']}.json"
-        path.write_text(
+        filename = f"seed_{config['training_seed']}.json"
+        (staging / filename).write_text(
             json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
-        paths.append(str(path))
+        paths.append(str(config_root / filename))
     manifest = {
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_config_manifest.v1",
         "status": "THREE_CONFIRMATION_CONFIGS_PREPARED_NOT_STARTED",
@@ -130,9 +127,24 @@ def main() -> None:
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
-    (config_root / "manifest.json").write_text(
+    (staging / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    os.replace(staging, config_root)
+    return manifest
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--base-config", required=True, type=Path)
+    parser.add_argument("--protocol", required=True, type=Path)
+    parser.add_argument("--screen-gate", required=True, type=Path)
+    arguments = parser.parse_args()
+    base = json.loads(arguments.base_config.read_text(encoding="utf-8"))
+    protocol = json.loads(arguments.protocol.read_text(encoding="utf-8"))
+    screen_gate = json.loads(arguments.screen_gate.read_text(encoding="utf-8"))
+    configs = build_confirmation_configs_v4(base, protocol, screen_gate)
+    manifest = materialize_confirmation_configs_v4(configs, protocol)
     print(json.dumps(manifest, indent=2, sort_keys=True))
 
 
