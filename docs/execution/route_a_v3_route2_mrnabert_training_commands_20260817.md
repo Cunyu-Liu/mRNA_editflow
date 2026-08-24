@@ -3215,3 +3215,17 @@ warmup，之后cosine decay至initial LR的10%。
 相邻定向=24/24，完整本机Critic V4 focused=52/52、精确V3.3.2=96/96，diff-check PASS；formal
 runner/A100 preflight仍未执行，optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_checkpoint_optimizer_schedule_v1.json`。
+
+## XEditCritic V4 attempt ledger and shared-graph replay repair（2026-08-24）
+
+已实现八个冻结screen run的唯一attempt identity与中央/本地attempt metadata。登记层拒绝未知run、GPU 0–5
+之外设备和未声明physical batch；C0-V4保留相同outcome-free endpoint descriptors，但不填写不存在的
+pretrained cache；permutation control完整标记candidate bundle permutation。所有screen metadata显式写入
+Development TEST/new Evaluation protected read=0。
+
+正式V4 prediction与router-balance共享router前向计算图，因此回放阶段不能先后执行两个独立backward。当前
+实现用单次multi-output vector-Jacobian backward同时施加32-vector prediction gradient对应slice和router
+balance梯度，不保留计算图、不增加forward，并用共享前向tensor构造回归测试。相邻定向=15/15、完整本机
+Critic V4 focused=56/56、精确V3.3.2=96/96。formal runner/A100 preflight仍pending且受C3 barrier约束；
+optimizer attempts=0、Validation metric read=false、Development TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_attempt_ledger_v1.json`。

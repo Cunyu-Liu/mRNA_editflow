@@ -293,14 +293,20 @@ def backward_replayed_prediction_gradient_v4(
         prediction = output["mean"]
         _require(torch.equal(prediction.detach(), expected), "Critic V4 RNG replay changed a stochastic prediction")
         end = cursor + prediction.numel()
-        prediction.backward(prediction_gradient[cursor:end])
         if router_balance_weight > 0:
-            router_term = (
-                router_balance_weight
-                * output["router_balance_loss"]
-                / len(physical_batches)
+            router_gradient = prediction.new_tensor(
+                router_balance_weight / len(physical_batches)
             )
-            router_term.backward()
+            # Prediction and router balance share the endpoint-router graph in
+            # the formal model.  A single multi-output backward preserves that
+            # graph and applies both VJPs without retain_graph or a second
+            # forward.
+            torch.autograd.backward(
+                (prediction, output["router_balance_loss"]),
+                (prediction_gradient[cursor:end], router_gradient),
+            )
+        else:
+            prediction.backward(prediction_gradient[cursor:end])
         replayed_predictions.append(prediction.detach())
         cursor = end
     _require(cursor == EFFECTIVE_BATCH_V4, "Critic V4 replay gradient did not cover 32 predictions")

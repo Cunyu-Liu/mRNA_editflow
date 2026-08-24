@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_attempt_ledger.v1",
+  "recorded_at_local": "2026-08-24T17:33:18+08:00",
+  "status": "XEDITCRITIC_V4_ATTEMPT_LEDGER_IMPLEMENTED_NO_OPTIMIZER_ATTEMPT",
+  "git_head_before_delivery": "4d06afa",
+  "implementation": {
+    "ledger_core": "core/route2_xeditcritic_ledger_v4.py",
+    "ledger_test": "tests/route_a_v3/test_route2_xeditcritic_ledger_v4.py",
+    "frozen_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
+  },
+  "verified_invariants": {
+    "exact_frozen_screen_run_required": true,
+    "attempt_identity_unique_by_run": true,
+    "screen_seed": 20260907,
+    "gpu_scope": [0, 1, 2, 3, 4, 5],
+    "physical_batch_candidates": [4, 8, 16, 32],
+    "effective_batch": 32,
+    "complete_candidate_bundle_permutation_identity": true,
+    "c0_same_endpoint_information": true,
+    "c0_does_not_claim_pretrained_cache": true,
+    "protected_read_counters_written": true,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "replay_graph_repair": {
+    "failure_detected": "sequential prediction and router-balance backward would release their shared formal forward graph",
+    "repair": "single torch.autograd.backward call with two output-gradient pairs",
+    "extra_forward": false,
+    "retain_graph": false,
+    "shared_graph_regression_test": true
+  },
+  "verification": {
+    "ledger_and_training_adjacent_tests": "15/15 PASS",
+    "complete_local_critic_v4_focused_cohort": "56/56 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "formal_runner": "PENDING_NEXT_LOGICAL_TASK",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "validation_metric_read": false,
+    "development_test_outcome_read": 0,
+    "new_final_evaluation_outcome_read": 0
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

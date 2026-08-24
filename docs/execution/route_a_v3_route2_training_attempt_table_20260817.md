@@ -2062,6 +2062,20 @@ optimizer attempts=0，Development TEST/new Evaluation outcome read=0。审计�
 formal runner/A100 preflight仍pending，Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_checkpoint_optimizer_schedule_v1.json`。
 
+## XEditCritic V4 attempt ledger and shared-graph replay repair（2026-08-24）
+
+本项不是optimizer attempt，不新增中央训练尝试行。已实现八个冻结screen run的唯一attempt identity、中央表/
+run-local metadata、GPU 0–5与physical batch 4/8/16/32约束，以及protected-read counters。C0-V4保持相同
+outcome-free endpoint信息，但不伪报pretrained cache或model identity；complete candidate-bundle permutation拥有
+独立且不可混淆的control identity。
+
+正式模型中prediction与router-balance共享endpoint/router前向图，原先连续两次backward会在第一次反传后
+释放共享图。现改为一个multi-output `torch.autograd.backward`同时施加prediction-gradient slice与router
+balance梯度，不启用retain-graph，也不增加第三次forward；共享图回归测试已覆盖。相邻定向=15/15、完整本机
+Critic V4 focused=56/56、精确V3.3.2=96/96。formal runner仍pending，optimizer attempts=0，Development
+TEST/new Evaluation outcome read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_attempt_ledger_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

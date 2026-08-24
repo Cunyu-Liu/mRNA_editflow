@@ -169,10 +169,14 @@ def test_rng_replay_reproduces_dropout_predictions_and_backpropagates_full_gradi
             hidden = torch.nn.functional.dropout(
                 batch["values"], p=0.3, training=True
             )
-            mean = self.linear(hidden).squeeze(-1)
+            shared = self.linear(hidden)
+            mean = shared.squeeze(-1)
             return {
                 "mean": mean,
-                "router_balance_loss": self.linear.weight.square().mean(),
+                # The formal model's prediction and balance term share the
+                # router forward graph.  This catches an invalid sequential
+                # backward that would free the graph after prediction.backward.
+                "router_balance_loss": shared.square().mean(),
             }
 
     torch.manual_seed(91)
