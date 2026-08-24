@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from core.route2_xeditcritic_gate_v4 import evaluate_xeditcritic_v4_screen
+from core.route2_xeditcritic_gate_v4 import (
+    adjudicate_critic_confirmation_v4,
+    build_critic_confirmation_seed_payload_v4,
+    evaluate_xeditcritic_v4_screen,
+)
 from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_screen import (
     run as adjudicate_screen,
 )
@@ -218,3 +222,88 @@ def test_adjudicator_turns_any_terminal_technical_failure_into_no_go(
     assert result["confirmation_authorized"] is False
     assert result["development_test_authorized"] is False
     assert Path(config["screen_gate_output"]).exists()
+
+
+def _confirmation_summary(run: dict, seed: int, rho: float, mae: float = 1.2) -> dict:
+    result = _summary(run, rho, mae=mae)
+    result["schema_version"] = "route_a_v3_route2_xeditcritic_v4_confirmation_run.v1"
+    result["status"] = "TERMINAL_XEDITCRITIC_V4_CONFIRMATION_RUN_COMPLETE"
+    result["run_stage"] = "CONFIRMATION"
+    result["seed"] = seed
+    return result
+
+
+def _confirmation_payloads() -> dict:
+    config = _config()
+    runs = {row["run_id"]: row for row in config["required_screen_runs"]}
+    return {
+        seed: {
+            "candidate_summary": _confirmation_summary(runs["v4_full"], seed, 0.40),
+            "baseline_summary": _confirmation_summary(runs["c0_v4"], seed, 0.20, mae=1.3),
+            "bootstrap": {
+                "analysis_unit": "SOURCE_GROUP_WITHIN_TASK",
+                "task_count": 9,
+                "source_group_count": 18,
+                "bootstrap_iterations": 10000,
+                "defined_bootstrap_iterations": 10000,
+                "point_task_macro_spearman_difference": 0.20,
+                "task_macro_spearman_difference_ci_95": [0.10, 0.30],
+            },
+        }
+        for seed in (20260908, 20260909, 20260910)
+    }
+
+
+def test_v4_confirmation_gate_requires_three_seed_strict_cohort() -> None:
+    config, _, preflight = _passing_package()
+    result = adjudicate_critic_confirmation_v4(
+        config, _confirmation_payloads(), preflight=preflight
+    )
+    assert result["status"] == "XEDITCRITIC_V4_THREE_SEED_PASS"
+    assert result["development_test_authorized"] is True
+    assert result["atomic_development_test_only"] is True
+    assert result["additional_seed_authorized"] is False
+    payloads = _confirmation_payloads()
+    payloads[20260910]["candidate_summary"]["final_validation"][
+        "task_macro_spearman"
+    ] = 0.29
+    for row in payloads[20260910]["candidate_summary"]["final_validation"][
+        "tasks"
+    ].values():
+        row["spearman"] = 0.29
+    payloads[20260910]["candidate_summary"]["final_validation"][
+        "positive_task_count"
+    ] = 9
+    payloads[20260910]["bootstrap"][
+        "point_task_macro_spearman_difference"
+    ] = 0.09
+    result = adjudicate_critic_confirmation_v4(config, payloads, preflight=preflight)
+    assert result["status"] == "XEDITCRITIC_V4_THREE_SEED_NO_GO"
+    assert result["development_test_authorized"] is False
+
+
+def test_v4_confirmation_bootstrap_is_exact_source_group_pairing() -> None:
+    candidate = []
+    baseline = []
+    for task_index in range(9):
+        for group_index in range(2):
+            for row_index, target in enumerate((-1.0, 0.0, 1.0)):
+                common = {
+                    "record_id": f"{task_index}-{group_index}-{row_index}",
+                    "source_group_id": f"task-{task_index}-group-{group_index}",
+                    "task_id": f"task-{task_index}",
+                    "target": target,
+                    "scaled_target": target,
+                }
+                candidate.append({**common, "prediction": target})
+                baseline.append({**common, "prediction": -target})
+    result = build_critic_confirmation_seed_payload_v4(
+        {},
+        {},
+        candidate,
+        baseline,
+        seed=20260908,
+        bootstrap_seed=2026090801,
+    )
+    assert result["bootstrap"]["bootstrap_iterations"] == 10000
+    assert result["bootstrap"]["task_macro_spearman_difference_ci_95"][0] > 0.0

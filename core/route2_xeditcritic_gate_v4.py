@@ -7,6 +7,10 @@ from typing import Any, Mapping
 
 import numpy as np
 
+from core.route2_xeditcritic_gate_v3 import (
+    paired_source_group_task_macro_bootstrap_v3,
+)
+
 
 class XEditCriticGateV4Error(RuntimeError):
     pass
@@ -23,10 +27,16 @@ def _validate_summary_v4(
     *,
     selected_physical_batch: int,
     formal_parameter_count: int,
+    expected_seed: int = 20260907,
+    expected_schema: str = "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
+    expected_status: str = "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+    expected_run_stage: str | None = None,
 ) -> Mapping[str, Any]:
     run_id = str(run["run_id"])
-    _require(summary.get("schema_version") == "route_a_v3_route2_xeditcritic_v4_screen_run.v1", f"{run_id} summary schema changed")
-    _require(summary.get("status") == "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE", f"{run_id} is not terminal complete")
+    _require(summary.get("schema_version") == expected_schema, f"{run_id} summary schema changed")
+    _require(summary.get("status") == expected_status, f"{run_id} is not terminal complete")
+    if expected_run_stage is not None:
+        _require(summary.get("run_stage") == expected_run_stage, f"{run_id} run stage changed")
     _require(str(summary.get("run_id")) == run_id, f"{run_id} summary identity changed")
     _require(str(summary.get("model_kind")) == str(run["model"]), f"{run_id} model kind changed")
     expected_control = (
@@ -37,7 +47,7 @@ def _validate_summary_v4(
     _require(str(summary.get("control_mode")) == expected_control, f"{run_id} control identity changed")
     _require(str(summary.get("mechanism_mode")) == str(run["mechanism"]), f"{run_id} mechanism identity changed")
     _require(summary.get("candidate_bundle_permutation") is bool(run.get("candidate_bundle_permutation", False)), f"{run_id} permutation identity changed")
-    _require(int(summary.get("seed", -1)) == 20260907, f"{run_id} seed changed")
+    _require(int(summary.get("seed", -1)) == expected_seed, f"{run_id} seed changed")
     _require(int(summary.get("train_record_count", -1)) == 89580 and int(summary.get("validation_record_count", -1)) == 18293, f"{run_id} projection inventory changed")
     _require(int(summary.get("pass_count", -1)) == 8 and int(summary.get("selected_pass", -1)) == 8 and int(summary.get("update_count", -1)) == 22416, f"{run_id} training budget changed")
     _require(summary.get("selection_policy") == "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION", f"{run_id} checkpoint selection changed")
@@ -198,4 +208,177 @@ def evaluate_xeditcritic_v4_screen(
         "new_final_evaluation_outcome_reads": 0,
         "confirmation_authorized": passed,
         "development_test_authorized": False,
+    }
+
+
+def build_critic_confirmation_seed_payload_v4(
+    candidate_summary: Mapping[str, Any],
+    baseline_summary: Mapping[str, Any],
+    candidate_prediction_rows: list[Mapping[str, Any]],
+    baseline_prediction_rows: list[Mapping[str, Any]],
+    *,
+    seed: int,
+    bootstrap_seed: int,
+) -> dict[str, Any]:
+    _require(seed in {20260908, 20260909, 20260910}, "Critic V4 confirmation seed is undeclared")
+    _require(
+        bootstrap_seed == seed * 100 + 1,
+        "Critic V4 confirmation bootstrap seed changed",
+    )
+    bootstrap = paired_source_group_task_macro_bootstrap_v3(
+        candidate_prediction_rows,
+        baseline_prediction_rows,
+        iterations=10_000,
+        seed=bootstrap_seed,
+    )
+    return {
+        "candidate_summary": dict(candidate_summary),
+        "baseline_summary": dict(baseline_summary),
+        "bootstrap": bootstrap,
+    }
+
+
+def adjudicate_critic_confirmation_v4(
+    config: Mapping[str, Any],
+    seed_payloads: Mapping[int, Mapping[str, Any]],
+    *,
+    preflight: Mapping[str, Any],
+) -> dict[str, Any]:
+    required_seeds = (20260908, 20260909, 20260910)
+    _require(
+        tuple(sorted(seed_payloads)) == required_seeds and len(seed_payloads) == 3,
+        "Critic V4 confirmation requires exactly the three frozen seeds",
+    )
+    _require(
+        preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
+        and preflight.get("passed") is True
+        and int(preflight.get("development_test_outcome_reads", -1)) == 0
+        and int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "Critic V4 confirmation preflight is invalid or reports a protected read",
+    )
+    formal_count = int(preflight.get("trainable_parameter_count", -1))
+    physical_batch = int(preflight.get("selected_physical_batch", -1))
+    runs = {str(row["run_id"]): row for row in config["required_screen_runs"]}
+    _require(
+        {"v4_full", "c0_v4"} <= set(runs),
+        "Critic V4 confirmation full or matched baseline spec is absent",
+    )
+    seed_results: dict[str, Any] = {}
+    for seed in required_seeds:
+        payload = seed_payloads[seed]
+        _require(
+            set(payload) == {"candidate_summary", "baseline_summary", "bootstrap"},
+            f"Critic V4 confirmation payload is incomplete: {seed}",
+        )
+        candidate = _validate_summary_v4(
+            payload["candidate_summary"],
+            runs["v4_full"],
+            selected_physical_batch=physical_batch,
+            formal_parameter_count=formal_count,
+            expected_seed=seed,
+            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v1",
+            expected_status="TERMINAL_XEDITCRITIC_V4_CONFIRMATION_RUN_COMPLETE",
+            expected_run_stage="CONFIRMATION",
+        )
+        baseline = _validate_summary_v4(
+            payload["baseline_summary"],
+            runs["c0_v4"],
+            selected_physical_batch=physical_batch,
+            formal_parameter_count=formal_count,
+            expected_seed=seed,
+            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v1",
+            expected_status="TERMINAL_XEDITCRITIC_V4_CONFIRMATION_RUN_COMPLETE",
+            expected_run_stage="CONFIRMATION",
+        )
+        _require(
+            all(
+                payload["candidate_summary"].get(field)
+                == payload["baseline_summary"].get(field)
+                for field in (
+                    "train_record_count",
+                    "validation_record_count",
+                    "pass_count",
+                    "selected_pass",
+                    "update_count",
+                    "physical_batch_size",
+                    "effective_batch_size",
+                )
+            ),
+            f"Critic V4 confirmation candidate/baseline budget differs: {seed}",
+        )
+        candidate_rho = float(candidate["task_macro_spearman"])
+        baseline_rho = float(baseline["task_macro_spearman"])
+        candidate_mae = float(candidate["task_macro_standardized_mae"])
+        baseline_mae = float(baseline["task_macro_standardized_mae"])
+        task_wins = sum(
+            float(candidate["tasks"][task]["spearman"])
+            > float(baseline["tasks"][task]["spearman"])
+            for task in candidate["tasks"]
+        )
+        bootstrap = payload["bootstrap"]
+        _require(
+            bootstrap.get("analysis_unit") == "SOURCE_GROUP_WITHIN_TASK"
+            and int(bootstrap.get("task_count", -1)) == 9
+            and int(bootstrap.get("bootstrap_iterations", -1)) == 10_000
+            and int(bootstrap.get("defined_bootstrap_iterations", 0)) >= 9_500,
+            f"Critic V4 confirmation bootstrap identity changed: {seed}",
+        )
+        ci = bootstrap.get("task_macro_spearman_difference_ci_95")
+        _require(isinstance(ci, list) and len(ci) == 2, f"Critic V4 confirmation CI is absent: {seed}")
+        margin = candidate_rho - baseline_rho
+        _require(
+            math.isclose(
+                float(bootstrap.get("point_task_macro_spearman_difference", float("nan"))),
+                margin,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ),
+            f"Critic V4 confirmation bootstrap point differs: {seed}",
+        )
+        checks = {
+            "task_macro_spearman_at_least_0_30": candidate_rho >= 0.30,
+            "margin_over_c0_v4_at_least_0_10": margin >= 0.10,
+            "task_macro_standardized_mae_at_most_1_70": candidate_mae <= 1.70,
+            "mae_not_worse_than_c0_v4": candidate_mae <= baseline_mae,
+            "positive_task_count_at_least_8": int(candidate["positive_task_count"]) >= 8,
+            "task_wins_over_c0_v4_at_least_6": task_wins >= 6,
+            "paired_bootstrap_ci_lower_bound_positive": math.isfinite(float(ci[0]))
+            and float(ci[0]) > 0.0,
+            "protected_reads_zero": True,
+        }
+        seed_results[str(seed)] = {
+            "candidate_task_macro_spearman": candidate_rho,
+            "baseline_task_macro_spearman": baseline_rho,
+            "margin_over_c0_v4": margin,
+            "candidate_task_macro_standardized_mae": candidate_mae,
+            "baseline_task_macro_standardized_mae": baseline_mae,
+            "positive_task_count": int(candidate["positive_task_count"]),
+            "task_wins_over_c0_v4": task_wins,
+            "paired_bootstrap_ci_95": [float(ci[0]), float(ci[1])],
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    spearmans = [row["candidate_task_macro_spearman"] for row in seed_results.values()]
+    margins = [row["margin_over_c0_v4"] for row in seed_results.values()]
+    cohort_checks = {
+        "exact_three_frozen_seeds": True,
+        "all_seed_checks_pass": all(row["passed"] for row in seed_results.values()),
+        "median_task_macro_spearman_at_least_0_35": float(np.median(spearmans)) >= 0.35,
+        "median_margin_over_c0_v4_at_least_0_12": float(np.median(margins)) >= 0.12,
+    }
+    passed = all(cohort_checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_three_seed_gate.v1",
+        "status": "XEDITCRITIC_V4_THREE_SEED_PASS"
+        if passed
+        else "XEDITCRITIC_V4_THREE_SEED_NO_GO",
+        "required_seeds": list(required_seeds),
+        "seed_results": seed_results,
+        "cohort_checks": cohort_checks,
+        "development_test_authorized": passed,
+        "atomic_development_test_only": passed,
+        "additional_seed_authorized": False,
+        "guidance_authorized": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
     }

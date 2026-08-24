@@ -2343,6 +2343,23 @@ terminal confirmation NO-GO，不补seed。
 五个旧launch-head C3 jobs全部terminal。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_confirmation_runtime_gate_v1.json`。
 
+## XEditCritic V4 confirmation protocol、config与三seed gate（2026-08-24）
+
+已在任何Critic V4 screen结果前冻结confirmation：仅`XEDITCRITIC_V4_SCREEN_PASS`可生成配置，模型固定
+`v4_full`并为每个seed同时训练matched `c0_v4`；seeds仅20260908/20260909/20260910，均为8 passes、
+effective batch32、final-pass-8固定checkpoint，不授权第四seed。
+
+每seed必须满足task-macro Spearman≥0.30、相对C0-V4 margin≥0.10、standardized MAE≤1.70且不劣于
+C0、至少8/9 task为正、至少6/9 task胜C0，以及task-stratified source-group paired bootstrap Spearman
+difference 95% CI下界>0。三seed全过之外，中位Spearman还须≥0.35且中位margin≥0.12。bootstrap每seed
+10,000次，预注册seed分别为2026090801/2026090901/2026091001。只有完整gate PASS才授权唯一一次原子
+Development TEST；不授权通用TEST loader、额外seed或guidance。
+
+完整本机Critic V4 focused=67/67、精确V3.3.2=96/96、compile/JSON/diff-check PASS。screen/confirmation
+尚未运行，optimizer attempts=0，Development TEST/new Evaluation outcome read=0；A100 current-HEAD测试继续等待
+五个旧launch-head C3 jobs terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_gate_v1.json`。
+
 ## 23:28–23:33 C2 remaining controls first long-interval health（2026-08-23）
 
 no-candidate/permutation分别在23:28:53/23:33:05保持RUNNING，elapsed为18,893/18,547秒，中央CSV

@@ -3452,3 +3452,15 @@ current-HEAD focused/V3.3.2、preflight、source-data与protected-read barriers�
 本地SetFlow V4 focused=59/59、精确V3.3.2=96/96、compile/diff-check PASS；screen/confirmation未运行，
 optimizer attempts=0、Development TEST/new Evaluation outcome read=0。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_confirmation_runtime_gate_v1.json`。
+
+## XEditCritic V4 matched three-seed confirmation freeze（2026-08-24）
+
+`prepare_route2_xeditcritic_v4_confirmation_configs.py`只接受terminal Critic V4 screen PASS，并生成三份
+seed-specific runtime config；每份只允许`v4_full`与matched `c0_v4`，使用相同projection、sampler、passes、
+updates、physical/effective batch与endpoint descriptors。三seed与bootstrap seeds均已前瞻冻结，不补第四seed。
+
+`route2_xeditcritic_gate_v4.py`已实现每seed严格指标、task breadth、matched C0、source-group paired-bootstrap CI
+及三seed中位数gate。任何一项失败输出three-seed NO-GO并保持TEST关闭；完整PASS只授权未来一次原子TEST，
+仍不授权guidance。Critic V4 focused=67/67、精确V3.3.2=96/96、compile/JSON/diff-check PASS；当前
+screen/confirmation/TEST均未运行，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_gate_v1.json`。

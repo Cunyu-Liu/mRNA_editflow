@@ -1,0 +1,58 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_protocol_gate.v1",
+  "recorded_at_local": "2026-08-24T19:21:58+08:00",
+  "status": "XEDITCRITIC_V4_CONFIRMATION_PROTOCOL_AND_GATE_FROZEN_NOT_AUTHORIZED",
+  "git_head_before_delivery": "c2ce602117d58c0b8866a0f7685eab110cea3efa",
+  "implementation": {
+    "protocol": "configs/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_v1.json",
+    "config_preparer": "scripts/route_a_v3/prepare_route2_xeditcritic_v4_confirmation_configs.py",
+    "gate": "core/route2_xeditcritic_gate_v4.py"
+  },
+  "frozen_confirmation": {
+    "candidate_run_id": "v4_full",
+    "matched_baseline_run_id": "c0_v4",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "bootstrap_seeds": [
+      2026090801,
+      2026090901,
+      2026091001
+    ],
+    "additional_seed_authorized": false,
+    "passes": 8,
+    "effective_batch_size": 32,
+    "checkpoint": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION"
+  },
+  "strict_gate": {
+    "per_seed_minimum_task_macro_spearman": 0.3,
+    "per_seed_minimum_margin_over_c0_v4": 0.1,
+    "per_seed_maximum_standardized_mae": 1.7,
+    "per_seed_minimum_positive_tasks": 8,
+    "per_seed_minimum_task_wins_over_c0_v4": 6,
+    "paired_bootstrap_analysis_unit": "SOURCE_GROUP_WITHIN_TASK",
+    "paired_bootstrap_iterations": 10000,
+    "paired_bootstrap_ci_lower_bound": "STRICTLY_GREATER_THAN_ZERO",
+    "cohort_minimum_median_spearman": 0.35,
+    "cohort_minimum_median_margin": 0.12
+  },
+  "verification": {
+    "complete_local_critic_v4_focused_cohort": "67/67 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "compile_json_diff_check": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "screen_passed": false,
+    "confirmation_configs_prepared": false,
+    "confirmation_optimizer_attempts_started": 0,
+    "atomic_development_test_authorized": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "guidance_authorized": false
+  },
+  "claim_boundary": "PROSPECTIVE CONFIGURATION AND GATE ONLY; NO CRITIC V4 PERFORMANCE RESULT",
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

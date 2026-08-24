@@ -1,0 +1,53 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_SCREEN_OR_CONFIRMATION_RESULT",
+  "base_screen_config": "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
+  "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/screen_gate.json",
+  "selected_model_run_id": "v4_full",
+  "matched_baseline_run_id": "c0_v4",
+  "required_seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "bootstrap_seed_by_training_seed": {
+    "20260908": 2026090801,
+    "20260909": 2026090901,
+    "20260910": 2026091001
+  },
+  "additional_seed_authorized": false,
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditcritic_v4/confirmation_v1",
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/confirmation_v1",
+  "confirmation_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/confirmation_v1/three_seed_gate.json",
+  "training_policy": {
+    "passes": 8,
+    "effective_batch_size": 32,
+    "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
+    "matched_full_and_c0_budget": true
+  },
+  "seed_gate": {
+    "minimum_task_macro_spearman": 0.3,
+    "minimum_margin_over_c0_v4": 0.1,
+    "maximum_task_macro_standardized_mae": 1.7,
+    "mae_must_not_exceed_c0_v4": true,
+    "minimum_positive_tasks": 8,
+    "minimum_tasks_won_over_c0_v4": 6,
+    "paired_source_group_bootstrap_ci_lower_bound_strictly_positive": true
+  },
+  "cohort_gate": {
+    "minimum_median_task_macro_spearman": 0.35,
+    "minimum_median_margin_over_c0_v4": 0.12,
+    "all_three_seeds_must_pass": true
+  },
+  "paired_bootstrap": {
+    "analysis_unit": "SOURCE_GROUP_WITHIN_TASK",
+    "iterations": 10000,
+    "confidence_level": 0.95,
+    "interval": "PERCENTILE_TWO_SIDED"
+  },
+  "development_test_authorized": false,
+  "atomic_test_only_after_three_seed_gate": true,
+  "guidance_authorized": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}
