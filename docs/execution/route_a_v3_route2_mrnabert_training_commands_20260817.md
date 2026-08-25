@@ -4384,3 +4384,22 @@ keyword-only接口并断言float32 hidden dtype，直接覆盖这次A100可达�
 本地验证命令覆盖Critic V4/bottom-cache/cache-launch/preflight/sync focused 130项及精确V3.3.2 96项，全部PASS；
 py_compile与`git diff --check` PASS。旧终态将在同一冻结任务技术重试前完整归档，不删除证据、不更改数据、模型、
 seed、预算或gate；重试必须先同步修复HEAD并通过A100 current-HEAD tests。
+
+## V4 guidance screen formal execution chain（2026-08-25）
+
+`prepare_route2_xeditflow_v4_value_configs.py`新增精确18项`--guidance-gpus`，要求GPU0–5各出现3次；每个组合的
+SMC、Critic、closed benchmark与independent evaluator device一致。producer不再逐文件直接暴露runtime config，
+而在`.staging`完整写入1+1+6+6+18链配置和manifest后一次目录rename，manifest路径预先指向最终config root。
+
+`launch_route2_xeditflow_v4_guidance_screen_after_authorization.py`只接受双ready的实验HEAD，并允许执行代码位于经过
+current-HEAD测试的后继HEAD；两者分离是为了避免旧训练作业活跃时同步A100，同时仍让所有训练结果保持原实验HEAD
+身份。launcher在任何config生成前要求GPU0–5全部满足`max(Critic peak, SetFlow peak)+2 GiB`，然后建立冻结schedule。
+
+`run_route2_xeditflow_v4_guidance_screen_scheduler.py`先串行完成rollout/scoring/6 target packages，再并行训练6个
+value模型；全部成功后，18个组合按每GPU三个chain顺序运行，每个chain固定SMC、Critic scoring、closed、open、
+independent evaluator和comparison六阶段。全部18项terminal后只裁决一次；缺失terminal发布技术failure，已存在的
+正式summary/failure不覆盖，不读active metric。external shell要求`V4_CURRENT_HEAD`和`V4_EXPERIMENT_HEAD`并只调用
+Git正式入口。
+
+验证：targeted 52/52、合并V4 224/224、V3.3.2 96/96、compile、shell syntax、helper smoke与diff-check均PASS。
+本项仅完成前瞻执行软件，尚未在A100执行；缓存重试未terminal前不做current-HEAD sync。

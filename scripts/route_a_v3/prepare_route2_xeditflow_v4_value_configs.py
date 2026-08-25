@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -88,6 +89,7 @@ def build_value_configs_v4(
     rollout_gpu: int,
     critic_gpu: int,
     value_gpus: Sequence[int],
+    guidance_gpus: Sequence[int],
 ) -> dict[str, Any]:
     _require(
         protocol.get("schema_version")
@@ -176,6 +178,13 @@ def build_value_configs_v4(
         len(value_gpu_tuple) == 6
         and set(value_gpu_tuple) == set(range(6)),
         "V4 six value jobs must be assigned once each to GPUs 0-5",
+    )
+    guidance_gpu_tuple = tuple(int(value) for value in guidance_gpus)
+    _require(
+        len(guidance_gpu_tuple) == len(GUIDANCE_GRID_V4)
+        and all(value in range(6) for value in guidance_gpu_tuple)
+        and all(guidance_gpu_tuple.count(value) == 3 for value in range(6)),
+        "V4 18 guidance combinations must assign exactly three chains to each GPU 0-5",
     )
     runtime = protocol.get("value_runtime")
     _require(
@@ -389,7 +398,10 @@ def build_value_configs_v4(
         "V4 SMC runtime policy changed",
     )
     guidance_jobs: list[dict[str, Any]] = []
-    for kappa, temperature, beta_max in GUIDANCE_GRID_V4:
+    for guidance_index, (kappa, temperature, beta_max) in enumerate(
+        GUIDANCE_GRID_V4
+    ):
+        guidance_gpu = guidance_gpu_tuple[guidance_index]
         value_id = _value_id(kappa, temperature)
         combination_id = (
             f"{value_id}_beta_{_component(beta_max)}"
@@ -425,8 +437,8 @@ def build_value_configs_v4(
             "action_space": "SUB+STOP",
             "replay_check": True,
             "decoder_seed_base": 20261001,
-            "physical_gpu_index": rollout_gpu,
-            "device": f"cuda:{rollout_gpu}",
+            "physical_gpu_index": guidance_gpu,
+            "device": f"cuda:{guidance_gpu}",
             "method_id": f"xeditflow_v4_guidance_screen_{combination_id}",
             "output_dir": str(smc_output),
             "independent_evaluator_used": False,
@@ -466,8 +478,8 @@ def build_value_configs_v4(
             "bottom_six_maximum_sequences_per_batch": 8,
             "bottom_six_batch_token_budget": 4096,
             "attention_backend": "PYTORCH_SDPA_AUTO",
-            "physical_gpu_index": critic_gpu,
-            "device": f"cuda:{critic_gpu}",
+            "physical_gpu_index": guidance_gpu,
+            "device": f"cuda:{guidance_gpu}",
             "output_dir": str(critic_output),
             "critic_self_score_used_for_generation_or_selection": False,
             "independent_evaluator_used": False,
@@ -511,8 +523,8 @@ def build_value_configs_v4(
             "enumeration": "ALL_EDIT_PERMUTATIONS_EXACT_SUM",
             "analysis_unit": "SOURCE",
             "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
-            "physical_gpu_index": rollout_gpu,
-            "device": f"cuda:{rollout_gpu}",
+            "physical_gpu_index": guidance_gpu,
+            "device": f"cuda:{guidance_gpu}",
             "output_dir": str(closed_output),
             "independent_evaluator_used": False,
             "development_test_outcomes_accessed_after_atomic_test": False,
@@ -568,8 +580,8 @@ def build_value_configs_v4(
             "evaluator_frozen_before_candidate_generation": True,
             "independent_evaluator_in_gradient": False,
             "evaluation_outcomes_used_to_select_evaluator": 0,
-            "physical_gpu_index": critic_gpu,
-            "device": f"cuda:{critic_gpu}",
+            "physical_gpu_index": guidance_gpu,
+            "device": f"cuda:{guidance_gpu}",
             "development_test_outcomes_accessed_after_atomic_test": False,
             "new_final_evaluation_outcome_reads": 0,
         }
@@ -599,6 +611,7 @@ def build_value_configs_v4(
                 "combination_id": combination_id,
                 "combination": [kappa, temperature, beta_max],
                 "value_id": value_id,
+                "physical_gpu_index": guidance_gpu,
                 "smc_config": smc_config,
                 "critic_ensemble_config": critic_config,
                 "closed_config": closed_config,
@@ -629,6 +642,7 @@ def build_value_configs_v4(
         "value_target_package_count": 6,
         "value_training_job_count": 6,
         "later_guidance_combination_count": 18,
+        "guidance_gpu_assignment": list(guidance_gpu_tuple),
         "rollout_config": rollout_config,
         "critic_score_config": score_config,
         "target_grid_config": target_config,
@@ -642,11 +656,12 @@ def build_value_configs_v4(
 
 
 def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None:
+    staging_dir = output_dir.with_name(output_dir.name + ".staging")
     _require(
-        not output_dir.exists(),
+        not output_dir.exists() and not staging_dir.exists(),
         f"V4 value runtime config root exists: {output_dir}",
     )
-    output_dir.mkdir(parents=True)
+    staging_dir.mkdir(parents=True)
     fixed = {
         "value_rollout.json": payload["rollout_config"],
         "value_critic_score.json": payload["critic_score_config"],
@@ -654,20 +669,20 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     }
     paths: dict[str, str] = {}
     for name, config in fixed.items():
-        path = output_dir / name
+        path = staging_dir / name
         path.write_text(
             json.dumps(config, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        paths[name] = str(path)
+        paths[name] = str(output_dir / name)
     value_paths = []
     for job in payload["value_jobs"]:
-        path = output_dir / f"value_train_{job['value_id']}.json"
+        path = staging_dir / f"value_train_{job['value_id']}.json"
         path.write_text(
             json.dumps(job["config"], indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        value_paths.append(str(path))
+        value_paths.append(str(output_dir / path.name))
     guidance_paths = []
     critic_paths = []
     closed_paths = []
@@ -676,13 +691,13 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
     evaluator_comparison_paths = []
     result_paths = []
     for job in payload["guidance_jobs"]:
-        path = output_dir / f"smc_{job['combination_id']}.json"
+        path = staging_dir / f"smc_{job['combination_id']}.json"
         path.write_text(
             json.dumps(job["smc_config"], indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        guidance_paths.append(str(path))
-        critic_path = output_dir / f"critic_{job['combination_id']}.json"
+        guidance_paths.append(str(output_dir / path.name))
+        critic_path = staging_dir / f"critic_{job['combination_id']}.json"
         critic_path.write_text(
             json.dumps(
                 job["critic_ensemble_config"], indent=2, sort_keys=True
@@ -690,22 +705,22 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             + "\n",
             encoding="utf-8",
         )
-        critic_paths.append(str(critic_path))
-        closed_path = output_dir / f"closed_{job['combination_id']}.json"
+        critic_paths.append(str(output_dir / critic_path.name))
+        closed_path = staging_dir / f"closed_{job['combination_id']}.json"
         closed_path.write_text(
             json.dumps(job["closed_config"], indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        closed_paths.append(str(closed_path))
-        open_path = output_dir / f"open_metric_{job['combination_id']}.json"
+        closed_paths.append(str(output_dir / closed_path.name))
+        open_path = staging_dir / f"open_metric_{job['combination_id']}.json"
         open_path.write_text(
             json.dumps(job["open_metric_config"], indent=2, sort_keys=True)
             + "\n",
             encoding="utf-8",
         )
-        open_metric_paths.append(str(open_path))
+        open_metric_paths.append(str(output_dir / open_path.name))
         evaluator_path = (
-            output_dir / f"independent_evaluator_{job['combination_id']}.json"
+            staging_dir / f"independent_evaluator_{job['combination_id']}.json"
         )
         evaluator_path.write_text(
             json.dumps(
@@ -714,9 +729,9 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             + "\n",
             encoding="utf-8",
         )
-        evaluator_paths.append(str(evaluator_path))
+        evaluator_paths.append(str(output_dir / evaluator_path.name))
         comparison_path = (
-            output_dir
+            staging_dir
             / f"independent_evaluator_comparison_{job['combination_id']}.json"
         )
         comparison_path.write_text(
@@ -728,7 +743,7 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             + "\n",
             encoding="utf-8",
         )
-        evaluator_comparison_paths.append(str(comparison_path))
+        evaluator_comparison_paths.append(str(output_dir / comparison_path.name))
         result_paths.append(
             {
                 "combination_id": job["combination_id"],
@@ -783,10 +798,11 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
         evaluator_comparison_paths
     )
     manifest["guidance_result_paths"] = result_paths
-    (output_dir / "manifest.json").write_text(
+    (staging_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    os.replace(staging_dir, output_dir)
 
 
 def main() -> None:
@@ -796,6 +812,9 @@ def main() -> None:
     parser.add_argument("--critic-gpu", required=True, type=int)
     parser.add_argument(
         "--value-gpus", required=True, type=int, nargs=6, metavar="GPU"
+    )
+    parser.add_argument(
+        "--guidance-gpus", required=True, type=int, nargs=18, metavar="GPU"
     )
     arguments = parser.parse_args()
     protocol = _read(arguments.protocol)
@@ -809,6 +828,7 @@ def main() -> None:
         rollout_gpu=arguments.rollout_gpu,
         critic_gpu=arguments.critic_gpu,
         value_gpus=arguments.value_gpus,
+        guidance_gpus=arguments.guidance_gpus,
     )
     output_dir = Path(protocol["runtime_config_root"])
     write_value_configs_v4(payload, output_dir)

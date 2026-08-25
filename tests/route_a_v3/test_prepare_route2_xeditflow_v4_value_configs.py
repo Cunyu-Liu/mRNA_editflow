@@ -114,6 +114,7 @@ def _payload() -> dict:
         rollout_gpu=5,
         critic_gpu=4,
         value_gpus=(0, 1, 2, 3, 4, 5),
+        guidance_gpus=tuple(index % 6 for index in range(18)),
     )
 
 
@@ -149,9 +150,18 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
     }
     assert all(
         row["smc_config"]["decoder_seed_base"] == 20261001
-        and row["smc_config"]["physical_gpu_index"] == 5
         and row["smc_config"]["terminal_critic_forwards_by_member"]
         == [4, 4, 4]
+        for row in payload["guidance_jobs"]
+    )
+    assert [
+        row["physical_gpu_index"] for row in payload["guidance_jobs"]
+    ] == [index % 6 for index in range(18)]
+    assert all(
+        row["smc_config"]["physical_gpu_index"]
+        == row["critic_ensemble_config"]["physical_gpu_index"]
+        == row["closed_config"]["physical_gpu_index"]
+        == row["independent_evaluator_config"]["physical_gpu_index"]
         for row in payload["guidance_jobs"]
     )
     assert all(
@@ -222,6 +232,20 @@ def test_v4_value_config_producer_emits_one_one_six_six_eighteen_exact_chain(
     )
     assert len(manifest["guidance_result_paths"]) == 18
     assert all(
+        Path(path).parent == tmp_path / "configs"
+        and Path(path).is_file()
+        for key in (
+            "value_training_config_paths",
+            "guidance_smc_config_paths",
+            "guidance_critic_config_paths",
+            "guidance_closed_config_paths",
+            "guidance_open_metric_config_paths",
+            "guidance_independent_evaluator_config_paths",
+            "guidance_independent_evaluator_comparison_config_paths",
+        )
+        for path in manifest[key]
+    )
+    assert all(
         "matched_compute.scored.jsonl" in row["matched_compute_path"]
         for row in manifest["guidance_result_paths"]
     )
@@ -250,6 +274,7 @@ def test_v4_value_config_producer_rejects_authorization_or_gpu_drift() -> None:
             rollout_gpu=0,
             critic_gpu=1,
             value_gpus=(0, 1, 2, 3, 4, 5),
+            guidance_gpus=tuple(index % 6 for index in range(18)),
         )
     with pytest.raises(Exception, match="once each"):
         build_value_configs_v4(
@@ -262,4 +287,18 @@ def test_v4_value_config_producer_rejects_authorization_or_gpu_drift() -> None:
             rollout_gpu=0,
             critic_gpu=1,
             value_gpus=(0, 0, 1, 2, 3, 4),
+            guidance_gpus=tuple(index % 6 for index in range(18)),
+        )
+    with pytest.raises(Exception, match="three chains"):
+        build_value_configs_v4(
+            protocol,
+            authorization,
+            critic,
+            flow,
+            _refit(),
+            _source_audit(),
+            rollout_gpu=0,
+            critic_gpu=1,
+            value_gpus=(0, 1, 2, 3, 4, 5),
+            guidance_gpus=(0,) * 18,
         )

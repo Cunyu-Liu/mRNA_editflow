@@ -1,0 +1,33 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_screen_execution_chain_audit.v1",
+  "status": "IMPLEMENTED_LOCALLY_NOT_EXECUTED",
+  "execution_order": [
+    "ONE_UNGUIDED_ROLLOUT_PACKAGE",
+    "ONE_FROZEN_THREE_MEMBER_CRITIC_SCORING_PACKAGE",
+    "SIX_KAPPA_TEMPERATURE_VALUE_TARGET_PACKAGES",
+    "SIX_PARALLEL_VALUE_TRAINING_JOBS",
+    "EIGHTEEN_FIXED_GUIDANCE_CHAINS",
+    "ONE_FROZEN_ADJUDICATION"
+  ],
+  "guidance_grid_combination_count": 18,
+  "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+  "guidance_chains_per_gpu": 3,
+  "value_training_jobs_per_gpu": 1,
+  "configuration_package_atomic": true,
+  "runner_head_separate_from_frozen_experiment_head": true,
+  "additional_grid_or_seed_allowed": false,
+  "active_performance_output_read": false,
+  "independent_evaluator_in_gradient": false,
+  "executed_on_a100": false,
+  "tests": {
+    "targeted_focused_passed": 52,
+    "local_combined_v4_passed": 224,
+    "local_v3_3_2_passed": 96,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "external_helper_smoke_passed": true,
+    "diff_check_passed": true
+  },
+  "development_test_reopened": false,
+  "new_final_evaluation_outcome_reads": 0
+}

@@ -3524,3 +3524,26 @@ NO-GO，也没有新增optimizer attempt。旧failure、runtime、authorization�
 完整归档并写provenance，再在修复HEAD完成A100 current-HEAD focused/V3.3.2 tests后，对完全相同的冻结cache任务
 做一次技术重试；不得覆盖旧终态或跳过preflight。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_bottom_six_attention_mask_api_failure_fix_v1.json`。
+
+## V4 authorized value and exact 18-combination guidance-screen execution chain（2026-08-25）
+
+双readiness一次性授权之后的最后一个正式执行缺口已闭合。config producer现要求18个guidance组合精确分配到
+GPU0–5，每卡3条完整chain；同一组合的SMC、三成员Critic终态评分、closed neighborhood与independent evaluator
+始终使用同一物理GPU。配置全集先写入兄弟staging目录，再一次性原子发布；manifest中的路径只指向最终目录，
+不会暴露半成品config package。
+
+正式launcher区分冻结实验HEAD与后续runner current HEAD：前者必须拥有双ready决策、Critic/SetFlow preflight和
+全部冻结checkpoint，后者只承载预注册方法的执行代码。所有GPU0–5必须同时满足两项preflight较大峰值加2 GiB后，
+才物化1个unguided rollout、1个三成员Critic scorer、6个`kappa×temperature` target package、6个value training job
+和18个`kappa×temperature×beta_max` chain。scheduler严格执行serial prerequisite → 六卡value training → 六卡各三
+chain → 单次adjudication；前驱技术failure只关闭依赖项，不追加grid、seed或retry。
+
+每条guidance chain固定为SMC→terminal Critic scoring→closed measured-neighborhood→open generation metrics→
+independent evaluator→paired comparison。independent evaluator只参与冻结选择顺序，不进入value/generator gradient；
+active performance output不由scheduler读取，Development TEST不重开，new Evaluation read为0。项目外helper只调用
+Git正式launcher，并显式要求current/experiment两个40字符HEAD。
+
+targeted focused=52/52，当前A100-selection同定义本地合并V4=224/224，精确V3.3.2=96/96，compile/shell/helper/
+diff-check PASS。本项未同步A100、未生成guidance authorization/config、未启动value optimizer、SMC或metric；当前
+cache重试仍绑定`d44c7cf8e5b6bb1dc05d8ff93e925dc7aa4da88a`，在其terminal前不得同步guidance提交。审计：
+`audits/route_a_v3_route2_xeditflow_v4_guidance_screen_execution_chain_v1.json`。
