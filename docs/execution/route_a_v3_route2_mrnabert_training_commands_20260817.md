@@ -4481,4 +4481,13 @@ cache任务在`a7ef72f`完成，而合规同步后的runner为`717dc17`；旧pre
 screen入口沿用相同边界，preflight输出必须属于current runner，cache summary继续属于experiment HEAD。
 
 本修复发生在任何preflight authorization或job之前。提交推送后需再次执行A100 exact-current-HEAD测试；只有新audit
-存在且GPU0/1满足冻结显存底线，才运行更新后的项目外preflight helper。
+存在且所选两个不同GPU0–5满足各自冻结显存底线，才运行更新后的项目外preflight helper。
+
+## Preflight GPU wait and dual-HEAD downstream propagation（2026-08-25）
+
+首次preflight入口在物化授权前因GPU0仅37,106 MiB空闲而拒绝；GPU0–5没有一张达到Critic 38,000 MiB，故未改用
+禁用的GPU6/7，也未降低阈值。外部helper改为显式接收`V4_CRITIC_PREFLIGHT_GPU`与
+`V4_SETFLOW_PREFLIGHT_GPU`，两者必须为不同的0–5物理索引。下次availability检查不早于本地16:53:02。
+
+screen产生的dual-HEAD runtime/authorization路径现被postscreen和confirmation正式入口直接消费；两级scheduler的
+runtime均携带`experiment_head`。这只是运行归属修复，不改变screen、validation、confirmation seed或gate。

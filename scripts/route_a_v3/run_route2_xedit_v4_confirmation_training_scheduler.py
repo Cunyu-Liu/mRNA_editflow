@@ -56,6 +56,7 @@ def run(schedule: dict[str, Any]) -> None:
                 "status": status,
                 "scheduler_pid": os.getpid(),
                 "git_head": schedule["git_head"],
+                "experiment_head": schedule["experiment_head"],
                 "eligible_components": schedule["eligible_components"],
                 "jobs": states,
                 "active_performance_output_read": False,

@@ -77,6 +77,7 @@ def run(schedule: dict[str, Any]) -> None:
                 "status": status,
                 "coordinator_pid": os.getpid(),
                 "git_head": schedule["git_head"],
+                "experiment_head": schedule["experiment_head"],
                 "critic_adjudication": adjudication["critic"],
                 "setflow_adjudication": adjudication["setflow"],
                 "validation_jobs": states,

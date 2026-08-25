@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_dual_head_successor_paths_and_gpu_wait_audit.v1",
+  "status": "XEDIT_V4_DUAL_HEAD_SUCCESSOR_PATHS_COMPLETE_PREFLIGHT_WAITING_FOR_GPU",
+  "recorded_at": "2026-08-25T16:27:30+08:00",
+  "head_before_change": "f2e2efbc709beda5109138b9d4dacb5c4ec85bf0",
+  "frozen_cache_experiment_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "preflight_launch_attempt": {
+    "status": "SAFE_REJECTED_BEFORE_AUTHORIZATION_OR_RUNTIME_CREATION",
+    "reason": "NO_PHYSICAL_GPU_ZERO_TO_FIVE_MET_CRITIC_MINIMUM_FREE_MEMORY",
+    "critic_minimum_free_mib": 38000,
+    "setflow_minimum_free_mib": 20000,
+    "gpu_free_memory_mib": {
+      "0": 37106,
+      "1": 8775,
+      "2": 7805,
+      "3": 18870,
+      "4": 8728,
+      "5": 334
+    },
+    "forbidden_out_of_scope_gpu_observed_but_not_used": {
+      "6": 36631,
+      "7": 22296
+    },
+    "remote_observation_time": "2026-08-25T16:25:17+08:00",
+    "local_time_before_observation": "2026-08-25T16:23:02+08:00",
+    "remote_clock_offset_seconds": 135,
+    "next_gpu_availability_check_not_before_local": "2026-08-25T16:53:02+08:00"
+  },
+  "successor_path_fix": {
+    "screen_runtime_path_binds_experiment_and_runner_heads": true,
+    "screen_authorization_path_binds_experiment_and_runner_heads": true,
+    "postscreen_launcher_consumes_dual_head_screen_artifacts": true,
+    "postscreen_runtime_records_experiment_head": true,
+    "confirmation_launcher_consumes_dual_head_screen_authorizations": true,
+    "confirmation_runtime_records_experiment_head": true,
+    "postscreen_and_confirmation_outputs_remain_bound_to_current_screen_runner_head": true,
+    "additional_seed_or_grid_authorized": false
+  },
+  "external_helper_boundary": {
+    "preflight_helper_requires_current_head": true,
+    "preflight_helper_requires_experiment_head": true,
+    "preflight_helper_requires_explicit_distinct_gpu_zero_to_five": true,
+    "postscreen_and_confirmation_helpers_require_both_heads": true
+  },
+  "verification": {
+    "targeted_tests": "37 passed",
+    "combined_local_v4_selection": "232 passed",
+    "exact_v3_3_2": "96 passed",
+    "python_compile": "PASS",
+    "shell_syntax": "PASS",
+    "external_helper_smoke": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "REQUIRED_AFTER_COMMIT_BEFORE_PREFLIGHT_RETRY"
+  },
+  "execution_state": {
+    "preflight_authorization_created": false,
+    "preflight_runtime_created": false,
+    "preflight_job_started": false,
+    "screen_job_started": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "EXECUTION_PROVENANCE_AND_SCHEDULING_ONLY_NO_PERFORMANCE_OR_PUBLICATION_CLAIM_CHANGE"
+}

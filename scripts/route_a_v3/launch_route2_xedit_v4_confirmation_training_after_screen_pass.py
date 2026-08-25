@@ -151,26 +151,36 @@ def validate_authorization(
     )
 
 
-def run(head: str) -> dict[str, Any]:
-    require(re.fullmatch(r"[0-9a-f]{40}", head) is not None, "expected Git HEAD is invalid")
+def run(current_head: str, experiment_head: str) -> dict[str, Any]:
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
+        "expected current Git HEAD is invalid",
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", experiment_head) is not None,
+        "expected cache experiment HEAD is invalid",
+    )
     require(PYTHON.is_file(), "formal Python is absent")
     require(
         CONFIRMATION_SCHEDULER.is_file(),
         "current-HEAD confirmation scheduler is absent",
     )
     require(
-        command(["git", "rev-parse", "HEAD"]).stdout.strip() == head,
-        "A100 worktree is not at expected HEAD",
+        command(["git", "rev-parse", "HEAD"]).stdout.strip() == current_head,
+        "A100 worktree is not at expected current HEAD",
     )
     require(
         not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 worktree is dirty",
     )
-    postscreen_runtime_path = ROOT / f"experiments/xedit_v4/postscreen_{head}/runtime.json"
+    postscreen_runtime_path = (
+        ROOT / f"experiments/xedit_v4/postscreen_{current_head}/runtime.json"
+    )
     postscreen = read_json(postscreen_runtime_path)
     require(
         postscreen.get("status") == "V4_POSTSCREEN_ALL_TERMINAL"
-        and postscreen.get("git_head") == head
+        and postscreen.get("git_head") == current_head
+        and postscreen.get("experiment_head") == experiment_head
         and postscreen.get("active_performance_output_read") is False
         and int(postscreen.get("development_test_outcome_reads", -1)) == 0
         and int(postscreen.get("new_final_evaluation_outcome_reads", -1)) == 0,
@@ -196,7 +206,9 @@ def run(head: str) -> dict[str, Any]:
             "base_config": critic_config,
             "protocol": critic_protocol,
             "screen_gate": critic_gate,
-            "screen_authorization": ROOT / f"authorizations/xedit_v4/screen_{head}/critic.json",
+            "screen_authorization": ROOT
+            / "authorizations/xedit_v4"
+            / f"screen_{experiment_head}_runner_{current_head}/critic.json",
             "preflight": ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight.json",
             "prepare": WORKTREE / "scripts/route_a_v3/prepare_route2_xeditcritic_v4_confirmation_configs.py",
             "authorize": WORKTREE / "scripts/route_a_v3/authorize_route2_xeditcritic_v4_confirmation.py",
@@ -206,7 +218,9 @@ def run(head: str) -> dict[str, Any]:
             "base_config": setflow_config,
             "protocol": setflow_protocol,
             "screen_gate": setflow_gate,
-            "screen_authorization": ROOT / f"authorizations/xedit_v4/screen_{head}/setflow.json",
+            "screen_authorization": ROOT
+            / "authorizations/xedit_v4"
+            / f"screen_{experiment_head}_runner_{current_head}/setflow.json",
             "preflight": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight.json",
             "source_data_audit": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/source_level_data_audit.json",
             "prepare": WORKTREE / "scripts/route_a_v3/prepare_route2_xeditsetflow_v4_confirmation_configs.py",
@@ -214,12 +228,12 @@ def run(head: str) -> dict[str, Any]:
             "config_root": ROOT / "runtime_configs/xeditsetflow_v4/confirmation_v1",
         },
     }
-    authorization_root = ROOT / f"authorizations/xedit_v4/confirmation_{head}"
+    authorization_root = ROOT / f"authorizations/xedit_v4/confirmation_{current_head}"
     authorization_staging = authorization_root.with_name(
         authorization_root.name + ".partial"
     )
-    runtime_root = ROOT / f"experiments/xedit_v4/confirmation_training_{head}"
-    log_root = ROOT / f"logs/xedit_v4/confirmation_training_{head}"
+    runtime_root = ROOT / f"experiments/xedit_v4/confirmation_training_{current_head}"
+    log_root = ROOT / f"logs/xedit_v4/confirmation_training_{current_head}"
     require(not authorization_root.exists(), "confirmation authorization package exists")
     require(
         not authorization_staging.exists(),
@@ -272,7 +286,9 @@ def run(head: str) -> dict[str, Any]:
             ]
         )
         command(arguments)
-        validate_authorization(component, read_json(authorization), head=head)
+        validate_authorization(
+            component, read_json(authorization), head=current_head
+        )
     os.replace(authorization_staging, authorization_root)
 
     free_memory = gpu_free_memory_mib()
@@ -359,7 +375,8 @@ def run(head: str) -> dict[str, Any]:
     schedule = {
         "schema_version": "route_a_v3_route2_xedit_v4_confirmation_training_schedule.v1",
         "status": "FROZEN_CONFIRMATION_TRAINING_SCHEDULE",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "postscreen_runtime": str(postscreen_runtime_path),
@@ -392,7 +409,8 @@ def run(head: str) -> dict[str, Any]:
     launch = {
         "schema_version": "route_a_v3_route2_xedit_v4_confirmation_training_launch.v1",
         "status": "V4_CONFIRMATION_TRAINING_SCHEDULER_LAUNCHED",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "scheduler_pid": process.pid,
         "eligible_components": eligible,
         "schedule_path": str(schedule_path),
@@ -408,8 +426,15 @@ def run(head: str) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--experiment-head", required=True)
     arguments = parser.parse_args()
-    print(json.dumps(run(arguments.expected_head), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            run(arguments.expected_head, arguments.experiment_head),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -27,3 +27,10 @@ def test_postscreen_expected_screen_job_set_is_exact() -> None:
         "setflow:v4_full",
         "setflow:v4_single_mode",
     }
+
+
+def test_postscreen_launcher_consumes_dual_head_screen_paths() -> None:
+    source = open(launcher.__file__, encoding="utf-8").read()
+    assert "def run(current_head: str, experiment_head: str)" in source
+    assert "screen_package_{experiment_head}_runner_{current_head}" in source
+    assert "screen_{experiment_head}_runner_{current_head}/setflow.json" in source

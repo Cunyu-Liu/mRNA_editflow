@@ -83,30 +83,42 @@ def expected_screen_jobs() -> set[str]:
     }
 
 
-def run(head: str) -> dict[str, Any]:
-    require(re.fullmatch(r"[0-9a-f]{40}", head) is not None, "expected Git HEAD is invalid")
+def run(current_head: str, experiment_head: str) -> dict[str, Any]:
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
+        "expected current Git HEAD is invalid",
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", experiment_head) is not None,
+        "expected cache experiment HEAD is invalid",
+    )
     require(PYTHON.is_file(), "formal Python is absent")
     require(
         POSTSCREEN_COORDINATOR.is_file(),
         "current-HEAD post-screen coordinator is absent",
     )
     require(
-        command(["git", "rev-parse", "HEAD"]).stdout.strip() == head,
-        "A100 worktree is not at expected HEAD",
+        command(["git", "rev-parse", "HEAD"]).stdout.strip() == current_head,
+        "A100 worktree is not at expected current HEAD",
     )
     require(
         not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 worktree is dirty",
     )
 
-    screen_root = ROOT / f"experiments/xedit_v4/screen_package_{head}"
+    screen_root = (
+        ROOT
+        / "experiments/xedit_v4"
+        / f"screen_package_{experiment_head}_runner_{current_head}"
+    )
     screen_runtime = read_json(screen_root / "runtime.json")
     require(
         screen_runtime.get("status") == "V4_SCREEN_PACKAGE_ALL_JOBS_TERMINAL",
         "V4 screen package is not fully terminal",
     )
     require(
-        str(screen_runtime.get("git_head")) == head,
+        str(screen_runtime.get("git_head")) == current_head
+        and str(screen_runtime.get("experiment_head")) == experiment_head,
         "V4 screen runtime HEAD changed",
     )
     require(
@@ -172,8 +184,8 @@ def run(head: str) -> dict[str, Any]:
         "SetFlow checkpoint validation output already exists",
     )
 
-    runtime_root = ROOT / f"experiments/xedit_v4/postscreen_{head}"
-    log_root = ROOT / f"logs/xedit_v4/postscreen_{head}"
+    runtime_root = ROOT / f"experiments/xedit_v4/postscreen_{current_head}"
+    log_root = ROOT / f"logs/xedit_v4/postscreen_{current_head}"
     require(not runtime_root.exists(), "V4 post-screen runtime already exists")
     runtime_root.mkdir(parents=True)
     log_root.mkdir(parents=True, exist_ok=True)
@@ -186,7 +198,11 @@ def run(head: str) -> dict[str, Any]:
     validator = (
         WORKTREE / "scripts/route_a_v3/validate_route2_xeditsetflow_v4_checkpoint.py"
     )
-    authorization = ROOT / f"authorizations/xedit_v4/screen_{head}/setflow.json"
+    authorization = (
+        ROOT
+        / "authorizations/xedit_v4"
+        / f"screen_{experiment_head}_runner_{current_head}/setflow.json"
+    )
     require(authorization.is_file(), "SetFlow screen authorization is absent")
 
     validation_queues: list[dict[str, Any]] = []
@@ -259,7 +275,8 @@ def run(head: str) -> dict[str, Any]:
     schedule = {
         "schema_version": "route_a_v3_route2_xedit_v4_postscreen_schedule.v1",
         "status": "FROZEN_POSTSCREEN_SCHEDULE",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "screen_runtime": str(screen_root / "runtime.json"),
@@ -310,7 +327,8 @@ def run(head: str) -> dict[str, Any]:
     launch = {
         "schema_version": "route_a_v3_route2_xedit_v4_postscreen_launch.v1",
         "status": "V4_POSTSCREEN_COORDINATOR_LAUNCHED",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "coordinator_pid": process.pid,
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
@@ -325,8 +343,15 @@ def run(head: str) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--experiment-head", required=True)
     arguments = parser.parse_args()
-    print(json.dumps(run(arguments.expected_head), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            run(arguments.expected_head, arguments.experiment_head),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

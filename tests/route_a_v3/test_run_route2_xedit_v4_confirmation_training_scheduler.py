@@ -27,6 +27,7 @@ def test_confirmation_scheduler_keeps_exact_terminals_and_queue_order(
     setflow_marker = tmp_path / "setflow.marker"
     schedule = {
         "git_head": "a" * 40,
+        "experiment_head": "b" * 40,
         "worktree": str(tmp_path),
         "runtime_manifest": str(runtime),
         "eligible_components": ["critic", "setflow"],
@@ -71,6 +72,7 @@ def test_confirmation_scheduler_keeps_exact_terminals_and_queue_order(
     assert payload["jobs"]["setflow:20260912:v4_full"]["terminal_artifact_kind"] == "SUMMARY"
     assert float(setflow_marker.read_text()) >= float(critic_marker.read_text())
     assert payload["active_performance_output_read"] is False
+    assert payload["experiment_head"] == "b" * 40
     assert payload["development_test_outcome_reads"] == 0
     assert payload["new_final_evaluation_outcome_reads"] == 0
 

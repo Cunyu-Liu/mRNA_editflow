@@ -3668,3 +3668,20 @@ preflight与screen入口现显式区分`current_head`和`cache_experiment_head`�
 targeted=25/25、合并本地V4 selection=230/230、V3.3.2=96/96、compile/shell/helper/diff-check PASS。preflight/
 screen/optimizer均未启动，protected read=0；修复提交后必须再次同步A100到新精确HEAD并通过三套测试，才可启动
 preflight。审计：`audits/route_a_v3_route2_xedit_v4_cache_runner_head_separation_fix_v1.json`。
+
+## V4 dual-HEAD successor paths and preflight GPU wait（2026-08-25）
+
+双HEAD修复后的A100精确测试通过Critic 176/176、SetFlow 128/128与V3.3.2 96/96。首次正式preflight launch在任何
+authorization/runtime创建前安全拒绝：冻结底线为Critic 38,000 MiB、SetFlow 20,000 MiB，而GPU0–5空闲分别为
+37,106/8,775/7,805/18,870/8,728/334 MiB。GPU6/7不在授权范围内，未使用；preflight/optimizer attempt仍为0。
+按最近远端时钟偏移+135秒，下一次GPU availability检查不早于本地16:53:02。
+
+等待期间修复了dual-HEAD目录名对后继链的实际断点。postscreen现读取
+`screen_package_{experiment}_runner_{current}`及对应dual-HEAD screen authorization，并把experiment HEAD带入终态
+runtime；confirmation再消费该postscreen runtime及dual-HEAD Critic/SetFlow screen authorizations。postscreen与
+confirmation自己的输出继续绑定唯一current screen runner，避免无实际需要的历史迁移层。项目外preflight helper现
+要求显式选择两个不同的GPU0–5索引，不再硬编码0/1。
+
+targeted=37/37、合并本地V4 selection=232/232、V3.3.2=96/96、compile/shell/helper/diff-check PASS。代码提交后需
+再次A100 exact-current-HEAD测试；GPU不足期间不轮询、不降显存门槛、不用GPU6/7。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_head_successor_paths_and_gpu_wait_v1.json`。

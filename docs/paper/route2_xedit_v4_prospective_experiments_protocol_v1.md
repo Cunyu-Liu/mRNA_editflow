@@ -265,3 +265,11 @@ training runtime are bound to the latter. Both identities are explicit in the
 authorization artifacts. This correction was made before any preflight or
 optimizer job and changes no architecture, data, seed, loss, threshold, or
 claim.
+
+The cache-experiment identity is also propagated through the terminal screen,
+post-screen validation, and confirmation launch chain. Screen artifacts encode
+both the frozen cache experiment and the tested runner; their direct successors
+must consume both identities rather than reconstructing one from the other.
+This provenance fix occurred before preflight authorization. The first launch
+attempt was safely rejected because no allowed GPU had the preregistered free
+memory; no model or metric operation began.

@@ -26,6 +26,7 @@ def test_postscreen_accepts_atomic_gates_despite_late_nonzero_exit(
     full_failure = tmp_path / "validation/full/pass_4.failed.json"
     schedule = {
         "git_head": "a" * 40,
+        "experiment_head": "b" * 40,
         "worktree": str(tmp_path),
         "runtime_manifest": str(runtime),
         "critic_adjudication": {
@@ -74,6 +75,7 @@ def test_postscreen_accepts_atomic_gates_despite_late_nonzero_exit(
     assert payload["setflow_adjudication"]["status"] == "TERMINAL_COMPLETE"
     assert payload["setflow_adjudication"]["return_code"] == 9
     assert payload["active_performance_output_read"] is False
+    assert payload["experiment_head"] == "b" * 40
     assert payload["development_test_outcome_reads"] == 0
     assert payload["new_final_evaluation_outcome_reads"] == 0
 

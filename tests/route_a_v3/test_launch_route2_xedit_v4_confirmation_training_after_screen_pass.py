@@ -42,3 +42,10 @@ def test_confirmation_gate_rejects_inconsistent_or_protected_authorization() -> 
 def test_confirmation_seed_sets_are_exact_and_additional_seed_is_absent() -> None:
     assert launcher.CRITIC_SEEDS == (20260908, 20260909, 20260910)
     assert launcher.SETFLOW_SEEDS == (20260912, 20260913, 20260914)
+
+
+def test_confirmation_launcher_consumes_dual_head_screen_authorizations() -> None:
+    source = open(launcher.__file__, encoding="utf-8").read()
+    assert "def run(current_head: str, experiment_head: str)" in source
+    assert "screen_{experiment_head}_runner_{current_head}/critic.json" in source
+    assert "screen_{experiment_head}_runner_{current_head}/setflow.json" in source
