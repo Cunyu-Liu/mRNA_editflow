@@ -4437,3 +4437,10 @@ focused 26/26、合并V4 228/228、V3.3.2 96/96、compile/diff-check PASS。合�
 仍在CPU，而hidden/mask已在cuda:0。该检查发生在全量cache启动前。bottom encoder初始化现显式执行一次
 `encoder.alibi.to(device)`；共享unpad stack要求三者device完全一致。upper ALiBi仍由本adapter注册为
 non-persistent buffer并由`self.to(device)`管理。focused 26/26、V3.3.2 96/96、compile/diff-check PASS。
+
+### Formal smoke PASS与cache同任务重启（2026-08-25）
+
+`a7ef72f`同步后A100 tests为Critic 171/171、SetFlow 123/123、V3.3.2 96/96。GPU0固定合成输入验证了bottom
+`66×768`输出、upper BF16/checkpointed forward/backward及全部upper gradient finite；parameter update=0，protected
+read=0。随后才启动cache：Critic PID `4161802`、SetFlow PID `4161804`。首次检查边界为本地15:41:57；等待期间
+只做本地文档/测试，不同步A100、不查看active cache batch计数。

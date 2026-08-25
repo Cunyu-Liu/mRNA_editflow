@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_audit.v1",
-  "status": "ALIBI_DEVICE_FIX_VERIFIED_LOCALLY_A100_RESYNC_AND_SYNTHETIC_SMOKE_PENDING",
+  "status": "FORMAL_BOTTOM_UPPER_SMOKE_PASS_SAME_TASK_CACHE_RETRY_LAUNCHED",
   "formal_smoke_git_head": "15f74b30322cb02e9147a03892c9cac35251c86a",
   "formal_smoke_input": "FIXED_SYNTHETIC_64_NT_ACGT_REPEAT_NO_PROJECT_DATA",
   "formal_smoke_result": "FAILED_BEFORE_CACHE_ATTEMPT_ON_ACTUAL_REMOTE_LAYER_SIGNATURE",
@@ -12,6 +12,25 @@
     "upper_forward_started": false,
     "full_cache_attempt_created": false,
     "parameter_update_count": 0
+  },
+  "successful_formal_smoke": {
+    "git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+    "input": "FIXED_SYNTHETIC_64_NT_ACGT_REPEAT_NO_PROJECT_DATA",
+    "bottom_blocks": [0, 1, 2, 3, 4, 5],
+    "bottom_hidden_shape": [66, 768],
+    "upper_blocks": [6, 7, 8, 9, 10, 11],
+    "upper_activation_checkpointing": true,
+    "upper_all_parameter_gradients_present_and_finite": true,
+    "parameter_update_count": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "result": "XEDITCRITIC_V4_BOTTOM_AND_UPPER_SIX_FORMAL_ENVIRONMENT_SMOKE_PASS"
+  },
+  "same_task_cache_retry": {
+    "git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+    "critic_wrapper_pid": 4161802,
+    "setflow_wrapper_pid": 4161804,
+    "status": "LAUNCHED_NOT_YET_ADJUDICATED"
   },
   "full_cache_attempt_created": false,
   "actual_remote_model_interface": {

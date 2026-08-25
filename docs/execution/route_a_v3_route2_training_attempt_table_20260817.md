@@ -3597,3 +3597,15 @@ bottom encoder构造现一次性把ALiBi移到所选物理GPU；共享stack硬�
 每batch隐式CPU→GPU复制。upper adapter的ALiBi已是本模块non-persistent buffer，随`self.to(device)`移动，无需
 额外分支。focused 26/26、V3.3.2 96/96、compile/diff-check PASS；必须再次同步并让bottom+upper合成smoke完整
 PASS后才启动cache。
+
+### Formal bottom+upper smoke PASS and cache relaunch（2026-08-25）
+
+ALiBi device修复HEAD `a7ef72f`在A100通过Critic 171/171、SetFlow 123/123和V3.3.2 96/96。相同64-nt
+合成输入smoke随后完整PASS：bottom blocks 0–5返回有限`66×768`hidden与768维global residual；释放bottom模型后，
+upper blocks 6–11在BF16、train mode与activation checkpointing下完成forward/backward，输入梯度与全部upper参数梯度
+均存在且有限。没有optimizer step、project row、Development TEST或new Evaluation read。
+
+只有该smoke通过后，才在同一HEAD重新启动冻结cache package：Critic wrapper PID `4161802`，SetFlow wrapper PID
+`4161804`。这是前两次技术failure归档后的同任务重试，不改变配置或形成额外科学attempt。首次健康检查不早于
+本地15:41:57；只允许terminal/failure/alive/CUDA，不读active progress/metric。cache terminal前不把A100同步到
+后续文档HEAD。
