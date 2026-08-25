@@ -1106,3 +1106,9 @@ pre-authorization resource check; the preregistered 20–35-GiB in-process memor
 gate, model capacities, data, seeds, losses and scientific gates are unchanged.
 It supplies no performance evidence and does not change the manuscript's
 not-ready status.
+
+At exact runner commit `8db364cadf23bf3a0144e34aff9c4519b323221f`, all
+current-head A100 verification cohorts passed before attempt 2 was launched on
+GPU0 in the preregistered Critic-then-SetFlow sequence. This launch event is
+provenance only: no active performance trajectory, Development TEST outcome or
+new Evaluation outcome was read, and no model-advantage claim is available yet.

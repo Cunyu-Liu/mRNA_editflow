@@ -1,0 +1,36 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt2_launch.v1",
+  "status": "PREFLIGHT_ATTEMPT_2_LAUNCHED_SEQUENTIALLY_ON_GPU0",
+  "launch_local_time": "2026-08-25T19:18:20+08:00",
+  "runner_git_head": "8db364cadf23bf3a0144e34aff9c4519b323221f",
+  "cache_experiment_git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "a100_current_head_verification": {
+    "critic_v4_focused_passed": 186,
+    "setflow_v4_focused_passed": 137,
+    "v332_cohort_passed": 96,
+    "failed": 0,
+    "audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/a100_current_head_v4/sync_tests_8db364cadf23bf3a0144e34aff9c4519b323221f.json"
+  },
+  "physical_gpu_index": 0,
+  "launch_mode": "SEQUENTIAL_SINGLE_GPU_CRITIC_THEN_SETFLOW",
+  "critic_minimum_free_memory_mib": 37000,
+  "setflow_minimum_free_memory_mib": 20000,
+  "gpu0_free_memory_mib_before_launch": 38634,
+  "shared_sequence_scheduler_pid": 1427509,
+  "launch_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_8db364cadf23bf3a0144e34aff9c4519b323221f/launch_manifest.json",
+  "critic_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json",
+  "critic_failure": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.failure.json",
+  "setflow_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.json",
+  "setflow_failure": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.failure.json",
+  "critic_trainable_parameter_count": 170481733,
+  "in_process_critic_memory_gate_gib": {
+    "minimum": 20.0,
+    "maximum": 35.0,
+    "changed": false
+  },
+  "active_performance_curve_read": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "screen_authorized": false,
+  "submission_ready": false
+}

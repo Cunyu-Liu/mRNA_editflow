@@ -4542,3 +4542,7 @@ cache experiment HEAD、GPU0/GPU0与`sequential_single_gpu`；新底线是版本
 这不改变进程内`torch.cuda.max_memory_allocated`的20–35 GiB gate，也不改变optimizer、训练或任何性能门槛。
 本地验证为launcher阈值回归9/9、Critic V4 focused 186/186、SetFlow V4 focused 137/137、V3.3.2 96/96，
 另有compile、helper shell syntax与diff-check PASS；提交推送后仍须先运行A100精确current-HEAD同三套测试。
+
+精确HEAD `8db364cadf23bf3a0144e34aff9c4519b323221f`的A100三套测试随后全部PASS。正式launcher在
+2026-08-25 19:18:20 +08:00后以GPU0空闲38,634 MiB通过启动门槛，共享scheduler PID `1427509`
+按Critic→SetFlow串行启动attempt 2。首次alive/CUDA/terminal/failure检查不早于约5分钟；不读取active curve。

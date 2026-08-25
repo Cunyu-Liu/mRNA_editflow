@@ -3746,3 +3746,15 @@ A100 exact-HEAD tests通过后立即重新由正式launcher取一次快照并启
 
 本地focused记录：launcher阈值回归9/9、Critic V4 186/186、SetFlow V4 137/137、V3.3.2 96/96；
 compile、项目外helper shell syntax及diff-check均PASS。该记录只验证执行链，没有产生Validation性能证据。
+
+### Attempt 2 launch terminal record（2026-08-25 19:18:20 +08:00）
+
+精确HEAD `8db364cadf23bf3a0144e34aff9c4519b323221f`已推送并在A100完成Critic 186/186、SetFlow
+137/137、V3.3.2 96/96。正式launcher随后在GPU0空闲38,634 MiB时创建attempt-2 authorization/runtime，
+以共享scheduler PID `1427509`串行执行Critic→SetFlow；Critic/SetFlow均指定物理GPU0，不并发占用。
+Critic启动底线记录为37,000 MiB，SetFlow为20,000 MiB；Critic进程内20–35 GiB gate不变。
+
+launch manifest位于`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/
+preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_8db364cadf23bf3a0144e34aff9c4519b323221f/
+launch_manifest.json`。当前只形成LAUNCHED状态，不读取active log/metric，不授权screen；Development TEST/new Evaluation
+outcome reads仍为0。审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt2_launch_v1.json`。
