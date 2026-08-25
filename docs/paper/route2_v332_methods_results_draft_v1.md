@@ -1079,3 +1079,11 @@ single final adjudication order. This closes an execution-software gap; it is
 not performance evidence. No final configuration, optimizer job, generation
 run, metric read, Development TEST reopen, or new Evaluation read occurred,
 and the manuscript remains not ready under the model-plus-benchmark standard.
+
+The outcome-free V4 representation package has now completed: the Critic cache
+contains frozen bottom-six mRNABERT token states for 107,873 TRAIN/VALIDATION
+records and 43,730 unique chunks, while the SetFlow source-token cache remains
+a read-only adoption of its qualified predecessor. Neither cache contains raw
+sequence, labels, Development TEST records, or Evaluation outcomes. This makes
+the preregistered V4 preflight executable but supplies no trained-model result;
+the ranking, generation, and submission claims remain unchanged.

@@ -1,0 +1,71 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_terminal_read_once.v1",
+  "status": "XEDIT_V4_CACHE_PACKAGE_TERMINAL_SUCCESS_READ_ONCE",
+  "recorded_at_local": "2026-08-25T16:13:06+08:00",
+  "terminal_health_check": {
+    "local_time": "2026-08-25T16:12:18+08:00",
+    "remote_time": "2026-08-25T16:15:01+08:00",
+    "calibrated_remote_clock_offset_seconds": 163,
+    "critic_summary_present": true,
+    "critic_failure_present": false,
+    "setflow_summary_present": true,
+    "setflow_failure_present": false,
+    "critic_wrapper_alive": false,
+    "critic_child_processes": [],
+    "cuda_process_matches_after_terminal": 0,
+    "active_log_or_performance_curve_read": false
+  },
+  "critic_terminal_summary": {
+    "terminal_summary_read_count_this_record": 1,
+    "schema_version": "route_a_v3_route2_frozen_bottom_encoder_chunk_cache_summary.v4",
+    "status": "XEDITCRITIC_V4_BOTTOM_SIX_CACHE_COMPLETE",
+    "git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+    "physical_gpu_index": 0,
+    "cuda_device_name": "NVIDIA A100-PCIE-40GB",
+    "forward_precision": "BF16",
+    "cpu_fallback": false,
+    "record_count": 107873,
+    "unique_sequence_count": 43730,
+    "chunk_count": 43730,
+    "cached_token_count": 6279338,
+    "record_edit_count": 346862,
+    "maximum_record_edit_count": 38,
+    "maximum_sequence_length": 837,
+    "embedding_width": 768,
+    "chunk_nucleotides": 1000,
+    "chunk_overlap": 64,
+    "local_context_radius": 32,
+    "frozen_encoder_blocks": [0, 1, 2, 3, 4, 5],
+    "trainable_encoder_blocks": [6, 7, 8, 9, 10, 11],
+    "raw_sequence_payload_written": 0,
+    "label_or_outcome_payload_written": 0,
+    "development_test_record_count": 0,
+    "evaluation_record_count": 0,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v4/frozen_bottom_six_chunk_cache_v1.pt"
+  },
+  "setflow_terminal_summary": {
+    "reread_during_this_terminal_check": false,
+    "status_from_prior_single_read": "XEDITSETFLOW_V4_SOURCE_TOKEN_CACHE_ADOPTION_COMPLETE",
+    "record_count": 84218,
+    "unique_source_count": 19303,
+    "token_count": 2817781,
+    "embedding_width": 768,
+    "encoder_forward_count": 0,
+    "parameter_update_count": 0,
+    "legacy_cache_unmodified": true,
+    "protected_outcome_reads": 0
+  },
+  "protected_input_boundary": {
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "active_performance_output_read": false
+  },
+  "next_stage": {
+    "a100_current_head_sync_allowed_after_this_record_is_committed_and_pushed": true,
+    "preflight_not_yet_launched": true,
+    "optimizer_attempts_started": 0,
+    "performance_claim_change": false
+  }
+}

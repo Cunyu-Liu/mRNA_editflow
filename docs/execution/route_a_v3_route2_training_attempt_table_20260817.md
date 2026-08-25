@@ -3638,3 +3638,18 @@ targeted=8/8、合并本地V4 selection=228/228、精确V3.3.2=96/96、compile/d
 没有物化config、启动value optimizer/generation/Critic inference或读取Validation metric；Development TEST post-atomic
 reopen与new Evaluation read均为0，claim不变。A100 current-HEAD测试继续等待`a7ef72f` Critic cache自然terminal。
 审计：`audits/route_a_v3_route2_xeditflow_v4_final_execution_chain_v1.json`。
+
+## V4 cache package terminal success/read-once（2026-08-25 16:15:01 remote）
+
+第二次低频窗口到达后只检查terminal/failure/alive/CUDA：Critic summary已出现且failure不存在，wrapper与child均退出；
+SetFlow summary保持存在且failure不存在。终态后CUDA匹配为0，符合进程已退出。远端时钟相对本地快163秒。
+
+Critic新summary只读一次：`XEDITCRITIC_V4_BOTTOM_SIX_CACHE_COMPLETE`，绑定实验HEAD `a7ef72f`、GPU0 A100、
+BF16且无CPU fallback；共107,873 records、43,730 unique sequences/chunks、6,279,338 cached tokens、346,862 edits，
+最大record edits为38、最大sequence length为837。cache保持1000-nt chunk、64 overlap、radius-32、width768；blocks
+0–5冻结、6–11为后续trainable范围。raw sequence、label/outcome写入均为0，Development TEST/Evaluation record与
+outcome read均为0。SetFlow receipt此前已完成唯一读取，本次没有重读。
+
+这是outcome-free cache任务成功，不是optimizer/performance attempt；preflight仍未启动，模型与论文claim不变。终态
+记录提交推送后，才允许A100同步到精确current HEAD并运行focused/V3.3.2 tests。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_terminal_read_once_20260825.json`。

@@ -4464,3 +4464,11 @@ launcher只在冻结guidance gate、双readiness、同experiment HEAD preflight�
 要求全部通过后物化final config。scheduler不读取active performance output；它先完成两条seed-local value链和一次
 strongest timing，再运行三条29-job seed chain，最后才compose并adjudicate。任何前驱failure使依赖项标记为未运行，
 不自动重试。当前入口尚未执行；cache terminal前不得同步A100或提前运行本链。
+
+## V4 cache terminal closure（2026-08-25）
+
+本地16:12:18越过not-before后执行一次单包SSH；远端16:15:01时Critic/SetFlow success均存在、failure均不存在，
+Critic wrapper/child已退出。随后仅对新出现的Critic summary执行一次read-once；既有SetFlow receipt不重读。
+Critic cache的107,873 records、43,730 chunks、6,279,338 tokens和346,862 ragged edits全部位于Route 2 `/mnt`，
+BF16/CUDA、bottom blocks 0–5 frozen、protected read=0。下一步先提交该终态记录，再同步A100精确current HEAD；
+不得在同步测试前启动preflight。

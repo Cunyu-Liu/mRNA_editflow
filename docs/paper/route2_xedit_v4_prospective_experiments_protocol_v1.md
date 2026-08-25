@@ -249,3 +249,11 @@ final adjudicator can run. This is implementation and provenance evidence
 only: the chain has not been executed, no Validation performance result has
 been read, and the model-advantage and submission-readiness claims remain
 unestablished.
+
+The frozen bottom-six Critic cache and the read-only SetFlow source-token cache
+have both reached terminal success on the frozen V4 experiment head. The
+Critic cache covers only the authorized TRAIN/VALIDATION projections, writes
+neither raw sequence nor label/outcome payloads, and records zero Development
+TEST or Evaluation records. This satisfies the representation prerequisite for
+the still-unrun parameter/memory preflight; it is not evidence that the V4
+Critic or SetFlow gates will pass.
