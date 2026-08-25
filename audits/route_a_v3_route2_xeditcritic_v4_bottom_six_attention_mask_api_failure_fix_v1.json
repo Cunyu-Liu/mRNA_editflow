@@ -1,0 +1,28 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_bottom_six_attention_mask_api_failure_fix_audit.v1",
+  "status": "LOCAL_FIX_VERIFIED_A100_RESYNC_AND_SAME_TASK_RETRY_PENDING",
+  "launch_git_head": "4b0a98e69fe52ec26ab8ebcaf68aa6cf48f585d8",
+  "terminal_observation": {
+    "critic_status": "TECHNICAL_FAILURE",
+    "critic_return_code": 1,
+    "critic_summary_present": false,
+    "setflow_status": "XEDITSETFLOW_V4_SOURCE_CACHE_ADOPTED_READ_ONLY",
+    "active_curve_read": false,
+    "terminal_payload_read_count": 2,
+    "critic_terminal_failure_log_read_count": 1
+  },
+  "root_cause": "TRANSFORMERS_GET_EXTENDED_ATTENTION_MASK_POSITIONAL_DEVICE_INTERPRETED_AS_DTYPE",
+  "repair": "PASS_HIDDEN_DTYPE_AS_EXPLICIT_KEYWORD_IN_SHARED_CACHE_ONLINE_BOTTOM_SIX_FORWARD",
+  "representation_or_method_changed": false,
+  "optimizer_attempt_added": false,
+  "same_frozen_cache_task_technical_retry_allowed_after_exact_head_tests": true,
+  "prior_terminal_artifacts_must_be_archived_before_retry": true,
+  "tests": {
+    "local_focused_passed": 130,
+    "local_v3_3_2_passed": 96,
+    "compile_passed": true,
+    "diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

@@ -4368,3 +4368,19 @@ read-once后的首次同步尚未执行fast-forward即被历史PID存在性检�
 身份判断，不放宽五项terminal、read-once、clean worktree或exact-HEAD test要求。审计：
 `audits/route_a_v3_route2_a100_sync_old_pid_identity_fix_v1.json`。focused=10/10、V3.3.2=96/96、compile PASS；
 首次focused夹具scope错误已修正并重跑通过。
+
+## V4 cache首次终态与bottom-six mask API修复（2026-08-25）
+
+post-C3 A100同步与测试通过后，两条cache任务在精确HEAD `4b0a98e69fe52ec26ab8ebcaf68aa6cf48f585d8`
+启动。首次约5分钟窗口的单次健康检查显示：SetFlow adoption receipt已原子发布、wrapper结束；Critic failure已
+原子发布、summary不存在、wrapper与builder均结束。检查未读active log/curve/metric；随后只读取一次两个终态JSON，
+并仅因failure JSON没有异常类型而读取一次已终态Critic日志。所有protected read counter为0。
+
+SetFlow receipt确认V3 source cache以`READ_ONLY_NO_REBUILD_NO_OVERWRITE`复用，encoder forward=0、parameter
+update=0。Critic异常发生在首个bottom-six forward：Transformers当前API把第三位置参数作为dtype，原共享forward
+传入device后在attention mask转换处失败。代码现使用`dtype=hidden.dtype`显式keyword；测试double也改为
+keyword-only接口并断言float32 hidden dtype，直接覆盖这次A100可达失败。
+
+本地验证命令覆盖Critic V4/bottom-cache/cache-launch/preflight/sync focused 130项及精确V3.3.2 96项，全部PASS；
+py_compile与`git diff --check` PASS。旧终态将在同一冻结任务技术重试前完整归档，不删除证据、不更改数据、模型、
+seed、预算或gate；重试必须先同步修复HEAD并通过A100 current-HEAD tests。

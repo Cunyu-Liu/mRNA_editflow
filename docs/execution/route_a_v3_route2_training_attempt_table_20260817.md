@@ -3506,3 +3506,21 @@ focused=9/9、V3.3.2=96/96。审计：
 入口和精确`--run-id`，因此真正旧作业仍会阻止同步，无关PID复用不再形成假阳性。该修复不读取metric或protected
 outcome，也不改变任何实验。focused=10/10、V3.3.2=96/96、compile PASS；首次focused夹具行位置错误已修正后
 重跑通过。审计：`audits/route_a_v3_route2_a100_sync_old_pid_identity_fix_v1.json`。
+
+## V4 first cache terminal and bottom-six attention-mask API repair（2026-08-25）
+
+A100 exact HEAD `4b0a98e69fe52ec26ab8ebcaf68aa6cf48f585d8` 的首批V4 outcome-free cache任务已形成终态。
+SetFlow只读adoption成功：V3 terminal source-token cache保持未修改，receipt绑定84,218条记录、19,303个唯一
+source、2,817,781个token、768维表示，encoder forward和parameter update均为0。Critic bottom-six cache在首个
+forward前技术失败；唯一终态failure的return code为1，summary不存在，Development TEST与new Evaluation read均为0。
+
+终态失败日志只读取一次用于诊断。根因为当前Transformers的`get_extended_attention_mask`第三位置参数已是
+`dtype`，旧调用却传入`input_ids.device`，最终触发`Tensor.to(dtype=torch.device)`类型错误。共享cache/online
+bottom-six forward现显式传入`dtype=hidden.dtype`；回归测试同时要求keyword-only dtype并核对实际hidden dtype，
+因此cache与未来online路径共同修复，不改变chunk、encoder revision、representation或任何训练超参数。
+
+本地focused=130/130、精确V3.3.2=96/96、compile/diff-check PASS。该失败是参数更新前的技术故障，不是性能
+NO-GO，也没有新增optimizer attempt。旧failure、runtime、authorization、日志与成功的SetFlow adoption receipt将先
+完整归档并写provenance，再在修复HEAD完成A100 current-HEAD focused/V3.3.2 tests后，对完全相同的冻结cache任务
+做一次技术重试；不得覆盖旧终态或跳过preflight。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_bottom_six_attention_mask_api_failure_fix_v1.json`。

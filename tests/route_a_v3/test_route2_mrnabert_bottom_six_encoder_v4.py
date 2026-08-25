@@ -39,10 +39,11 @@ class _Model(nn.Module):
         super().__init__()
         self.embeddings = _Embeddings()
         self.encoder = SimpleNamespace(layer=nn.ModuleList([_Layer(float(index + 1)) for index in range(12)]))
+        self.extended_attention_mask_dtype = None
 
-    def get_extended_attention_mask(self, attention_mask, input_shape, device):
+    def get_extended_attention_mask(self, attention_mask, input_shape, *, dtype):
         assert input_shape == attention_mask.shape
-        assert device == attention_mask.device
+        self.extended_attention_mask_dtype = dtype
         return attention_mask[:, None, None, :]
 
     def get_head_mask(self, _, layer_count):
@@ -69,8 +70,9 @@ def _sequence(value: float = 0.0) -> BottomEncodedSequenceV4:
 def test_shared_bottom_six_forward_runs_exactly_blocks_zero_through_five() -> None:
     input_ids = torch.tensor([[1, 2, 3]])
     attention_mask = torch.ones_like(input_ids)
+    model = _Model()
     output = forward_bottom_six_hidden_v4(
-        _Model(),
+        model,
         input_ids=input_ids,
         attention_mask=attention_mask,
         token_type_ids=torch.zeros_like(input_ids),
@@ -78,6 +80,7 @@ def test_shared_bottom_six_forward_runs_exactly_blocks_zero_through_five() -> No
     # Sum 1..6 = 21.  Blocks 6..11 would add another 57 and must not run.
     expected = input_ids.float().unsqueeze(-1).repeat(1, 1, 3) + 21
     assert torch.equal(output, expected)
+    assert model.extended_attention_mask_dtype == torch.float32
 
 
 def test_bottom_six_forward_rejects_encoder_depth_drift() -> None:

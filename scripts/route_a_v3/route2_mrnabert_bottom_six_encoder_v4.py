@@ -65,7 +65,7 @@ def forward_bottom_six_hidden_v4(
     extended_attention_mask = model.get_extended_attention_mask(
         attention_mask,
         input_ids.shape,
-        input_ids.device,
+        dtype=hidden.dtype,
     )
     head_mask = model.get_head_mask(None, len(layers))
     for layer_index, layer in enumerate(layers[:6]):
