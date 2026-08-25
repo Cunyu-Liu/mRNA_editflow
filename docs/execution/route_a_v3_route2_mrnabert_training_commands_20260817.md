@@ -4286,3 +4286,15 @@ new Evaluation；未执行read-once、A100 current-HEAD sync或V4运行。
 远端时钟相对本地快154秒，下一次不得早于远端15:04:10/本地15:01:36。监控本身无代码变化，未重复
 focused/V3.3.2 tests。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_140410.json`。
+
+## V4 confirmation post-training coordinator focused record（2026-08-25）
+
+正式post-training launcher/scheduler现要求同一screen-launch HEAD的confirmation training runtime全部terminal，
+并仅处理screen PASS而实际进入训练的组件。Critic六项terminal后一次性运行冻结three-seed gate；SetFlow仅对训练
+summary存在的seed运行pass 4/6/8/10固定Validation，训练failure不伪造checkpoint验证并直接进入技术NO-GO。
+三seed均训练成功时12个验证任务在GPU0–5各两项；任何validation summary或gate原子发布后，后续非零退出只保留
+return code，不生成第二个failure。无原子terminal时才补精确技术failure，使gate仍能形成永久终态。
+
+focused=26/26、A100同步器当前同定义合并V4=192/192、精确V3.3.2=96/96、compile/shell/helper smoke与
+diff-check均PASS。A100、confirmation、validation和gate均未执行，optimizer/protected read=0，TEST未授权。
+审计：`audits/route_a_v3_route2_xedit_v4_confirmation_posttraining_coordinator_v1.json`。

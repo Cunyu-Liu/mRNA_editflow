@@ -3428,3 +3428,15 @@ Development TEST/new Evaluation read=0，科学claim不变。提交前按A100同
 V4执行继续关闭。远端偏移更新为+154秒；下一边界为远端15:04:10/本地15:01:36。监控无代码变化，故不重复
 focused/V3.3.2 cohort。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_140410.json`。
+
+## V4 confirmation checkpoint-validation and gate coordinator（2026-08-25）
+
+已补齐confirmation training terminal后的正式执行缺口。launcher核对精确HEAD、完整训练job集合、summary XOR
+failure、component authorization、固定seed与protected-read=0；SetFlow成功seed才按固定四checkpoint建立验证队列，
+全部三seed成功时精确12 job、GPU0–5各两项。scheduler保留已发布validation summary或Critic/SetFlow gate作为唯一
+terminal，缺失时才发布技术failure；失败不得触发额外seed、TEST或guidance。
+
+focused 26/26、current-A100-selection local 192/192、V3.3.2 96/96、compile/shell/helper/diff-check PASS。
+本项不新增中央optimizer attempt；confirmation训练、checkpoint验证与gate均未运行，C3仍1/5 terminal且payload未读，
+Development TEST/new Evaluation read=0，科学claim不变。审计：
+`audits/route_a_v3_route2_xedit_v4_confirmation_posttraining_coordinator_v1.json`。

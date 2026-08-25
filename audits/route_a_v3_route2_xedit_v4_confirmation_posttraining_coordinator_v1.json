@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_confirmation_posttraining_coordinator.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "386e65d746c263ed540108ece28daabe4e2659a7",
+  "deliverable": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py",
+    "formal_scheduler": "scripts/route_a_v3/run_route2_xedit_v4_confirmation_posttraining_scheduler.py",
+    "critic_adjudication": "exact three-seed matched confirmation gate after six terminal training jobs",
+    "setflow_checkpoint_validations": {
+      "training_seeds": [
+        20260912,
+        20260913,
+        20260914
+      ],
+      "checkpoint_passes": [
+        4,
+        6,
+        8,
+        10
+      ],
+      "maximum_jobs": 12,
+      "gpu_scope": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "successful_training_only": true
+    },
+    "component_independent_gate_terminal": true,
+    "late_nonzero_exit_cannot_overwrite_atomic_gate_or_validation_summary": true,
+    "missing_terminal_is_converted_to_exact_technical_failure": true,
+    "additional_seed_authorized": false,
+    "development_test_authorized": false
+  },
+  "verification": {
+    "focused_passed": 26,
+    "focused_failed": 0,
+    "current_a100_selection_local_passed": 192,
+    "current_a100_selection_local_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "git_diff_check_passed": true,
+    "python_version": "3.13.5"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "c3_terminal_payloads_read": 0,
+    "a100_connected_for_this_task": false,
+    "confirmation_training_started": false,
+    "checkpoint_validation_started": false,
+    "confirmation_gate_adjudicated": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "remaining_execution_work": "Run only after a component screen PASS and its exact confirmation training package becomes terminal; Critic TEST remains separately gated by a passing three-seed Critic gate.",
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}
