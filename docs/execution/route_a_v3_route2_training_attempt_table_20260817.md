@@ -3383,3 +3383,19 @@ screen链focused 41/41、合并V4相关163/163、精确V3.3.2 96/96、compile/sh
 本项未连接A100或启动screen/cache/preflight，C3仍1/5 terminal且未读payload，protected outcome read=0，
 optimizer attempt不变，科学claim不变。审计：
 `audits/route_a_v3_route2_xedit_v4_screen_package_launcher_formalization_v1.json`。
+
+## V4 post-screen gate terminal formalization（2026-08-25）
+
+screen全部terminal后的post-screen launcher/coordinator仍为项目外Python副本。旧coordinator还以
+`return_code==0`判定Critic/SetFlow adjudication成功：即使gate producer已原子发布正式PASS或NO-GO gate，随后
+stdout/teardown非零也会把它误标为technical failure，阻止合法confirmation或把正式NO-GO误写成运行故障。
+
+launcher/coordinator现迁入Git正式脚本并由screen launch HEAD直接调用。原子gate一旦存在即是唯一adjudication
+terminal；后续return code仍进入runtime诊断，但不得覆盖gate。Critic/SetFlow gate内容、阈值、checkpoint validation
+以及PASS/NO-GO逻辑均未改变；SetFlow各checkpoint仍要求summary XOR failure，gate producer仍只在全部固定验证
+terminal后运行。A100 current-HEAD的两套focused cohort均加入正式post-screen测试。
+
+第一条定向命令引用两个不存在的历史测试名而0-test，未计入验证；修正文件清单后focused 34/34、合并V4相关
+184/184、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。本项未连接A100或运行post-screen/screen/
+preflight/cache，C3仍1/5 terminal且未读payload，protected read=0、optimizer attempt不变，科学claim不变。
+审计：`audits/route_a_v3_route2_xedit_v4_postscreen_terminal_formalization_v1.json`。

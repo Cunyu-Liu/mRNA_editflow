@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_postscreen_terminal_formalization.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "7c0f7114439f9a93efd942feb7d0a64ad2031070",
+  "finding": "The project-external post-screen coordinator classified an atomically published Critic or SetFlow PASS/NO-GO gate as technical failure whenever the adjudicator later returned nonzero, and the launcher/coordinator were not covered by exact-current-HEAD A100 tests.",
+  "remediation": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xedit_v4_postscreen_after_screen_terminal.py",
+    "formal_coordinator": "scripts/route_a_v3/run_route2_xedit_v4_postscreen_adjudication_scheduler.py",
+    "gate_terminal_rule": "An atomically published gate is the unique adjudication terminal; a later process return code remains diagnostic and cannot replace it with technical failure.",
+    "metric_or_gate_logic_changed": false,
+    "setflow_checkpoint_validation_terminal_rule_changed": false,
+    "a100_current_head_cohort_updated": true,
+    "project_external_python_copies_removed": true
+  },
+  "verification": {
+    "initial_zero_test_command": {
+      "counted_as_verification": false,
+      "cause": "Two nonexistent historical test filenames were supplied."
+    },
+    "focused_passed": 34,
+    "focused_failed": 0,
+    "combined_v4_passed": 184,
+    "combined_v4_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "python_version": "3.13.5"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "c3_terminal_payloads_read": 0,
+    "a100_connected_or_synchronized": false,
+    "cache_jobs_started": false,
+    "preflight_jobs_started": false,
+    "screen_jobs_started": false,
+    "postscreen_jobs_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}

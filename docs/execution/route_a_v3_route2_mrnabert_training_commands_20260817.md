@@ -4251,3 +4251,14 @@ summary XOR failure terminal语义未改变，项目外Python副本已移除，�
 focused=41/41、合并V4相关=163/163、精确V3.3.2=96/96、compile/shell/helper smoke PASS。未连接
 A100，未启动cache/preflight/screen/optimizer，C3 terminal payload与protected outcome read均为0。审计：
 `audits/route_a_v3_route2_xedit_v4_screen_package_launcher_formalization_v1.json`。
+
+## V4 post-screen terminal coordinator focused record（2026-08-25）
+
+post-screen launcher/coordinator现为Git正式screen-launch-HEAD脚本。Critic或SetFlow原子PASS/NO-GO gate存在时，
+后续非零进程码仅记录为诊断，不再把正式gate误改为technical failure；gate内容与所有冻结门槛不变。项目外Python
+副本已移除，A100 current-HEAD focused集合覆盖正式post-screen链。
+
+首次命令因两个旧测试文件名不存在而0-test、未计数；正确focused=34/34、合并V4相关=184/184、精确
+V3.3.2=96/96、compile/shell/helper smoke PASS。未启动A100/cache/preflight/screen/post-screen/optimizer，
+terminal payload与protected read为0。审计：
+`audits/route_a_v3_route2_xedit_v4_postscreen_terminal_formalization_v1.json`。
