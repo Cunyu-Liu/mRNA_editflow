@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_terminal_exclusivity.v1",
+  "recorded_at_local": "2026-08-25T13:16:33+08:00",
+  "status": "V4_CACHE_JOB_EXACT_ONE_TERMINAL_GUARD_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "fc9419ad72a64f0af4fbf234a487ee52daed138e",
+  "implementation": {
+    "formal_cache_job_runner": "scripts/route_a_v3/run_route2_xedit_v4_cache_job.py",
+    "formal_test": "tests/route_a_v3/test_run_route2_xedit_v4_cache_job.py",
+    "projectless_transport_wrapper": "work/run_launch_v4_caches_after_a100_sync.sh",
+    "obsolete_projectless_python_copy_removed": true
+  },
+  "reachable_failure_closed": {
+    "failure": "an atomically complete builder summary followed by a nonzero process exit could publish a second failure artifact",
+    "atomic_summary_is_unique_terminal": true,
+    "nonzero_return_after_summary_recorded_in_runtime": true,
+    "failure_published_after_existing_summary": false,
+    "missing_summary_publishes_technical_failure": true,
+    "summary_and_failure_can_coexist_after_wrapper": false
+  },
+  "verification": {
+    "initial_focused_command": "NOT_EXECUTED_INVALID_LEGACY_TEST_PATH",
+    "corrected_cache_and_authorization_focused": "31/31 PASS",
+    "combined_local_critic_setflow_v4_related_cohort": "170/170 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "transport_wrapper_shell_syntax": "PASS",
+    "projectless_v4_launch_helper_smoke": "PASS"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "a100_current_head_sync_executed": false,
+    "cache_launch_authorized": false,
+    "cache_job_started": false,
+    "cache_summary_or_failure_created": false,
+    "v4_preflight_or_optimizer_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_claim_change": false,
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

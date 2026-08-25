@@ -4211,3 +4211,12 @@ A100同步/测试执行器现作为Git正式脚本交付；项目外传输壳从
 定向=8/8、完整Critic V4相关=94/94、精确V3.3.2=96/96、compile/shell/helper smoke PASS。未连接或同步A100，
 当前1/5 C3 terminal屏障不变，cache authorization与protected read均为0。审计：
 `audits/route_a_v3_route2_a100_current_head_sync_runner_v4_v1.json`。
+
+## V4 cache exact-one-terminal focused record（2026-08-25）
+
+正式cache job runner现在以原子summary存在性决定成功终态；summary发布后的非零进程码只进入runtime，不生成并存
+failure。summary缺失才发布technical failure。项目外传输壳调用A100 current-HEAD中的Git正式runner。
+
+首次focused命令因旧文件名未执行；修正后focused=31/31、合并Critic+SetFlow V4相关=170/170、精确V3.3.2
+=96/96、compile/shell/helper smoke PASS。cache/A100/optimizer均未运行，protected read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_terminal_exclusivity_v1.json`。

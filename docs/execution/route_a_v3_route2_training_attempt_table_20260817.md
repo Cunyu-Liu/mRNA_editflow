@@ -3317,3 +3317,18 @@ C3 reference、旧PID全部退出、远端工作树前后干净、`ff-only`到�
 定向8/8、完整Critic V4相关94/94、精确V3.3.2 96/96、compile、shell syntax与项目外helper smoke均PASS。
 本项未连接A100、未同步或运行远端测试；C3仍为1/5 terminal，cache/preflight/optimizer未启动，protected read=0，
 科学claim不变。审计：`audits/route_a_v3_route2_a100_current_head_sync_runner_v4_v1.json`。
+
+## V4 cache job exact-one-terminal guard（2026-08-25）
+
+Critic bottom-six builder与SetFlow只读adoption都会把完整summary作为最后一个实质动作原子发布。旧项目外wrapper却
+要求`return_code==0`才承认summary；若summary已发布后出现stdout/teardown非零退出，它会再写failure，造成同一
+cache同时存在summary与failure。
+
+cache job wrapper现迁入Git正式脚本。原子summary一旦存在即成为唯一terminal；非零return code写入runtime供诊断，
+但不再发布第二个failure。仅summary不存在时发布technical failure。项目外启动壳直接调用A100精确current HEAD中
+的正式wrapper，旧项目外Python副本已移除。
+
+首次focused命令引用不存在的旧测试文件名而未执行，未计入验证；修正后cache/authorization focused 31/31、合并
+Critic+SetFlow V4相关170/170、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。本项未同步A100或启动cache，
+C3仍为1/5 terminal，protected read=0、optimizer attempt不变，科学claim不变。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_terminal_exclusivity_v1.json`。
