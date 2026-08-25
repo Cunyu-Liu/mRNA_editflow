@@ -336,3 +336,11 @@ scatter and accumulates the balance term in float32. This is a numerical dtype
 repair only: architecture, parameter count, routing semantics, data, seeds,
 losses, budgets and gates remain frozen. Attempt 2 remains read-only and the
 next exact-head preflight writes to non-overwriting attempt-3 paths.
+
+Attempt 3 confirmed that the mixed-precision router repair passed the original
+failure point and reached final summary publication. The Critic process then
+failed solely because the preflight script had not imported the standard `os`
+module used by its final atomic rename. The unpublished partial summary was not
+read. SetFlow independently passed again. Adding the missing import and a module
+binding regression changes no scientific method, parameter, training setting or
+gate; attempt 4 therefore remains a technical preflight retry on new paths.

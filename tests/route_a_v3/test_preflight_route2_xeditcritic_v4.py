@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
 import torch
+
+import scripts.route_a_v3.preflight_route2_xeditcritic_v4 as preflight_module
 
 from scripts.route_a_v3.preflight_route2_xeditcritic_v4 import (
     XEditCriticPreflightV4Error,
@@ -82,6 +85,7 @@ def test_critic_preflight_terminal_pause_or_pass_is_atomically_published() -> No
     assert 'partial_output = output_path.with_suffix(output_path.suffix + ".partial")' in source
     assert source.count("os.replace(partial_output, output_path)") == 2
     assert "partial Critic V4 preflight artifact already exists" in source
+    assert preflight_module.os is os
 
 
 def test_preflight_authorization_requires_terminal_read_once_sync_tests_and_cache() -> None:

@@ -1,0 +1,56 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt3_terminal_atomic_publish_fix.v1",
+  "status": "ATTEMPT_3_TERMINAL_TECHNICAL_REPAIR_PREPARED_FOR_ATTEMPT_4",
+  "terminal_read_local_time": "2026-08-25T19:38:41+08:00",
+  "terminal_remote_time_reference": "2026-08-25T19:40:30.909013+08:00",
+  "attempt_3_runner_git_head": "c21e15f8fe8a6066d256f6719243f06ab1ce85bb",
+  "critic": {
+    "status": "TECHNICAL_FAILURE",
+    "return_code": 1,
+    "failure_stage": "FINAL_ATOMIC_PREFLIGHT_SUMMARY_PUBLICATION",
+    "failure_type": "MISSING_OS_MODULE_IMPORT",
+    "failure_message": "NameError: name 'os' is not defined",
+    "bf16_router_failure_recurred": false,
+    "measurements_reached_final_summary_publication": true,
+    "unpublished_partial_output_read": false,
+    "formal_preflight_output_present": false,
+    "validation_metric_read": false,
+    "performance_gate_adjudicated": false,
+    "scientific_no_go": false
+  },
+  "setflow": {
+    "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+    "passed": true,
+    "full_trainable_parameter_count": 100099998,
+    "single_mode_trainable_parameter_count": 98628717,
+    "physical_and_effective_batch_size": 32,
+    "precision": "BF16",
+    "physical_gpu_index": 0,
+    "peak_memory_allocated_gib": 1.5445160865783691,
+    "optimizer_state_materialized": true,
+    "cpu_fallback_used": false,
+    "validation_metric_read": false
+  },
+  "repair": {
+    "scope": "CRITIC_PREFLIGHT_ATOMIC_PUBLISH_IMPORT_ONLY",
+    "import_os_added": true,
+    "atomic_publish_regression_test_added": true,
+    "architecture_changed": false,
+    "trainable_parameter_count_changed": false,
+    "data_seed_loss_budget_or_gate_changed": false,
+    "attempt_4_uses_new_non_overwriting_preflight_paths": true,
+    "attempt_1_through_3_artifacts_remain_read_only": true
+  },
+  "local_verification": {
+    "atomic_publish_regression_passed": 1,
+    "critic_v4_focused_passed": 187,
+    "setflow_v4_focused_passed": 137,
+    "v332_cohort_passed": 96,
+    "compileall_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "active_performance_curve_read": false,
+  "screen_authorized": false,
+  "submission_ready": false
+}

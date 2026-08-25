@@ -1120,3 +1120,10 @@ autocast-promoted float32 softmax result was scattered into a bfloat16 tensor.
 The narrowly scoped dtype correction changes neither the model nor its training
 objective and therefore supplies no performance evidence. Attempt 3 remains a
 technical prerequisite; the manuscript remains not ready for submission.
+
+The router repair passed its original failure point in attempt 3. Critic then
+failed only at the final atomic summary rename because the preflight script
+lacked its `os` import; its unpublished partial output was not inspected.
+SetFlow passed the formal preflight again. This additional implementation repair
+still provides no model-performance evidence, so manuscript claims remain
+unchanged pending a clean preflight and the preregistered screens.

@@ -3780,3 +3780,15 @@ V3.3.2 96/96后，正式launcher在GPU0空闲38,276 MiB时启动新的Critic→S
 共享scheduler PID为`1517468`；37,000/20,000 MiB启动底线不变，attempt 1/2 terminal不覆盖。
 该事件只形成LAUNCHED provenance，不读取active curve、Validation metric、Development TEST或new Evaluation outcome，
 也不提前授权screen。审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt3_launch_v1.json`。
+
+### Attempt 3 terminal 与 atomic publication 技术修复（2026-08-25）
+
+Attempt 3自然terminal；SetFlow在精确HEAD再次以同一100,099,998参数、BF16、batch 32和1.5445 GiB峰值
+正式PASS。Critic不再出现BF16 router dtype错误，已运行到最终summary原子发布语句，但preflight脚本漏导入`os`，
+在`os.replace(partial_output, output_path)`触发`NameError`。未发布的`.partial`结果没有读取，正式output不存在，
+因此仍是技术失败而非memory gate或scientific NO-GO；Validation/TEST/Evaluation reads均为0。
+
+修复仅增加`import os`，并强化atomic-publication回归以验证运行模块实际绑定`os`；架构、参数、训练和gate不变。
+本地Critic 187/187、SetFlow 137/137、V3.3.2 96/96及compile全部PASS。正式活动路径前移到
+`preflight_attempt_4/`，attempt 1–3保持只读。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_attempt3_terminal_atomic_publish_fix_v1.json`。

@@ -209,7 +209,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             "screen_authorization": ROOT
             / "authorizations/xedit_v4"
             / f"screen_{experiment_head}_runner_{current_head}/critic.json",
-            "preflight": ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_3/preflight.json",
+            "preflight": ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_4/preflight.json",
             "prepare": WORKTREE / "scripts/route_a_v3/prepare_route2_xeditcritic_v4_confirmation_configs.py",
             "authorize": WORKTREE / "scripts/route_a_v3/authorize_route2_xeditcritic_v4_confirmation.py",
             "config_root": ROOT / "runtime_configs/xeditcritic_v4/confirmation_v1",
@@ -221,8 +221,8 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             "screen_authorization": ROOT
             / "authorizations/xedit_v4"
             / f"screen_{experiment_head}_runner_{current_head}/setflow.json",
-            "preflight": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_3/preflight.json",
-            "source_data_audit": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_3/source_level_data_audit.json",
+            "preflight": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_4/preflight.json",
+            "source_data_audit": ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_4/source_level_data_audit.json",
             "prepare": WORKTREE / "scripts/route_a_v3/prepare_route2_xeditsetflow_v4_confirmation_configs.py",
             "authorize": WORKTREE / "scripts/route_a_v3/authorize_route2_xeditsetflow_v4_confirmation.py",
             "config_root": ROOT / "runtime_configs/xeditsetflow_v4/confirmation_v1",
