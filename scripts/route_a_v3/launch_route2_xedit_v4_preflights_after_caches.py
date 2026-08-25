@@ -18,6 +18,8 @@ WORKTREE = Path(
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 LOCAL_REPO_ROOT = Path(__file__).resolve().parents[2]
+CRITIC_PREFLIGHT_MINIMUM_FREE_MIB = 37_000
+SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB = 20_000
 C3_REFERENCE = (
     ROOT
     / "experiments/xeditcritic_v3/screen_seed_20260830/"
@@ -227,8 +229,8 @@ def run(
     critic_gpu: int,
     setflow_gpu: int,
     sequential_single_gpu: bool = False,
-    critic_minimum_free_mib: int = 38000,
-    setflow_minimum_free_mib: int = 20000,
+    critic_minimum_free_mib: int = CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
+    setflow_minimum_free_mib: int = SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB,
 ) -> dict[str, object]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
@@ -499,6 +501,10 @@ def run(
             "c3_reference": str(C3_REFERENCE),
             "a100_audit": str(a100_audit),
             "gpu_free_memory_mib_before_launch": free_memory,
+            "minimum_free_memory_mib": {
+                "critic": critic_minimum_free_mib,
+                "setflow": setflow_minimum_free_mib,
+            },
             "jobs": launches,
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
@@ -514,8 +520,16 @@ def main() -> None:
     parser.add_argument("--critic-gpu", type=int, required=True)
     parser.add_argument("--setflow-gpu", type=int, required=True)
     parser.add_argument("--sequential-single-gpu", action="store_true")
-    parser.add_argument("--critic-minimum-free-mib", type=int, default=38000)
-    parser.add_argument("--setflow-minimum-free-mib", type=int, default=20000)
+    parser.add_argument(
+        "--critic-minimum-free-mib",
+        type=int,
+        default=CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
+    )
+    parser.add_argument(
+        "--setflow-minimum-free-mib",
+        type=int,
+        default=SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB,
+    )
     arguments = parser.parse_args()
     print(
         json.dumps(

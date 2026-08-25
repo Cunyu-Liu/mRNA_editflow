@@ -4532,3 +4532,13 @@ Critic/SetFlow各自`preflight_attempt_2/preflight.json`，SetFlow audit为同�
 旧`preflight.failure.json`与旧launch/runtime/log不删除、不移动、不覆盖。重试仍必须先在新HEAD完成A100 Critic/
 SetFlow/V3.3.2 tests，然后由项目外helper设置`V4_PREFLIGHT_LAUNCH_MODE=sequential_single_gpu`、两个GPU参数均为0。
 此修正不授权screen或TEST；只有两个attempt-2 preflight都PASS后才screen authorization可建立。
+
+## GPU0 37,000 MiB launch-floor authorization（2026-08-25）
+
+用户已明确将Critic的启动前空闲显存底线修改为37,000 MiB。项目外helper仍只传递精确HEAD、
+cache experiment HEAD、GPU0/GPU0与`sequential_single_gpu`；新底线是版本化launcher的默认值，launch manifest同时
+记录Critic=37,000、SetFlow=20,000及启动前完整GPU0–5快照。不通过临时命令绕过记录。
+
+这不改变进程内`torch.cuda.max_memory_allocated`的20–35 GiB gate，也不改变optimizer、训练或任何性能门槛。
+本地验证为launcher阈值回归9/9、Critic V4 focused 186/186、SetFlow V4 focused 137/137、V3.3.2 96/96，
+另有compile、helper shell syntax与diff-check PASS；提交推送后仍须先运行A100精确current-HEAD同三套测试。

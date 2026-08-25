@@ -1099,3 +1099,10 @@ source-level records and 891 generation sources. These changes only restore
 protocol conformance. Until the new preflight, screen and all downstream gates
 pass, the manuscript still has no V4 model-advantage evidence and remains not
 ready for submission.
+
+The user subsequently authorized a 37,000-MiB GPU0 free-memory launch floor for
+the still-unrun attempt-2 preflight. This changes only the launcher's
+pre-authorization resource check; the preregistered 20–35-GiB in-process memory
+gate, model capacities, data, seeds, losses and scientific gates are unchanged.
+It supplies no performance evidence and does not change the manuscript's
+not-ready status.

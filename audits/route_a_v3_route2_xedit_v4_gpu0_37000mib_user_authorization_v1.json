@@ -1,0 +1,37 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_gpu0_37000mib_user_authorization.v1",
+  "status": "USER_AUTHORIZED_PROSPECTIVE_LAUNCH_FLOOR_CHANGE_BEFORE_ATTEMPT_2",
+  "authorized_local_time": "2026-08-25T19:12:30+08:00",
+  "scope": "PREFLIGHT_LAUNCHER_FREE_MEMORY_AVAILABILITY_CHECK_ONLY",
+  "physical_gpu_index": 0,
+  "launch_mode": "SEQUENTIAL_SINGLE_GPU_CRITIC_THEN_SETFLOW",
+  "previous_critic_minimum_free_mib": 38000,
+  "authorized_critic_minimum_free_mib": 37000,
+  "setflow_minimum_free_mib": 20000,
+  "last_observed_gpu0_free_memory_mib": 37506,
+  "last_observation_would_pass_new_floor": true,
+  "allowed_physical_gpu_indices": [0, 1, 2, 3, 4, 5],
+  "in_process_critic_memory_gate": {
+    "measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
+    "minimum_peak_allocated_gib": 20.0,
+    "maximum_peak_allocated_gib": 35.0,
+    "changed": false
+  },
+  "critic_trainable_parameter_count": 170481733,
+  "model_architecture_changed": false,
+  "training_seed_loss_budget_or_scientific_gate_changed": false,
+  "attempt_2_authorization_or_runtime_existed_at_change": false,
+  "local_verification": {
+    "launcher_threshold_regression_passed": 9,
+    "critic_v4_focused_passed": 186,
+    "setflow_v4_focused_passed": 137,
+    "v332_cohort_passed": 96,
+    "compileall_passed": true,
+    "external_helper_shell_syntax_passed": true,
+    "git_diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "validation_performance_metric_reads": 0,
+  "submission_ready": false
+}

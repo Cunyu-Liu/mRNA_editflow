@@ -3726,8 +3726,23 @@ logs全部保留，Validation performance、Development TEST与new Evaluation读
 参数修正不删层、不降宽度、不减少四个semantic experts：按冻结协议“额外设置4个experts”的数量语义，
 将同一组四专家bank在12个block中共享，每层仍保留shared FFN和outcome-free top-2路由；正式可训练
 参数精确为170,481,733，位于165–175M设计目标。SetFlow新增独立的`expected_validation_source_record_count=15327`，
-后续generation仍单独硨91。重试输出转入`preflight_attempt_2/`，不覆盖attempt 1 terminal。
+后续generation仍单独锁定891。重试输出转入`preflight_attempt_2/`，不覆盖attempt 1 terminal。
 
 本地Critic focused=186/186、SetFlow focused=137/137、V3.3.2=96/96、compile/shell/diff-check PASS。提交推送后
 必须先完成A100精确current-HEAD三套测试，然后才可在GPU0串行重试；不改seed、loss、训练预算、门槛或claim。
 审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt1_technical_failure_geometry_fix_v1.json`。
+
+## User-authorized GPU0 launch floor 37,000 MiB（2026-08-25）
+
+用户在attempt 2尚未创建authorization/runtime时，明确将Critic preflight的GPU0启动空闲显存底线从
+38,000 MiB前瞻修改为37,000 MiB，并要求立即执行。该底线只是launcher在authorization前的可用资源判定；
+Critic进程内的实测峰值仍必须位于20–35 GiB，physical batch 4超过35 GiB或batch 32仍低于20 GiB时仍暂停。
+SetFlow底线仍为20,000 MiB；GPU范围仍为0–5，本次仍指定GPU0/GPU0串行，不使用GPU6/7。
+
+这一用户授权不改变Critic的170,481,733参数、SetFlow容量、batch、seed、loss、数据、screen/confirmation gate、
+Development TEST/Evaluation边界或论文claim。最后一次GPU0快照为37,506 MiB，在新底线下合格；修正提交、
+A100 exact-HEAD tests通过后立即重新由正式launcher取一次快照并启动。审计：
+`audits/route_a_v3_route2_xedit_v4_gpu0_37000mib_user_authorization_v1.json`。
+
+本地focused记录：launcher阈值回归9/9、Critic V4 186/186、SetFlow V4 137/137、V3.3.2 96/96；
+compile、项目外helper shell syntax及diff-check均PASS。该记录只验证执行链，没有产生Validation性能证据。

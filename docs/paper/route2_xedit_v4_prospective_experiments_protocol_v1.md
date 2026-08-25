@@ -314,3 +314,14 @@ eligible sources. Those counts are now represented and checked separately; the
 remain archived, and the retry writes to new attempt-2 paths. Development TEST,
 new Evaluation and Validation performance reads remain zero, so no ranking,
 generation or publication claim is added.
+
+Before the attempt-2 authorization was created, the user prospectively changed
+the GPU0 availability floor used by the launcher from 38,000 to 37,000 MiB.
+This is an execution-resource threshold only. The Critic must still instantiate
+exactly 170,481,733 trainable parameters and its in-process
+`max_memory_allocated` preflight must still select the largest physical batch
+whose measured peak is at most 35 GiB and at least 20 GiB. The SetFlow launch
+floor remains 20,000 MiB, the allowed device set remains GPU0–5, and the retry
+remains a single-GPU Critic-then-SetFlow sequence. No model architecture, data,
+seed, loss, gate, protected-outcome boundary or claim is changed by this
+authorization.
