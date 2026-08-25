@@ -50,6 +50,7 @@ def _authorization(config: dict) -> dict:
         "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1",
         "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
         "authorized_git_head": "head",
+        "preflight_runner_git_head": "head",
         "authorized_run_ids": [
             row["run_id"] for row in config["required_screen_runs"]
         ],
@@ -72,6 +73,7 @@ def _preflight() -> dict:
     return {
         "status": "XEDITCRITIC_V4_PREFLIGHT_PASS",
         "passed": True,
+        "git_head": "head",
         "selected_physical_batch": 8,
         "trainable_parameter_count": 170_481_733,
         "selected_peak_allocated_gib": 29.0,

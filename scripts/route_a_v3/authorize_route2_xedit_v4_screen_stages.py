@@ -330,12 +330,17 @@ def build_screen_launch_authorization_v4(
     source_data_audit: Mapping[str, Any] | None,
     *,
     current_git_head: str,
+    preflight_git_head: str,
     cache_git_head: str | None = None,
 ) -> dict[str, Any]:
     _require_common_barriers(
         c3_reference, a100_audit, current_git_head=current_git_head
     )
     frozen_cache_head = current_git_head if cache_git_head is None else cache_git_head
+    _require(
+        re.fullmatch(r"[0-9a-f]{40}", preflight_git_head) is not None,
+        "screen authorization requires an exact preflight runner HEAD",
+    )
     _require_cache(component, cache, cache_git_head=frozen_cache_head)
     run_ids = [str(row["run_id"]) for row in screen_config["required_screen_runs"]]
     common = {
@@ -349,7 +354,7 @@ def build_screen_launch_authorization_v4(
         _require(
             preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
             and preflight.get("passed") is True
-            and str(preflight.get("git_head")) == current_git_head
+            and str(preflight.get("git_head")) == preflight_git_head
             and 165_000_000
             <= int(preflight.get("trainable_parameter_count", -1))
             <= 175_000_000
@@ -391,7 +396,7 @@ def build_screen_launch_authorization_v4(
         _require(
             preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
             and preflight.get("passed") is True
-            and str(preflight.get("git_head")) == current_git_head
+            and str(preflight.get("git_head")) == preflight_git_head
             and int(preflight.get("full_trainable_parameter_count", -1))
             == int(screen_config["architecture"]["formal_full_trainable_parameter_count"])
             and int(preflight.get("single_mode_trainable_parameter_count", -1))
@@ -441,6 +446,7 @@ def build_screen_launch_authorization_v4(
         "schema_version": schema,
         "status": status,
         "authorized_git_head": current_git_head,
+        "preflight_runner_git_head": preflight_git_head,
         "cache_experiment_head": frozen_cache_head,
         "authorized_run_ids": run_ids,
         "barriers": barriers,
@@ -459,6 +465,7 @@ def main() -> None:
     parser.add_argument("--cache-summary", type=Path)
     parser.add_argument("--cache-experiment-head")
     parser.add_argument("--preflight", type=Path)
+    parser.add_argument("--preflight-runner-head")
     parser.add_argument("--source-data-audit", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
@@ -501,6 +508,12 @@ def main() -> None:
         )
     else:
         _require(arguments.preflight is not None, "screen authorization requires preflight")
+        _require(
+            arguments.preflight_runner_head is not None
+            and re.fullmatch(r"[0-9a-f]{40}", arguments.preflight_runner_head)
+            is not None,
+            "screen authorization requires a preflight runner HEAD",
+        )
         result = build_screen_launch_authorization_v4(
             arguments.component,
             _read(arguments.screen_config),
@@ -510,6 +523,7 @@ def main() -> None:
             if arguments.source_data_audit is None
             else _read(arguments.source_data_audit),
             current_git_head=head,
+            preflight_git_head=arguments.preflight_runner_head,
             cache_git_head=arguments.cache_experiment_head,
         )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)

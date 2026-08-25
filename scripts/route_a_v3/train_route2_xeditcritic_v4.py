@@ -192,6 +192,11 @@ def require_screen_launch_authorization_v4(
         "Critic V4 launch is not authorized",
     )
     _require(str(authorization.get("authorized_git_head")) == str(current_git_head), "Critic V4 authorization is for another Git HEAD")
+    _require(
+        str(authorization.get("preflight_runner_git_head"))
+        == str(preflight.get("git_head")),
+        "Critic V4 authorization is bound to another preflight runner HEAD",
+    )
     _require(set(authorization.get("authorized_run_ids", [])) == frozen_run_ids, "Critic V4 authorization does not cover the exact frozen package")
     _require(run_id in frozen_run_ids, "Critic V4 requested run is not authorized")
     barriers = authorization.get("barriers", {})

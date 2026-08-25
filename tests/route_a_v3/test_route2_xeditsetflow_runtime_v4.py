@@ -90,6 +90,7 @@ def _authorization(*, head: str = "abc") -> tuple[dict, dict, dict]:
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_screen_launch_authorization.v1",
         "status": "XEDITSETFLOW_V4_SCREEN_LAUNCH_AUTHORIZED",
         "authorized_git_head": head,
+        "preflight_runner_git_head": head,
         "authorized_run_ids": ["v4_full", "v4_single_mode"],
         "barriers": {
             "all_five_c3_jobs_terminal": True,
@@ -106,6 +107,7 @@ def _authorization(*, head: str = "abc") -> tuple[dict, dict, dict]:
     preflight = {
         "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
         "passed": True,
+        "git_head": head,
         "full_trainable_parameter_count": 100_099_998,
         "single_mode_trainable_parameter_count": 98_628_717,
         "source_token_cache_identity": _source_token_cache_receipt(),

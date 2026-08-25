@@ -220,6 +220,11 @@ def require_setflow_v4_screen_launch_authorization(
         "SetFlow V4 authorization is for another Git HEAD",
     )
     _require(
+        str(authorization.get("preflight_runner_git_head"))
+        == str(preflight.get("git_head")),
+        "SetFlow V4 authorization is bound to another preflight runner HEAD",
+    )
+    _require(
         set(authorization.get("authorized_run_ids", [])) == frozen_run_ids,
         "SetFlow V4 authorization does not cover the exact frozen package",
     )

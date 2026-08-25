@@ -4584,3 +4584,8 @@ SetFlow 148/148、V3.3.2 96/96。GPU0启动快照空闲37,294 MiB，共享schedu
 后SetFlow；manifest为`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/
 preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_107fa43d9990e4f72f989ca0cf417260bfb10de8/
 launch_manifest.json`。首次检查不早于本地20:31:51，只读terminal/failure/alive/CUDA。
+
+Attempt-5 terminal后的screen命令必须同时传入三个独立身份：`--expected-head <current-screen-runner-head>`、
+`--experiment-head a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d`、
+`--preflight-head 107fa43d9990e4f72f989ca0cf417260bfb10de8`。Authorizer和两个screen trainer均核对
+preflight artifact的`git_head`与该preflight HEAD，不再错误要求它等于后续current HEAD。

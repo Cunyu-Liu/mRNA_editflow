@@ -155,7 +155,12 @@ def assign_screen_jobs_to_gpu_queues(
 
 
 def validate_screen_authorization(
-    path: Path, *, component: str, head: str, experiment_head: str
+    path: Path,
+    *,
+    component: str,
+    head: str,
+    experiment_head: str,
+    preflight_head: str,
 ) -> None:
     require(path.is_file(), f"{component} screen authorization is absent")
     payload = read_json(path)
@@ -163,12 +168,15 @@ def validate_screen_authorization(
         payload.get("status") == expected_authorization_status(component)
         and payload.get("authorized_git_head") == head
         and payload.get("cache_experiment_head") == experiment_head
+        and payload.get("preflight_runner_git_head") == preflight_head
         and set(payload.get("authorized_run_ids", [])) == set(screen_run_ids()[component]),
         f"{component} screen authorization content is invalid",
     )
 
 
-def run(current_head: str, experiment_head: str) -> dict[str, Any]:
+def run(
+    current_head: str, experiment_head: str, preflight_head: str
+) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
         "expected current Git HEAD is invalid",
@@ -176,6 +184,10 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", experiment_head) is not None,
         "expected cache experiment HEAD is invalid",
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", preflight_head) is not None,
+        "expected preflight runner HEAD is invalid",
     )
     require(PYTHON.is_file(), "formal Python is absent")
     require(
@@ -216,14 +228,14 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
         and critic_preflight.get("passed") is True
-        and str(critic_preflight.get("git_head")) == current_head,
-        "Critic V4 preflight did not pass at expected HEAD",
+        and str(critic_preflight.get("git_head")) == preflight_head,
+        "Critic V4 preflight did not pass at expected preflight HEAD",
     )
     require(
         setflow_preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
         and setflow_preflight.get("passed") is True
-        and str(setflow_preflight.get("git_head")) == current_head,
-        "SetFlow V4 preflight did not pass at expected HEAD",
+        and str(setflow_preflight.get("git_head")) == preflight_head,
+        "SetFlow V4 preflight did not pass at expected preflight HEAD",
     )
     source_audit = read_json(source_audit_path)
     for payload, label in (
@@ -323,6 +335,8 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             str(paths["cache_summary"]),
             "--cache-experiment-head",
             experiment_head,
+            "--preflight-runner-head",
+            preflight_head,
             "--preflight",
             str(paths["preflight"]),
             "--output",
@@ -338,6 +352,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             component=component,
             head=current_head,
             experiment_head=experiment_head,
+            preflight_head=preflight_head,
         )
     os.replace(authorization_staging, authorization_root)
 
@@ -389,6 +404,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "status": "FROZEN_SCREEN_PACKAGE_SCHEDULE",
         "git_head": current_head,
         "experiment_head": experiment_head,
+        "preflight_runner_git_head": preflight_head,
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "gpu_free_memory_mib_before_launch": free_memory,
@@ -418,6 +434,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "status": "V4_SCREEN_PACKAGE_SCHEDULER_LAUNCHED",
         "git_head": current_head,
         "experiment_head": experiment_head,
+        "preflight_runner_git_head": preflight_head,
         "scheduler_pid": process.pid,
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
@@ -433,10 +450,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--experiment-head", required=True)
+    parser.add_argument("--preflight-head", required=True)
     arguments = parser.parse_args()
     print(
         json.dumps(
-            run(arguments.expected_head, arguments.experiment_head),
+            run(
+                arguments.expected_head,
+                arguments.experiment_head,
+                arguments.preflight_head,
+            ),
             indent=2,
             sort_keys=True,
         )

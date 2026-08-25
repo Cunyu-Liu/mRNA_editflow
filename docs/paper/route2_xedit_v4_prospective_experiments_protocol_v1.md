@@ -386,3 +386,15 @@ read-only. Only exact-HEAD Critic and SetFlow preflight PASS artifacts with all
 protected-read counters at zero authorize immediate launch of the already
 preregistered V4 screens. No extra screen arm, seed, threshold or TEST access is
 authorized by this amendment.
+
+The attempt-5 preflight artifacts are permanently bound to their exact runner
+commit, while the screen must run from the later exact current HEAD after the
+terminal record is committed and A100 tests pass. These two commits are
+therefore separate provenance fields rather than incorrectly required to be
+identical. Screen authorization records `preflight_runner_git_head` alongside
+the current `authorized_git_head` and the cache experiment HEAD; both Critic and
+SetFlow trainers require the authorization's preflight HEAD to equal the
+consumed preflight artifact's `git_head`. This successor-binding repair was
+implemented during the attempt-5 silent window without reading a remote status,
+preflight result, Validation metric, Development TEST outcome, or new Evaluation
+outcome. It changes no model, training, arm, seed, metric or gate.

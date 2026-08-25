@@ -381,10 +381,11 @@ def test_preflight_authorization_rejects_cache_without_current_launch_provenance
 
 
 def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
+    preflight_head = "b" * 40
     critic_preflight = {
         "status": "XEDITCRITIC_V4_PREFLIGHT_PASS",
         "passed": True,
-        "git_head": HEAD,
+        "git_head": preflight_head,
         "trainable_parameter_count": 170000000,
         "selected_peak_allocated_gib": 30.0,
         "selected_physical_batch": 8,
@@ -405,16 +406,19 @@ def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
     critic = build_screen_launch_authorization_v4(
         "critic", CRITIC_CONFIG, _c3(), _a100(), _critic_cache(),
         critic_preflight, None, current_git_head=HEAD,
+        preflight_git_head=preflight_head,
     )
     assert critic["status"] == "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"
     assert set(critic["authorized_run_ids"]) == {
         row["run_id"] for row in CRITIC_CONFIG["required_screen_runs"]
     }
+    assert critic["authorized_git_head"] == HEAD
+    assert critic["preflight_runner_git_head"] == preflight_head
 
     flow_preflight = {
         "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
         "passed": True,
-        "git_head": HEAD,
+        "git_head": preflight_head,
         "full_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_full_trainable_parameter_count"],
         "single_mode_trainable_parameter_count": FLOW_CONFIG["architecture"]["formal_single_mode_trainable_parameter_count"],
         "source_token_cache_identity": _flow_cache_receipt(),
@@ -430,6 +434,7 @@ def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
     flow = build_screen_launch_authorization_v4(
         "setflow", FLOW_CONFIG, _c3(), _a100(), _flow_cache(),
         flow_preflight, data, current_git_head=HEAD,
+        preflight_git_head=preflight_head,
     )
     assert flow["status"] == "XEDITSETFLOW_V4_SCREEN_LAUNCH_AUTHORIZED"
     assert flow["barriers"]["source_level_data_audit_passed"] is True
@@ -461,6 +466,7 @@ def test_screen_authorization_rejects_preflight_or_source_data_drift() -> None:
         build_screen_launch_authorization_v4(
             "critic", CRITIC_CONFIG, _c3(), _a100(), _critic_cache(),
             preflight, None, current_git_head=HEAD,
+            preflight_git_head=HEAD,
         )
 
 
@@ -489,6 +495,7 @@ def test_screen_authorization_rejects_missing_tensor_cache_identity_receipt() ->
         build_screen_launch_authorization_v4(
             "critic", CRITIC_CONFIG, _c3(), _a100(), _critic_cache(),
             critic_preflight, None, current_git_head=HEAD,
+            preflight_git_head=HEAD,
         )
 
     flow_preflight = {
@@ -510,4 +517,5 @@ def test_screen_authorization_rejects_missing_tensor_cache_identity_receipt() ->
         build_screen_launch_authorization_v4(
             "setflow", FLOW_CONFIG, _c3(), _a100(), _flow_cache(),
             flow_preflight, data, current_git_head=HEAD,
+            preflight_git_head=HEAD,
         )

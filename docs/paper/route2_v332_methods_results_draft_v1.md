@@ -1159,3 +1159,10 @@ GPU0 in the frozen Critic-then-SetFlow sequence without a fixed free-memory
 floor. This is launch provenance only; neither preflight terminal nor any V4
 Validation performance result had been read at launch, so no model claim or
 submission-readiness conclusion changes.
+
+The preflight-to-screen successor was also corrected to retain two explicit
+runner identities: the immutable attempt-5 preflight commit and the later
+screen current HEAD tested after terminal documentation. Authorizations bind
+both and trainers reject a preflight-head mismatch. This is provenance and
+execution-correctness evidence only; it does not inspect or improve any model
+metric and leaves all manuscript claims unchanged.

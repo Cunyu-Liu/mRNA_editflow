@@ -3852,3 +3852,15 @@ manifest中的两组件minimum free memory均为`null`，实际CUDA/BF16 preflig
 首次alive/CUDA/terminal/failure检查不早于本地20:31:51；之后按少于4小时任务每30分钟。不得读取active log/
 curve/metric。双PASS后才立即运行现有screen；protected reads保持0。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_attempt5_launch_v1.json`。
+
+### Attempt-5 preflight → current-HEAD screen dual provenance repair（2026-08-25）
+
+低频静默窗口内的本地静态审计发现：attempt-5 preflight artifact固定记录launch HEAD `107fa43`，而正确纪律要求
+terminal记录提交后把A100同步到更新的current HEAD再启动screen；旧authorizer却要求preflight `git_head`等于screen
+current HEAD，因而双PASS也会被错误拒绝。该问题不涉及任何远端状态或性能读取。
+
+修复后screen入口显式接收并校验`preflight_head`，authorization同时记录`preflight_runner_git_head`、screen
+`authorized_git_head`与cache experiment HEAD。Critic/SetFlow screen trainer均验证authorization中的preflight HEAD
+与实际artifact一致。模型、batch、训练、十个arms、seed、metric、gate和protected boundary全部不变。定向39/39
+与expanded successor chain 49/49、V3.3.2 96/96均PASS；完整A100 current-HEAD测试须在attempt 5全部terminal后运行。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_screen_dual_head_binding_v1.json`。
