@@ -51,7 +51,10 @@ def test_formal_capacity_and_source_level_objective_match_protocol() -> None:
 
 
 def test_validation_has_exact_891_by_32_budget_and_mode_stratification() -> None:
-    validation = _load()["validation_generation"]
+    config = _load()
+    validation = config["validation_generation"]
+    assert config["data_geometry"]["expected_validation_source_record_count"] == 15_327
+    assert config["data_geometry"]["eligible_validation_source_count"] == 891
     assert validation["eligible_source_count"] == 891
     assert validation["candidate_cap_per_source"] == 32
     assert validation["trajectory_count_per_source"] == 32

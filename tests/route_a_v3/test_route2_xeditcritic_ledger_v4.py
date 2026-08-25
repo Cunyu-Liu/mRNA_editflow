@@ -67,7 +67,7 @@ def test_v4_attempt_rejects_unknown_run_gpu_or_batch() -> None:
 def test_v4_attempt_details_keep_protected_counts_and_zero_reads() -> None:
     details = critic_v4_attempt_details(
         _config(),
-        trainable_parameter_count=173_692_549,
+        trainable_parameter_count=170_481_733,
         physical_batch_size=8,
         peak_vram_mb=30000,
     )

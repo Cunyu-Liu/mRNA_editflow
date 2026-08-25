@@ -62,7 +62,7 @@ def _summary(run: dict, rho: float, *, mae: float = 1.2) -> dict:
         "new_final_evaluation_outcome_reads": 0,
         "passes": [{"validation_metric_read": False} for _ in range(8)],
         "capacity": {
-            "trainable_parameter_count": 1_000_000 if run["model"] == "C0-V4" else 173_692_549
+            "trainable_parameter_count": 1_000_000 if run["model"] == "C0-V4" else 170_481_733
         },
         "peak_vram_bytes": 30 * 1024**3,
         "final_validation": {
@@ -98,7 +98,7 @@ def _passing_package() -> tuple[dict, dict[str, dict], dict]:
     preflight = {
         "status": "XEDITCRITIC_V4_PREFLIGHT_PASS",
         "passed": True,
-        "trainable_parameter_count": 173_692_549,
+        "trainable_parameter_count": 170_481_733,
         "selected_physical_batch": 8,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,

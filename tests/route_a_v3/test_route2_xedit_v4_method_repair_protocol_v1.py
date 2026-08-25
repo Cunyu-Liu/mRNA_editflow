@@ -93,7 +93,11 @@ def test_v4_critic_architecture_losses_controls_and_seeds_are_prefrozen() -> Non
     assert architecture["readout_fusion"]["concatenated_width"] == 6 * 768
     assert architecture["readout_fusion"]["hidden_width"] == 2560
     assert architecture["readout_fusion"]["output_width"] == 768
-    assert architecture["local_geometry_proxy_trainable_parameter_count"] == 173_692_549
+    assert architecture["formal_mrnabert_upper_six_trainable_parameter_count"] == 56_664_576
+    assert architecture["semantic_expert_bank_scope"] == (
+        "ONE_SHARED_FOUR_EXPERT_BANK_REUSED_ACROSS_ALL_12_BLOCKS"
+    )
+    assert architecture["local_geometry_proxy_trainable_parameter_count"] == 170_481_733
     assert critic["training"]["pass_3_8_loss"]["effective_task_batch_soft_spearman"] == 0.25
     assert critic["training"]["soft_spearman"] == {
         "rank_method": "PAIRWISE_SIGMOID_SOFT_RANK",

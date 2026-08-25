@@ -423,7 +423,7 @@ def test_screen_authorizations_match_formal_preflight_and_run_package() -> None:
     }
     data = {
         "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
-        "validation_source_count": 891,
+        "validation_source_count": 15_327,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -502,7 +502,7 @@ def test_screen_authorization_rejects_missing_tensor_cache_identity_receipt() ->
     }
     data = {
         "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
-        "validation_source_count": 891,
+        "validation_source_count": 15_327,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }

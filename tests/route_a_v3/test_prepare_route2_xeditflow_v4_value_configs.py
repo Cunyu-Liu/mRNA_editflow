@@ -94,7 +94,7 @@ def _source_audit() -> dict:
     return {
         "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
         "train_source_count": 101,
-        "validation_source_count": 891,
+        "validation_source_count": 15_327,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }

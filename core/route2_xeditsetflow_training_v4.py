@@ -20,6 +20,7 @@ from core.route2_xeditsetflow_training_v3 import (
 
 TOKEN_V4 = {"A": 0, "C": 1, "G": 2, "U": 3}
 PAD_V4 = 4
+EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4 = 15_327
 
 
 class XEditSetFlowTrainingV4Error(RuntimeError):

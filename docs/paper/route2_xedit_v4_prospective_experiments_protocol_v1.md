@@ -294,3 +294,23 @@ available. This scheduling change neither co-resides the two models nor alters
 their capacity, batch candidates, losses, data, seeds, memory floors, or gates.
 It has not yet executed and therefore contributes no performance or
 publication-readiness evidence.
+
+The first formal GPU0 preflight subsequently terminated before optimizer
+construction. The pinned mRNABERT revision uses a gated MLP, so its actual
+trainable upper-six stack contains 56,664,576 parameters; the standard
+Transformer geometry proxy had undercounted this stack. Before any parameter
+update or Validation metric read, the implementation was corrected to use the
+one declared bank of four semantic experts across all 12 edit blocks. Every
+block still contains its shared FFN and consumes the same outcome-free top-two
+semantic routing, while no layer, width, expert, seed, loss or gate was removed.
+The exact formal Critic count is now 170,481,733. This is a prospective capacity
+conformance correction, not a model-performance observation.
+
+The same preflight also exposed a cohort-identity error: 15,327 legal Validation
+source-level records are available to the source-organized SetFlow objective and
+common NLL, whereas the fixed outcome-free generation cohort contains 891
+eligible sources. Those counts are now represented and checked separately; the
+891-source generation benchmark is unchanged. Both original technical failures
+remain archived, and the retry writes to new attempt-2 paths. Development TEST,
+new Evaluation and Validation performance reads remain zero, so no ranking,
+generation or publication claim is added.

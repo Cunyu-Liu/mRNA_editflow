@@ -155,7 +155,9 @@
         "output_width": 768,
         "role": "PREFLIGHT_COUNTED_READOUT_NOT_ADDITIONAL_TRANSFORMER_TRUNK"
       },
-      "local_geometry_proxy_trainable_parameter_count": 173692549
+      "semantic_expert_bank_scope": "ONE_SHARED_FOUR_EXPERT_BANK_REUSED_ACROSS_ALL_12_BLOCKS",
+      "formal_mrnabert_upper_six_trainable_parameter_count": 56664576,
+      "local_geometry_proxy_trainable_parameter_count": 170481733
     },
     "memory_preflight": {
       "outcome_free_train_geometry_only": true,

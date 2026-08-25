@@ -26,6 +26,7 @@ from core.route2_source_token_cache_v3 import (
 )
 from core.route2_xeditsetflow_runtime_v4 import build_setflow_screen_model_v4
 from core.route2_xeditsetflow_training_v4 import (
+    EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4,
     SetFlowSourceStateDatasetV4,
     collate_setflow_source_states_v4,
     setflow_source_records_from_projection_rows_v4,
@@ -172,9 +173,14 @@ def run_preflight(
         setflow_source_records_from_projection_rows_v4(validation_rows)
     )
     _require(
+        int(geometry["expected_validation_source_record_count"])
+        == EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4,
+        "SetFlow V4 frozen Validation source-record count changed",
+    )
+    _require(
         len(validation_records)
-        == int(geometry["eligible_validation_source_count"]),
-        "SetFlow V4 eligible Validation source count changed",
+        == int(geometry["expected_validation_source_record_count"]),
+        "SetFlow V4 Validation source-record count changed",
     )
     vocabs = setflow_source_vocabs_v4(train_records)
     expected_vocab = config["architecture"]["formal_endpoint_vocab_cardinalities"]
@@ -267,6 +273,9 @@ def run_preflight(
         "validation_projection_candidate_row_count": len(validation_rows),
         "train_source_count": len(train_records),
         "validation_source_count": len(validation_records),
+        "generation_eligible_validation_source_count": int(
+            geometry["eligible_validation_source_count"]
+        ),
         "train_inventory": train_inventory,
         "validation_inventory": validation_inventory,
         "endpoint_vocab_cardinalities": {

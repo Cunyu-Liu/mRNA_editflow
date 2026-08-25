@@ -173,7 +173,7 @@ def run(head: str) -> dict[str, Any]:
     if "critic" in eligible:
         protocol = WORKTREE / "configs/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_v1.json"
         manifest = ROOT / "runtime_configs/xeditcritic_v4/confirmation_v1/manifest.json"
-        preflight = ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight.json"
+        preflight = ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json"
         gate = Path(read_json(protocol)["confirmation_gate_output"])
         failure = runtime_root / "critic_adjudication.failed.json"
         require(
@@ -216,7 +216,7 @@ def run(head: str) -> dict[str, Any]:
         protocol = WORKTREE / "configs/route_a_v3_route2_xeditsetflow_v4_confirmation_protocol_v1.json"
         manifest_path = ROOT / "runtime_configs/xeditsetflow_v4/confirmation_v1/manifest.json"
         authorization = authorization_root / "setflow.json"
-        preflight_path = ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight.json"
+        preflight_path = ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.json"
         for path in (manifest_path, authorization, preflight_path):
             require(path.is_file(), f"SetFlow confirmation prerequisite is absent: {path}")
         authorization_payload = read_json(authorization)

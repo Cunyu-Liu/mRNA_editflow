@@ -17,6 +17,7 @@ WORKTREE = Path(
 )
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+LOCAL_REPO_ROOT = Path(__file__).resolve().parents[2]
 C3_REFERENCE = (
     ROOT
     / "experiments/xeditcritic_v3/screen_seed_20260830/"
@@ -145,7 +146,7 @@ def expected_authorization_status(component: str) -> str:
 
 
 def component_paths() -> dict[str, dict[str, Path | int]]:
-    return {
+    result = {
         "critic": {
             "config": WORKTREE
             / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
@@ -157,10 +158,6 @@ def component_paths() -> dict[str, dict[str, Path | int]]:
             "cache_failure": ROOT
             / "pretrained_features/xeditcritic_v4/"
             "frozen_bottom_six_chunk_cache_v1.failure.json",
-            "output": ROOT
-            / "experiments/xeditcritic_v4/screen_seed_20260907/preflight.json",
-            "failure": ROOT
-            / "experiments/xeditcritic_v4/screen_seed_20260907/preflight.failure.json",
         },
         "setflow": {
             "config": WORKTREE
@@ -173,12 +170,17 @@ def component_paths() -> dict[str, dict[str, Path | int]]:
             "cache_failure": ROOT
             / "pretrained_features/xeditsetflow_v4/"
             "source_token_cache_v3_adoption_receipt_v1.failure.json",
-            "output": ROOT
-            / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight.json",
-            "failure": ROOT
-            / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight.failure.json",
         },
     }
+    config_root = WORKTREE if WORKTREE.is_dir() else LOCAL_REPO_ROOT
+    for component, paths in result.items():
+        config_path = config_root / "configs" / Path(paths["config"]).name
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        output_key = "preflight_output" if component == "critic" else "preflight_output_path"
+        output = Path(config[output_key])
+        paths["output"] = output
+        paths["failure"] = output.with_name("preflight.failure.json")
+    return result
 
 
 def preflight_job_command(

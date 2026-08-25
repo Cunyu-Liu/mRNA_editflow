@@ -1087,3 +1087,15 @@ a read-only adoption of its qualified predecessor. Neither cache contains raw
 sequence, labels, Development TEST records, or Evaluation outcomes. This makes
 the preregistered V4 preflight executable but supplies no trained-model result;
 the ranking, generation, and submission claims remain unchanged.
+
+The first V4 GPU0 preflight produced two technical terminals before optimizer
+construction: the real gated-mRNABERT upper-six parameter count exceeded the
+standard-Transformer proxy, and the source-level Validation inventory had been
+confused with the smaller 891-source generation cohort. No performance metric
+or protected outcome was read. The prospective implementation now contains an
+exact 170,481,733-trainable-parameter Critic with one declared four-expert bank
+reused by all 12 edit blocks, and it separately freezes 15,327 Validation
+source-level records and 891 generation sources. These changes only restore
+protocol conformance. Until the new preflight, screen and all downstream gates
+pass, the manuscript still has no V4 model-advantage evidence and remains not
+ready for submission.

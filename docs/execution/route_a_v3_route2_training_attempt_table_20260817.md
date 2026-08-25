@@ -3146,7 +3146,7 @@ read=0，论文claim不变。审计：
 ## Critic V4 post-TEST preflight binding and atomic configs（2026-08-25）
 
 post-TEST协议的`formal_preflight_path`仍指向从未由V4 preflight生成的旧目录，而正式screen config实际产物位于
-`experiments/xeditcritic_v4/screen_seed_20260907/preflight.json`。若TEST PASS，3个refit与42个LOSO job会因加载
+`experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json`。若TEST PASS，3个refit与42个LOSO job会因加载
 不存在的preflight硬失败。现协议路径与screen config强制相等，回归测试锁定该绑定。
 
 同时refit/LOSO runtime config+manifest由逐文件final写改为兄弟staging完整生成后整目录原子发布；既有final或
@@ -3714,3 +3714,20 @@ job runner发布独立output XOR failure/runtime/log。第一组件技术failure
 focused=21/21、V3.3.2=96/96、compile/shell/diff-check PASS；新runner已加入A100 Critic与SetFlow exact-HEAD
 cohort。提交推送和A100新HEAD三套测试完成前不启动；下一训练可用性窗口不早于本地18:34:12。审计：
 `audits/route_a_v3_route2_xedit_v4_gpu0_sequential_preflight_mode_v1.json`。
+
+## V4 GPU0 preflight attempt 1 technical terminal and geometry repair（2026-08-25）
+
+用户明确要求立即使用GPU0后，`079b295`的串行preflight已按Critic→SetFlow顺序自然terminal。两项都在
+optimizer构建/步进和性能metric之前失败：Critic的正式mRNABERT gated-FFN顶六层为56,664,576参数，
+旧standard-Transformer proxy少算14,137,344，导致实例总数187,828,293超过180M；SetFlow则把15,327个
+合法Validation source-level records与891个固定generation eligible sources混为同一计数。两个failure、runtime和
+logs全部保留，Validation performance、Development TEST与new Evaluation读取均为0，不构成screen NO-GO。
+
+参数修正不删层、不降宽度、不减少四个semantic experts：按冻结协议“额外设置4个experts”的数量语义，
+将同一组四专家bank在12个block中共享，每层仍保留shared FFN和outcome-free top-2路由；正式可训练
+参数精确为170,481,733，位于165–175M设计目标。SetFlow新增独立的`expected_validation_source_record_count=15327`，
+后续generation仍单独硨91。重试输出转入`preflight_attempt_2/`，不覆盖attempt 1 terminal。
+
+本地Critic focused=186/186、SetFlow focused=137/137、V3.3.2=96/96、compile/shell/diff-check PASS。提交推送后
+必须先完成A100精确current-HEAD三套测试，然后才可在GPU0串行重试；不改seed、loss、训练预算、门槛或claim。
+审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt1_technical_failure_geometry_fix_v1.json`。

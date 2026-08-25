@@ -244,3 +244,31 @@ def test_default_v4_geometry_hits_the_prefrozen_design_target_on_meta_device() -
     capacity = require_v4_trainable_parameter_range(model)
     assert 165_000_000 <= capacity["trainable_parameter_count"] <= 175_000_000
     assert sum(capacity["module_counts"].values()) == capacity["trainable_parameter_count"]
+
+
+def test_formal_upper_count_and_one_shared_four_expert_bank_hit_exact_capacity() -> None:
+    class FormalUpperCount(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.parameters_for_count = nn.Parameter(
+                torch.empty(56_664_576, device="meta")
+            )
+
+        def forward(self, hidden, attention_mask):
+            return hidden
+
+    with torch.device("meta"):
+        model = XEditCriticV4(
+            upper_encoder=FormalUpperCount(),
+            study_count=8,
+            assay_count=7,
+            context_count=28,
+            quantity_count=6,
+            measurement_count=5,
+            numerator_count=6,
+            denominator_count=6,
+        )
+    expert_ids = {id(block.experts) for block in model.blocks}
+    assert len(expert_ids) == 1
+    capacity = require_v4_trainable_parameter_range(model)
+    assert capacity["trainable_parameter_count"] == 170_481_733

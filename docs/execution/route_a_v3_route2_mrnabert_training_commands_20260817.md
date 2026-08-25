@@ -4521,3 +4521,14 @@ failure/runtime保持原schema与路径，scheduler也有独立runtime/failure�
 HEAD Critic/SetFlow/V3.3.2测试；只有全部PASS且本地时间越过18:34:12，才以GPU0/GPU0启动顺序预检。所有科学
 阈值和protected outcome边界不变。审计：
 `audits/route_a_v3_route2_xedit_v4_gpu0_sequential_preflight_mode_v1.json`。
+
+## GPU0 preflight attempt-2 binding after technical geometry repair（2026-08-25）
+
+Attempt 1在任何optimizer step或performance read前发现两个formal geometry问题。Critic现使用与mRNABERT正式
+gated MLP一致的顶六层proxy，并将协议中的一组四semantic experts跨所12 edit blocks共享；精确实例计数
+为170,481,733。SetFlow分别锁定15,327个source-level Validation records与891个generation cohort。新输出路径为
+Critic/SetFlow各自`preflight_attempt_2/preflight.json`，SetFlow audit为同目录`source_level_data_audit.json`。
+
+旧`preflight.failure.json`与旧launch/runtime/log不删除、不移动、不覆盖。重试仍必须先在新HEAD完成A100 Critic/
+SetFlow/V3.3.2 tests，然后由项目外helper设置`V4_PREFLIGHT_LAUNCH_MODE=sequential_single_gpu`、两个GPU参数均为0。
+此修正不授权screen或TEST；只有两个attempt-2 preflight都PASS后才screen authorization可建立。

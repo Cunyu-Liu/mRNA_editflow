@@ -409,7 +409,12 @@ def build_screen_launch_authorization_v4(
             source_data_audit is not None
             and source_data_audit.get("status")
             == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS"
-            and int(source_data_audit.get("validation_source_count", -1)) == 891,
+            and int(source_data_audit.get("validation_source_count", -1))
+            == int(
+                screen_config["data_geometry"][
+                    "expected_validation_source_record_count"
+                ]
+            ),
             "SetFlow V4 source-level data audit did not pass",
         )
         barriers = {

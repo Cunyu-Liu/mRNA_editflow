@@ -33,6 +33,13 @@ def test_preflight_components_consume_exact_cache_terminals() -> None:
     assert components["setflow"]["preflight"].name == (
         "preflight_route2_xeditsetflow_v4.py"
     )
+    for component in ("critic", "setflow"):
+        assert Path(components[component]["output"]).parent.name == (
+            "preflight_attempt_2"
+        )
+        assert Path(components[component]["failure"]).name == (
+            "preflight.failure.json"
+        )
 
 
 def test_preflight_authorization_status_is_component_exact() -> None:

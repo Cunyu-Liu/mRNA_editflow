@@ -19,6 +19,9 @@ from core.route2_xeditflow_gate_v4 import (
     authorize_xeditflow_guidance_v4,
 )
 from core.route2_xeditflow_value_training_v4 import CRITIC_SEEDS_V4
+from core.route2_xeditsetflow_training_v4 import (
+    EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4,
+)
 from scripts.route_a_v3.build_route2_xeditflow_value_targets_v4 import (
     VALUE_TARGET_GRID_V4,
 )
@@ -162,7 +165,8 @@ def build_value_configs_v4(
         source_data_audit.get("status")
         == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS"
         and int(source_data_audit.get("train_source_count", 0)) >= 8
-        and int(source_data_audit.get("validation_source_count", -1)) == 891
+        and int(source_data_audit.get("validation_source_count", -1))
+        == EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4
         and int(source_data_audit.get("development_test_outcome_reads", -1))
         == 0
         and int(source_data_audit.get("new_final_evaluation_outcome_reads", -1))

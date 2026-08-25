@@ -115,7 +115,7 @@ def _authorization(*, head: str = "abc") -> tuple[dict, dict, dict]:
     data = {
         "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
         "train_source_count": 100,
-        "validation_source_count": 891,
+        "validation_source_count": 15_327,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -210,7 +210,7 @@ def test_confirmation_authorization_is_full_only_three_seed_and_screen_gated() -
     }
     data = {
         "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
-        "validation_source_count": 891,
+            "validation_source_count": 15_327,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }

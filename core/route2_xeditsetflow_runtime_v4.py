@@ -260,8 +260,8 @@ def require_setflow_v4_screen_launch_authorization(
     )
     _require(
         int(source_data_audit.get("validation_source_count", -1))
-        == int(config["data_geometry"]["eligible_validation_source_count"]),
-        "SetFlow V4 Validation source cohort changed",
+        == int(config["data_geometry"]["expected_validation_source_record_count"]),
+        "SetFlow V4 Validation source-record inventory changed",
     )
     _require(
         int(source_data_audit.get("train_source_count", 0)) >= 8,
@@ -354,7 +354,8 @@ def require_setflow_v4_confirmation_launch_authorization(
     _require(
         source_data_audit.get("status")
         == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS"
-        and int(source_data_audit.get("validation_source_count", -1)) == 891,
+        and int(source_data_audit.get("validation_source_count", -1))
+        == int(config["data_geometry"]["expected_validation_source_record_count"]),
         "SetFlow V4 confirmation source-data identity changed",
     )
     for payload, name in (

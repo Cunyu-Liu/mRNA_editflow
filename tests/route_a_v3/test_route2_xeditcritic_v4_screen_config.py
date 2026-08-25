@@ -57,7 +57,10 @@ def test_v4_screen_capacity_and_memory_preflight_cannot_silently_shrink() -> Non
     config = _load()
     architecture = config["architecture"]
     memory = config["memory_preflight"]
-    assert architecture["local_geometry_proxy_trainable_parameter_count"] == 173_692_549
+    assert architecture["local_geometry_proxy_trainable_parameter_count"] == 170_481_733
+    assert architecture["semantic_expert_bank_scope"] == (
+        "ONE_SHARED_FOUR_EXPERT_BANK_REUSED_ACROSS_ALL_12_BLOCKS"
+    )
     assert (
         architecture["design_target_minimum_trainable_parameter_count"],
         architecture["design_target_maximum_trainable_parameter_count"],

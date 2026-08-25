@@ -70,22 +70,66 @@ class TrainableUpperSixTransformerV4(nn.Module):
     ) -> None:
         super().__init__()
         _require(depth >= 1 and width % heads == 0, "upper-six transformer geometry is invalid")
-        layer = nn.TransformerEncoderLayer(
-            d_model=width,
-            nhead=heads,
-            dim_feedforward=ffn_width,
-            dropout=dropout,
-            activation="gelu",
-            batch_first=True,
-            norm_first=False,
+        self.layers = nn.ModuleList(
+            _MRNABERTUpperLayerProxyV4(
+                width=width,
+                heads=heads,
+                ffn_width=ffn_width,
+                dropout=dropout,
+            )
+            for _ in range(depth)
         )
-        self.layers = nn.TransformerEncoder(layer, num_layers=depth)
 
     def forward(
         self, hidden: torch.Tensor, attention_mask: torch.Tensor
     ) -> torch.Tensor:
         _require(hidden.ndim == 3 and attention_mask.shape == hidden.shape[:2], "upper-six input geometry changed")
-        return self.layers(hidden, src_key_padding_mask=~attention_mask.to(torch.bool))
+        padding_mask = ~attention_mask.to(torch.bool)
+        for layer in self.layers:
+            hidden = layer(hidden, padding_mask=padding_mask)
+        return hidden
+
+
+class _MRNABERTUpperLayerProxyV4(nn.Module):
+    """Match the retained mRNABERT gated-MLP parameter geometry exactly."""
+
+    def __init__(
+        self,
+        *,
+        width: int,
+        heads: int,
+        ffn_width: int,
+        dropout: float,
+    ) -> None:
+        super().__init__()
+        self.attention = nn.MultiheadAttention(
+            width,
+            heads,
+            dropout=0.0,
+            batch_first=True,
+        )
+        self.attention_norm = nn.LayerNorm(width)
+        # The pinned mRNABERT revision uses a bias-free 2*FFN gated projection,
+        # not the one-branch projection in torch.nn.TransformerEncoderLayer.
+        self.gated_layers = nn.Linear(width, ffn_width * 2, bias=False)
+        self.output = nn.Linear(ffn_width, width)
+        self.output_norm = nn.LayerNorm(width)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(
+        self, hidden: torch.Tensor, *, padding_mask: torch.Tensor
+    ) -> torch.Tensor:
+        attended, _ = self.attention(
+            hidden,
+            hidden,
+            hidden,
+            key_padding_mask=padding_mask,
+            need_weights=False,
+        )
+        hidden = self.attention_norm(hidden + self.dropout(attended))
+        gate, value = self.gated_layers(hidden).chunk(2, dim=-1)
+        transformed = self.output(F.gelu(gate) * value)
+        return self.output_norm(hidden + self.dropout(transformed))
 
 
 class EndpointSemanticRouterV4(nn.Module):
@@ -158,6 +202,7 @@ class _SemanticBlockBaseV4(nn.Module):
         expert_count: int,
         expert_bottleneck_width: int,
         semantic_routing: bool,
+        shared_experts: EndpointSemanticMixtureV4 | None = None,
     ) -> None:
         super().__init__()
         self.attention_norm = nn.LayerNorm(width)
@@ -168,7 +213,7 @@ class _SemanticBlockBaseV4(nn.Module):
             nn.GELU(),
             nn.Linear(ffn_width, width),
         )
-        self.experts = EndpointSemanticMixtureV4(
+        self.experts = shared_experts or EndpointSemanticMixtureV4(
             width=width,
             bottleneck_width=expert_bottleneck_width,
             expert_count=expert_count,
@@ -458,6 +503,14 @@ class XEditCriticV4(nn.Module):
             nn.GELU(),
             nn.LayerNorm(model_width),
         )
+        # The protocol declares four semantic experts, not four new experts per
+        # block.  Every block reuses this one outcome-free top-2 expert bank.
+        shared_experts = EndpointSemanticMixtureV4(
+            width=model_width,
+            bottleneck_width=expert_bottleneck_width,
+            expert_count=expert_count,
+            semantic_routing=mechanism_mode != "NO_MOE",
+        )
         common_block = {
             "width": model_width,
             "heads": heads,
@@ -466,6 +519,7 @@ class XEditCriticV4(nn.Module):
             "expert_count": expert_count,
             "expert_bottleneck_width": expert_bottleneck_width,
             "semantic_routing": mechanism_mode != "NO_MOE",
+            "shared_experts": shared_experts,
         }
         blocks: list[nn.Module] = []
         for block_index in range(block_count):
@@ -759,14 +813,23 @@ def require_v4_trainable_parameter_range(
     """Hard-fail a capacity drift before optimizer construction."""
 
     count = model.trainable_parameter_count
-    _require(minimum <= count <= maximum, "Critic V4 trainable parameter count is outside 120–180M")
-    _require(design_target_minimum <= count <= design_target_maximum, "Critic V4 trainable parameter count missed the frozen 165–175M design target")
+    module_counts = model.parameter_counts_by_module()
+    _require(
+        minimum <= count <= maximum,
+        f"Critic V4 trainable parameter count {count} is outside 120–180M; "
+        f"module_counts={module_counts}",
+    )
+    _require(
+        design_target_minimum <= count <= design_target_maximum,
+        f"Critic V4 trainable parameter count {count} missed the frozen "
+        f"165–175M design target; module_counts={module_counts}",
+    )
     return {
         "trainable_parameter_count": count,
         "minimum": minimum,
         "maximum": maximum,
         "design_target_minimum": design_target_minimum,
         "design_target_maximum": design_target_maximum,
-        "module_counts": model.parameter_counts_by_module(),
+        "module_counts": module_counts,
         "passed": True,
     }

@@ -73,7 +73,7 @@ def _preflight() -> dict:
         "status": "XEDITCRITIC_V4_PREFLIGHT_PASS",
         "passed": True,
         "selected_physical_batch": 8,
-        "trainable_parameter_count": 173_692_549,
+        "trainable_parameter_count": 170_481_733,
         "selected_peak_allocated_gib": 29.0,
         "bottom_six_cache_identity": {
             "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
