@@ -3799,3 +3799,20 @@ Atomic-publication修复HEAD `b8d4e0fdd15bbc1c3f7afbe1a6404bba2bcb9304`完成A10
 SetFlow 137/137、V3.3.2 96/96后，正式launcher在GPU0空闲38,648 MiB时启动attempt 4。
 共享scheduler PID `1604346`，仍为Critic→SetFlow串行；attempt 1–3不覆盖，protected reads为0，screen未授权。
 审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt4_launch_v1.json`。
+
+### Attempt 4 formal terminal adjudication（2026-08-25）
+
+Attempt 4双作业自然terminal且formal output均已发布。SetFlow再次PASS：100,099,998 full参数、98,628,717
+single-mode参数、BF16 batch 32、peak 1.5445 GiB、optimizer state物化、无CPU fallback。Critic缓存/online
+alignment PASS，正式dataset-bound trainable count为170,481,957（位于165–175M设计目标），batch 4/8/16/32
+实测峰值分别为2.8230/2.8229/3.8728/6.6399 GiB；没有OOM、没有人工padding、没有CPU fallback。
+
+由于冻结协议要求batch 32仍低于20 GiB时必须暂停并报告，Critic正式状态为
+`XEDITCRITIC_V4_PREFLIGHT_PAUSE`，selection error为`largest eligible Critic V4 batch remains below 20 GiB`。
+这不是Validation Spearman或scientific screen NO-GO，因为target/Validation metric未读取；但双preflight未PASS，
+因此screen不授权。既不能用无意义tensor伪造显存，也不能自行改变架构或20–35 GiB gate。下一步须由用户前瞻
+讨论并冻结；Development TEST/new Evaluation reads仍为0。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_attempt4_terminal_pause_v1.json`。
+
+此前170,481,733为不绑定实际endpoint/study vocabulary的静态构造计数；正式数据绑定后准确值为
+170,481,957，差224个参数，不影响冻结120–180M范围或165–175M设计目标。

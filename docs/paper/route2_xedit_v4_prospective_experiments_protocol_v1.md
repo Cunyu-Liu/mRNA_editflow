@@ -344,3 +344,14 @@ module used by its final atomic rename. The unpublished partial summary was not
 read. SetFlow independently passed again. Adding the missing import and a module
 binding regression changes no scientific method, parameter, training setting or
 gate; attempt 4 therefore remains a technical preflight retry on new paths.
+
+Attempt 4 produced the first clean formal Critic preflight summary. The
+dataset-bound model contained 170,481,957 trainable parameters and passed the
+cache/online alignment audit, but measured only 6.640 GiB peak allocated memory
+at physical batch 32 (2.823, 2.823 and 3.873 GiB at batches 4, 8 and 16).
+According to the preregistered rule that batch 32 below 20 GiB must pause rather
+than manufacture memory use, the Critic terminal state is
+`XEDITCRITIC_V4_PREFLIGHT_PAUSE`. SetFlow passed its formal preflight. No target,
+Validation performance, Development TEST outcome or new Evaluation outcome was
+read. Consequently the V4 screen is not authorized; changing the memory floor
+or architecture requires a new prospective decision.

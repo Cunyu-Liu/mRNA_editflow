@@ -4562,3 +4562,8 @@ Attempt 3终态证明BF16 router修复已通过原故障点并运行到最终sum
 
 A100 exact-HEAD tests全部PASS后，attempt 4于2026-08-25 19:42:50后在GPU0空闲38,648 MiB时启动；
 共享scheduler PID `1604346`，Critic→SetFlow串行，首次检查不早于约5分钟。
+
+Attempt 4 formal terminal：SetFlow PASS；Critic参数170,481,957且cache/online alignment PASS，但batch
+4/8/16/32的`max_memory_allocated`仅2.8230/2.8229/3.8728/6.6399 GiB。冻结20 GiB下限未满足，
+故正式状态`XEDITCRITIC_V4_PREFLIGHT_PAUSE`，screen不得启动。没有Validation/TEST/Evaluation read；不得通过
+无意义tensor、CPU fallback或隐式改模伪造20 GiB。所有active job已terminal，下一步等待前瞻协议决策。

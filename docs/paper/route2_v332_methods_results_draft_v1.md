@@ -1127,3 +1127,11 @@ lacked its `os` import; its unpublished partial output was not inspected.
 SetFlow passed the formal preflight again. This additional implementation repair
 still provides no model-performance evidence, so manuscript claims remain
 unchanged pending a clean preflight and the preregistered screens.
+
+Attempt 4 completed without an implementation error. XEditCritic V4 contained
+170,481,957 trainable parameters and passed cache/online alignment, but its
+largest allowed physical batch allocated only 6.640 GiB, below the prospectively
+frozen 20-GiB floor. It was therefore paused before training. XEditSetFlow V4
+passed its preflight. Because no V4 screen was authorized and no performance
+metric was read, these results provide no predictor or generator advantage and
+the manuscript remains not ready for submission.

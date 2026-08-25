@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt4_terminal_pause.v1",
+  "status": "CRITIC_PREFLIGHT_PAUSE_SETFLOW_PREFLIGHT_PASS",
+  "terminal_read_local_time": "2026-08-25T19:50:34+08:00",
+  "terminal_remote_time_reference": "2026-08-25T19:52:40.048194+08:00",
+  "runner_git_head": "b8d4e0fdd15bbc1c3f7afbe1a6404bba2bcb9304",
+  "critic": {
+    "status": "XEDITCRITIC_V4_PREFLIGHT_PAUSE",
+    "passed": false,
+    "trainable_parameter_count": 170481957,
+    "parameter_range_passed": true,
+    "physical_gpu_index": 0,
+    "cuda_device_name": "NVIDIA A100-PCIE-40GB",
+    "precision": "BF16",
+    "activation_checkpointing": true,
+    "optimizer_state_materialized": true,
+    "physical_batch_peak_allocated_gib": {
+      "4": 2.822969913482666,
+      "8": 2.822877883911133,
+      "16": 3.8727550506591797,
+      "32": 6.639948844909668
+    },
+    "selected_physical_batch": null,
+    "selected_peak_allocated_gib": null,
+    "selection_error": "largest eligible Critic V4 batch remains below 20 GiB",
+    "minimum_peak_allocated_gib": 20.0,
+    "maximum_peak_allocated_gib": 35.0,
+    "cache_online_alignment_passed": true,
+    "cache_online_maximum_absolute_difference": 0.01822352409362793,
+    "cache_online_mean_absolute_difference": 0.00008606652409071103,
+    "artificial_padding_or_unused_tensor": false,
+    "cpu_fallback_used": false,
+    "target_value_accessed": false,
+    "validation_metric_read": false,
+    "scientific_screen_adjudicated": false
+  },
+  "setflow": {
+    "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+    "passed": true,
+    "full_trainable_parameter_count": 100099998,
+    "single_mode_trainable_parameter_count": 98628717,
+    "physical_and_effective_batch_size": 32,
+    "precision": "BF16",
+    "physical_gpu_index": 0,
+    "peak_memory_allocated_gib": 1.5445160865783691,
+    "optimizer_state_materialized": true,
+    "cpu_fallback_used": false,
+    "validation_metric_read": false
+  },
+  "adjudication": {
+    "preflight_pair_passed": false,
+    "screen_authorized": false,
+    "reason": "FROZEN_CRITIC_IN_PROCESS_MEMORY_FLOOR_NOT_MET",
+    "meaningless_tensor_padding_used": false,
+    "implicit_model_resizing_used": false,
+    "cpu_fallback_used": false,
+    "next_action_requires_prospective_user_discussion": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "active_performance_curve_read": false,
+  "submission_ready": false
+}
