@@ -12,6 +12,10 @@ def test_preflight_launcher_uses_current_head_formal_job_runner() -> None:
     assert launcher.PREFLIGHT_JOB_RUNNER == (
         launcher.WORKTREE / "scripts/route_a_v3/run_route2_xedit_v4_preflight_job.py"
     )
+    assert launcher.PREFLIGHT_SEQUENCE_RUNNER == (
+        launcher.WORKTREE
+        / "scripts/route_a_v3/run_route2_xedit_v4_preflight_sequence.py"
+    )
 
 
 def test_preflight_components_consume_exact_cache_terminals() -> None:
@@ -138,3 +142,40 @@ def test_preflight_gpu_availability_accepts_exact_thresholds() -> None:
         critic_minimum_free_mib=38000,
         setflow_minimum_free_mib=20000,
     )
+
+
+def test_preflight_gpu_layout_distinguishes_concurrent_and_sequential_modes() -> None:
+    launcher.require_preflight_gpu_layout(
+        critic_gpu=0, setflow_gpu=3, sequential_single_gpu=False
+    )
+    launcher.require_preflight_gpu_layout(
+        critic_gpu=0, setflow_gpu=0, sequential_single_gpu=True
+    )
+    with pytest.raises(Exception, match="distinct"):
+        launcher.require_preflight_gpu_layout(
+            critic_gpu=0, setflow_gpu=0, sequential_single_gpu=False
+        )
+    with pytest.raises(Exception, match="shared"):
+        launcher.require_preflight_gpu_layout(
+            critic_gpu=0, setflow_gpu=3, sequential_single_gpu=True
+        )
+
+
+def test_preflight_job_command_binds_component_gpu_and_terminal_paths(
+    tmp_path: Path,
+) -> None:
+    paths = launcher.component_paths()["critic"]
+    paths["gpu"] = 0
+    command = launcher.preflight_job_command(
+        "critic",
+        paths,
+        authorization=tmp_path / "authorization.json",
+        runtime=tmp_path / "runtime.json",
+        log=tmp_path / "preflight.log",
+        current_head="a" * 40,
+    )
+    assert command[0] == str(launcher.PYTHON)
+    assert command[1] == str(launcher.PREFLIGHT_JOB_RUNNER)
+    assert command[command.index("--component") + 1] == "critic"
+    assert command[command.index("--physical-gpu-index") + 1] == "0"
+    assert command[command.index("--git-head") + 1] == "a" * 40

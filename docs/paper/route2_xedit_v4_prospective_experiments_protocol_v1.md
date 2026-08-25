@@ -283,3 +283,14 @@ poll. This is execution-diagnostic evidence only: no preflight, optimizer,
 Validation metric, Development TEST outcome, or new Evaluation outcome was
 produced, and the model-advantage and publication-readiness claims remain
 unestablished.
+
+The next complete allowed-device snapshot showed that GPU0 alone had crossed
+the Critic floor, while no second GPU0–5 device met the SetFlow floor. Because
+the preregistration requires the two preflights to finish but does not require
+them to overlap in time, a versioned single-GPU scheduler now runs the already
+authorized Critic preflight to terminal and then the independently authorized
+SetFlow preflight on GPU0. The original distinct-GPU concurrent mode remains
+available. This scheduling change neither co-resides the two models nor alters
+their capacity, batch candidates, losses, data, seeds, memory floors, or gates.
+It has not yet executed and therefore contributes no performance or
+publication-readiness evidence.

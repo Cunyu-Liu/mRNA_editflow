@@ -3698,3 +3698,19 @@ focused=7/7、V3.3.2=96/96、compile/diff-check PASS。本机完整Critic cohort
 `zip(strict=True)`版本不兼容，不能冒充生产回归；需由A100正式Python3.10在精确新HEAD重跑Critic/SetFlow/V3.3.2
 三套cohort后才可再次启动preflight。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_gpu_availability_diagnostic_v1.json`。
+
+## V4 GPU0 sequential preflight execution mode（2026-08-25）
+
+availability诊断提交`92a88dc`已在A100 Python3.10通过Critic 180/180、SetFlow 132/132、V3.3.2 96/96。
+18:04合规窗口的单次快照为GPU0–5空闲39,536/8,775/7,805/18,972/8,728/320 MiB：用户指定的GPU0已满足
+Critic 38,000 MiB，但不存在第二张满足SetFlow 20,000 MiB的允许卡。入口在授权前仅因SetFlow GPU3不足而拒绝，
+preflight/optimizer/protected read仍为0。
+
+为避免无谓闲置已合格GPU0，新增显式`SEQUENTIAL_SINGLE_GPU`模式。它仍一次性原子建立Critic/SetFlow两份正式
+authorization，但用版本化scheduler在同一GPU0上固定先Critic、后SetFlow；两个模型绝不并发占卡，各自继续由原
+job runner发布独立output XOR failure/runtime/log。第一组件技术failure不阻止第二组件形成终态，scheduler自身异常
+另有原子failure。原并发双GPU模式保持不变；38,000/20,000 MiB、参数量、batch、数据、seed、loss与gate均不变。
+
+focused=21/21、V3.3.2=96/96、compile/shell/diff-check PASS；新runner已加入A100 Critic与SetFlow exact-HEAD
+cohort。提交推送和A100新HEAD三套测试完成前不启动；下一训练可用性窗口不早于本地18:34:12。审计：
+`audits/route_a_v3_route2_xedit_v4_gpu0_sequential_preflight_mode_v1.json`。

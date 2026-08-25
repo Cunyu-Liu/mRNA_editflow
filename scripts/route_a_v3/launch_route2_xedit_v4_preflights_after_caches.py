@@ -25,6 +25,9 @@ C3_REFERENCE = (
 PREFLIGHT_JOB_RUNNER = (
     WORKTREE / "scripts/route_a_v3/run_route2_xedit_v4_preflight_job.py"
 )
+PREFLIGHT_SEQUENCE_RUNNER = (
+    WORKTREE / "scripts/route_a_v3/run_route2_xedit_v4_preflight_sequence.py"
+)
 
 
 class XEditV4PreflightLaunchError(RuntimeError):
@@ -92,6 +95,20 @@ def require_preflight_gpu_availability(
             "; ".join(failures)
             + f"; allowed_gpu_free_memory_mib={json.dumps(snapshot, sort_keys=True)}"
         )
+
+
+def require_preflight_gpu_layout(
+    *, critic_gpu: int, setflow_gpu: int, sequential_single_gpu: bool
+) -> None:
+    require(critic_gpu in range(6), "Critic GPU is outside physical GPU 0–5")
+    require(setflow_gpu in range(6), "SetFlow GPU is outside physical GPU 0–5")
+    if sequential_single_gpu:
+        require(
+            critic_gpu == setflow_gpu,
+            "sequential single-GPU preflights require one shared GPU",
+        )
+    else:
+        require(critic_gpu != setflow_gpu, "concurrent preflights require distinct GPUs")
 
 
 def require_summary(path: Path, *, expected_head: str, component: str) -> None:
@@ -164,12 +181,50 @@ def component_paths() -> dict[str, dict[str, Path | int]]:
     }
 
 
+def preflight_job_command(
+    component: str,
+    paths: dict[str, Path | int],
+    *,
+    authorization: Path,
+    runtime: Path,
+    log: Path,
+    current_head: str,
+) -> list[str]:
+    return [
+        str(PYTHON),
+        str(PREFLIGHT_JOB_RUNNER),
+        "--component",
+        component,
+        "--python",
+        str(PYTHON),
+        "--preflight",
+        str(paths["preflight"]),
+        "--config",
+        str(paths["config"]),
+        "--authorization",
+        str(authorization),
+        "--physical-gpu-index",
+        str(paths["gpu"]),
+        "--output",
+        str(paths["output"]),
+        "--failure",
+        str(paths["failure"]),
+        "--runtime",
+        str(runtime),
+        "--log",
+        str(log),
+        "--git-head",
+        current_head,
+    ]
+
+
 def run(
     current_head: str,
     experiment_head: str,
     *,
     critic_gpu: int,
     setflow_gpu: int,
+    sequential_single_gpu: bool = False,
     critic_minimum_free_mib: int = 38000,
     setflow_minimum_free_mib: int = 20000,
 ) -> dict[str, object]:
@@ -183,9 +238,16 @@ def run(
     )
     require(PYTHON.is_file(), "formal Python is absent")
     require(PREFLIGHT_JOB_RUNNER.is_file(), "current-HEAD preflight job runner is absent")
-    require(critic_gpu in range(6), "Critic GPU is outside physical GPU 0–5")
-    require(setflow_gpu in range(6), "SetFlow GPU is outside physical GPU 0–5")
-    require(critic_gpu != setflow_gpu, "concurrent preflights require distinct GPUs")
+    if sequential_single_gpu:
+        require(
+            PREFLIGHT_SEQUENCE_RUNNER.is_file(),
+            "current-HEAD sequential preflight runner is absent",
+        )
+    require_preflight_gpu_layout(
+        critic_gpu=critic_gpu,
+        setflow_gpu=setflow_gpu,
+        sequential_single_gpu=sequential_single_gpu,
+    )
     require(
         command(["git", "rev-parse", "HEAD"]).stdout.strip() == current_head,
         "A100 worktree is not at expected current HEAD",
@@ -296,36 +358,62 @@ def run(
     launches: dict[str, object] = {}
     runtime_root.mkdir(parents=True)
     log_root.mkdir(parents=True)
-    for component, paths in components.items():
-        authorization = authorization_root / f"{component}.json"
-        runtime = runtime_root / f"{component}.runtime.json"
-        log = log_root / f"{component}.log"
-        wrapper_log = log_root / f"{component}.wrapper.log"
-        stream = wrapper_log.open("w", encoding="utf-8")
+    if sequential_single_gpu:
+        sequence_jobs: list[dict[str, object]] = []
+        for order, (component, paths) in enumerate(components.items()):
+            authorization = authorization_root / f"{component}.json"
+            runtime = runtime_root / f"{component}.runtime.json"
+            log = log_root / f"{component}.log"
+            wrapper_log = log_root / f"{component}.wrapper.log"
+            gpu = int(paths["gpu"])
+            sequence_jobs.append(
+                {
+                    "component": component,
+                    "order": order,
+                    "physical_gpu_index": gpu,
+                    "command": preflight_job_command(
+                        component,
+                        paths,
+                        authorization=authorization,
+                        runtime=runtime,
+                        log=log,
+                        current_head=current_head,
+                    ),
+                    "output": str(paths["output"]),
+                    "failure": str(paths["failure"]),
+                    "runtime": str(runtime),
+                    "wrapper_log": str(wrapper_log),
+                }
+            )
+        sequence_config = runtime_root / "sequence_config.json"
+        sequence_runtime = runtime_root / "sequence.runtime.json"
+        sequence_failure = runtime_root / "sequence.failure.json"
+        sequence_wrapper_log = log_root / "sequence.wrapper.log"
+        write_atomic(
+            sequence_config,
+            {
+                "schema_version": "route_a_v3_route2_xedit_v4_preflight_sequence_config.v1",
+                "status": "V4_PREFLIGHT_SEQUENCE_PREPARED",
+                "git_head": current_head,
+                "experiment_head": experiment_head,
+                "physical_gpu_index": critic_gpu,
+                "component_order": ["critic", "setflow"],
+                "jobs": sequence_jobs,
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
+        )
+        stream = sequence_wrapper_log.open("w", encoding="utf-8")
         process = subprocess.Popen(
             [
                 str(PYTHON),
-                str(PREFLIGHT_JOB_RUNNER),
-                "--component",
-                component,
-                "--python",
-                str(PYTHON),
-                "--preflight",
-                str(paths["preflight"]),
+                str(PREFLIGHT_SEQUENCE_RUNNER),
                 "--config",
-                str(paths["config"]),
-                "--authorization",
-                str(authorization),
-                "--physical-gpu-index",
-                str(paths["gpu"]),
-                "--output",
-                str(paths["output"]),
-                "--failure",
-                str(paths["failure"]),
+                str(sequence_config),
                 "--runtime",
-                str(runtime),
-                "--log",
-                str(log),
+                str(sequence_runtime),
+                "--failure",
+                str(sequence_failure),
                 "--git-head",
                 current_head,
             ],
@@ -335,18 +423,66 @@ def run(
             start_new_session=True,
         )
         stream.close()
-        gpu = int(paths["gpu"])
-        launches[component] = {
-            "wrapper_pid": process.pid,
-            "physical_gpu_index": gpu,
-            "free_memory_mib_before_launch": free_memory[gpu],
-            "authorization": str(authorization),
-            "runtime": str(runtime),
-            "output": str(paths["output"]),
-            "failure": str(paths["failure"]),
-            "preflight_log": str(log),
-            "wrapper_log": str(wrapper_log),
+        for job in sequence_jobs:
+            component = str(job["component"])
+            launches[component] = {
+                "wrapper_pid": process.pid,
+                "shared_sequence_scheduler": True,
+                "launch_order": int(job["order"]),
+                "physical_gpu_index": critic_gpu,
+                "free_memory_mib_before_launch": free_memory[critic_gpu],
+                "authorization": str(authorization_root / f"{component}.json"),
+                "runtime": str(job["runtime"]),
+                "output": str(job["output"]),
+                "failure": str(job["failure"]),
+                "preflight_log": str(log_root / f"{component}.log"),
+                "wrapper_log": str(job["wrapper_log"]),
+            }
+        sequence = {
+            "scheduler_pid": process.pid,
+            "config": str(sequence_config),
+            "runtime": str(sequence_runtime),
+            "failure": str(sequence_failure),
+            "wrapper_log": str(sequence_wrapper_log),
         }
+        launch_mode = "SEQUENTIAL_SINGLE_GPU"
+    else:
+        sequence = None
+        launch_mode = "CONCURRENT_DISTINCT_GPUS"
+        for component, paths in components.items():
+            authorization = authorization_root / f"{component}.json"
+            runtime = runtime_root / f"{component}.runtime.json"
+            log = log_root / f"{component}.log"
+            wrapper_log = log_root / f"{component}.wrapper.log"
+            stream = wrapper_log.open("w", encoding="utf-8")
+            process = subprocess.Popen(
+                preflight_job_command(
+                    component,
+                    paths,
+                    authorization=authorization,
+                    runtime=runtime,
+                    log=log,
+                    current_head=current_head,
+                ),
+                cwd=WORKTREE,
+                stdout=stream,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+            stream.close()
+            gpu = int(paths["gpu"])
+            launches[component] = {
+                "wrapper_pid": process.pid,
+                "shared_sequence_scheduler": False,
+                "physical_gpu_index": gpu,
+                "free_memory_mib_before_launch": free_memory[gpu],
+                "authorization": str(authorization),
+                "runtime": str(runtime),
+                "output": str(paths["output"]),
+                "failure": str(paths["failure"]),
+                "preflight_log": str(log),
+                "wrapper_log": str(wrapper_log),
+            }
 
     manifest = runtime_root / "launch_manifest.json"
     write_atomic(
@@ -356,6 +492,8 @@ def run(
             "status": "V4_PREFLIGHT_JOBS_LAUNCHED",
             "git_head": current_head,
             "experiment_head": experiment_head,
+            "launch_mode": launch_mode,
+            "sequence": sequence,
             "c3_reference": str(C3_REFERENCE),
             "a100_audit": str(a100_audit),
             "gpu_free_memory_mib_before_launch": free_memory,
@@ -373,6 +511,7 @@ def main() -> None:
     parser.add_argument("--experiment-head", required=True)
     parser.add_argument("--critic-gpu", type=int, required=True)
     parser.add_argument("--setflow-gpu", type=int, required=True)
+    parser.add_argument("--sequential-single-gpu", action="store_true")
     parser.add_argument("--critic-minimum-free-mib", type=int, default=38000)
     parser.add_argument("--setflow-minimum-free-mib", type=int, default=20000)
     arguments = parser.parse_args()
@@ -383,6 +522,7 @@ def main() -> None:
                 arguments.experiment_head,
                 critic_gpu=arguments.critic_gpu,
                 setflow_gpu=arguments.setflow_gpu,
+                sequential_single_gpu=arguments.sequential_single_gpu,
                 critic_minimum_free_mib=arguments.critic_minimum_free_mib,
                 setflow_minimum_free_mib=arguments.setflow_minimum_free_mib,
             ),

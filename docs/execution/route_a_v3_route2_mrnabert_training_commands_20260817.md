@@ -4504,3 +4504,20 @@ GPU0未达到38,000 MiB而拒绝，故没有optimizer或metric attempt。入口�
 A100 Python3.10通过的生产实现。提交推送后，下一远端动作必须先同步精确新HEAD并在A100重跑Critic、SetFlow和
 96项V3.3.2；未通过前不允许preflight。protected read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_gpu_availability_diagnostic_v1.json`。
+
+## GPU0 sequential Critic→SetFlow preflight mode（2026-08-25）
+
+`92a88dc`同步后A100 exact-HEAD测试为Critic 180/180、SetFlow 132/132、V3.3.2 96/96。18:04单次正式
+availability判定报告GPU0为39,536 MiB，已经满足Critic；GPU3为18,972 MiB，且GPU1/2/4/5更低，因此没有第二张
+允许卡满足SetFlow 20,000 MiB。该拒绝仍发生在authorization/config/runtime前，protected read和optimizer均为0。
+
+新增`--sequential-single-gpu`正式模式与版本化sequence runner。外部helper仅在
+`V4_PREFLIGHT_LAUNCH_MODE=sequential_single_gpu`且Critic/SetFlow GPU索引相同时传入该模式；默认仍要求两张不同卡
+并发。顺序模式一次原子授权双组件，在GPU0固定执行Critic终态→SetFlow终态，不同时驻留两个模型；组件级summary/
+failure/runtime保持原schema与路径，scheduler也有独立runtime/failure。任一组件failure不替换、不重跑，也不阻止
+另一个独立preflight完成。
+
+本地focused=21/21、V3.3.2=96/96、compile、shell syntax、diff-check PASS。下一步为单一commit/push、A100精确新
+HEAD Critic/SetFlow/V3.3.2测试；只有全部PASS且本地时间越过18:34:12，才以GPU0/GPU0启动顺序预检。所有科学
+阈值和protected outcome边界不变。审计：
+`audits/route_a_v3_route2_xedit_v4_gpu0_sequential_preflight_mode_v1.json`。

@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_gpu0_sequential_preflight_mode.v1",
+  "status": "V4_GPU0_SEQUENTIAL_PREFLIGHT_MODE_IMPLEMENTED_NOT_LAUNCHED",
+  "date": "2026-08-25",
+  "triggering_allowed_gpu_snapshot_mib": {
+    "0": 39536,
+    "1": 8775,
+    "2": 7805,
+    "3": 18972,
+    "4": 8728,
+    "5": 320
+  },
+  "decision": {
+    "user_selected_critic_gpu": 0,
+    "critic_gpu_meets_frozen_floor": true,
+    "second_allowed_setflow_gpu_exists": false,
+    "launch_mode": "SEQUENTIAL_SINGLE_GPU",
+    "component_order": ["critic", "setflow"],
+    "shared_physical_gpu": 0,
+    "component_models_co_resident": false,
+    "concurrent_distinct_gpu_mode_preserved": true
+  },
+  "terminal_semantics": {
+    "dual_component_authorizations_are_staged_atomically": true,
+    "component_output_xor_failure_is_preserved": true,
+    "component_runtime_and_logs_are_independent": true,
+    "first_component_failure_stops_second_component": false,
+    "sequence_scheduler_runtime_and_failure_are_atomic": true,
+    "automatic_retry": false
+  },
+  "unchanged": {
+    "critic_minimum_free_mib": 38000,
+    "setflow_minimum_free_mib": 20000,
+    "critic_physical_batch_candidates": [4, 8, 16, 32],
+    "critic_peak_allocated_gib_range": [20, 35],
+    "architecture_data_seed_loss_budget_and_gates": true,
+    "gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cpu_fallback": false
+  },
+  "verification": {
+    "local_focused": "21/21 PASS",
+    "local_exact_v3_3_2": "96/96 PASS",
+    "py_compile": "PASS",
+    "shell_syntax": "PASS",
+    "git_diff_check": "PASS",
+    "new_runner_in_a100_critic_and_setflow_cohorts": true,
+    "a100_new_head_tests": "REQUIRED_BEFORE_LAUNCH"
+  },
+  "execution_state": {
+    "authorization_created": false,
+    "config_created": false,
+    "runtime_created": false,
+    "optimizer_attempt_count": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "next_remote_training_check_not_before_local": "2026-08-25T18:34:12+08:00"
+  },
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}
