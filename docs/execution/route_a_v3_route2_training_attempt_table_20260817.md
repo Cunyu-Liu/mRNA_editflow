@@ -3918,3 +3918,16 @@ curve或metric，因此不能在cohort未全部terminal时判断共同技术根�
 不修改、不重启；本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。下一检查严格不早于
 本地22:13:51。Development TEST/new Evaluation reads保持0。审计：
 `audits/route_a_v3_route2_xedit_v4_screen_first_health_20260825_211351.json`。
+
+### V4 screen second hourly health window（2026-08-25 22:14:29 +08:00）
+
+远端22:16:52（校准偏移+143秒）时，scheduler PID `2218802`运行1:06:10且存活。SetFlow full/single-mode
+仍分别在GPU1/GPU2存活并注册CUDA，显存快照为2,910/2,774MiB。Critic NO-CROSS与NO-MOE也已转为failure；
+因此八个冻结Critic arm现在全部只有failure artifact、没有summary，Critic active/pending=0。
+
+本窗口仍只读artifact存在性、PID与CUDA，没有读取八份failure payload或任何log/metric。因selectable V4-FULL、
+matched C0和全部controls/ablations都不是summary terminal，Critic性能screen不可能PASS；但正式
+`XEDITCRITIC_V4_SCREEN_NO_GO`只能等十项package全部terminal后由冻结adjudicator原子发布。两个SetFlow arm仍有
+独立完成与严格裁决机会，继续自然运行，不停止、不修改、不重启。下一窗口不早于本地23:14:29；Development
+TEST/new Evaluation reads保持0。本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xedit_v4_screen_second_health_20260825_221429.json`。

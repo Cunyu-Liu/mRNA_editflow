@@ -4623,3 +4623,7 @@ screen_package_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf5
 首次窗口实际在本地21:13:51执行：scheduler存活，SetFlow两项与Critic NO-CROSS/NO-MOE存活；Critic其余六项
 已有failure artifact。failure payload与全部active log/metric均未读取，故不提前诊断或裁决；下一窗口为
 `>=2026-08-25 22:13:51 +08:00`。不得在该窗口前SSH补查。
+
+第二窗口本地22:14:29确认八个Critic arm均已有failure artifact且无summary，Critic active=0；SetFlow full与
+single-mode仍在GPU1/GPU2运行。failure内容、log和metric仍未读。Critic formal NO-GO须等完整十项terminal后由
+冻结post-screen链发布；SetFlow不受Critic failure提前停止。下一窗口`>=2026-08-25 23:14:29 +08:00`。

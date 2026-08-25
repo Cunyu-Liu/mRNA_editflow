@@ -1195,3 +1195,11 @@ read at that point. This existence-only observation is therefore neither a
 scientific screen verdict nor model-performance evidence; interpretation is
 deferred until the complete ten-run package reaches terminal state and the
 frozen adjudication chain runs.
+
+At the second hourly health window, all eight Critic arms had failure artifacts
+and none had a summary artifact, while both SetFlow arms remained alive. This
+existence-only state means the Critic V4 screen cannot yield a performance PASS,
+but it still supplies no Spearman result or technical root cause because the
+failure payloads remained unread. The preregistered terminal NO-GO and its
+failure provenance will be published only after the independent SetFlow arms
+finish and the complete screen package is adjudicated.

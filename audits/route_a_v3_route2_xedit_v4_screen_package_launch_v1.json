@@ -51,6 +51,16 @@
     "failure_payload_read": false,
     "next_check_not_before_local": "2026-08-25T22:13:51+08:00"
   },
+  "second_check": {
+    "local_time": "2026-08-25T22:14:29+08:00",
+    "remote_time": "2026-08-25T22:16:52+08:00",
+    "scheduler_alive": true,
+    "critic_failure_artifact_count": 8,
+    "critic_summary_artifact_count": 0,
+    "setflow_active_or_pending_count": 2,
+    "failure_payload_read": false,
+    "next_check_not_before_local": "2026-08-25T23:14:29+08:00"
+  },
   "development_test_outcome_reads": 0,
   "new_final_evaluation_outcome_reads": 0,
   "formal_tag_or_release_created": false,
