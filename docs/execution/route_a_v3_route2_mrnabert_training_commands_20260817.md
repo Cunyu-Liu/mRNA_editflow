@@ -4360,3 +4360,11 @@ focused=43/43、A100同步器当前同定义V4=218/218、V3.3.2=96/96、compile/
 `0.10426561121126687`为V4 C3 reference。所有C3后继均关闭，Development TEST/new Evaluation read=0。
 focused=9/9、V3.3.2=96/96。终态记录提交推送后，才允许A100 exact-current-HEAD同步。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_option_a_terminal_read_once_20260825.json`。
+
+## A100 sync reused-PID barrier fix（2026-08-25）
+
+read-once后的首次同步尚未执行fast-forward即被历史PID存在性检查拒绝。四个旧PID已被无关进程复用，实际C3 trainer
+为0。同步器现只在`PID + train_route2_xeditcritic_v3_c3_online.py + exact --run-id`全部匹配时阻塞；这修复运行
+身份判断，不放宽五项terminal、read-once、clean worktree或exact-HEAD test要求。审计：
+`audits/route_a_v3_route2_a100_sync_old_pid_identity_fix_v1.json`。focused=10/10、V3.3.2=96/96、compile PASS；
+首次focused夹具scope错误已修正并重跑通过。

@@ -55,6 +55,25 @@ def test_terminal_package_requires_exactly_one_terminal_artifact_per_run(
     assert sync.exact_terminal_package() is False
 
 
+def test_old_process_barrier_requires_pid_command_and_run_identity() -> None:
+    trainer = (
+        "/work/scripts/route_a_v3/"
+        "train_route2_xeditcritic_v3_c3_online.py"
+    )
+    assert sync.command_is_registered_old_c3(
+        ["python", trainer, "--config", "screen.json", "--run-id", "c3"],
+        run_id="c3",
+    )
+    assert not sync.command_is_registered_old_c3(
+        ["python", trainer, "--run-id", "c3_edit_metadata_only"],
+        run_id="c3",
+    )
+    assert not sync.command_is_registered_old_c3(
+        ["python", "unrelated.py", "--run-id", "c3"],
+        run_id="c3",
+    )
+
+
 def test_test_file_selection_deduplicates_overlapping_patterns(
     tmp_path: Path, monkeypatch,
 ) -> None:

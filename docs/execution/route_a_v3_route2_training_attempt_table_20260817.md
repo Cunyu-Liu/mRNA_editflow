@@ -3498,3 +3498,11 @@ summary/failure；因此实际发送信号数为0，不能把进程结束归因�
 `0.10426561121126687`。C3 confirmation、Development TEST、refit/LOSO与guidance均不授权；protected read为0。
 focused=9/9、V3.3.2=96/96。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_option_a_terminal_read_once_20260825.json`。
+
+## A100 post-C3 sync PID identity correction（2026-08-25）
+
+首次post-C3同步在fast-forward前被旧barrier拒绝，未修改远端工作树。原因是原实现只检查五个历史PID是否存在，
+而其中四个PID已被系统复用；精确`/proc`解析确认不存在C3 trainer。barrier现改为同时匹配登记PID、C3 trainer
+入口和精确`--run-id`，因此真正旧作业仍会阻止同步，无关PID复用不再形成假阳性。该修复不读取metric或protected
+outcome，也不改变任何实验。focused=10/10、V3.3.2=96/96、compile PASS；首次focused夹具行位置错误已修正后
+重跑通过。审计：`audits/route_a_v3_route2_a100_sync_old_pid_identity_fix_v1.json`。

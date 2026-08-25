@@ -1,0 +1,16 @@
+{
+  "schema_version": "route_a_v3_route2_a100_sync_old_pid_identity_fix_audit.v1",
+  "status": "IMPLEMENTED_NOT_YET_EXECUTED",
+  "observed_failure": "PID_EXISTENCE_ONLY_FALSELY_CLASSIFIED_REUSED_PIDS_AS_OLD_C3_TRAINERS",
+  "old_worktree_sync_performed_before_fix": false,
+  "corrected_barrier": "PID_PLUS_C3_TRAINER_ENTRYPOINT_PLUS_EXACT_RUN_ID",
+  "true_old_c3_process_would_still_block_sync": true,
+  "tests": {
+    "focused_passed": 10,
+    "v3_3_2_passed": 96,
+    "compile_passed": true,
+    "initial_focused_fixture_scope_error_corrected": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

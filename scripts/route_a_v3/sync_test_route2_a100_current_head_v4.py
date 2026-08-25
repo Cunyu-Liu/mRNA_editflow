@@ -29,7 +29,14 @@ RUN_IDS = (
     "c3_no_candidate_sequence",
     "c3_candidate_bundle_permutation",
 )
-OLD_PIDS = (2443206, 2443207, 2443208, 2529140, 2592082)
+OLD_LAUNCH_PROCESSES = (
+    (2443206, "c3"),
+    (2443207, "c3_source_only"),
+    (2443208, "c3_edit_metadata_only"),
+    (2529140, "c3_no_candidate_sequence"),
+    (2592082, "c3_candidate_bundle_permutation"),
+)
+OLD_TRAINER_ENTRYPOINT = "train_route2_xeditcritic_v3_c3_online.py"
 CRITIC_TEST_PATTERNS = (
     "tests/route_a_v3/*xeditcritic_v4*.py",
     "tests/route_a_v3/test_adjudicate_route2_xeditcritic_v3_c3_v4_reference.py",
@@ -101,14 +108,26 @@ def git(*arguments: str) -> str:
     return command(["git", *arguments]).stdout.strip()
 
 
-def process_active(pid: int) -> bool:
-    result = subprocess.run(
-        ["ps", "-p", str(pid), "-o", "pid="],
-        text=True,
-        capture_output=True,
-        check=False,
+def command_is_registered_old_c3(arguments: list[str], *, run_id: str) -> bool:
+    return any(OLD_TRAINER_ENTRYPOINT in value for value in arguments) and any(
+        arguments[index] == "--run-id"
+        and index + 1 < len(arguments)
+        and arguments[index + 1] == run_id
+        for index in range(len(arguments))
     )
-    return bool(result.stdout.strip())
+
+
+def registered_old_process_active(pid: int, *, run_id: str) -> bool:
+    try:
+        raw = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except (FileNotFoundError, PermissionError, ProcessLookupError):
+        return False
+    arguments = [
+        value.decode("utf-8", errors="replace")
+        for value in raw.split(b"\0")
+        if value
+    ]
+    return command_is_registered_old_c3(arguments, run_id=run_id)
 
 
 def exact_terminal_package() -> bool:
@@ -158,7 +177,11 @@ def run(expected_head: str) -> dict[str, object]:
         (EXPERIMENT_ROOT / "c3_v4_reference_read_once.json").is_file(),
         "C3 read-once reference is absent before A100 sync",
     )
-    active = [pid for pid in OLD_PIDS if process_active(pid)]
+    active = [
+        {"pid": pid, "run_id": run_id}
+        for pid, run_id in OLD_LAUNCH_PROCESSES
+        if registered_old_process_active(pid, run_id=run_id)
+    ]
     require(not active, f"old launch-head processes remain active: {active}")
     status_before = git("status", "--porcelain")
     require(not status_before, "A100 worktree is dirty before current-HEAD sync")
