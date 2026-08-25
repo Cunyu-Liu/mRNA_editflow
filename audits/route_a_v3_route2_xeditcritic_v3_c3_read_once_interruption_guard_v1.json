@@ -1,0 +1,39 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_read_once_interruption_guard.v1",
+  "recorded_at_local": "2026-08-25T13:06:30+08:00",
+  "status": "C3_READ_ONCE_INTERRUPTION_GUARD_IMPLEMENTED_NOT_EXECUTED",
+  "git_head_before_delivery": "7c985014c82b3d954709607c567a632c2e9e6669",
+  "implementation": {
+    "producer": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v3_c3_v4_reference.py",
+    "focused_test": "tests/route_a_v3/test_adjudicate_route2_xeditcritic_v3_c3_v4_reference.py",
+    "consumption_marker_suffix": ".consumption_started.json"
+  },
+  "reachable_failure_closed": {
+    "failure": "process interruption after five terminal payload reads but before final reference publication could cause an automatic second read",
+    "terminal_paths_resolved_before_marker": true,
+    "marker_published_before_any_terminal_payload_open": true,
+    "exclusive_marker_creation": true,
+    "marker_contains_terminal_payload_content": false,
+    "existing_marker_without_final_reference_blocks_automatic_reread": true,
+    "successful_final_reference_remains_atomic": true
+  },
+  "verification": {
+    "producer_focused": "5/5 PASS",
+    "complete_local_critic_v4_focused_cohort": "91/91 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "a100_current_head_tests": "DEFERRED_UNTIL_ALL_FIVE_C3_LAUNCH_HEAD_JOBS_TERMINAL"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "terminal_run_ids": ["c3_source_only"],
+    "terminal_payloads_read": 0,
+    "consumption_marker_materialized": false,
+    "c3_reference_artifact_created": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_claim_change": false,
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

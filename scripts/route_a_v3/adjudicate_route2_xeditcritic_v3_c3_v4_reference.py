@@ -31,6 +31,43 @@ def _read(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _consumption_marker_path(output: Path) -> Path:
+    return Path(str(output) + ".consumption_started.json")
+
+
+def _publish_consumption_marker(
+    output: Path,
+    terminal_paths: Mapping[str, tuple[str, Path]],
+) -> Path:
+    """Irreversibly mark the logical read before opening any terminal payload."""
+
+    marker = _consumption_marker_path(output)
+    payload = {
+        "schema_version": (
+            "route_a_v3_route2_xeditcritic_v3_c3_v4_reference_"
+            "consumption_started.v1"
+        ),
+        "status": "C3_V4_REFERENCE_TERMINAL_CONSUMPTION_STARTED",
+        "reference_output": str(output),
+        "terminal_artifacts": {
+            run_id: {"terminal_kind": kind, "path": str(path)}
+            for run_id, (kind, path) in terminal_paths.items()
+        },
+        "terminal_payload_content_included": False,
+        "automatic_retry_if_reference_absent": False,
+    }
+    try:
+        descriptor = os.open(marker, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    except FileExistsError as error:
+        raise C3V4ReferenceAdjudicationError(
+            "C3 terminal consumption already started without a published "
+            f"reference; automatic reread is forbidden: {marker}"
+        ) from error
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    return marker
+
+
 def _terminal_kind(run_directory: Path) -> tuple[str, Path]:
     summary = run_directory / "run_summary.json"
     failure = run_directory / "failure.json"
@@ -148,6 +185,8 @@ def run(config: Mapping[str, Any]) -> dict[str, Any]:
     terminal_paths = {
         run_id: _terminal_kind(root / run_id) for run_id in run_ids
     }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    _publish_consumption_marker(output, terminal_paths)
     terminal_payloads = {
         run_id: (kind, _read(path))
         for run_id, (kind, path) in terminal_paths.items()
@@ -158,7 +197,6 @@ def run(config: Mapping[str, Any]) -> dict[str, Any]:
             Path(config["c3_reference"]["predeclared_fallback_terminal_summary"])
         )
     result = adjudicate_c3_v4_reference(config, terminal_payloads, fallback)
-    output.parent.mkdir(parents=True, exist_ok=True)
     partial = output.with_suffix(output.suffix + ".partial")
     partial.write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"

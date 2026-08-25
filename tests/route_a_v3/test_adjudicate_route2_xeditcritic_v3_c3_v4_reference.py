@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from scripts.route_a_v3.adjudicate_route2_xeditcritic_v3_c3_v4_reference import (
+    _consumption_marker_path,
     adjudicate_c3_v4_reference,
     run,
 )
@@ -102,7 +103,16 @@ def test_runtime_resolves_all_five_terminal_paths_before_reading(tmp_path: Path)
     )
     result = run(config)
     assert result["terminal_summaries_read_count"] == 5
-    assert Path(config["c3_read_once_reference_adjudication"]).exists()
+    output = Path(config["c3_read_once_reference_adjudication"])
+    assert output.exists()
+    marker = _consumption_marker_path(output)
+    marker_payload = json.loads(marker.read_text(encoding="utf-8"))
+    assert marker_payload["status"] == (
+        "C3_V4_REFERENCE_TERMINAL_CONSUMPTION_STARTED"
+    )
+    assert marker_payload["terminal_payload_content_included"] is False
+    assert marker_payload["automatic_retry_if_reference_absent"] is False
+    assert set(marker_payload["terminal_artifacts"]) == set(RUN_IDS)
     with pytest.raises(Exception, match="already exists"):
         run(config)
 
@@ -114,3 +124,30 @@ def test_runtime_resolves_all_five_terminal_paths_before_reading(tmp_path: Path)
     with pytest.raises(Exception, match="exactly one terminal"):
         run(missing_config)
     assert not Path(missing_config["c3_read_once_reference_adjudication"]).exists()
+    assert not _consumption_marker_path(
+        Path(missing_config["c3_read_once_reference_adjudication"])
+    ).exists()
+
+
+def test_runtime_fails_closed_after_consumption_started_without_reference(
+    tmp_path: Path,
+) -> None:
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    root = tmp_path / "screen"
+    for run_id in RUN_IDS:
+        directory = root / run_id
+        directory.mkdir(parents=True)
+        (directory / "run_summary.json").write_text(
+            json.dumps(_summary(run_id)), encoding="utf-8"
+        )
+    config["c3_reference"]["preferred_terminal_summary"] = str(
+        root / "c3" / "run_summary.json"
+    )
+    output = root / "c3_v4_reference_read_once.json"
+    config["c3_read_once_reference_adjudication"] = str(output)
+    marker = _consumption_marker_path(output)
+    marker.write_text("consumption began\n", encoding="utf-8")
+
+    with pytest.raises(Exception, match="automatic reread is forbidden"):
+        run(config)
+    assert not output.exists()

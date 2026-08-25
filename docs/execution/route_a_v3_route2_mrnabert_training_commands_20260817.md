@@ -4192,3 +4192,13 @@ terminal_count=1，其余summary/failure、C3 reference与screen gate不存在�
 active curve、terminal payload、Development TEST或new Evaluation；A100 current-HEAD sync与V4运行仍关闭。
 下一检查不得早于远端14:03:23/本地14:01:08。监控项无代码变化，不重复test cohort。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_130323.json`。
+
+## C3 read-once interruption guard focused record（2026-08-25）
+
+五项terminal齐全后的producer现于任何payload打开前独占发布无结果的consumption-started marker；marker存在且
+final reference缺失时拒绝自动重读。五项path未全部闭合时不创建marker，成功reference仍使用partial+atomic replace。
+
+producer focused=5/5、完整Critic V4相关=91/91、精确V3.3.2=96/96、compile PASS。当前仅source-only terminal，
+marker/reference/terminal content均未读取或materialize；protected read=0，A100 current-HEAD测试仍等待五项C3
+自然terminal。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_read_once_interruption_guard_v1.json`。

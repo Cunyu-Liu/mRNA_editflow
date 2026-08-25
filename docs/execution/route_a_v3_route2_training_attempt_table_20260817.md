@@ -3289,3 +3289,17 @@ summary/failure、C3 reference与screen gate仍不存在；terminal_count=1，re
 new Evaluation read仍为0，A100同步与V4运行仍关闭。最新远端偏移为+135秒；下一远端/本地窗口不早于
 14:03:23/14:01:08。监控无代码变化，不重复focused/V3.3.2测试，claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_130323.json`。
+
+## C3 read-once interruption guard（2026-08-25）
+
+五项terminal path全部确认后，旧producer会直接打开五个payload，再原子发布reference；如果进程在读取完成后、
+final reference发布前中断，自动重试会再次打开五个summary/failure，与V4冻结的统一read-once语义不一致。
+
+producer现在先解析五项terminal kind和路径，在打开任何payload前以独占创建方式发布无结果的
+`consumption_started.json` marker；若marker已存在而final reference缺失，自动重读硬失败。partial package不会创建
+marker，正常final reference仍原子发布，marker不包含metric或terminal payload内容。
+
+producer focused 5/5、完整Critic V4相关91/91、精确V3.3.2 cohort 96/96、compile PASS。当前C3仍为1/5
+terminal，marker/reference均未materialize，terminal payload read=0，Development TEST/new Evaluation read=0，
+optimizer attempt不变；科学claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_read_once_interruption_guard_v1.json`。
