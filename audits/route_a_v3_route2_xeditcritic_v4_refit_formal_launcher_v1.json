@@ -1,0 +1,61 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_formal_launcher.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_NOT_EXECUTED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "2c9061b3ac90aa7640fc6945d4f3407e02113dfb",
+  "deliverable": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xeditcritic_v4_refit_after_atomic_test.py",
+    "formal_scheduler": "scripts/route_a_v3/run_route2_xeditcritic_v4_refit_scheduler.py",
+    "authorization_source": "OUTCOME_FREE_POSTTEST_RECEIPT_ONLY",
+    "atomic_test_failure_or_no_go_refit_jobs": 0,
+    "required_refit_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "required_run_id": "v4_full",
+    "refit_pass_count": 8,
+    "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_TEST_OR_VALIDATION_SELECTION",
+    "gpu_scope": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "gpu_selection_before_config_materialization": true,
+    "gpu_selection": "THREE_MAXIMUM_FREE_MEMORY_GPUS_MEETING_CRITIC_PREFLIGHT_PLUS_2_GIB",
+    "exact_summary_or_failure_per_job": true,
+    "atomic_refit_adjudication": true,
+    "loso_authorized_only_after_three_complete_refits": true,
+    "development_test_metrics_reopened": false,
+    "new_final_evaluation_authorized": false
+  },
+  "verification": {
+    "focused_passed": 17,
+    "focused_failed": 0,
+    "current_a100_selection_local_passed": 207,
+    "current_a100_selection_local_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "git_diff_check_passed": true,
+    "python_version": "3.13.5"
+  },
+  "execution_state": {
+    "posttest_receipt_present": false,
+    "refit_configs_materialized": false,
+    "refit_authorization_materialized": false,
+    "refit_jobs_started": false,
+    "refit_manifest_adjudicated": false,
+    "loso_authorized": false,
+    "development_test_access_events": 0,
+    "development_test_outcome_reads_during_refit": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "remaining_posttest_work": "Implement and verify the separately gated 42-job LOSO launcher after an exact three-refit terminal manifest.",
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}

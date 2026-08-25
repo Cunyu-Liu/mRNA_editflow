@@ -4311,3 +4311,16 @@ preflight+2 GiB且空闲显存最大的卡；显存不足发生在创建runtime/
 TEST access。focused=13/13、A100同步器当前同定义V4=199/199、V3.3.2=96/96、compile/shell/helper/diff-check
 PASS。当前three-seed gate不存在，launcher/TEST均未执行，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_atomic_test_formal_launcher_v1.json`。
+
+## Critic V4 all-Development refit formal launcher（2026-08-25）
+
+atomic TEST formal terminal后新增独立refit stage。launcher只读取不含TEST metrics的posttest receipt；atomic failure、
+frozen TEST NO-GO或receipt不授权时生成0 job。精确PASS时，先依据Critic preflight+2 GiB从GPU0–5选择空闲显存
+最大的三张合格卡；该检查发生在任何config/authorization物化前，显存不足可等待后安全重试。随后才生成固定
+20260908/09/10、`v4_full`、8 passes、final-pass-8的三份config与同HEAD授权。
+
+scheduler并行三refit并保留每项summary XOR failure；全部terminal后原子发布refit manifest。只有三项均完整且
+manifest明确`loso_authorized=true`才开放下一阶段，任一failure形成永久refit NO-GO。focused=17/17、A100同步器
+当前同定义V4=207/207、V3.3.2=96/96、compile/shell/helper/diff-check PASS。当前TEST/refit均未运行，
+Development TEST access=0，new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_refit_formal_launcher_v1.json`。

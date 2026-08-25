@@ -3451,3 +3451,14 @@ Evaluation。
 focused 13/13、current-A100-selection local 199/199、精确V3.3.2 96/96、compile/shell/helper/diff-check PASS。
 本项不新增optimizer attempt；three-seed gate/atomic TEST均未运行，Development TEST access仍为0，claim不变。
 审计：`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_formal_launcher_v1.json`。
+
+## Critic V4 atomic TEST PASS → exact three refits（2026-08-25）
+
+已实现严格顺序的all-Development refit入口：只接受无TEST metric的授权receipt，NO-GO/technical failure为0 job；
+PASS后在物化config前从GPU0–5选三张满足`preflight peak + 2 GiB`的最大空闲卡，再固定运行20260908/09/10
+三个`v4_full`、8 passes、final-pass-8 refit。每项exact terminal，三项完成后一次性refit adjudication；只有完整
+3/3才能授权LOSO。
+
+focused 17/17、current-A100-selection local 207/207、V3.3.2 96/96、compile/shell/helper/diff-check PASS。
+本项未执行TEST/refit，不新增optimizer attempt，C3仍按低频窗口运行，protected read=0，claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_refit_formal_launcher_v1.json`。
