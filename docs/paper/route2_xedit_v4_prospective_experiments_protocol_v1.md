@@ -411,3 +411,13 @@ outcome. This terminal fact satisfies only the frozen preflight barrier. Screen
 authorization and parameter updates remain prohibited until the terminal record
 is committed, the A100 worktree is synchronized to that exact current HEAD, and
 the full current-HEAD Critic, SetFlow, and V3.3.2 test cohorts pass.
+
+Those barriers subsequently passed at the exact screen-runner commit: the A100
+cohorts completed 199 Critic, 149 SetFlow, and 96 V3.3.2 tests with zero
+failures from a clean worktree. The frozen ten-run screen package was then
+launched using that current HEAD together with the immutable attempt-5
+preflight HEAD and cache experiment HEAD. Its dynamic GPU0–5 schedule uses only
+the measured component peak plus 2 GiB and does not change the architecture,
+arms, seeds, training budgets, losses, metrics, or scientific gates. This launch
+does not authorize TEST access or any model claim; only natural terminal
+completion and the preregistered screen adjudicators can do so.

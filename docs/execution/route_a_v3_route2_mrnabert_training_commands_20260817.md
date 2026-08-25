@@ -4608,3 +4608,14 @@ Critic/SetFlow/V3.3.2 current-HEAD tests；全部PASS后执行：
 
 该入口只按attempt-5实测峰值加2GiB为任一足够GPU0–5排队，不恢复固定空闲显存门，也不更改十个arm、seed、
 训练预算或scientific gate。
+
+上述current-HEAD tests在`edad89392077a0cf56e84dfcf94335606dd2b05a`正式得到Critic 199/199、SetFlow
+149/149、V3.3.2 96/96。screen launcher随后于本地21:08:20成功返回
+`V4_SCREEN_PACKAGE_SCHEDULER_LAUNCHED`，scheduler PID为`2218802`；runtime/schedule目录为：
+
+```text
+/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/
+screen_package_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf56e84dfcf94335606dd2b05a/
+```
+
+首次只读状态窗口为本地`>=21:13:20`，之后按预计超过4小时任务每60分钟；活动期不得同步A100到后续文档HEAD。

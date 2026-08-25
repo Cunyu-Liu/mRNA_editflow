@@ -3885,3 +3885,23 @@ geometry；Development TEST/new Evaluation outcome reads 均为0。该双PASS只
 通过Critic/SetFlow/V3.3.2测试，之后才用独立preflight/cache/current三个HEAD启动冻结的十项screen package。
 本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
 审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt5_terminal_dual_pass_v1.json`。
+
+### V4 frozen screen package current-HEAD launch（2026-08-25 21:08:20 +08:00）
+
+Attempt-5终态记录提交 `edad89392077a0cf56e84dfcf94335606dd2b05a` 推送后，A100工作树从launch HEAD
+clean fast-forward到该精确current HEAD；正式sync/test audit为
+`A100_CURRENT_HEAD_SYNCED_AND_V4_TESTS_PASS`：Critic 199/199、SetFlow 149/149、V3.3.2 96/96，前后工作树
+均clean，旧launch jobs active=0，protected outcome access=false。
+
+随后正式launcher以screen runner `edad893`、preflight runner `107fa43`、cache experiment `a7ef72f`三个独立
+身份创建冻结十项screen package并启动scheduler PID `2218802`。Critic八项seed20260907与SetFlow两项
+seed20260911的arm、pass、update、loss和gate均未改变；调度仅按attempt-5组件实测峰值+2GiB，在足够的GPU0–5
+上建立串行队列，没有固定空闲显存门或CPU fallback。runtime与schedule位于
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/
+screen_package_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf56e84dfcf94335606dd2b05a/`。
+
+启动时Development TEST/new Evaluation reads均为0，未读schedule payload、scheduler log、active curve/metric或
+任何screen终态内容。首次alive/CUDA/terminal/failure检查不得早于本地21:13:20；该package预计超过4小时，首次
+检查后使用60分钟窗口。本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。A100在全部
+screen launch-head jobs terminal前不得同步到后续文档HEAD。审计：
+`audits/route_a_v3_route2_xedit_v4_screen_package_launch_v1.json`。

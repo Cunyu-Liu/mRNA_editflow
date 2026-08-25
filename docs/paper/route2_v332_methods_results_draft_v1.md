@@ -1178,3 +1178,12 @@ Evaluation outcome. These results establish implementation and capacity
 readiness only: no V4 optimizer screen or performance evaluation has yet run,
 so they provide no Spearman, recovery, diversity, model-advantage, or
 submission-readiness evidence.
+
+After the terminal record was committed, the A100 worktree was fast-forwarded
+to the exact screen-runner commit and passed 199 Critic, 149 SetFlow, and 96
+V3.3.2 tests without failures. The preregistered ten-run V4 screen package was
+then launched with separate, explicit cache-experiment, preflight-runner, and
+screen-runner identities. This event begins the prospective performance test
+but is not itself a result: no active metric, Development TEST outcome, or new
+Evaluation outcome was read, and all model-advantage and submission claims
+remain pending terminal screen adjudication.
