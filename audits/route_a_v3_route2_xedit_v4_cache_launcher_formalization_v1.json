@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_launcher_formalization.v1",
+  "recorded_at_local": "2026-08-25T13:21:43+08:00",
+  "status": "V4_CACHE_LAUNCHER_FORMALIZED_NOT_EXECUTED",
+  "git_head_before_delivery": "d6388a5fa264eac67d90a0bca3b2d8debf440e57",
+  "implementation": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xedit_v4_caches_after_a100_sync.py",
+    "formal_test": "tests/route_a_v3/test_launch_route2_xedit_v4_caches_after_a100_sync.py",
+    "formal_cache_job_runner": "scripts/route_a_v3/run_route2_xedit_v4_cache_job.py",
+    "projectless_transport_wrapper": "work/run_launch_v4_caches_after_a100_sync.sh",
+    "obsolete_projectless_launcher_removed": true
+  },
+  "barriers_and_repairs": {
+    "exact_current_head_required": true,
+    "clean_a100_worktree_required": true,
+    "c3_read_once_reference_required": true,
+    "exact_head_a100_test_audit_required": true,
+    "critic_and_setflow_authorizations_staged_atomically": true,
+    "authorization_output_json_parsed": true,
+    "exact_component_status_and_head_validated": true,
+    "critic_bottom_six_cache_builder": true,
+    "setflow_read_only_adoption_builder": true,
+    "terminal_v3_setflow_cache_rebuild": false
+  },
+  "verification": {
+    "formal_launcher_cache_runner_and_authorizer_focused": "22/22 PASS",
+    "combined_local_v4_related_cohort": "173/173 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "transport_wrapper_shell_syntax": "PASS",
+    "initial_projectless_helper_smoke": "FAIL_STALE_REMOVED_LAUNCHER_FIXTURE",
+    "corrected_projectless_helper_smoke": "PASS"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "a100_connection_made": false,
+    "a100_current_head_sync_executed": false,
+    "cache_launch_authorization_created": false,
+    "cache_job_started": false,
+    "v4_preflight_or_optimizer_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_claim_change": false,
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

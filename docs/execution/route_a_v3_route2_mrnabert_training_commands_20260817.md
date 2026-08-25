@@ -4220,3 +4220,12 @@ failure。summary缺失才发布technical failure。项目外传输壳调用A100
 首次focused命令因旧文件名未执行；修正后focused=31/31、合并Critic+SetFlow V4相关=170/170、精确V3.3.2
 =96/96、compile/shell/helper smoke PASS。cache/A100/optimizer均未运行，protected read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_terminal_exclusivity_v1.json`。
+
+## V4 cache launcher formal focused record（2026-08-25）
+
+Critic+SetFlow cache launcher现为Git正式current-HEAD脚本，精确解析authorizer输出JSON并核对component/status/HEAD；
+项目外壳只在A100同步后调用该脚本。Critic cache新建与SetFlow terminal V3 cache只读adoption边界不变。
+
+focused=22/22、合并V4相关=173/173、精确V3.3.2=96/96、compile/shell PASS。初次helper smoke因旧路径夹具
+失败，修正为读取正式launcher后PASS。未连接A100或启动cache，protected read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_launcher_formalization_v1.json`。

@@ -3332,3 +3332,18 @@ cache job wrapper现迁入Git正式脚本。原子summary一旦存在即成为�
 Critic+SetFlow V4相关170/170、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。本项未同步A100或启动cache，
 C3仍为1/5 terminal，protected read=0、optimizer attempt不变，科学claim不变。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_terminal_exclusivity_v1.json`。
+
+## V4 cache launcher current-HEAD formalization（2026-08-25）
+
+cache job wrapper正式化后，上层Critic+SetFlow cache launcher仍是项目外Python副本，并仅以stdout是否包含
+`CACHE_LAUNCH_AUTHORIZED`判断授权。现launcher迁入Git正式脚本；项目外壳在A100完成exact-current-HEAD同步后，
+直接调用远端工作树中的正式launcher，不再传输第二份实现。
+
+launcher继续要求精确HEAD、clean A100 worktree、C3 read-once reference和同HEAD A100 test audit；两组件授权先在
+staging目录生成并整目录发布。授权判断改为读取authorizer最终JSON，并核对组件、精确authorized HEAD与精确status。
+Critic仍新建bottom-six cache，SetFlow仍只读adopt terminal V3 cache，不调用V3 builder重建。
+
+正式launcher/runner/authorizer focused 22/22、合并V4相关173/173、精确V3.3.2 96/96、compile与shell syntax
+均PASS。第一次项目外smoke因夹具仍读取已删除旧launcher而失败；夹具改读Git正式launcher后PASS，旧副本未恢复。
+本项未连接A100或启动cache；C3仍1/5 terminal，protected read=0、optimizer不变，claim不变。审计：
+`audits/route_a_v3_route2_xedit_v4_cache_launcher_formalization_v1.json`。
