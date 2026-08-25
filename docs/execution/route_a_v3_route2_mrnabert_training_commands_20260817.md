@@ -4559,3 +4559,6 @@ alive/CUDA/terminal/failure。
 Attempt 3终态证明BF16 router修复已通过原故障点并运行到最终summary原子发布；失败原因仅为preflight脚本缺少
 `import os`，未发布partial没有读取。SetFlow再次PASS。单行导入与模块绑定回归通过后，活动输出前移到
 `preflight_attempt_4/`；仍须先运行新HEAD A100 187/137/96 exact tests，再用GPU0串行启动，不覆盖旧结果。
+
+A100 exact-HEAD tests全部PASS后，attempt 4于2026-08-25 19:42:50后在GPU0空闲38,648 MiB时启动；
+共享scheduler PID `1604346`，Critic→SetFlow串行，首次检查不早于约5分钟。

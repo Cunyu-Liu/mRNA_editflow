@@ -3792,3 +3792,10 @@ Attempt 3自然terminal；SetFlow在精确HEAD再次以同一100,099,998参数�
 本地Critic 187/187、SetFlow 137/137、V3.3.2 96/96及compile全部PASS。正式活动路径前移到
 `preflight_attempt_4/`，attempt 1–3保持只读。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_attempt3_terminal_atomic_publish_fix_v1.json`。
+
+### Attempt 4 launch（2026-08-25 19:42:50 +08:00）
+
+Atomic-publication修复HEAD `b8d4e0fdd15bbc1c3f7afbe1a6404bba2bcb9304`完成A100 Critic 187/187、
+SetFlow 137/137、V3.3.2 96/96后，正式launcher在GPU0空闲38,648 MiB时启动attempt 4。
+共享scheduler PID `1604346`，仍为Critic→SetFlow串行；attempt 1–3不覆盖，protected reads为0，screen未授权。
+审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt4_launch_v1.json`。
