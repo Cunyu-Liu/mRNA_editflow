@@ -3940,3 +3940,12 @@ TEST/new Evaluation reads保持0。本地successor focused 39/39、精确V3.3.2 
 2026-08-26 00:18:15；Development TEST/new Evaluation reads保持0。本地successor focused 39/39、精确
 V3.3.2 96/96、JSON/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xedit_v4_screen_third_health_20260825_231815.json`。
+
+### V4 screen fourth recorded hourly health window（2026-08-26 01:18:08 +08:00）
+
+远端01:20:31时scheduler PID `2218802`运行4:09:49并存活；SetFlow full/single-mode继续在GPU1/GPU2存活并
+注册CUDA，显存2,912/2,774MiB。八个Critic failure、零Critic summary、两个SetFlow active状态未变。没有读取
+failure payload、log、curve或metric，也没有停止/修改/restart作业。任务现已超过4小时，仍按冻结60分钟节奏；
+下一窗口不早于本地02:18:08。Development TEST/new Evaluation reads保持0。审计：
+本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
+`audits/route_a_v3_route2_xedit_v4_screen_fourth_health_20260826_011808.json`。

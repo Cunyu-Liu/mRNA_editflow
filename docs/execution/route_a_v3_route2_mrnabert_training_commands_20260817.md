@@ -4630,3 +4630,6 @@ single-mode仍在GPU1/GPU2运行。failure内容、log和metric仍未读。Criti
 
 第三窗口本地23:18:15状态未变：八个Critic failure、零Critic summary，SetFlow full/single仍在GPU1/GPU2
 运行；下一窗口`>=2026-08-26 00:18:15 +08:00`，继续禁止payload/log/metric提前读取。
+
+第四个实际记录窗口本地01:18:08状态仍未变化：SetFlow两项存活并有CUDA，八个Critic failure保持未读；
+任务已超过4小时，下一窗口`>=2026-08-26 02:18:08 +08:00`。
