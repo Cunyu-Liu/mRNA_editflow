@@ -4551,3 +4551,7 @@ Attempt 2随后自然terminal：SetFlow preflight PASS；Critic首次BF16 forwar
 scatter进BF16 destination而技术失败。terminal log只在failure JSON不含reason后读取一次。修复为selected routing
 weights在scatter前显式恢复logits dtype，并以FP32计算balance；不改参数或训练定义。新正式输出为
 `preflight_attempt_3/`，旧attempt 2不覆盖。新HEAD仍需先完成A100 187/137/96 exact-HEAD tests后才能GPU0重试。
+
+上述A100 exact-HEAD tests全部PASS后，attempt 3于本地2026-08-25 19:31:40后在GPU0空闲38,276 MiB时
+成功启动，共享scheduler PID `1517468`，仍按Critic→SetFlow串行运行。首次状态检查不早于约5分钟且只读
+alive/CUDA/terminal/failure。

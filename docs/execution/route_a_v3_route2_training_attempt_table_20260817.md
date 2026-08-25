@@ -3772,3 +3772,11 @@ single-mode参数、BF16、physical/effective batch 32、GPU0、optimizer state�
 187/187、SetFlow 137/137、V3.3.2 96/96及compile均PASS。attempt 2全部只读保留，正式路径前移到新的
 `preflight_attempt_3/`，不得覆盖旧terminal。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_attempt2_terminal_bf16_router_fix_v1.json`。
+
+### Attempt 3 launch（2026-08-25 19:31:40 +08:00）
+
+修复HEAD `c21e15f8fe8a6066d256f6719243f06ab1ce85bb`在A100完成Critic 187/187、SetFlow 137/137、
+V3.3.2 96/96后，正式launcher在GPU0空闲38,276 MiB时启动新的Critic→SetFlow串行preflight。
+共享scheduler PID为`1517468`；37,000/20,000 MiB启动底线不变，attempt 1/2 terminal不覆盖。
+该事件只形成LAUNCHED provenance，不读取active curve、Validation metric、Development TEST或new Evaluation outcome，
+也不提前授权screen。审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt3_launch_v1.json`。
