@@ -1,0 +1,40 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_screen_package_launcher_formalization.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "a2433bc09892c4b0f7bfd6495db4b78ecb1967a3",
+  "finding": "The screen launcher and six-GPU queue scheduler existed only as project-external Python copies, and the launcher trusted an authorization stdout substring rather than the atomically published authorization JSON.",
+  "remediation": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xedit_v4_screens_after_preflights.py",
+    "formal_scheduler": "scripts/route_a_v3/run_route2_xedit_v4_screen_package_scheduler.py",
+    "authorization_validation": "Exact component-specific status, authorized Git HEAD, and complete frozen run-id set are read from each terminal authorization JSON.",
+    "scheduler_semantics_changed": false,
+    "queue_terminal_rule": "Each training job remains terminal only when exactly one component-specific summary or failure artifact exists.",
+    "a100_current_head_cohort_updated": true,
+    "project_external_python_copies_removed": true
+  },
+  "verification": {
+    "focused_passed": 41,
+    "focused_failed": 0,
+    "combined_v4_passed": 163,
+    "combined_v4_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "python_version": "3.13.5"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "c3_terminal_payloads_read": 0,
+    "a100_connected_or_synchronized": false,
+    "cache_jobs_started": false,
+    "preflight_jobs_started": false,
+    "screen_jobs_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}

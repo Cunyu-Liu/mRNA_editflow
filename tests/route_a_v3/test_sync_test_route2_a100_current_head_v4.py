@@ -23,6 +23,8 @@ def test_current_head_selection_includes_cache_and_preflight_launch_chain() -> N
         "tests/route_a_v3/test_launch_route2_xedit_v4_caches_after_a100_sync.py",
         "tests/route_a_v3/test_run_route2_xedit_v4_preflight_job.py",
         "tests/route_a_v3/test_launch_route2_xedit_v4_preflights_after_caches.py",
+        "tests/route_a_v3/test_run_route2_xedit_v4_screen_package_scheduler.py",
+        "tests/route_a_v3/test_launch_route2_xedit_v4_screens_after_preflights.py",
     }
     assert operational.issubset(set(sync.CRITIC_TEST_PATTERNS))
     assert operational.issubset(set(sync.SETFLOW_TEST_PATTERNS))

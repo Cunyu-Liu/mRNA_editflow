@@ -4241,3 +4241,13 @@ focused=46/46、合并V4相关=157/157、精确V3.3.2=96/96、compile/shell/help
 3.9产生的147 pass/10 fail只证明解释器不满足项目`>=3.10`要求，不计作有效验证；Python 3.13重跑通过，生产代码
 未为3.9修改。未连接A100，未启动cache/preflight/optimizer，protected read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_launcher_terminal_exclusivity_v1.json`。
+
+## V4 screen package launcher/scheduler focused record（2026-08-25）
+
+screen launcher与六GPU队列scheduler现为Git正式current-HEAD脚本；launcher解析最终authorization JSON并核对
+component-specific status、HEAD及完整冻结run IDs，不再依赖stdout substring。scheduler的既定队列顺序与
+summary XOR failure terminal语义未改变，项目外Python副本已移除，调用壳直接使用同步后的A100工作树。
+
+focused=41/41、合并V4相关=163/163、精确V3.3.2=96/96、compile/shell/helper smoke PASS。未连接
+A100，未启动cache/preflight/screen/optimizer，C3 terminal payload与protected outcome read均为0。审计：
+`audits/route_a_v3_route2_xedit_v4_screen_package_launcher_formalization_v1.json`。

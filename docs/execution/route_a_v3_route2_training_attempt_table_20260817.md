@@ -3366,3 +3366,20 @@ return code只进入runtime记录；output缺失时才允许发布failure。两�
 为兼容错误解释器修改生产代码；改用项目既定Python 3.13后157/157通过。当前未连接A100或运行cache/preflight，
 C3仍为1/5 terminal，terminal payload和protected outcome read均为0，optimizer attempt不变，科学claim不变。
 审计：`audits/route_a_v3_route2_xedit_v4_preflight_launcher_terminal_exclusivity_v1.json`。
+
+## V4 screen package current-HEAD formalization（2026-08-25）
+
+preflight通过后的screen launcher与六GPU队列scheduler仍只存在于项目外helper目录，且launcher只以authorizer
+stdout是否包含`SCREEN_LAUNCH_AUTHORIZED`判断成功。这样A100 exact-current-HEAD test audit并未真正约束即将
+执行的screen调度代码，stdout与最终授权artifact之间也可能不一致。
+
+两份实现现迁入Git正式脚本，项目外壳只调用同步后A100工作树中的正式launcher。双组件授权仍先在staging目录完整
+生成再统一发布，但launcher随后读取每个最终JSON，核对组件特定status、精确authorized HEAD及完整冻结run-id集合。
+既有调度语义保持不变：GPU0–3各顺序运行两项Critic作业，GPU4/5各运行一项SetFlow作业；任一训练failure不会阻止
+同队列后续control自然完成；每项仍仅以component-specific summary XOR failure作为精确terminal。A100 Critic与
+SetFlow focused cohort均加入正式screen launcher/scheduler测试。
+
+screen链focused 41/41、合并V4相关163/163、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。
+本项未连接A100或启动screen/cache/preflight，C3仍1/5 terminal且未读payload，protected outcome read=0，
+optimizer attempt不变，科学claim不变。审计：
+`audits/route_a_v3_route2_xedit_v4_screen_package_launcher_formalization_v1.json`。
