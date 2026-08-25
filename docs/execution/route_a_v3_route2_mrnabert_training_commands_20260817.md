@@ -4444,3 +4444,9 @@ non-persistent buffer并由`self.to(device)`管理。focused 26/26、V3.3.2 96/9
 `66×768`输出、upper BF16/checkpointed forward/backward及全部upper gradient finite；parameter update=0，protected
 read=0。随后才启动cache：Critic PID `4161802`、SetFlow PID `4161804`。首次检查边界为本地15:41:57；等待期间
 只做本地文档/测试，不同步A100、不查看active cache batch计数。
+
+### Cache retry 15:42:02 low-frequency check（2026-08-25）
+
+SetFlow summary present/failure absent；Critic summary/failure均absent，exact wrapper与exact builder alive。命令未返回
+CUDA状态行，故不作肯定/否定推断且不立即重查。未读取log/progress/metric；下一本地窗口16:12:02，按+154秒
+偏移对应远端约16:14:36。监控本身无代码变化，不重复测试。

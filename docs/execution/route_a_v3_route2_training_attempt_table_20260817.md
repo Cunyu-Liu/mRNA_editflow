@@ -3609,3 +3609,14 @@ upper blocks 6–11在BF16、train mode与activation checkpointing下完成forwa
 `4161804`。这是前两次技术failure归档后的同任务重试，不改变配置或形成额外科学attempt。首次健康检查不早于
 本地15:41:57；只允许terminal/failure/alive/CUDA，不读active progress/metric。cache terminal前不把A100同步到
 后续文档HEAD。
+
+### Cache retry first low-frequency health check（2026-08-25 15:42:02 local）
+
+按启动后约5分钟边界做单次检查：SetFlow adoption summary存在、failure不存在、wrapper已结束；Critic summary/failure
+均不存在，PID `4161802`仍为精确a7ef72f cache wrapper，其child为精确bottom-six builder。未读取log、batch count、
+active metric或任何outcome。检查命令在CUDA状态行输出前结束，因此该项记录为`NOT_REPORTED`，不以立即补查掩盖；
+同HEAD formal smoke已经独立确认bottom/upper在cuda:0完成forward/backward。
+
+沿用最近远端时钟偏移+154秒；下一次不早于本地16:12:02/远端约16:14:36。active作业期间不执行A100
+current-HEAD sync。监控无代码变化，focused/V3.3.2不重复运行。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_cache_retry_health_20260825_154202.json`。

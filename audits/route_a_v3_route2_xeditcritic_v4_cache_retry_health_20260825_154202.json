@@ -1,0 +1,27 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_cache_retry_health.v1",
+  "status": "CRITIC_CACHE_ACTIVE_SETFLOW_ADOPTION_TERMINAL",
+  "experiment_git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "local_check_time": "2026-08-25T15:42:02+08:00",
+  "most_recent_remote_clock_offset_seconds": 154,
+  "critic": {
+    "summary_present": false,
+    "failure_present": false,
+    "wrapper_pid": 4161802,
+    "wrapper_identity": "ALIVE_EXACT_WRAPPER",
+    "builder_identity": "ALIVE_EXACT_BUILDER",
+    "cuda_observation": "NOT_REPORTED_BY_CHECK_COMMAND_NO_IMMEDIATE_RECHECK"
+  },
+  "setflow": {
+    "summary_present": true,
+    "failure_present": false,
+    "wrapper_pid": 4161804,
+    "wrapper_alive": false
+  },
+  "active_log_read": false,
+  "active_progress_or_metric_read": false,
+  "next_check_not_before_local": "2026-08-25T16:12:02+08:00",
+  "next_check_not_before_remote_calibrated": "2026-08-25T16:14:36+08:00",
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}
