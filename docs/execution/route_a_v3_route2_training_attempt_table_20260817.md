@@ -3399,3 +3399,23 @@ terminal后运行。A100 current-HEAD的两套focused cohort均加入正式post-
 184/184、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。本项未连接A100或运行post-screen/screen/
 preflight/cache，C3仍1/5 terminal且未读payload，protected read=0、optimizer attempt不变，科学claim不变。
 审计：`audits/route_a_v3_route2_xedit_v4_postscreen_terminal_formalization_v1.json`。
+
+## V4 exact-three-seed confirmation training launcher（2026-08-25）
+
+此前V4已有prospective confirmation protocols、三seed config producers、authorizers、trainers和adjudicators，但
+缺少把screen PASS转为实际训练队列的正式入口。新增Git正式launcher/scheduler只在post-screen runtime全部terminal
+且同一screen-launch HEAD时工作，并对Critic与SetFlow分别读取正式gate：PASS组件进入confirmation，NO-GO组件
+生成0个config、authorization和job；两组件互不替代。
+
+Critic运行集合严格为`20260908/09/10 × {v4_full,c0_v4}`六项，SetFlow严格为
+`20260912/13/14 × v4_full`三项，不存在第四seed。既有config producer与authorizer生成原子package后，launcher读取
+最终manifest/authorization JSON核对seed、run IDs、HEAD、additional-seed=false、TEST=false和protected read=0。
+六GPU队列优先并行六项Critic，GPU0–2在其各自Critic terminal后顺序执行SetFlow；若Critic NO-GO，SetFlow三项可
+直接使用GPU0–2。任一训练failure保留并不阻止同队列后续作业，每项必须summary XOR failure才能成为terminal。
+
+focused 38/38、合并V4相关186/186、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。本项仅实现
+训练启动与终态队列；confirmation训练后的SetFlow四checkpoint验证与两组件confirmation gate调度仍是下一独立任务。
+当前未连接A100、未materialize config/authorization、未启动optimizer，C3仍1/5 terminal且未读payload，
+Development TEST/new Evaluation read=0，科学claim不变。提交前按A100同步器当前精确文件选择复核183/183，
+精确V3.3.2仍96/96；一次不存在的测试路径在collection前停止且不计入。审计：
+`audits/route_a_v3_route2_xedit_v4_confirmation_training_launcher_v1.json`。

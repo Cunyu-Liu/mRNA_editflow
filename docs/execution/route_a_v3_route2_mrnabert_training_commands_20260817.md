@@ -4262,3 +4262,16 @@ post-screen launcher/coordinator现为Git正式screen-launch-HEAD脚本。Critic
 V3.3.2=96/96、compile/shell/helper smoke PASS。未启动A100/cache/preflight/screen/post-screen/optimizer，
 terminal payload与protected read为0。审计：
 `audits/route_a_v3_route2_xedit_v4_postscreen_terminal_formalization_v1.json`。
+
+## V4 confirmation training launcher focused record（2026-08-25）
+
+正式confirmation launcher/scheduler现把两个screen gate独立映射为冻结训练集合：Critic仅
+`20260908/09/10 × (v4_full+c0_v4)`，SetFlow仅`20260912/13/14 × v4_full`；NO-GO组件为0 job，
+无第四seed。最终config manifest与authorization JSON必须匹配精确HEAD/seed/run scope和protected-read=0，训练队列
+保留每项summary XOR failure并在terminal failure后继续后续作业。
+
+focused=38/38、合并V4相关=186/186、精确V3.3.2=96/96、compile/shell/helper smoke PASS。配置、授权、
+CUDA、optimizer和metric均未运行，Development TEST/new Evaluation read=0。训练后checkpoint validation/gate scheduler
+仍待单独实现。提交前按A100同步器当前精确文件选择复核为183/183，精确V3.3.2仍为96/96；一次引用不存在的
+Critic authorizer测试路径在collection前停止，不计入验证。审计：
+`audits/route_a_v3_route2_xedit_v4_confirmation_training_launcher_v1.json`。

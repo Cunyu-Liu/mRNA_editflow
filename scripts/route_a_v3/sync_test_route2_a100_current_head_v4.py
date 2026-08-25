@@ -47,6 +47,8 @@ CRITIC_TEST_PATTERNS = (
     "tests/route_a_v3/test_launch_route2_xedit_v4_screens_after_preflights.py",
     "tests/route_a_v3/test_run_route2_xedit_v4_postscreen_adjudication_scheduler.py",
     "tests/route_a_v3/test_launch_route2_xedit_v4_postscreen_after_screen_terminal.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_confirmation_training_scheduler.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py",
 )
 SETFLOW_TEST_PATTERNS = (
     "tests/route_a_v3/*xeditsetflow_v4*.py",
@@ -62,6 +64,8 @@ SETFLOW_TEST_PATTERNS = (
     "tests/route_a_v3/test_launch_route2_xedit_v4_screens_after_preflights.py",
     "tests/route_a_v3/test_run_route2_xedit_v4_postscreen_adjudication_scheduler.py",
     "tests/route_a_v3/test_launch_route2_xedit_v4_postscreen_after_screen_terminal.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_confirmation_training_scheduler.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py",
 )
 V332_TEST_PATTERNS = ("tests/route_a_v3/*v332*.py",)
 
