@@ -3276,3 +3276,16 @@ elapsed分别为119,253/119,253/119,253/118,824/118,443秒，GPU3/0/5/1/2占用�
 TEST或new Evaluation，也未同步A100或启动V4。最新远端偏移为+137秒；下一远端/本地窗口分别不早于
 13:03:13/13:00:56。监控无仓库代码变化，不重复focused/V3.3.2测试，claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_120313.json`。
+
+## 13:03 C3 source-only terminal, four jobs active（2026-08-25）
+
+本地13:01:08完成最后时间读取后执行一次原子SSH；远端13:03:23时`c3_source_only`首次出现精确terminal summary，
+其登记GPU0进程已结束。按照冻结的“五项全部terminal后统一read-once”规则，本次没有打开该summary内容，因此没有
+读取任何Spearman、MAE或其他性能结果。
+
+`c3`、edit-metadata-only、no-candidate-sequence和candidate-bundle-permutation仍均为`Rl` CUDA alive，elapsed
+分别为122,863/122,863/122,434/122,053秒，GPU3/5/1/2占用为2,190/2,190/2,120/2,190 MiB。其余四项
+summary/failure、C3 reference与screen gate仍不存在；terminal_count=1，read-once未执行。Development TEST与
+new Evaluation read仍为0，A100同步与V4运行仍关闭。最新远端偏移为+135秒；下一远端/本地窗口不早于
+14:03:23/14:01:08。监控无代码变化，不重复focused/V3.3.2测试，claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_130323.json`。

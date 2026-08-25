@@ -4181,3 +4181,14 @@ stderr、active curve、Development TEST或new Evaluation；A100 current-HEAD sy
 stderr、active curve、Development TEST或new Evaluation；A100 current-HEAD sync和V4运行仍关闭。下一检查不得
 早于远端13:03:13/本地13:00:56。监控项无代码变化，不重复test cohort。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_120313.json`。
+
+## 13:03 C3 partial-terminal long-interval health（2026-08-25）
+
+远端13:03:23时`c3_source_only`已自然结束并发布terminal summary，GPU0登记进程不再存在；summary内容保持未读，
+等待五项全部terminal后由既定current-HEAD producer一次性消费。`c3`、edit-metadata-only、no-candidate与permutation
+仍为`Rl`并占用GPU3/5/1/2的2,120–2,190 MiB。
+
+terminal_count=1，其余summary/failure、C3 reference与screen gate不存在，read-once未运行。未读stdout/stderr、
+active curve、terminal payload、Development TEST或new Evaluation；A100 current-HEAD sync与V4运行仍关闭。
+下一检查不得早于远端14:03:23/本地14:01:08。监控项无代码变化，不重复test cohort。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_130323.json`。
