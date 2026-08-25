@@ -4627,3 +4627,6 @@ screen_package_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf5
 第二窗口本地22:14:29确认八个Critic arm均已有failure artifact且无summary，Critic active=0；SetFlow full与
 single-mode仍在GPU1/GPU2运行。failure内容、log和metric仍未读。Critic formal NO-GO须等完整十项terminal后由
 冻结post-screen链发布；SetFlow不受Critic failure提前停止。下一窗口`>=2026-08-25 23:14:29 +08:00`。
+
+第三窗口本地23:18:15状态未变：八个Critic failure、零Critic summary，SetFlow full/single仍在GPU1/GPU2
+运行；下一窗口`>=2026-08-26 00:18:15 +08:00`，继续禁止payload/log/metric提前读取。
