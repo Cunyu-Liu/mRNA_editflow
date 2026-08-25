@@ -1,0 +1,42 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_screen_health.v1",
+  "status": "SETFLOW_PROCESSES_ALIVE_AFTER_SIX_HOURS",
+  "local_check_time": "2026-08-26T03:18:13+08:00",
+  "remote_check_time": "2026-08-26T03:20:31+08:00",
+  "remote_clock_offset_seconds": 138,
+  "screen_runner_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "scheduler_pid": 2218802,
+  "scheduler_alive": true,
+  "scheduler_elapsed_seconds": 22188,
+  "setflow_processes": [
+    {
+      "run_id": "v4_full",
+      "pid": 2218814,
+      "process_alive": true,
+      "process_state": "Rsl"
+    },
+    {
+      "run_id": "v4_single_mode",
+      "pid": 2218813,
+      "process_alive": true,
+      "process_state": "Ssl"
+    }
+  ],
+  "previously_observed_critic_terminal_failure_count": 8,
+  "failure_payload_read": false,
+  "active_summary_log_curve_or_metric_read": false,
+  "job_stopped_restarted_or_modified": false,
+  "cuda_snapshot_refreshed": false,
+  "cuda_snapshot_note": "The status-only compute-process filter had a shell quoting error; it was not retried in the same window under the low-frequency monitoring rule. Both SetFlow PIDs and the scheduler were alive.",
+  "next_check_not_before_local": "2026-08-26T04:18:13+08:00",
+  "local_validation": {
+    "focused_tests_passed": 39,
+    "focused_tests_failed": 0,
+    "exact_v332_tests_passed": 96,
+    "exact_v332_tests_failed": 0,
+    "json_validation_passed": true,
+    "git_diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

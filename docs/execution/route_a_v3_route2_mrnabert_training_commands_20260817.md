@@ -4633,3 +4633,8 @@ single-mode仍在GPU1/GPU2运行。failure内容、log和metric仍未读。Criti
 
 第四个实际记录窗口本地01:18:08状态仍未变化：SetFlow两项存活并有CUDA，八个Critic failure保持未读；
 任务已超过4小时，下一窗口`>=2026-08-26 02:18:08 +08:00`。
+
+第五个实际记录窗口本地03:18:13、远端03:20:31确认scheduler与两个SetFlow PID均继续存活，scheduler已运行
+22,188秒。状态查询中的CUDA进程过滤发生shell引用错误，因此本窗口没有刷新CUDA快照；为遵守低频监控纪律，
+没有在同一窗口立即补查。既有八份Critic failure payload及全部active log/curve/metric仍未读取，作业未被停止、
+修改或重启。下一窗口`>=2026-08-26 04:18:13 +08:00`。

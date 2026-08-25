@@ -82,6 +82,17 @@
     "failure_payload_read": false,
     "next_check_not_before_local": "2026-08-26T02:18:08+08:00"
   },
+  "fifth_check": {
+    "local_time": "2026-08-26T03:18:13+08:00",
+    "remote_time": "2026-08-26T03:20:31+08:00",
+    "scheduler_alive": true,
+    "scheduler_elapsed_seconds": 22188,
+    "setflow_process_count_alive": 2,
+    "failure_payload_read": false,
+    "cuda_snapshot_refreshed": false,
+    "cuda_snapshot_note": "Status-only compute-process filtering had a shell quoting error and was not retried within the same low-frequency window.",
+    "next_check_not_before_local": "2026-08-26T04:18:13+08:00"
+  },
   "development_test_outcome_reads": 0,
   "new_final_evaluation_outcome_reads": 0,
   "formal_tag_or_release_created": false,
