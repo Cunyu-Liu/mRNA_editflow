@@ -3585,3 +3585,15 @@ A100-selection同定义本地合并V4=228/228、V3.3.2=96/96、compile/diff-chec
 seed、参数容量、loss与gate均不变；formal synthetic smoke的project/protected reads均为0。必须在该修复HEAD通过
 A100 current-HEAD tests与相同synthetic smoke后，才允许第三次同任务cache启动。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_v1.json`。
+
+### Formal smoke ALiBi device binding（2026-08-25）
+
+actual-interface修复HEAD `6748f89`通过A100 Critic 171/171、SetFlow 123/123、V3.3.2 96/96后，重复相同合成
+smoke并扩展到upper-six backward。它在bottom首层前发现remote encoder的`alibi`是普通CPU Tensor属性，并非
+registered buffer，因此`model.to(cuda)`不会移动它；完整remote encoder forward原本会在运行时显式搬运该Tensor。
+全量cache仍未启动、usable bottom output未产生、upper forward未开始、parameter update与protected read均为0。
+
+bottom encoder构造现一次性把ALiBi移到所选物理GPU；共享stack硬要求hidden、attention mask和ALiBi同设备，禁止
+每batch隐式CPU→GPU复制。upper adapter的ALiBi已是本模块non-persistent buffer，随`self.to(device)`移动，无需
+额外分支。focused 26/26、V3.3.2 96/96、compile/diff-check PASS；必须再次同步并让bottom+upper合成smoke完整
+PASS后才启动cache。

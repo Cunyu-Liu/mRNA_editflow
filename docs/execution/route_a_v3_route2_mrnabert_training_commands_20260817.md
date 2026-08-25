@@ -4430,3 +4430,10 @@ blocks 0–5；upper adapter调用blocks 6–11且保留gradient checkpointing�
 
 focused 26/26、合并V4 228/228、V3.3.2 96/96、compile/diff-check PASS。合成smoke失败不构成全量cache attempt；
 下一步是提交推送、同步精确HEAD、A100测试并重跑同一smoke，只有smoke PASS才启动cache。
+
+### ALiBi device smoke修复（2026-08-25）
+
+`6748f89`的A100 tests通过后，bottom+upper合成smoke在bottom bias相加前停止：remote encoder的ALiBi不是buffer，
+仍在CPU，而hidden/mask已在cuda:0。该检查发生在全量cache启动前。bottom encoder初始化现显式执行一次
+`encoder.alibi.to(device)`；共享unpad stack要求三者device完全一致。upper ALiBi仍由本adapter注册为
+non-persistent buffer并由`self.to(device)`管理。focused 26/26、V3.3.2 96/96、compile/diff-check PASS。

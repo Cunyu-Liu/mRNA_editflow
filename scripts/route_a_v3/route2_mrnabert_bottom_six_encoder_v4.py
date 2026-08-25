@@ -99,6 +99,10 @@ def forward_mrnabert_unpadded_layers_v4(
         hidden.ndim == 3 and attention_mask.shape == hidden.shape[:2],
         "mRNABERT hidden/mask geometry changed",
     )
+    _require(
+        hidden.device == attention_mask.device == alibi.device,
+        "mRNABERT hidden, mask, and ALiBi must share one device",
+    )
     batch, seqlen = hidden.shape[:2]
     _require(
         alibi.ndim == 4
@@ -281,6 +285,11 @@ class FrozenMRNABERTBottomSixEncoderV4:
         model.load_state_dict(base_state, strict=True)
         del checkpoint, base_state
         self.model = model.to(device).eval()
+        _require(
+            hasattr(self.model.encoder, "alibi"),
+            "mRNABERT encoder ALiBi tensor is absent",
+        )
+        self.model.encoder.alibi = self.model.encoder.alibi.to(device)
         self.model.requires_grad_(False)
         self.tokenizer = tokenizer
         self.device = device

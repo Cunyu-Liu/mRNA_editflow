@@ -1,9 +1,18 @@
 {
   "schema_version": "route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_audit.v1",
-  "status": "LOCAL_FIX_VERIFIED_A100_RESYNC_AND_SYNTHETIC_SMOKE_PENDING",
+  "status": "ALIBI_DEVICE_FIX_VERIFIED_LOCALLY_A100_RESYNC_AND_SYNTHETIC_SMOKE_PENDING",
   "formal_smoke_git_head": "15f74b30322cb02e9147a03892c9cac35251c86a",
   "formal_smoke_input": "FIXED_SYNTHETIC_64_NT_ACGT_REPEAT_NO_PROJECT_DATA",
   "formal_smoke_result": "FAILED_BEFORE_CACHE_ATTEMPT_ON_ACTUAL_REMOTE_LAYER_SIGNATURE",
+  "formal_smoke_followup": {
+    "git_head": "6748f8981d0dba53da3afbc92acbb30e5ea3bdec",
+    "bottom_and_upper_smoke_started": true,
+    "failure": "REMOTE_ENCODER_ALIBI_IS_PLAIN_CPU_TENSOR_NOT_MOVED_BY_MODEL_TO_CUDA",
+    "bottom_usable_output_produced": false,
+    "upper_forward_started": false,
+    "full_cache_attempt_created": false,
+    "parameter_update_count": 0
+  },
   "full_cache_attempt_created": false,
   "actual_remote_model_interface": {
     "model_class": "REMOTE_CODE_BERT_MODEL",
@@ -26,6 +35,8 @@
     "bottom_layer_scope": [0, 1, 2, 3, 4, 5],
     "upper_layer_scope": [6, 7, 8, 9, 10, 11],
     "upper_alibi_nonpersistent_buffer": true,
+    "bottom_alibi_explicitly_moved_once_at_initialization": true,
+    "shared_stack_requires_hidden_mask_and_alibi_same_device": true,
     "bottom_or_embedding_parameters_in_optimizer": false,
     "activation_checkpointing_preserved": true
   },
