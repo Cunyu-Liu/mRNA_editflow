@@ -4403,3 +4403,15 @@ Git正式入口。
 
 验证：targeted 52/52、合并V4 224/224、V3.3.2 96/96、compile、shell syntax、helper smoke与diff-check均PASS。
 本项仅完成前瞻执行软件，尚未在A100执行；缓存重试未terminal前不做current-HEAD sync。
+
+## V4 bottom-six Transformers 5.14 block-call修复（2026-08-25）
+
+修复dtype参数后的同一cache重试在首个正式block调用处再次技术terminal。终态栈显示A100的Transformers 5.14.1
+已删除`BertModel.get_head_mask`。随后在不加载projection/sequence/outcome的环境检查中进一步确认：
+`BertLayer.forward`只接收hidden/mask等当前参数并直接返回Tensor。旧共享forward同时存在两个历史API假设：调用
+已删除helper，以及把Tensor当tuple取`[0]`。
+
+现每个bottom-six block只调用`layer(hidden, attention_mask=extended_attention_mask)`，要求返回值为Tensor并直接
+作为下层hidden；不再传head mask或output-attention开关。mock layer也改为Tensor return，直接覆盖formal 5.14行为。
+focused 86/86、合并V4 224/224、V3.3.2 96/96、compile/diff-check PASS；第二attempt的failure/receipt/log仍需
+完整归档后才能重试。

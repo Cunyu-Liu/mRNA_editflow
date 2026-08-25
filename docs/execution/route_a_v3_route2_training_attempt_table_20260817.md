@@ -3547,3 +3547,21 @@ targeted focused=52/52，当前A100-selection同定义本地合并V4=224/224，�
 diff-check PASS。本项未同步A100、未生成guidance authorization/config、未启动value optimizer、SMC或metric；当前
 cache重试仍绑定`d44c7cf8e5b6bb1dc05d8ff93e925dc7aa4da88a`，在其terminal前不得同步guidance提交。审计：
 `audits/route_a_v3_route2_xeditflow_v4_guidance_screen_execution_chain_v1.json`。
+
+## V4 bottom-six Transformers 5.14 layer API repair（2026-08-25）
+
+修复HEAD `d44c7cf8e5b6bb1dc05d8ff93e925dc7aa4da88a` 的相同冻结cache技术重试仍在第一个可用batch前终态
+失败；SetFlow current-HEAD只读adoption再次成功。Critic failure与SetFlow receipt各只读取一次，Critic终态日志只读
+一次；return code=1、summary不存在、optimizer attempt=0、Development TEST/new Evaluation read=0。
+
+第二个可达根因为A100 formal环境使用Transformers 5.14.1：`BertModel.get_head_mask`已删除，而且
+`BertLayer.forward`直接返回hidden Tensor，不再返回旧tuple。为避免继续盲目重试，终态后只检查了安装类的
+`BertEmbeddings.forward`、`BertLayer.forward`与mask helper函数签名和`BertLayer.forward`源码，不读取任何数据。
+共享cache/online forward现不再调用已删除的head-mask helper，也不传已删除的attention-output控制参数；每个block
+必须直接返回Tensor，否则硬失败。测试double同步使用当前正式API的Tensor返回，因此不会再由旧mock掩盖不兼容。
+
+focused=86/86、当前A100-selection同定义本地合并V4=224/224、精确V3.3.2=96/96、compile/diff-check PASS。
+表示、chunk、model revision、数据、seed、训练预算和
+gate均不变；这是同一cache的第二个实现修复，不是新模型/新实验或性能NO-GO。旧`d44c7cf` failure、success receipt、
+authorization、runtime和日志必须像首个attempt一样先归档，再允许修复HEAD上的同任务重试。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_transformers_5_14_layer_api_failure_fix_v1.json`。

@@ -31,7 +31,7 @@ class _Layer(nn.Module):
         self.increment = increment
 
     def forward(self, hidden, **_):
-        return (hidden + self.increment,)
+        return hidden + self.increment
 
 
 class _Model(nn.Module):
@@ -45,10 +45,6 @@ class _Model(nn.Module):
         assert input_shape == attention_mask.shape
         self.extended_attention_mask_dtype = dtype
         return attention_mask[:, None, None, :]
-
-    def get_head_mask(self, _, layer_count):
-        return [None] * layer_count
-
 
 def _sequence(value: float = 0.0) -> BottomEncodedSequenceV4:
     hidden = torch.tensor(

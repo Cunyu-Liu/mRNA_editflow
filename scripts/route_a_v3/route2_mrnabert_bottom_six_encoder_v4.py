@@ -67,15 +67,16 @@ def forward_bottom_six_hidden_v4(
         input_ids.shape,
         dtype=hidden.dtype,
     )
-    head_mask = model.get_head_mask(None, len(layers))
-    for layer_index, layer in enumerate(layers[:6]):
+    for layer in layers[:6]:
         output = layer(
             hidden,
             attention_mask=extended_attention_mask,
-            head_mask=head_mask[layer_index],
-            output_attentions=False,
         )
-        hidden = output[0]
+        _require(
+            isinstance(output, torch.Tensor),
+            "mRNABERT encoder block no longer returns a hidden-state tensor",
+        )
+        hidden = output
     _require(hidden.shape[:2] == input_ids.shape, "bottom-six hidden token geometry changed")
     _require(torch.isfinite(hidden).all().item(), "bottom-six hidden is nonfinite")
     return hidden
