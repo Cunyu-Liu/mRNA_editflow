@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_a100_current_head_sync_runner_v4.v1",
+  "recorded_at_local": "2026-08-25T13:11:07+08:00",
+  "status": "A100_CURRENT_HEAD_SYNC_RUNNER_FORMALIZED_NOT_EXECUTED",
+  "git_head_before_delivery": "9be9180f521b0e8ad3245ee4828b4aaed143aa76",
+  "implementation": {
+    "formal_runner": "scripts/route_a_v3/sync_test_route2_a100_current_head_v4.py",
+    "formal_test": "tests/route_a_v3/test_sync_test_route2_a100_current_head_v4.py",
+    "projectless_transport_wrapper": "work/run_a100_sync_test_v4.sh",
+    "obsolete_projectless_python_copy_removed": true
+  },
+  "barriers": {
+    "exact_five_terminal_artifacts_required": true,
+    "c3_read_once_reference_required": true,
+    "all_five_old_pids_inactive_required": true,
+    "remote_worktree_clean_before_and_after_required": true,
+    "fast_forward_only": true,
+    "exact_expected_head_required": true,
+    "critic_setflow_and_exact_v332_tests_required": true,
+    "test_failure_can_authorize_cache": false
+  },
+  "focused_selection_repair": {
+    "c3_read_once_producer_test_explicitly_selected": true,
+    "sync_runner_test_explicitly_selected": true,
+    "overlapping_test_patterns_deduplicated": true,
+    "exact_v332_required_pass_count": 96
+  },
+  "verification": {
+    "sync_runner_and_read_once_focused": "8/8 PASS",
+    "complete_local_critic_v4_related_cohort": "94/94 PASS",
+    "exact_local_v332_cohort": "96/96 PASS",
+    "python_compile": "PASS",
+    "transport_wrapper_shell_syntax": "PASS",
+    "projectless_v4_launch_helper_smoke": "PASS"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "a100_connection_made": false,
+    "a100_current_head_sync_executed": false,
+    "a100_tests_executed": false,
+    "cache_launch_authorized": false,
+    "v4_cache_or_preflight_executed": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_claim_change": false,
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md"
+}

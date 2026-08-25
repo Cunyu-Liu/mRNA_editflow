@@ -4202,3 +4202,12 @@ producer focused=5/5、完整Critic V4相关=91/91、精确V3.3.2=96/96、compil
 marker/reference/terminal content均未读取或materialize；protected read=0，A100 current-HEAD测试仍等待五项C3
 自然terminal。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_read_once_interruption_guard_v1.json`。
+
+## A100 current-HEAD sync runner focused record（2026-08-25）
+
+A100同步/测试执行器现作为Git正式脚本交付；项目外传输壳从精确local HEAD打包该脚本，不再维护第二份Python
+实现。Critic A100 test selection显式包含C3 read-once producer与同步器自身回归，重叠glob仍去重。
+
+定向=8/8、完整Critic V4相关=94/94、精确V3.3.2=96/96、compile/shell/helper smoke PASS。未连接或同步A100，
+当前1/5 C3 terminal屏障不变，cache authorization与protected read均为0。审计：
+`audits/route_a_v3_route2_a100_current_head_sync_runner_v4_v1.json`。

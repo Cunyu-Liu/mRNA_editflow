@@ -3303,3 +3303,17 @@ producer focused 5/5、完整Critic V4相关91/91、精确V3.3.2 cohort 96/96、
 terminal，marker/reference均未materialize，terminal payload read=0，Development TEST/new Evaluation read=0，
 optimizer attempt不变；科学claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_read_once_interruption_guard_v1.json`。
+
+## A100 exact-current-HEAD sync/test runner formalization（2026-08-25）
+
+C3 read-once之后即将执行的A100同步器原先只存在于项目外helper目录，且Critic focused glob不能匹配
+`test_adjudicate_route2_xeditcritic_v3_c3_v4_reference.py`，因此current-HEAD A100 cohort可能漏掉刚修复的read-once
+回归。现将同步器迁入Git正式脚本，并让项目外壳只负责传输该current-HEAD脚本；旧项目外Python副本已移除。
+
+正式Critic测试集合显式纳入C3 read-once producer测试与同步器自身测试。同步器继续硬要求五项精确terminal、
+C3 reference、旧PID全部退出、远端工作树前后干净、`ff-only`到精确expected HEAD、Critic/SetFlow/V3.3.2
+三套测试通过；任何失败均不能生成cache授权证据。
+
+定向8/8、完整Critic V4相关94/94、精确V3.3.2 96/96、compile、shell syntax与项目外helper smoke均PASS。
+本项未连接A100、未同步或运行远端测试；C3仍为1/5 terminal，cache/preflight/optimizer未启动，protected read=0，
+科学claim不变。审计：`audits/route_a_v3_route2_a100_current_head_sync_runner_v4_v1.json`。
