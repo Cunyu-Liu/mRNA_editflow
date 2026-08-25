@@ -3905,3 +3905,16 @@ screen_package_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf5
 检查后使用60分钟窗口。本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。A100在全部
 screen launch-head jobs terminal前不得同步到后续文档HEAD。审计：
 `audits/route_a_v3_route2_xedit_v4_screen_package_launch_v1.json`。
+
+### V4 screen first five-minute health window（2026-08-25 21:13:51 +08:00）
+
+远端时钟21:16:19（本地校准偏移+148秒）时，scheduler PID `2218802`存活。SetFlow full/single-mode分别在
+GPU1/GPU2存活并注册CUDA；Critic NO-CROSS/NO-MOE分别在GPU0/GPU3存活，检查时仍处于早期启动/加载且未在
+CUDA process snapshot中出现。Critic其余六项`c0_v4`、`v4_full`、source-only、edit-metadata-only、
+no-candidate-sequence与candidate-bundle-permutation均已有各自failure artifact且无summary。
+
+本检查只观察PID、CUDA与artifact存在性，没有读取六份failure payload、scheduler/job log、active stdout/stderr、
+curve或metric，因此不能在cohort未全部terminal时判断共同技术根因，也不构成scientific NO-GO。四个存活项不停止、
+不修改、不重启；本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。下一检查严格不早于
+本地22:13:51。Development TEST/new Evaluation reads保持0。审计：
+`audits/route_a_v3_route2_xedit_v4_screen_first_health_20260825_211351.json`。

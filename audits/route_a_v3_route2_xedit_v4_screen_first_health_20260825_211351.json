@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_screen_health.v1",
+  "status": "ACTIVE_WITH_SIX_CRITIC_FAILURE_ARTIFACTS_UNREAD",
+  "local_check_time": "2026-08-25T21:13:51+08:00",
+  "remote_check_time": "2026-08-25T21:16:19+08:00",
+  "remote_clock_offset_seconds": 148,
+  "screen_runner_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "scheduler_pid": 2218802,
+  "scheduler_alive": true,
+  "scheduler_elapsed": "00:05:36",
+  "active_children": [
+    {
+      "component": "setflow",
+      "run_id": "v4_single_mode",
+      "pid": 2218813,
+      "physical_gpu_index": 2,
+      "process_state": "D",
+      "cuda_registration_observed": true,
+      "cuda_memory_mib": 2774
+    },
+    {
+      "component": "setflow",
+      "run_id": "v4_full",
+      "pid": 2218814,
+      "physical_gpu_index": 1,
+      "process_state": "R",
+      "cuda_registration_observed": true,
+      "cuda_memory_mib": 2910
+    },
+    {
+      "component": "critic",
+      "run_id": "v4_no_cross",
+      "pid": 2248406,
+      "physical_gpu_index": 0,
+      "process_state": "R",
+      "cuda_registration_observed": false,
+      "elapsed": "00:01:29"
+    },
+    {
+      "component": "critic",
+      "run_id": "v4_no_moe",
+      "pid": 2256499,
+      "physical_gpu_index": 3,
+      "process_state": "R",
+      "cuda_registration_observed": false,
+      "elapsed": "00:00:01"
+    }
+  ],
+  "critic_terminal_summary_runs": [],
+  "critic_terminal_failure_runs": [
+    "c0_v4",
+    "v4_full",
+    "v4_source_only",
+    "v4_edit_metadata_only",
+    "v4_no_candidate_sequence",
+    "v4_candidate_bundle_permutation"
+  ],
+  "critic_active_or_pending_runs": ["v4_no_cross", "v4_no_moe"],
+  "setflow_terminal_summary_runs": [],
+  "setflow_terminal_failure_runs": [],
+  "setflow_active_or_pending_runs": ["v4_full", "v4_single_mode"],
+  "failure_payload_read": false,
+  "active_summary_log_curve_or_metric_read": false,
+  "job_stopped_restarted_or_modified": false,
+  "local_focused_passed": 39,
+  "local_focused_failed": 0,
+  "local_exact_v332_passed": 96,
+  "local_exact_v332_failed": 0,
+  "next_check_not_before_local": "2026-08-25T22:13:51+08:00",
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

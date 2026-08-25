@@ -1187,3 +1187,11 @@ screen-runner identities. This event begins the prospective performance test
 but is not itself a result: no active metric, Development TEST outcome, or new
 Evaluation outcome was read, and all model-advantage and submission claims
 remain pending terminal screen adjudication.
+
+At the preregistered first health window, six Critic arms had produced failure
+artifacts while the two remaining Critic mechanism ablations and both SetFlow
+arms were still alive. No failure payload, active log, or performance metric was
+read at that point. This existence-only observation is therefore neither a
+scientific screen verdict nor model-performance evidence; interpretation is
+deferred until the complete ten-run package reaches terminal state and the
+frozen adjudication chain runs.

@@ -41,6 +41,16 @@
   "local_exact_v332_failed": 0,
   "first_check_not_before_local": "2026-08-25T21:13:20+08:00",
   "subsequent_check_interval_minutes": 60,
+  "first_check": {
+    "local_time": "2026-08-25T21:13:51+08:00",
+    "remote_time": "2026-08-25T21:16:19+08:00",
+    "scheduler_alive": true,
+    "critic_failure_artifact_count": 6,
+    "critic_active_or_pending_count": 2,
+    "setflow_active_or_pending_count": 2,
+    "failure_payload_read": false,
+    "next_check_not_before_local": "2026-08-25T22:13:51+08:00"
+  },
   "development_test_outcome_reads": 0,
   "new_final_evaluation_outcome_reads": 0,
   "formal_tag_or_release_created": false,
