@@ -4349,3 +4349,14 @@ LOSO runtime/readiness与SetFlow confirmation post-training runtime/gate的终�
 focused=43/43、A100同步器当前同定义V4=218/218、V3.3.2=96/96、compile/shell/helper smoke PASS。
 本入口未执行，A100/CUDA/optimizer/metric均未接触，Development TEST/new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditflow_v4_guidance_dual_readiness_launcher_v1.json`。
+
+## C3 Option A terminal closure/read-once record（2026-08-25）
+
+用户授权停止四个未完成旧C3并直接转V4。身份复核先于信号发送，发现四个登记trainer已全部退出且没有terminal，
+故发送信号数为0；四项以`MissingTerminalAfterProcessExitBeforeUserStop`技术failure闭合，不重跑、不恢复、不覆盖
+已有产物。source-only自然summary保持只读。
+
+唯一read-once得到source-only Spearman `-0.03240671978468869`，C3 full无有效metric，并按前瞻规则冻结C2 fallback
+`0.10426561121126687`为V4 C3 reference。所有C3后继均关闭，Development TEST/new Evaluation read=0。
+focused=9/9、V3.3.2=96/96。终态记录提交推送后，才允许A100 exact-current-HEAD同步。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_option_a_terminal_read_once_20260825.json`。

@@ -1,0 +1,34 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_option_a_terminal_read_once_audit.v1",
+  "status": "C3_OPTION_A_TERMINAL_READ_ONCE_RECORDED",
+  "user_selected_option": "A_STOP_OLD_C3_AND_PROCEED_DIRECTLY_TO_V4",
+  "remote_closure_time": "2026-08-25T14:49:00+08:00",
+  "registered_trainers_present_before_stop_action": 0,
+  "signals_sent": 0,
+  "technical_terminal_failures_created": [
+    "c3",
+    "c3_edit_metadata_only",
+    "c3_no_candidate_sequence",
+    "c3_candidate_bundle_permutation"
+  ],
+  "technical_failure_reason": "REGISTERED_PROCESS_ABSENT_WITHOUT_TERMINAL_BEFORE_ANY_STOP_SIGNAL",
+  "source_only_modified": false,
+  "source_only_terminal_kind": "SUMMARY",
+  "source_only_task_macro_spearman": -0.03240671978468869,
+  "c3_full_terminal_kind": "FAILURE",
+  "predeclared_fallback_used": true,
+  "reference_source": "PREDECLARED_HIGHEST_VALID_V3_FULL_DIAGNOSTIC_C2",
+  "c3_reference_task_macro_spearman": 0.10426561121126687,
+  "terminal_payload_read_count": 5,
+  "read_once_status": "C3_V4_REFERENCE_READ_ONCE_COMPLETE",
+  "c3_confirmation_authorized": false,
+  "c3_development_test_authorized": false,
+  "c3_refit_loso_or_guidance_authorized": false,
+  "all_existing_artifacts_retained": true,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "tests": {
+    "focused_passed": 9,
+    "v3_3_2_passed": 96
+  }
+}

@@ -3484,3 +3484,17 @@ Evaluation read=0。
 focused=43/43、current-A100-selection local 218/218、V3.3.2 96/96、compile/shell/helper smoke PASS。
 本项未连接A100、未生成授权、未启动optimizer/inference，Development TEST仍为当前0 access，claim不变。审计：
 `audits/route_a_v3_route2_xeditflow_v4_guidance_dual_readiness_launcher_v1.json`。
+
+## C3 Option A closure and terminal read-once（2026-08-25）
+
+用户明确选择Option A：不再等待或重跑旧C3，保留终态并直接转V4。执行停止前的精确进程解析发现，full、
+edit-metadata-only、no-candidate-sequence与candidate-bundle-permutation四个登记trainer均已自行消失，且均未生成
+summary/failure；因此实际发送信号数为0，不能把进程结束归因于本次停止操作。四项分别补为
+`TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE`，原因固定为“进程在任何停止信号前已退出但缺少terminal”；
+这是运行技术失败，不是模型性能失败。已有checkpoint、日志与部分产物全部保留，source-only未修改。
+
+五项随后完成唯一一次read-once：C3 full与上述三control均无有效metric；source-only task-macro Spearman为
+`-0.03240671978468869`；按预声明规则启用最高有效V3 full diagnostic C2，V4 C3 reference为
+`0.10426561121126687`。C3 confirmation、Development TEST、refit/LOSO与guidance均不授权；protected read为0。
+focused=9/9、V3.3.2=96/96。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_option_a_terminal_read_once_20260825.json`。
