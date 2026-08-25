@@ -1,0 +1,47 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_screen_health.v1",
+  "status": "UNCHANGED_SET_FLOW_ACTIVE_AFTER_EIGHT_HOURS",
+  "local_check_time": "2026-08-26T05:19:42+08:00",
+  "remote_check_time": "2026-08-26T05:22:03+08:00",
+  "remote_clock_offset_seconds": 141,
+  "screen_runner_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "scheduler_pid": 2218802,
+  "scheduler_alive": true,
+  "scheduler_elapsed_seconds": 29480,
+  "critic_terminal_summary_count": 0,
+  "critic_terminal_failure_count": 8,
+  "critic_active_count": 0,
+  "setflow_terminal_summary_count": 0,
+  "setflow_terminal_failure_count": 0,
+  "setflow_active_count": 2,
+  "setflow_active": [
+    {
+      "run_id": "v4_full",
+      "pid": 2218814,
+      "physical_gpu_index": 1,
+      "cuda_registration_observed": true,
+      "cuda_memory_mib": 2912
+    },
+    {
+      "run_id": "v4_single_mode",
+      "pid": 2218813,
+      "physical_gpu_index": 2,
+      "cuda_registration_observed": true,
+      "cuda_memory_mib": 2774
+    }
+  ],
+  "failure_payload_read": false,
+  "active_summary_log_curve_or_metric_read": false,
+  "job_stopped_restarted_or_modified": false,
+  "next_check_not_before_local": "2026-08-26T06:19:42+08:00",
+  "local_validation": {
+    "focused_tests_passed": 39,
+    "focused_tests_failed": 0,
+    "exact_v332_tests_passed": 96,
+    "exact_v332_tests_failed": 0,
+    "json_validation_passed": true,
+    "git_diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

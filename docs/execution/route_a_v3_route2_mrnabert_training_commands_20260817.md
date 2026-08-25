@@ -4638,3 +4638,8 @@ single-mode仍在GPU1/GPU2运行。failure内容、log和metric仍未读。Criti
 22,188秒。状态查询中的CUDA进程过滤发生shell引用错误，因此本窗口没有刷新CUDA快照；为遵守低频监控纪律，
 没有在同一窗口立即补查。既有八份Critic failure payload及全部active log/curve/metric仍未读取，作业未被停止、
 修改或重启。下一窗口`>=2026-08-26 04:18:13 +08:00`。
+
+第六个实际记录窗口本地05:19:42、远端05:22:03确认状态未变：scheduler存活且已运行29,480秒；八个Critic
+arm仍为failure、零summary；SetFlow full/single-mode无terminal artifact，PID `2218814/2218813`分别在
+GPU1/GPU2注册CUDA并占用2,912/2,774MiB。没有读取failure payload或active log/curve/metric，也没有停止、修改
+或重启作业。下一窗口`>=2026-08-26 06:19:42 +08:00`。
