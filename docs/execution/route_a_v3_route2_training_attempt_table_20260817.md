@@ -3565,3 +3565,23 @@ focused=86/86、当前A100-selection同定义本地合并V4=224/224、精确V3.3
 gate均不变；这是同一cache的第二个实现修复，不是新模型/新实验或性能NO-GO。旧`d44c7cf` failure、success receipt、
 authorization、runtime和日志必须像首个attempt一样先归档，再允许修复HEAD上的同任务重试。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_transformers_5_14_layer_api_failure_fix_v1.json`。
+
+## V4 actual mRNABERT unpadded bottom/upper-six interface repair（2026-08-25）
+
+`15f74b3`通过A100 Critic 170/170、SetFlow 123/123与V3.3.2 96/96后，没有直接启动第三次全量cache；先在GPU0
+用固定64-nt合成RNA运行一次不写产物的formal-environment smoke。该smoke未加载projection、label或outcome，但在
+首层调用发现实际mRNABERT revision的encoder不是标准Transformers BERT：真实block签名为
+`hidden_states, cu_seqlens, seqlen, subset_idx, indices, attn_mask, bias`。因此此前基于标准`BertLayer`源码的第二修复
+在新cache attempt前即被证伪并标记superseded；没有生成第三个cache failure terminal。
+
+随后只检查实际实例化的mRNABERT `BertModel/BertEncoder/BertLayer`源码与ALiBi rebuild逻辑。原模型的精确路径是：
+padded embedding按attention mask unpad，构造padding additive mask与12-head ALiBi bias，逐层传播flattened active
+tokens，最后按indices repad。V4现把该真实路径实现为bottom/upper共用函数：bottom运行blocks 0–5；upper从缓存的
+padded bottom hidden重新unpad，运行trainable blocks 6–11并repad。upper只注册六个trainable layer，1024-token
+ALiBi作为non-persistent buffer，unpad/pad函数来自冻结remote module；bottom/embedding参数仍不进入optimizer。
+
+新增variable-length unpad/repad测试，upper-six同时验证六层梯度与activation checkpointing。focused=26/26、当前
+A100-selection同定义本地合并V4=228/228、V3.3.2=96/96、compile/diff-check PASS。表示、revision、chunk、数据、
+seed、参数容量、loss与gate均不变；formal synthetic smoke的project/protected reads均为0。必须在该修复HEAD通过
+A100 current-HEAD tests与相同synthetic smoke后，才允许第三次同任务cache启动。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_v1.json`。

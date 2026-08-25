@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_xeditcritic_v4_transformers_5_14_layer_api_failure_fix_audit.v1",
-  "status": "LOCAL_FIX_VERIFIED_A100_RESYNC_AND_SAME_TASK_RETRY_PENDING",
+  "status": "SUPERSEDED_BEFORE_NEXT_CACHE_ATTEMPT_BY_ACTUAL_MRNABERT_REMOTE_INTERFACE_AUDIT",
   "failed_retry_git_head": "d44c7cf8e5b6bb1dc05d8ff93e925dc7aa4da88a",
   "formal_transformers_version": "5.14.1",
   "terminal_observation": {
@@ -28,6 +28,9 @@
   "representation_or_method_changed": false,
   "optimizer_attempt_added": false,
   "prior_terminal_artifacts_must_be_archived_before_retry": true,
+  "subsequent_full_cache_attempt_launched_after_this_fix": false,
+  "formal_synthetic_smoke_passed": false,
+  "superseded_by": "audits/route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_v1.json",
   "tests": {
     "local_focused_passed": 86,
     "local_combined_v4_passed": 224,

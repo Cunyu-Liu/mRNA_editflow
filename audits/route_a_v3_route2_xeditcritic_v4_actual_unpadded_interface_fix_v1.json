@@ -1,0 +1,43 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_actual_unpadded_interface_fix_audit.v1",
+  "status": "LOCAL_FIX_VERIFIED_A100_RESYNC_AND_SYNTHETIC_SMOKE_PENDING",
+  "formal_smoke_git_head": "15f74b30322cb02e9147a03892c9cac35251c86a",
+  "formal_smoke_input": "FIXED_SYNTHETIC_64_NT_ACGT_REPEAT_NO_PROJECT_DATA",
+  "formal_smoke_result": "FAILED_BEFORE_CACHE_ATTEMPT_ON_ACTUAL_REMOTE_LAYER_SIGNATURE",
+  "full_cache_attempt_created": false,
+  "actual_remote_model_interface": {
+    "model_class": "REMOTE_CODE_BERT_MODEL",
+    "encoder_representation": "UNPADDED_ACTIVE_TOKEN_ROWS",
+    "layer_inputs": [
+      "hidden_states",
+      "cu_seqlens",
+      "seqlen",
+      "subset_idx",
+      "indices",
+      "attn_mask",
+      "bias"
+    ],
+    "attention_bias": "PADDING_ADDITIVE_MASK_PLUS_12_HEAD_ALIBI",
+    "layer_output": "UNPADDED_HIDDEN_TENSOR",
+    "final_operation": "PAD_INPUT"
+  },
+  "repair": {
+    "shared_bottom_online_and_upper_stack": true,
+    "bottom_layer_scope": [0, 1, 2, 3, 4, 5],
+    "upper_layer_scope": [6, 7, 8, 9, 10, 11],
+    "upper_alibi_nonpersistent_buffer": true,
+    "bottom_or_embedding_parameters_in_optimizer": false,
+    "activation_checkpointing_preserved": true
+  },
+  "representation_or_method_changed": false,
+  "optimizer_attempt_added": false,
+  "tests": {
+    "local_focused_passed": 26,
+    "local_combined_v4_passed": 228,
+    "local_v3_3_2_passed": 96,
+    "compile_passed": true,
+    "diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

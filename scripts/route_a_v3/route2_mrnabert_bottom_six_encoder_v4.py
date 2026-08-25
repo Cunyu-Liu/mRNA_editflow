@@ -6,10 +6,11 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Iterable, Mapping
+from typing import Callable, Iterable, Mapping, Sequence
 
 import torch
 from torch import nn
+from torch.utils.checkpoint import checkpoint as activation_checkpoint
 
 from core.route2_bottom_encoder_chunk_cache_v4 import (
     BottomEncodedChunkV4,
@@ -62,24 +63,98 @@ def forward_bottom_six_hidden_v4(
         input_ids=input_ids,
         token_type_ids=token_type_ids,
     )
-    extended_attention_mask = model.get_extended_attention_mask(
-        attention_mask,
-        input_ids.shape,
-        dtype=hidden.dtype,
+    modeling_module = sys.modules[model.__class__.__module__]
+    _require(
+        hasattr(modeling_module, "unpad_input")
+        and hasattr(modeling_module, "pad_input"),
+        "mRNABERT unpad/repad runtime is absent",
     )
-    for layer in layers[:6]:
-        output = layer(
-            hidden,
-            attention_mask=extended_attention_mask,
-        )
-        _require(
-            isinstance(output, torch.Tensor),
-            "mRNABERT encoder block no longer returns a hidden-state tensor",
-        )
-        hidden = output
+    hidden = forward_mrnabert_unpadded_layers_v4(
+        layers[:6],
+        hidden,
+        attention_mask,
+        alibi=model.encoder.alibi,
+        unpad_input=modeling_module.unpad_input,
+        pad_input=modeling_module.pad_input,
+    )
     _require(hidden.shape[:2] == input_ids.shape, "bottom-six hidden token geometry changed")
     _require(torch.isfinite(hidden).all().item(), "bottom-six hidden is nonfinite")
     return hidden
+
+
+def forward_mrnabert_unpadded_layers_v4(
+    layers: Sequence[nn.Module],
+    hidden: torch.Tensor,
+    attention_mask: torch.Tensor,
+    *,
+    alibi: torch.Tensor,
+    unpad_input: Callable[..., tuple[torch.Tensor, torch.Tensor, torch.Tensor, int]],
+    pad_input: Callable[..., torch.Tensor],
+    activation_checkpointing: bool = False,
+) -> torch.Tensor:
+    """Run this mRNABERT revision's real unpadded encoder-layer interface."""
+
+    _require(bool(layers), "mRNABERT layer stack is empty")
+    _require(
+        hidden.ndim == 3 and attention_mask.shape == hidden.shape[:2],
+        "mRNABERT hidden/mask geometry changed",
+    )
+    batch, seqlen = hidden.shape[:2]
+    _require(
+        alibi.ndim == 4
+        and alibi.shape[0] == 1
+        and alibi.shape[2] >= seqlen
+        and alibi.shape[3] >= seqlen,
+        "mRNABERT ALiBi geometry is too short",
+    )
+    active = attention_mask.to(torch.bool)
+    values, indices, cu_seqlens, maximum_seqlen = unpad_input(hidden, active)
+    _require(
+        values.ndim == 2
+        and values.shape[1] == hidden.shape[2]
+        and indices.ndim == 1
+        and cu_seqlens.shape == (batch + 1,)
+        and int(maximum_seqlen) <= seqlen,
+        "mRNABERT unpadded geometry changed",
+    )
+    additive = attention_mask.unsqueeze(1).unsqueeze(2).to(dtype=alibi.dtype)
+    additive = (1.0 - additive) * -10000.0
+    bias = additive[:, :, :seqlen, :seqlen] + alibi[:, :, :seqlen, :seqlen]
+
+    for layer in layers:
+        def layer_forward(
+            layer_values: torch.Tensor,
+            active_layer: nn.Module = layer,
+        ) -> torch.Tensor:
+            output = active_layer(
+                layer_values,
+                cu_seqlens,
+                seqlen,
+                None,
+                indices,
+                attn_mask=attention_mask,
+                bias=bias,
+            )
+            _require(
+                isinstance(output, torch.Tensor)
+                and output.shape == layer_values.shape,
+                "mRNABERT encoder block output geometry changed",
+            )
+            return output
+
+        values = (
+            activation_checkpoint(
+                layer_forward,
+                values,
+                use_reentrant=False,
+                preserve_rng_state=True,
+            )
+            if activation_checkpointing and torch.is_grad_enabled()
+            else layer_forward(values)
+        )
+    padded = pad_input(values, indices, batch, seqlen)
+    _require(padded.shape == hidden.shape, "mRNABERT repadded geometry changed")
+    return padded
 
 
 @dataclass(frozen=True, order=True)

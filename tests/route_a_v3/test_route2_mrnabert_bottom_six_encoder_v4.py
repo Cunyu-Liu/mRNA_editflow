@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pytest
 import torch
 from torch import nn
@@ -10,6 +8,30 @@ from core.route2_bottom_encoder_chunk_cache_v4 import (
     BottomEncodedChunkV4,
     BottomEncodedSequenceV4,
 )
+
+
+def unpad_input(hidden: torch.Tensor, active: torch.Tensor):
+    indices = torch.nonzero(active.flatten(), as_tuple=False).flatten()
+    lengths = active.sum(dim=1, dtype=torch.int32)
+    cu_seqlens = torch.zeros(
+        active.shape[0] + 1,
+        dtype=torch.int32,
+        device=hidden.device,
+    )
+    cu_seqlens[1:] = torch.cumsum(lengths, dim=0)
+    values = hidden.flatten(0, 1).index_select(0, indices)
+    return values, indices, cu_seqlens, int(lengths.max().item())
+
+
+def pad_input(
+    values: torch.Tensor,
+    indices: torch.Tensor,
+    batch: int,
+    seqlen: int,
+) -> torch.Tensor:
+    padded = values.new_zeros((batch * seqlen, values.shape[-1]))
+    padded.index_copy_(0, indices, values)
+    return padded.reshape(batch, seqlen, values.shape[-1])
 from core.route2_mrnabert_edit_site_features_v3 import ChunkSpan
 from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
     MRNABERTBottomSixEncoderV4Error,
@@ -30,21 +52,39 @@ class _Layer(nn.Module):
         super().__init__()
         self.increment = increment
 
-    def forward(self, hidden, **_):
+    def forward(
+        self,
+        hidden,
+        cu_seqlens,
+        seqlen,
+        subset_idx,
+        indices,
+        *,
+        attn_mask,
+        bias,
+    ):
+        assert cu_seqlens.ndim == indices.ndim == 1
+        assert seqlen == attn_mask.shape[1]
+        assert subset_idx is None
+        assert bias.shape[-2:] == (seqlen, seqlen)
         return hidden + self.increment
+
+
+class _Encoder(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.layer = nn.ModuleList(
+            [_Layer(float(index + 1)) for index in range(12)]
+        )
+        self.register_buffer("alibi", torch.zeros((1, 1, 16, 16)))
 
 
 class _Model(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.embeddings = _Embeddings()
-        self.encoder = SimpleNamespace(layer=nn.ModuleList([_Layer(float(index + 1)) for index in range(12)]))
-        self.extended_attention_mask_dtype = None
+        self.encoder = _Encoder()
 
-    def get_extended_attention_mask(self, attention_mask, input_shape, *, dtype):
-        assert input_shape == attention_mask.shape
-        self.extended_attention_mask_dtype = dtype
-        return attention_mask[:, None, None, :]
 
 def _sequence(value: float = 0.0) -> BottomEncodedSequenceV4:
     hidden = torch.tensor(
@@ -76,7 +116,20 @@ def test_shared_bottom_six_forward_runs_exactly_blocks_zero_through_five() -> No
     # Sum 1..6 = 21.  Blocks 6..11 would add another 57 and must not run.
     expected = input_ids.float().unsqueeze(-1).repeat(1, 1, 3) + 21
     assert torch.equal(output, expected)
-    assert model.extended_attention_mask_dtype == torch.float32
+
+
+def test_shared_bottom_six_forward_unpads_and_repads_variable_lengths() -> None:
+    input_ids = torch.tensor([[1, 2, 3], [4, 0, 0]])
+    attention_mask = torch.tensor([[1, 1, 1], [1, 0, 0]])
+    output = forward_bottom_six_hidden_v4(
+        _Model(),
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        token_type_ids=torch.zeros_like(input_ids),
+    )
+    expected = input_ids.float().unsqueeze(-1).repeat(1, 1, 3) + 21
+    expected[1, 1:] = 0
+    assert torch.equal(output, expected)
 
 
 def test_bottom_six_forward_rejects_encoder_depth_drift() -> None:

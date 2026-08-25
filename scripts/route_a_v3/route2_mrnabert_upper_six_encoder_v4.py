@@ -9,8 +9,10 @@ from typing import Sequence
 
 import torch
 from torch import nn
-from torch.utils.checkpoint import checkpoint
 
+from scripts.route_a_v3.route2_mrnabert_bottom_six_encoder_v4 import (
+    forward_mrnabert_unpadded_layers_v4,
+)
 from scripts.route_a_v3.route2_mrnabert_edit_site_encoder_v3 import (
     ATTENTION_BACKENDS,
     pytorch_sdpa_qkvpacked,
@@ -26,50 +28,29 @@ def _require(condition: bool, message: str) -> None:
         raise MRNABERTUpperSixEncoderV4Error(message)
 
 
-def additive_attention_mask_v4(
-    attention_mask: torch.Tensor, *, dtype: torch.dtype
-) -> torch.Tensor:
-    """Convert active-token booleans to the additive BERT attention mask."""
-
-    _require(attention_mask.ndim == 2, "upper-six attention mask must be chunk x token")
-    active = attention_mask.to(dtype=dtype)
-    return (1.0 - active[:, None, None, :]) * torch.finfo(dtype).min
-
-
 def forward_upper_six_layers_v4(
     layers: Sequence[nn.Module],
     hidden: torch.Tensor,
     attention_mask: torch.Tensor,
     *,
+    alibi: torch.Tensor,
+    unpad_input,
+    pad_input,
     activation_checkpointing: bool = False,
 ) -> torch.Tensor:
     """Run exactly six pretrained upper blocks on cached bottom-six hidden."""
 
     _require(len(layers) == 6, "formal V4 upper encoder must contain exactly blocks 6–11")
     _require(hidden.ndim == 3 and attention_mask.shape == hidden.shape[:2], "upper-six hidden/mask geometry changed")
-    extended = additive_attention_mask_v4(attention_mask, dtype=hidden.dtype)
-    for layer in layers:
-        def layer_forward(
-            values: torch.Tensor,
-            active_layer: nn.Module = layer,
-        ) -> torch.Tensor:
-            return active_layer(
-                values,
-                attention_mask=extended,
-                head_mask=None,
-                output_attentions=False,
-            )[0]
-
-        hidden = (
-            checkpoint(
-                layer_forward,
-                hidden,
-                use_reentrant=False,
-                preserve_rng_state=True,
-            )
-            if activation_checkpointing and torch.is_grad_enabled()
-            else layer_forward(hidden)
-        )
+    hidden = forward_mrnabert_unpadded_layers_v4(
+        layers,
+        hidden,
+        attention_mask,
+        alibi=alibi,
+        unpad_input=unpad_input,
+        pad_input=pad_input,
+        activation_checkpointing=activation_checkpointing,
+    )
     _require(torch.isfinite(hidden).all().item(), "upper-six hidden is nonfinite")
     return hidden
 
@@ -127,6 +108,9 @@ class TrainableMRNABERTUpperSixEncoderV4(nn.Module):
         _require(len(model.encoder.layer) == 12, "mRNABERT encoder depth changed")
         self.layers = nn.ModuleList(list(model.encoder.layer[6:12]))
         self.layers.requires_grad_(True)
+        self.register_buffer("alibi", model.encoder.alibi, persistent=False)
+        self._unpad_input = modeling_module.unpad_input
+        self._pad_input = modeling_module.pad_input
         self.device = device
         self.attention_backend = backend
         self.activation_checkpointing = bool(activation_checkpointing)
@@ -150,6 +134,9 @@ class TrainableMRNABERTUpperSixEncoderV4(nn.Module):
             self.layers,
             hidden,
             attention_mask,
+            alibi=self.alibi,
+            unpad_input=self._unpad_input,
+            pad_input=self._pad_input,
             activation_checkpointing=self.training and self.activation_checkpointing,
         )
 

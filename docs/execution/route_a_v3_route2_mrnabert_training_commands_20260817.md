@@ -4415,3 +4415,18 @@ Git正式入口。
 作为下层hidden；不再传head mask或output-attention开关。mock layer也改为Tensor return，直接覆盖formal 5.14行为。
 focused 86/86、合并V4 224/224、V3.3.2 96/96、compile/diff-check PASS；第二attempt的failure/receipt/log仍需
 完整归档后才能重试。
+
+## V4 actual mRNABERT unpadded layer stack修复（2026-08-25）
+
+为避免重复全量failure，`15f74b3`同步与A100 tests后先执行固定合成RNA smoke。它不读取任何project row或outcome，
+却在实际首层证明mRNABERT remote-code block并非标准`BertLayer`。实际`BertEncoder.forward`先用remote module的
+`unpad_input`把padded hidden压为active-token矩阵，生成`cu_seqlens/indices`，叠加padding mask与12-head ALiBi，
+逐层运行后用`pad_input`恢复batch×token×768。
+
+新增共享`forward_mrnabert_unpadded_layers_v4`严格复现该路径并接收指定layer slice。bottom cache/online调用
+blocks 0–5；upper adapter调用blocks 6–11且保留gradient checkpointing。upper只注册六个layer参数，原encoder
+的ALiBi以`persistent=False` buffer复用，不写入checkpoint或trainable count；remote unpad/pad callable作为运行时
+属性。standard additive-mask/tuple mock已删除，测试改用真实flattened签名并覆盖不同序列长度的repad零填充。
+
+focused 26/26、合并V4 228/228、V3.3.2 96/96、compile/diff-check PASS。合成smoke失败不构成全量cache attempt；
+下一步是提交推送、同步精确HEAD、A100测试并重跑同一smoke，只有smoke PASS才启动cache。
