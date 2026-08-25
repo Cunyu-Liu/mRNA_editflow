@@ -3264,3 +3264,15 @@ no-candidate-sequence与candidate-bundle-permutation五项仍均为CUDA alive，
 TEST或new Evaluation，也未同步A100或启动V4。远端偏移仍为+135秒；下一远端/本地窗口分别不早于
 05:50:11/05:47:56。监控无仓库代码变化，不重复focused/V3.3.2测试，claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_045011.json`。
+
+## 12:03 C3 five-job scheduled health（2026-08-25）
+
+本地12:00:56读取时间后执行当前时点的一次原子SSH，没有为错过的中间窗口追补检查；远端12:03:13时C3 full、
+source-only、edit-metadata-only、no-candidate-sequence与candidate-bundle-permutation五项仍均为`Rl` CUDA alive，
+elapsed分别为119,253/119,253/119,253/118,824/118,443秒，GPU3/0/5/1/2占用为
+2,190/2,158/2,190/2,120/2,190 MiB。
+
+五个summary/failure、C3 reference与screen gate均不存在，read-once未执行。未读日志、active curve、Development
+TEST或new Evaluation，也未同步A100或启动V4。最新远端偏移为+137秒；下一远端/本地窗口分别不早于
+13:03:13/13:00:56。监控无仓库代码变化，不重复focused/V3.3.2测试，claim不变。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_120313.json`。

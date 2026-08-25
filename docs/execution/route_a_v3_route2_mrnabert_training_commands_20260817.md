@@ -4170,3 +4170,14 @@ no-candidate为`Sl`；两种状态均只作为登记进程的单次liveness快�
 stderr、active curve、Development TEST或new Evaluation；A100 current-HEAD sync和V4运行仍关闭。下一检查不得
 早于远端05:50:11/本地05:47:56。监控项无代码变化，不重复test cohort。审计：
 `audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_045011.json`。
+
+## 12:03 C3 long-interval health（2026-08-25）
+
+本地12:00:56在合法窗口后执行当前时点的一次单包远端检查；未对中间错过窗口做密集补查。远端12:03:13时
+五个登记PID均为`Rl`且仍位于GPU0/1/2/3/5，CUDA占用为2,120–2,190 MiB；该单次快照只证明登记进程alive，
+不解释为性能、训练曲线或完成度信号。
+
+五项精确summary/failure、C3 reference与screen gate均不存在，read-once因terminal_count=0未运行。未读stdout/
+stderr、active curve、Development TEST或new Evaluation；A100 current-HEAD sync和V4运行仍关闭。下一检查不得
+早于远端13:03:13/本地13:00:56。监控项无代码变化，不重复test cohort。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_120313.json`。
