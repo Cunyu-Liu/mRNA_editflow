@@ -3440,3 +3440,14 @@ focused 26/26、current-A100-selection local 192/192、V3.3.2 96/96、compile/sh
 本项不新增中央optimizer attempt；confirmation训练、checkpoint验证与gate均未运行，C3仍1/5 terminal且payload未读，
 Development TEST/new Evaluation read=0，科学claim不变。审计：
 `audits/route_a_v3_route2_xedit_v4_confirmation_posttraining_coordinator_v1.json`。
+
+## Critic V4 three-seed gate → unique atomic TEST launcher（2026-08-25）
+
+已实现正式fail-closed分支入口：screen/confirmation NO-GO或技术failure均不能启动TEST；只有精确三seed PASS
+可启动一次full+C0原子评测。GPU在0–5中按`preflight peak + 2 GiB`选择，显存不足不创建消费runtime；一旦启动，
+result或failure成为唯一terminal，wrapper不读取metric且不允许自动retry。该入口不授权额外seed、guidance或new
+Evaluation。
+
+focused 13/13、current-A100-selection local 199/199、精确V3.3.2 96/96、compile/shell/helper/diff-check PASS。
+本项不新增optimizer attempt；three-seed gate/atomic TEST均未运行，Development TEST access仍为0，claim不变。
+审计：`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_formal_launcher_v1.json`。

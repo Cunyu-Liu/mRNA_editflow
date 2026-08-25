@@ -4298,3 +4298,16 @@ return code，不生成第二个failure。无原子terminal时才补精确技术
 focused=26/26、A100同步器当前同定义合并V4=192/192、精确V3.3.2=96/96、compile/shell/helper smoke与
 diff-check均PASS。A100、confirmation、validation和gate均未执行，optimizer/protected read=0，TEST未授权。
 审计：`audits/route_a_v3_route2_xedit_v4_confirmation_posttraining_coordinator_v1.json`。
+
+## Critic V4 atomic frozen TEST formal launcher（2026-08-25）
+
+confirmation post-training terminal后的正式入口现区分四种状态：Critic未进入confirmation、confirmation adjudication
+技术failure、three-seed NO-GO均只发布`atomic_test_launched=false`决策；只有精确three-seed PASS、固定
+20260908/09/10、TEST授权为true且protected read=0时才启动唯一TEST。运行设备仅从GPU0–5中选择满足Critic
+preflight+2 GiB且空闲显存最大的卡；显存不足发生在创建runtime/消费TEST前，可按低频GPU等待策略稍后重试。
+
+正式job wrapper只检查terminal文件存在性而不读取TEST metric。原子result已存在时，后续非零退出不生成failure；
+若runner未发布result/failure，则发布`NO_AUTOMATIC_RETRY`技术终态，并按authorization marker是否存在记录0或1次
+TEST access。focused=13/13、A100同步器当前同定义V4=199/199、V3.3.2=96/96、compile/shell/helper/diff-check
+PASS。当前three-seed gate不存在，launcher/TEST均未执行，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_atomic_test_formal_launcher_v1.json`。

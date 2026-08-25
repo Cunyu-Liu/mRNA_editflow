@@ -1,0 +1,56 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_formal_launcher.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_NOT_EXECUTED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "49b29097ceef46f00df0bd49b31a6d9500aa03b1",
+  "deliverable": {
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py",
+    "formal_job_runner": "scripts/route_a_v3/run_route2_xeditcritic_v4_atomic_frozen_test_job.py",
+    "launch_authorization": "EXACT_XEDITCRITIC_V4_THREE_SEED_PASS_ONLY",
+    "no_go_or_technical_gate_launches_test": false,
+    "required_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "gpu_scope": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "gpu_selection": "MAXIMUM_FREE_MEMORY_MEETING_CRITIC_PREFLIGHT_PLUS_2_GIB",
+    "insufficient_memory_consumes_test_authorization": false,
+    "atomic_result_or_failure_is_unique_terminal": true,
+    "preterminal_runtime_failure_is_no_automatic_retry": true,
+    "late_nonzero_exit_cannot_overwrite_atomic_result": true,
+    "general_test_projection_persisted": false,
+    "test_bottom_six_cache_persisted": false,
+    "new_final_evaluation_authorized": false
+  },
+  "verification": {
+    "focused_passed": 13,
+    "focused_failed": 0,
+    "current_a100_selection_local_passed": 199,
+    "current_a100_selection_local_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "git_diff_check_passed": true,
+    "python_version": "3.13.5"
+  },
+  "execution_state": {
+    "critic_three_seed_gate_present": false,
+    "atomic_test_authorized": false,
+    "atomic_test_launched": false,
+    "development_test_access_events": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "a100_current_head_execution": false,
+    "optimizer_attempt_started": false
+  },
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}
