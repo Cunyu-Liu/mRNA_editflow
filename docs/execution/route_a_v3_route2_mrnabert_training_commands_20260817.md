@@ -4337,3 +4337,15 @@ refit manifest与LOSO terminal组合readiness。LOSO NO-GO形成`CRITIC_V4_NOT_R
 focused=15/15、A100同步器当前同定义V4=213/213、V3.3.2=96/96、compile/shell/helper/diff-check PASS。
 当前refit/LOSO/readiness均未执行，protected read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_loso_formal_launcher_v1.json`。
+
+## V4 joint guidance authorization formal entry（2026-08-25）
+
+`launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness.py`现为Git正式、精确HEAD入口。它只读取
+LOSO runtime/readiness与SetFlow confirmation post-training runtime/gate的终态收据；不读取active metric，也不
+重新打开Development TEST。Critic或SetFlow任一未ready时只形成永久不授权决定；双ready时仅调用一次既有
+`authorize_route2_xeditflow_v4_guidance.py`并核对原子授权，不自动启动value target、训练、18组合screen或SMC。
+项目外shell只调用同步后的正式脚本。
+
+focused=43/43、A100同步器当前同定义V4=218/218、V3.3.2=96/96、compile/shell/helper smoke PASS。
+本入口未执行，A100/CUDA/optimizer/metric均未接触，Development TEST/new Evaluation read=0。审计：
+`audits/route_a_v3_route2_xeditflow_v4_guidance_dual_readiness_launcher_v1.json`。

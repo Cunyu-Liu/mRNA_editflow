@@ -3472,3 +3472,15 @@ full/C0。显存检查在config物化前完成，使用GPU0–5中全部合格�
 focused 15/15、current-A100-selection local 213/213、V3.3.2 96/96、compile/shell/helper/diff-check PASS。
 本项未执行refit/LOSO，不新增optimizer attempt，Development TEST仍0 access，new Evaluation read=0，claim不变。
 审计：`audits/route_a_v3_route2_xeditcritic_v4_loso_formal_launcher_v1.json`。
+
+## V4 dual-readiness → one-shot guidance authorization（2026-08-25）
+
+已实现最后一道非训练授权入口。入口只接受同一精确HEAD下终态的Critic LOSO readiness与SetFlow confirmation
+gate；任一scientific NO-GO、screen未入选或technical failure都只发布`guidance_authorized=false`决策，不启动
+value training、guidance grid、SMC或candidate generation。只有`CRITIC_V4_READY_FOR_GUIDANCE`与
+`XEDITSETFLOW_V4_G0_READY`同时成立时，才调用现有一次性joint authorizer，并再次核对TEST不重开与new
+Evaluation read=0。
+
+focused=43/43、current-A100-selection local 218/218、V3.3.2 96/96、compile/shell/helper smoke PASS。
+本项未连接A100、未生成授权、未启动optimizer/inference，Development TEST仍为当前0 access，claim不变。审计：
+`audits/route_a_v3_route2_xeditflow_v4_guidance_dual_readiness_launcher_v1.json`。

@@ -1,0 +1,26 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_dual_readiness_launcher_audit.v1",
+  "recorded_at": "2026-08-25T14:35:36+08:00",
+  "status": "IMPLEMENTED_NOT_EXECUTED",
+  "formal_launcher": "scripts/route_a_v3/launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness.py",
+  "required_critic_terminal_status": "CRITIC_V4_READY_FOR_GUIDANCE",
+  "required_setflow_terminal_status": "XEDITSETFLOW_V4_G0_READY",
+  "joint_authorizer": "scripts/route_a_v3/authorize_route2_xeditflow_v4_guidance.py",
+  "nonpassing_predecessor_action": "PUBLISH_NO_AUTHORIZATION_DECISION_WITH_ZERO_GUIDANCE_EXECUTION",
+  "guidance_training_or_sampling_launched": false,
+  "development_test_reopened": false,
+  "development_test_outcomes_accessed_after_atomic_test": false,
+  "new_final_evaluation_outcome_reads": 0,
+  "active_performance_output_read": false,
+  "tests": {
+    "focused_passed": 43,
+    "current_a100_selection_local_passed": 218,
+    "v3_3_2_passed": 96,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "external_helper_smoke_passed": true
+  },
+  "remote_execution_performed": false,
+  "optimizer_attempt_added": false,
+  "claim_change": "NONE_SOFTWARE_EXECUTION_BOUNDARY_ONLY"
+}
