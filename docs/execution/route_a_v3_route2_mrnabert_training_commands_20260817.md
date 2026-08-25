@@ -4491,3 +4491,16 @@ screen入口沿用相同边界，preflight输出必须属于current runner，cac
 
 screen产生的dual-HEAD runtime/authorization路径现被postscreen和confirmation正式入口直接消费；两级scheduler的
 runtime均携带`experiment_head`。这只是运行归属修复，不改变screen、validation、confirmation seed或gate。
+
+## Preflight GPU availability single-check diagnostic（2026-08-25）
+
+用户指定Critic优先使用GPU0。16:53与17:24两个低频窗口的正式入口仍在任何authorization/config/runtime之前因
+GPU0未达到38,000 MiB而拒绝，故没有optimizer或metric attempt。入口现把一次`nvidia-smi`结果中的两个所选GPU
+缺口与GPU0–5完整空闲快照一起返回，避免下一窗口先猜卡再因第二个组件失败。它不新增SSH、轮询、GPU6/7、模型
+调整或阈值覆盖；Critic/SetFlow底线仍为38,000/20,000 MiB。
+
+本地launcher focused=7/7、精确V3.3.2=96/96、compile/diff-check PASS。当前Mac只有含torch/pytest的Python3.9，
+完整V4 cohort中11项仅因Python3.10的`zip(strict=True)`接口缺失而失败，另169项通过；不为旧本机解释器修改已经在
+A100 Python3.10通过的生产实现。提交推送后，下一远端动作必须先同步精确新HEAD并在A100重跑Critic、SetFlow和
+96项V3.3.2；未通过前不允许preflight。protected read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_gpu_availability_diagnostic_v1.json`。

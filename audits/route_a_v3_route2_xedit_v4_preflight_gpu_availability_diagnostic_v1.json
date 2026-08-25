@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_gpu_availability_diagnostic.v1",
+  "status": "V4_PREFLIGHT_GPU_AVAILABILITY_DIAGNOSTIC_IMPLEMENTED_NOT_LAUNCHED",
+  "date": "2026-08-25",
+  "problem": "The launcher queried all allowed GPUs but reported only the first selected-device shortfall, preventing one low-frequency observation from informing both component choices.",
+  "behavior": {
+    "critic_selected_gpu": 0,
+    "critic_minimum_free_mib_unchanged": 38000,
+    "setflow_minimum_free_mib_unchanged": 20000,
+    "reports_both_selected_device_actual_and_required_mib": true,
+    "reports_complete_allowed_gpu_snapshot": [0, 1, 2, 3, 4, 5],
+    "reports_or_selects_gpu_6_or_7": false,
+    "additional_remote_poll_added": false
+  },
+  "unchanged_scientific_protocol": {
+    "architecture": true,
+    "data": true,
+    "seeds": true,
+    "losses": true,
+    "training_budget": true,
+    "memory_preflight_batch_candidates": [4, 8, 16, 32],
+    "critic_peak_allocated_gib_range": [20, 35],
+    "screen_and_confirmation_gates": true
+  },
+  "preflight_state": {
+    "authorization_created": false,
+    "config_created": false,
+    "runtime_created": false,
+    "optimizer_attempt_count": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "local_verification": {
+    "focused": "7/7 PASS",
+    "exact_v3_3_2": "96/96 PASS",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS",
+    "full_critic_v4_under_local_python_3_9": "169 PASS; 11 environment-incompatible failures from unsupported zip(strict=True)",
+    "a100_python_3_10_current_head_tests": "REQUIRED_BEFORE_PREFLIGHT"
+  },
+  "user_dirty_deletion_preserved": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md",
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

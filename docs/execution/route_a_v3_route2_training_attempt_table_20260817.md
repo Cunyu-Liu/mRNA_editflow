@@ -3685,3 +3685,16 @@ confirmation自己的输出继续绑定唯一current screen runner，避免无�
 targeted=37/37、合并本地V4 selection=232/232、V3.3.2=96/96、compile/shell/helper/diff-check PASS。代码提交后需
 再次A100 exact-current-HEAD测试；GPU不足期间不轮询、不降显存门槛、不用GPU6/7。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_head_successor_paths_and_gpu_wait_v1.json`。
+
+## V4 preflight GPU availability diagnostic（2026-08-25）
+
+用户指定GPU0后，16:53与17:24两个合规窗口中的preflight入口均在authorization/config/runtime创建前因Critic
+GPU0低于38,000 MiB而安全拒绝；optimizer attempt、Development TEST read与new Evaluation read均保持0。旧入口虽已
+取得GPU0–5完整空闲显存，却只报告第一个不足组件，导致无法判断同一次选择中的SetFlow卡是否也不足。
+
+现将单次availability判定改为同时报告Critic与SetFlow所选卡的实际/要求MiB，并附仅含GPU0–5的完整快照。冻结的
+38,000/20,000 MiB底线、GPU0优先、两张卡必须不同、模型/数据/seed/loss/gate均未改变；GPU6/7仍不进入输出或选择。
+focused=7/7、V3.3.2=96/96、compile/diff-check PASS。本机完整Critic cohort在Python3.9下为169 PASS与11项
+`zip(strict=True)`版本不兼容，不能冒充生产回归；需由A100正式Python3.10在精确新HEAD重跑Critic/SetFlow/V3.3.2
+三套cohort后才可再次启动preflight。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_gpu_availability_diagnostic_v1.json`。

@@ -95,3 +95,46 @@ def test_preflight_launcher_keeps_runner_and_cache_heads_distinct() -> None:
     assert '"--cache-experiment-head"' in source
     assert '"git_head": current_head' in source
     assert '"experiment_head": experiment_head' in source
+
+
+def test_preflight_gpu_availability_reports_both_selected_gaps_and_full_allowed_snapshot() -> None:
+    free_memory = {
+        0: 37106,
+        1: 8775,
+        2: 7805,
+        3: 18870,
+        4: 8728,
+        5: 334,
+        6: 36631,
+        7: 22296,
+    }
+    with pytest.raises(
+        launcher.XEditV4PreflightLaunchError,
+        match=(
+            r"Critic GPU0 has 37106 MiB free; requires at least 38000 MiB; "
+            r"SetFlow GPU3 has 18870 MiB free; requires at least 20000 MiB; "
+            r"allowed_gpu_free_memory_mib="
+        ),
+    ) as captured:
+        launcher.require_preflight_gpu_availability(
+            free_memory,
+            critic_gpu=0,
+            setflow_gpu=3,
+            critic_minimum_free_mib=38000,
+            setflow_minimum_free_mib=20000,
+        )
+    message = str(captured.value)
+    assert '"0": 37106' in message
+    assert '"5": 334' in message
+    assert '"6"' not in message
+    assert '"7"' not in message
+
+
+def test_preflight_gpu_availability_accepts_exact_thresholds() -> None:
+    launcher.require_preflight_gpu_availability(
+        {0: 38000, 3: 20000},
+        critic_gpu=0,
+        setflow_gpu=3,
+        critic_minimum_free_mib=38000,
+        setflow_minimum_free_mib=20000,
+    )

@@ -68,6 +68,32 @@ def gpu_free_memory_mib() -> dict[int, int]:
     return values
 
 
+def require_preflight_gpu_availability(
+    free_memory: dict[int, int],
+    *,
+    critic_gpu: int,
+    setflow_gpu: int,
+    critic_minimum_free_mib: int,
+    setflow_minimum_free_mib: int,
+) -> None:
+    requirements = (
+        ("Critic", critic_gpu, critic_minimum_free_mib),
+        ("SetFlow", setflow_gpu, setflow_minimum_free_mib),
+    )
+    failures = [
+        f"{component} GPU{gpu} has {free_memory.get(gpu, -1)} MiB free; "
+        f"requires at least {minimum} MiB"
+        for component, gpu, minimum in requirements
+        if free_memory.get(gpu, -1) < minimum
+    ]
+    if failures:
+        snapshot = {gpu: free_memory.get(gpu, -1) for gpu in range(6)}
+        raise XEditV4PreflightLaunchError(
+            "; ".join(failures)
+            + f"; allowed_gpu_free_memory_mib={json.dumps(snapshot, sort_keys=True)}"
+        )
+
+
 def require_summary(path: Path, *, expected_head: str, component: str) -> None:
     require(path.is_file(), f"{component} cache summary is absent")
     summary = json.loads(path.read_text(encoding="utf-8"))
@@ -173,13 +199,12 @@ def run(
     a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{current_head}.json"
     require(a100_audit.is_file(), "exact current-HEAD A100 test audit is absent")
     free_memory = gpu_free_memory_mib()
-    require(
-        free_memory.get(critic_gpu, -1) >= critic_minimum_free_mib,
-        "Critic preflight GPU lacks the required free memory",
-    )
-    require(
-        free_memory.get(setflow_gpu, -1) >= setflow_minimum_free_mib,
-        "SetFlow preflight GPU lacks the required free memory",
+    require_preflight_gpu_availability(
+        free_memory,
+        critic_gpu=critic_gpu,
+        setflow_gpu=setflow_gpu,
+        critic_minimum_free_mib=critic_minimum_free_mib,
+        setflow_minimum_free_mib=setflow_minimum_free_mib,
     )
 
     authorization_root = (

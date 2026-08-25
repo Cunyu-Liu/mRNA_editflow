@@ -273,3 +273,13 @@ must consume both identities rather than reconstructing one from the other.
 This provenance fix occurred before preflight authorization. The first launch
 attempt was safely rejected because no allowed GPU had the preregistered free
 memory; no model or metric operation began.
+
+Two later low-frequency launch windows continued to reject the user-selected
+GPU0 before authorization because it remained below the preregistered Critic
+free-memory floor. The launcher now reports both selected devices' exact
+availability gaps and the complete allowed GPU0–5 snapshot from that same
+single observation, without changing the memory floors or introducing another
+poll. This is execution-diagnostic evidence only: no preflight, optimizer,
+Validation metric, Development TEST outcome, or new Evaluation outcome was
+produced, and the model-advantage and publication-readiness claims remain
+unestablished.
