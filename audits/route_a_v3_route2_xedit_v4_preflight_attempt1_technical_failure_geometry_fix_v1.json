@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt1_technical_failure_geometry_fix.v1",
+  "status": "IMPLEMENTATION_FIX_COMPLETE_PENDING_A100_EXACT_HEAD_TEST_AND_GPU0_RETRY",
+  "recorded_local_time": "2026-08-25T18:42:15+08:00",
+  "attempt_1": {
+    "runner_git_head": "079b29538a05bd6cff962282db04a1ec0c180e47",
+    "physical_gpu_index": 0,
+    "launch_mode": "SEQUENTIAL_SINGLE_GPU",
+    "sequence_runtime": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_079b29538a05bd6cff962282db04a1ec0c180e47/sequence.runtime.json",
+    "critic_failure": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight.failure.json",
+    "critic_log": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xedit_v4/preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_079b29538a05bd6cff962282db04a1ec0c180e47/critic.log",
+    "critic_terminal_error": "Critic V4 trainable parameter count is outside 120-180M",
+    "setflow_failure": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight.failure.json",
+    "setflow_log": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xedit_v4/preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_079b29538a05bd6cff962282db04a1ec0c180e47/setflow.log",
+    "setflow_terminal_error": "SetFlow V4 eligible Validation source count changed",
+    "optimizer_step_count": 0,
+    "validation_metric_read": false,
+    "performance_result_produced": false
+  },
+  "critic_geometry_correction": {
+    "formal_mrnabert_upper_six_parameter_count": 56664576,
+    "old_standard_transformer_proxy_upper_six_parameter_count": 42527232,
+    "old_formal_total_parameter_count": 187828293,
+    "semantic_expert_count": 4,
+    "semantic_expert_bottleneck_width": 256,
+    "semantic_expert_bank_scope": "ONE_SHARED_FOUR_EXPERT_BANK_REUSED_ACROSS_ALL_12_BLOCKS",
+    "corrected_formal_trainable_parameter_count": 170481733,
+    "layers_removed": 0,
+    "width_reduced": false,
+    "expert_count_reduced": false,
+    "gate_or_seed_changed": false
+  },
+  "setflow_geometry_correction": {
+    "train_source_record_count": 62916,
+    "validation_source_record_count": 15327,
+    "generation_eligible_validation_source_count": 891,
+    "source_record_inventory_role": "SOURCE_LEVEL_TRAINING_AND_COMMON_NLL",
+    "generation_cohort_role": "FIXED_891_SOURCE_OUTCOME_FREE_GENERATION",
+    "generation_cohort_changed": false,
+    "training_candidate_rows_or_targets_changed": false
+  },
+  "attempt_2": {
+    "critic_preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json",
+    "setflow_preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.json",
+    "setflow_source_data_audit": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/source_level_data_audit.json",
+    "old_terminal_artifacts_overwritten": false,
+    "authorized_gpu": 0,
+    "launch_mode": "SEQUENTIAL_SINGLE_GPU",
+    "started": false
+  },
+  "local_verification": {
+    "critic_v4_focused_passed": 186,
+    "setflow_v4_focused_passed": 137,
+    "v332_passed": 96,
+    "compileall": "PASS",
+    "shell_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "scientific_gate_or_claim_changed": false,
+  "submission_ready": false
+}
