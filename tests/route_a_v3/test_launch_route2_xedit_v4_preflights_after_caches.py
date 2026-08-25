@@ -86,3 +86,12 @@ def test_cache_summary_protected_reads_are_component_specific(tmp_path: Path) ->
         launcher.require_summary(
             setflow, expected_head="a" * 40, component="setflow"
         )
+
+
+def test_preflight_launcher_keeps_runner_and_cache_heads_distinct() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert "def run(\n    current_head: str,\n    experiment_head: str," in source
+    assert 'expected_head=experiment_head' in source
+    assert '"--cache-experiment-head"' in source
+    assert '"git_head": current_head' in source
+    assert '"experiment_head": experiment_head' in source

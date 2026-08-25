@@ -3653,3 +3653,18 @@ outcome read均为0。SetFlow receipt此前已完成唯一读取，本次没有�
 这是outcome-free cache任务成功，不是optimizer/performance attempt；preflight仍未启动，模型与论文claim不变。终态
 记录提交推送后，才允许A100同步到精确current HEAD并运行focused/V3.3.2 tests。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_terminal_read_once_20260825.json`。
+
+## V4 cache-experiment/current-runner HEAD separation before preflight（2026-08-25）
+
+A100已成功快进到`717dc17`并通过Critic 171/171、SetFlow 123/123、V3.3.2 96/96。正式preflight启动前发现入口
+仍要求当前tested runner HEAD与terminal cache summary HEAD完全相同；cache实际绑定`a7ef72f`，因此按合同完成
+current-HEAD同步后反而必然被拒绝。发现时尚未创建preflight authorization/config/runtime或GPU进程。
+
+preflight与screen入口现显式区分`current_head`和`cache_experiment_head`：A100 test audit、运行代码、preflight输出和
+训练summary绑定current runner；Critic/SetFlow cache terminal绑定冻结experiment HEAD。两种authorization均记录两者，
+且authorization/runtime/log目录同时编码两种HEAD，防止不同runner覆盖同一cache实验的证据。外部helper也必须显式
+提供`V4_CURRENT_HEAD`与`V4_EXPERIMENT_HEAD`。
+
+targeted=25/25、合并本地V4 selection=230/230、V3.3.2=96/96、compile/shell/helper/diff-check PASS。preflight/
+screen/optimizer均未启动，protected read=0；修复提交后必须再次同步A100到新精确HEAD并通过三套测试，才可启动
+preflight。审计：`audits/route_a_v3_route2_xedit_v4_cache_runner_head_separation_fix_v1.json`。

@@ -4472,3 +4472,13 @@ Critic wrapper/child已退出。随后仅对新出现的Critic summary执行一�
 Critic cache的107,873 records、43,730 chunks、6,279,338 tokens和346,862 ragged edits全部位于Route 2 `/mnt`，
 BF16/CUDA、bottom blocks 0–5 frozen、protected read=0。下一步先提交该终态记录，再同步A100精确current HEAD；
 不得在同步测试前启动preflight。
+
+## V4 preflight/screen dual-HEAD identity correction（2026-08-25）
+
+cache任务在`a7ef72f`完成，而合规同步后的runner为`717dc17`；旧preflight入口把两者当成同一`expected_head`，
+会在任何GPU作业前拒绝合法terminal cache。现正式CLI要求`--expected-head`绑定A100当前tested代码，另以
+`--experiment-head`绑定冻结cache；authorizer内部同样记录`authorized_git_head`与`cache_experiment_head`。
+screen入口沿用相同边界，preflight输出必须属于current runner，cache summary继续属于experiment HEAD。
+
+本修复发生在任何preflight authorization或job之前。提交推送后需再次执行A100 exact-current-HEAD测试；只有新audit
+存在且GPU0/1满足冻结显存底线，才运行更新后的项目外preflight helper。

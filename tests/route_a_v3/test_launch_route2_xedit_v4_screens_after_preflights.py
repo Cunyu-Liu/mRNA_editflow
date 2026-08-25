@@ -36,6 +36,7 @@ def test_screen_authorization_validation_reads_terminal_json(tmp_path: Path) -> 
             {
                 "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
                 "authorized_git_head": "a" * 40,
+                "cache_experiment_head": "b" * 40,
                 "authorized_run_ids": launcher.screen_run_ids()["critic"],
             }
         )
@@ -43,7 +44,10 @@ def test_screen_authorization_validation_reads_terminal_json(tmp_path: Path) -> 
         encoding="utf-8",
     )
     launcher.validate_screen_authorization(
-        authorization, component="critic", head="a" * 40
+        authorization,
+        component="critic",
+        head="a" * 40,
+        experiment_head="b" * 40,
     )
 
     payload = json.loads(authorization.read_text(encoding="utf-8"))
@@ -51,7 +55,10 @@ def test_screen_authorization_validation_reads_terminal_json(tmp_path: Path) -> 
     authorization.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     with pytest.raises(Exception, match="authorization content is invalid"):
         launcher.validate_screen_authorization(
-            authorization, component="critic", head="a" * 40
+            authorization,
+            component="critic",
+            head="a" * 40,
+            experiment_head="b" * 40,
         )
 
 

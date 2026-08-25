@@ -99,28 +99,36 @@ def screen_run_ids() -> dict[str, list[str]]:
 
 
 def validate_screen_authorization(
-    path: Path, *, component: str, head: str
+    path: Path, *, component: str, head: str, experiment_head: str
 ) -> None:
     require(path.is_file(), f"{component} screen authorization is absent")
     payload = read_json(path)
     require(
         payload.get("status") == expected_authorization_status(component)
         and payload.get("authorized_git_head") == head
+        and payload.get("cache_experiment_head") == experiment_head
         and set(payload.get("authorized_run_ids", [])) == set(screen_run_ids()[component]),
         f"{component} screen authorization content is invalid",
     )
 
 
-def run(head: str) -> dict[str, Any]:
-    require(re.fullmatch(r"[0-9a-f]{40}", head) is not None, "expected Git HEAD is invalid")
+def run(current_head: str, experiment_head: str) -> dict[str, Any]:
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
+        "expected current Git HEAD is invalid",
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", experiment_head) is not None,
+        "expected cache experiment HEAD is invalid",
+    )
     require(PYTHON.is_file(), "formal Python is absent")
     require(
         SCREEN_PACKAGE_SCHEDULER.is_file(),
         "current-HEAD screen package scheduler is absent",
     )
     require(
-        command(["git", "rev-parse", "HEAD"]).stdout.strip() == head,
-        "A100 worktree is not at expected HEAD",
+        command(["git", "rev-parse", "HEAD"]).stdout.strip() == current_head,
+        "A100 worktree is not at expected current HEAD",
     )
     require(
         not command(["git", "status", "--porcelain"]).stdout.strip(),
@@ -128,7 +136,7 @@ def run(head: str) -> dict[str, Any]:
     )
     require(C3_REFERENCE.is_file(), "C3 read-once reference is absent")
 
-    a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{head}.json"
+    a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{current_head}.json"
     require(a100_audit.is_file(), "exact current-HEAD A100 test audit is absent")
     critic_config = (
         WORKTREE / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
@@ -152,13 +160,13 @@ def run(head: str) -> dict[str, Any]:
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
         and critic_preflight.get("passed") is True
-        and str(critic_preflight.get("git_head")) == head,
+        and str(critic_preflight.get("git_head")) == current_head,
         "Critic V4 preflight did not pass at expected HEAD",
     )
     require(
         setflow_preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
         and setflow_preflight.get("passed") is True
-        and str(setflow_preflight.get("git_head")) == head,
+        and str(setflow_preflight.get("git_head")) == current_head,
         "SetFlow V4 preflight did not pass at expected HEAD",
     )
     source_audit = read_json(source_audit_path)
@@ -209,12 +217,24 @@ def run(head: str) -> dict[str, Any]:
         output = ROOT / f"experiments/xeditsetflow_v4/screen_seed_20260911/{run_id}"
         require(not output.exists(), f"SetFlow output already exists: {run_id}")
 
-    authorization_root = ROOT / f"authorizations/xedit_v4/screen_{head}"
+    authorization_root = (
+        ROOT
+        / "authorizations/xedit_v4"
+        / f"screen_{experiment_head}_runner_{current_head}"
+    )
     authorization_staging = authorization_root.with_name(
         authorization_root.name + ".partial"
     )
-    runtime_root = ROOT / f"experiments/xedit_v4/screen_package_{head}"
-    log_root = ROOT / f"logs/xedit_v4/screen_package_{head}"
+    runtime_root = (
+        ROOT
+        / "experiments/xedit_v4"
+        / f"screen_package_{experiment_head}_runner_{current_head}"
+    )
+    log_root = (
+        ROOT
+        / "logs/xedit_v4"
+        / f"screen_package_{experiment_head}_runner_{current_head}"
+    )
     require(not authorization_root.exists(), "screen authorization package already exists")
     require(
         not authorization_staging.exists(),
@@ -261,6 +281,8 @@ def run(head: str) -> dict[str, Any]:
             str(a100_audit),
             "--cache-summary",
             str(paths["cache_summary"]),
+            "--cache-experiment-head",
+            experiment_head,
             "--preflight",
             str(paths["preflight"]),
             "--output",
@@ -272,7 +294,10 @@ def run(head: str) -> dict[str, Any]:
             )
         command(command_arguments)
         validate_screen_authorization(
-            authorization, component=component, head=head
+            authorization,
+            component=component,
+            head=current_head,
+            experiment_head=experiment_head,
         )
     os.replace(authorization_staging, authorization_root)
 
@@ -344,7 +369,8 @@ def run(head: str) -> dict[str, Any]:
     schedule = {
         "schema_version": "route_a_v3_route2_xedit_v4_screen_package_schedule.v1",
         "status": "FROZEN_SCREEN_PACKAGE_SCHEDULE",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "gpu_free_memory_mib_before_launch": free_memory,
@@ -369,7 +395,8 @@ def run(head: str) -> dict[str, Any]:
     launch = {
         "schema_version": "route_a_v3_route2_xedit_v4_screen_package_launch.v1",
         "status": "V4_SCREEN_PACKAGE_SCHEDULER_LAUNCHED",
-        "git_head": head,
+        "git_head": current_head,
+        "experiment_head": experiment_head,
         "scheduler_pid": process.pid,
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
@@ -384,8 +411,15 @@ def run(head: str) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--experiment-head", required=True)
     arguments = parser.parse_args()
-    print(json.dumps(run(arguments.expected_head), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            run(arguments.expected_head, arguments.experiment_head),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

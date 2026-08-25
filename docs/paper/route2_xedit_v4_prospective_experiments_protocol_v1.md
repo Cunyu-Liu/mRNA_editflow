@@ -257,3 +257,11 @@ neither raw sequence nor label/outcome payloads, and records zero Development
 TEST or Evaluation records. This satisfies the representation prerequisite for
 the still-unrun parameter/memory preflight; it is not evidence that the V4
 Critic or SetFlow gates will pass.
+
+Execution provenance distinguishes the frozen cache experiment commit from the
+later, fully tested runner commit. Cache identity and content remain bound to
+the former; the A100 test audit, preflight code, preflight output, and later
+training runtime are bound to the latter. Both identities are explicit in the
+authorization artifacts. This correction was made before any preflight or
+optimizer job and changes no architecture, data, seed, loss, threshold, or
+claim.

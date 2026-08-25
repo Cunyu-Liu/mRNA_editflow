@@ -139,22 +139,30 @@ def component_paths() -> dict[str, dict[str, Path | int]]:
 
 
 def run(
-    head: str,
+    current_head: str,
+    experiment_head: str,
     *,
     critic_gpu: int,
     setflow_gpu: int,
     critic_minimum_free_mib: int = 38000,
     setflow_minimum_free_mib: int = 20000,
 ) -> dict[str, object]:
-    require(re.fullmatch(r"[0-9a-f]{40}", head) is not None, "expected Git HEAD is invalid")
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
+        "expected current Git HEAD is invalid",
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", experiment_head) is not None,
+        "expected cache experiment HEAD is invalid",
+    )
     require(PYTHON.is_file(), "formal Python is absent")
     require(PREFLIGHT_JOB_RUNNER.is_file(), "current-HEAD preflight job runner is absent")
     require(critic_gpu in range(6), "Critic GPU is outside physical GPU 0–5")
     require(setflow_gpu in range(6), "SetFlow GPU is outside physical GPU 0–5")
     require(critic_gpu != setflow_gpu, "concurrent preflights require distinct GPUs")
     require(
-        command(["git", "rev-parse", "HEAD"]).stdout.strip() == head,
-        "A100 worktree is not at expected HEAD",
+        command(["git", "rev-parse", "HEAD"]).stdout.strip() == current_head,
+        "A100 worktree is not at expected current HEAD",
     )
     require(
         not command(["git", "status", "--porcelain"]).stdout.strip(),
@@ -162,7 +170,7 @@ def run(
     )
     require(C3_REFERENCE.is_file(), "C3 read-once reference is absent")
 
-    a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{head}.json"
+    a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{current_head}.json"
     require(a100_audit.is_file(), "exact current-HEAD A100 test audit is absent")
     free_memory = gpu_free_memory_mib()
     require(
@@ -174,12 +182,24 @@ def run(
         "SetFlow preflight GPU lacks the required free memory",
     )
 
-    authorization_root = ROOT / f"authorizations/xedit_v4/preflight_{head}"
+    authorization_root = (
+        ROOT
+        / "authorizations/xedit_v4"
+        / f"preflight_{experiment_head}_runner_{current_head}"
+    )
     authorization_staging_root = authorization_root.with_name(
         authorization_root.name + ".partial"
     )
-    runtime_root = ROOT / f"experiments/xedit_v4/preflight_launch_{head}"
-    log_root = ROOT / f"logs/xedit_v4/preflight_launch_{head}"
+    runtime_root = (
+        ROOT
+        / "experiments/xedit_v4"
+        / f"preflight_launch_{experiment_head}_runner_{current_head}"
+    )
+    log_root = (
+        ROOT
+        / "logs/xedit_v4"
+        / f"preflight_launch_{experiment_head}_runner_{current_head}"
+    )
     require(not authorization_root.exists(), "preflight authorizations already exist")
     require(
         not authorization_staging_root.exists(),
@@ -202,7 +222,9 @@ def run(
             f"{component} cache has a technical failure",
         )
         require_summary(
-            Path(paths["cache_summary"]), expected_head=head, component=component
+            Path(paths["cache_summary"]),
+            expected_head=experiment_head,
+            component=component,
         )
         require(
             not Path(paths["output"]).exists(),
@@ -229,6 +251,8 @@ def run(
                 str(a100_audit),
                 "--cache-summary",
                 str(paths["cache_summary"]),
+                "--cache-experiment-head",
+                experiment_head,
                 "--output",
                 str(authorization),
             ]
@@ -238,7 +262,8 @@ def run(
         require(
             payload.get("status") == expected_authorization_status(component)
             and payload.get("component") == component
-            and payload.get("authorized_git_head") == head,
+            and payload.get("authorized_git_head") == current_head
+            and payload.get("cache_experiment_head") == experiment_head,
             f"{component} preflight authorization content is invalid",
         )
     os.replace(authorization_staging_root, authorization_root)
@@ -277,7 +302,7 @@ def run(
                 "--log",
                 str(log),
                 "--git-head",
-                head,
+                current_head,
             ],
             cwd=WORKTREE,
             stdout=stream,
@@ -304,7 +329,8 @@ def run(
         {
             "schema_version": "route_a_v3_route2_xedit_v4_preflight_launch_manifest.v1",
             "status": "V4_PREFLIGHT_JOBS_LAUNCHED",
-            "git_head": head,
+            "git_head": current_head,
+            "experiment_head": experiment_head,
             "c3_reference": str(C3_REFERENCE),
             "a100_audit": str(a100_audit),
             "gpu_free_memory_mib_before_launch": free_memory,
@@ -319,6 +345,7 @@ def run(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--experiment-head", required=True)
     parser.add_argument("--critic-gpu", type=int, required=True)
     parser.add_argument("--setflow-gpu", type=int, required=True)
     parser.add_argument("--critic-minimum-free-mib", type=int, default=38000)
@@ -328,6 +355,7 @@ def main() -> None:
         json.dumps(
             run(
                 arguments.expected_head,
+                arguments.experiment_head,
                 critic_gpu=arguments.critic_gpu,
                 setflow_gpu=arguments.setflow_gpu,
                 critic_minimum_free_mib=arguments.critic_minimum_free_mib,

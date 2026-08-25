@@ -274,6 +274,33 @@ def test_preflight_authorizations_supply_exact_runner_barriers() -> None:
     assert flow["barriers"]["source_token_cache_terminal_complete"] is True
 
 
+def test_preflight_authorization_separates_tested_runner_from_cache_experiment() -> None:
+    runner_head = "b" * 40
+    audit = _a100()
+    audit["repository_sync"]["head_after"] = runner_head
+    audit["a100_current_head_verification"]["verified_git_head"] = runner_head
+    authorization = build_preflight_authorization_v4(
+        "critic",
+        _c3(),
+        audit,
+        _critic_cache(),
+        current_git_head=runner_head,
+        cache_git_head=HEAD,
+    )
+    assert authorization["authorized_git_head"] == runner_head
+    assert authorization["cache_experiment_head"] == HEAD
+
+    with pytest.raises(Exception, match="launch provenance"):
+        build_preflight_authorization_v4(
+            "critic",
+            _c3(),
+            audit,
+            _critic_cache(),
+            current_git_head=runner_head,
+            cache_git_head="c" * 40,
+        )
+
+
 def test_preflight_authorization_rejects_old_head_or_incomplete_c3() -> None:
     audit = _a100()
     audit["repository_sync"]["head_after"] = "b" * 40

@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_cache_runner_head_separation_fix_audit.v1",
+  "status": "XEDIT_V4_CACHE_EXPERIMENT_AND_RUNNER_HEADS_SEPARATED_BEFORE_PREFLIGHT",
+  "recorded_at": "2026-08-25T16:21:01+08:00",
+  "head_before_change": "717dc179b125eb59deeffffbdeda73baa87e6ab7",
+  "frozen_cache_experiment_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "last_tested_runner_head_before_fix": "717dc179b125eb59deeffffbdeda73baa87e6ab7",
+  "failure_prevented": {
+    "condition": "preflight and screen launchers required the current tested runner HEAD to equal the older terminal cache summary HEAD",
+    "effect_without_fix": "formal preflight authorization would fail before launch after the required current-HEAD synchronization",
+    "preflight_authorization_or_gpu_job_created_before_fix": false
+  },
+  "implemented_boundary": {
+    "preflight_launcher_current_head_explicit": true,
+    "preflight_launcher_cache_experiment_head_explicit": true,
+    "screen_launcher_current_head_explicit": true,
+    "screen_launcher_cache_experiment_head_explicit": true,
+    "a100_test_audit_binds_current_runner_head": true,
+    "terminal_cache_summaries_bind_cache_experiment_head": true,
+    "preflight_outputs_bind_current_runner_head": true,
+    "authorizations_record_both_heads": true,
+    "authorization_runtime_and_log_roots_record_both_heads": true,
+    "shared_history_rewritten": false
+  },
+  "verification": {
+    "targeted_tests": "25 passed",
+    "combined_local_v4_selection": "230 passed",
+    "exact_v3_3_2": "96 passed",
+    "python_compile": "PASS",
+    "shell_syntax": "PASS",
+    "external_helper_missing_input_smoke": "PASS",
+    "git_diff_check": "PASS",
+    "a100_current_head_tests": "REQUIRED_AGAIN_AFTER_THIS_FIX_IS_COMMITTED"
+  },
+  "execution_state": {
+    "preflight_authorization_created": false,
+    "preflight_job_started": false,
+    "screen_job_started": false,
+    "optimizer_attempts_started": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "claim_effect": "EXECUTION_IDENTITY_FIX_ONLY_NO_PERFORMANCE_OR_PUBLICATION_CLAIM_CHANGE"
+}

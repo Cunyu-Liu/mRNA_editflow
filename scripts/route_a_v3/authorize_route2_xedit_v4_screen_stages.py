@@ -206,7 +206,7 @@ def _require_cache(
     component: str,
     cache: Mapping[str, Any],
     *,
-    current_git_head: str,
+    cache_git_head: str,
 ) -> None:
     if component == "critic":
         _require(
@@ -233,7 +233,7 @@ def _require_cache(
             "critic cache reports a protected outcome read",
         )
         _require(
-            str(cache.get("git_head")) == str(current_git_head)
+            str(cache.get("git_head")) == str(cache_git_head)
             and cache.get("cache_launch_authorization_status")
             == "XEDITCRITIC_V4_CACHE_LAUNCH_AUTHORIZED"
             and isinstance(cache.get("physical_gpu_index"), int)
@@ -250,7 +250,7 @@ def _require_cache(
             == "route_a_v3_route2_xeditsetflow_v4_source_cache_adoption_receipt.v1"
             and cache.get("status")
             == "XEDITSETFLOW_V4_SOURCE_CACHE_ADOPTED_READ_ONLY"
-            and str(cache.get("git_head")) == str(current_git_head)
+            and str(cache.get("git_head")) == str(cache_git_head)
             and cache.get("cache_launch_authorization_status")
             == "XEDITSETFLOW_V4_CACHE_LAUNCH_AUTHORIZED"
             and cache.get("legacy_summary_schema_version")
@@ -287,12 +287,14 @@ def build_preflight_authorization_v4(
     cache: Mapping[str, Any],
     *,
     current_git_head: str,
+    cache_git_head: str | None = None,
 ) -> dict[str, Any]:
     _require(component in {"critic", "setflow"}, "unknown V4 component")
     _require_common_barriers(
         c3_reference, a100_audit, current_git_head=current_git_head
     )
-    _require_cache(component, cache, current_git_head=current_git_head)
+    frozen_cache_head = current_git_head if cache_git_head is None else cache_git_head
+    _require_cache(component, cache, cache_git_head=frozen_cache_head)
     prefix = "XEDITCRITIC" if component == "critic" else "XEDITSETFLOW"
     cache_barrier = (
         "bottom_six_cache_terminal_complete"
@@ -303,6 +305,7 @@ def build_preflight_authorization_v4(
         "schema_version": f"route_a_v3_route2_xedit{component}_v4_preflight_authorization.v1",
         "status": f"{prefix}_V4_PREFLIGHT_AUTHORIZED",
         "authorized_git_head": current_git_head,
+        "cache_experiment_head": frozen_cache_head,
         "component": component,
         "barriers": {
             "all_five_c3_jobs_terminal": True,
@@ -326,11 +329,13 @@ def build_screen_launch_authorization_v4(
     source_data_audit: Mapping[str, Any] | None,
     *,
     current_git_head: str,
+    cache_git_head: str | None = None,
 ) -> dict[str, Any]:
     _require_common_barriers(
         c3_reference, a100_audit, current_git_head=current_git_head
     )
-    _require_cache(component, cache, current_git_head=current_git_head)
+    frozen_cache_head = current_git_head if cache_git_head is None else cache_git_head
+    _require_cache(component, cache, cache_git_head=frozen_cache_head)
     run_ids = [str(row["run_id"]) for row in screen_config["required_screen_runs"]]
     common = {
         "all_five_c3_jobs_terminal": True,
@@ -429,6 +434,7 @@ def build_screen_launch_authorization_v4(
         "schema_version": schema,
         "status": status,
         "authorized_git_head": current_git_head,
+        "cache_experiment_head": frozen_cache_head,
         "authorized_run_ids": run_ids,
         "barriers": barriers,
         "development_test_outcome_reads": 0,
@@ -444,6 +450,7 @@ def main() -> None:
     parser.add_argument("--c3-reference", type=Path, required=True)
     parser.add_argument("--a100-audit", type=Path, required=True)
     parser.add_argument("--cache-summary", type=Path)
+    parser.add_argument("--cache-experiment-head")
     parser.add_argument("--preflight", type=Path)
     parser.add_argument("--source-data-audit", type=Path)
     parser.add_argument("--output", type=Path, required=True)
@@ -473,8 +480,18 @@ def main() -> None:
         a100_audit,
         _read(arguments.cache_summary),
     )
+    _require(
+        arguments.cache_experiment_head is not None
+        and re.fullmatch(r"[0-9a-f]{40}", arguments.cache_experiment_head)
+        is not None,
+        "preflight/screen authorization requires a cache experiment HEAD",
+    )
     if arguments.stage == "preflight":
-        result = build_preflight_authorization_v4(*common, current_git_head=head)
+        result = build_preflight_authorization_v4(
+            *common,
+            current_git_head=head,
+            cache_git_head=arguments.cache_experiment_head,
+        )
     else:
         _require(arguments.preflight is not None, "screen authorization requires preflight")
         result = build_screen_launch_authorization_v4(
@@ -486,6 +503,7 @@ def main() -> None:
             if arguments.source_data_audit is None
             else _read(arguments.source_data_audit),
             current_git_head=head,
+            cache_git_head=arguments.cache_experiment_head,
         )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     partial = arguments.output.with_suffix(arguments.output.suffix + ".partial")
