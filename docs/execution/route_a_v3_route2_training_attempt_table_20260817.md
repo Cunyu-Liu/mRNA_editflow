@@ -3620,3 +3620,21 @@ active metric或任何outcome。检查命令在CUDA状态行输出前结束，�
 沿用最近远端时钟偏移+154秒；下一次不早于本地16:12:02/远端约16:14:36。active作业期间不执行A100
 current-HEAD sync。监控无代码变化，focused/V3.3.2不重复运行。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_cache_retry_health_20260825_154202.json`。
+
+## XEditFlow V4 guidance-screen → three-seed matched-compute execution chain（2026-08-25）
+
+已补齐guidance screen冻结组合之后的正式执行入口。它同时绑定三个Git身份：冻结V4实验HEAD、完成18-cell
+guidance screen的runner HEAD，以及执行final comparison的current HEAD；A100工作树必须位于精确current HEAD且干净。
+只有`XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN`、Critic/SetFlow双readiness和两项同实验HEAD preflight都成立，且
+GPU0–5全部满足两项preflight较大峰值加2 GiB，才允许物化97份final runtime config。
+
+调度图固定为98项：20260913/14各自的seed-local rollout→Critic score→target→8-pass value training与一次pre-V4
+strongest-baseline timing先并行完成；之后20260912/13/14三条seed chain并行，每条固定29项，覆盖full SMC、四个
+matched controls、五种terminal Critic scoring/open metric、两条exact closed、三条closed control score、四条closed
+metric、independent evaluator、equal-wall和final evidence。三条seed chain全部terminal后，才允许一次manifest compose
+和唯一three-seed adjudication；任何技术failure保留terminal并关闭依赖项，不追加seed、retry、grid或阈值。
+
+targeted=8/8、合并本地V4 selection=228/228、精确V3.3.2=96/96、compile/diff-check PASS。当前只完成前瞻软件，
+没有物化config、启动value optimizer/generation/Critic inference或读取Validation metric；Development TEST post-atomic
+reopen与new Evaluation read均为0，claim不变。A100 current-HEAD测试继续等待`a7ef72f` Critic cache自然terminal。
+审计：`audits/route_a_v3_route2_xeditflow_v4_final_execution_chain_v1.json`。

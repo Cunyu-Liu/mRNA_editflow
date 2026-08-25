@@ -1,0 +1,82 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v4_final_execution_chain_audit.v1",
+  "status": "XEDITFLOW_V4_FINAL_THREE_SEED_EXECUTION_SOFTWARE_COMPLETE_NOT_EXECUTED",
+  "recorded_at": "2026-08-25T15:54:16+08:00",
+  "head_before_change": "288dc0774a94554f4ef593209ffbe4a3fd0e6c15",
+  "implemented_files": [
+    "scripts/route_a_v3/launch_route2_xeditflow_v4_final_after_guidance_screen.py",
+    "scripts/route_a_v3/run_route2_xeditflow_v4_final_scheduler.py",
+    "tests/route_a_v3/test_launch_route2_xeditflow_v4_final_after_guidance_screen.py"
+  ],
+  "formal_dependency": {
+    "guidance_screen_status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
+    "guidance_combination_count": 18,
+    "critic_status": "CRITIC_V4_READY_FOR_GUIDANCE",
+    "setflow_status": "XEDITSETFLOW_V4_G0_READY",
+    "frozen_base_flow_training_seeds": [
+      20260912,
+      20260913,
+      20260914
+    ],
+    "additional_training_seed_authorized": false
+  },
+  "execution_graph": {
+    "runtime_config_count": 97,
+    "scheduled_job_count_including_final_adjudication": 98,
+    "parallel_prerequisite_queues": [
+      "value_seed_20260913",
+      "value_seed_20260914",
+      "strongest_timing"
+    ],
+    "parallel_seed_chains": [
+      "seed_20260912",
+      "seed_20260913",
+      "seed_20260914"
+    ],
+    "jobs_per_seed_chain": 29,
+    "finalization": [
+      "compose_final_comparison",
+      "adjudicate_final_comparison"
+    ],
+    "candidate_cap_per_source": 32,
+    "forward_equivalent_ceiling_per_source": 320,
+    "all_gpu_indices_within_zero_to_five": true,
+    "all_three_seed_chains_must_terminal_before_adjudication": true,
+    "technical_failure_stops_dependent_jobs_without_retry": true
+  },
+  "identity_and_resource_boundary": {
+    "current_runner_head_explicit": true,
+    "frozen_experiment_head_explicit": true,
+    "guidance_screen_runner_head_explicit": true,
+    "a100_worktree_must_be_clean_and_exact_head": true,
+    "all_gpu_zero_to_five_require_preflight_max_plus_two_gib": true,
+    "formal_precision": "CUDA_BF16_NO_CPU_FALLBACK",
+    "strongest_closed_score_table_must_be_prefrozen_and_under_route2_mnt": true
+  },
+  "protected_input_boundary": {
+    "scheduler_reads_active_performance_outputs": false,
+    "development_test_reopened": false,
+    "development_test_outcomes_accessed_after_atomic_test": false,
+    "new_final_evaluation_outcome_reads": 0,
+    "independent_evaluator_in_gradient": false
+  },
+  "verification": {
+    "targeted_tests": "8 passed",
+    "combined_local_v4_selection": "228 passed",
+    "exact_v3_3_2": "96 passed",
+    "python_compile": "PASS",
+    "git_diff_check": "PASS",
+    "external_helper_syntax_and_missing_input_smoke": "PASS",
+    "a100_current_head_tests": "DEFERRED_WHILE_A7EF72F_CACHE_JOB_ACTIVE"
+  },
+  "execution_state": {
+    "runtime_configs_materialized": false,
+    "scheduler_launched": false,
+    "value_optimizer_attempts_started": 0,
+    "generation_jobs_started": 0,
+    "terminal_critic_inference_started": false,
+    "validation_metrics_read": false,
+    "final_three_seed_gate_executed": false
+  },
+  "claim_effect": "SOFTWARE_AND_PROVENANCE_BOUNDARY_ONLY_NO_PERFORMANCE_OR_PUBLICATION_CLAIM_CHANGE"
+}

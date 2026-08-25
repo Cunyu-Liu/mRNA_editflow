@@ -237,3 +237,15 @@ The hourly heartbeat is aligned to local minute 46, immediately after the
 current calibrated not-before boundary and every 60 minutes thereafter. Each
 run must still perform its own final local-time and remote-offset check; the
 wall-clock alignment is not permission to bypass that guard.
+
+The post-screen three-seed comparison now has a concrete fail-closed execution
+chain. It materializes the already frozen 97 runtime configurations only after
+the unique 18-cell guidance screen is terminal, then schedules exactly the
+three preregistered SetFlow seeds, their seed-local value models, all matched
+generation and guidance controls, terminal critic scoring, closed and open
+metrics, the independent evaluator, equal-wall sensitivity, and the final
+paired evidence. The three seed chains must all terminate before the unique
+final adjudicator can run. This is implementation and provenance evidence
+only: the chain has not been executed, no Validation performance result has
+been read, and the model-advantage and submission-readiness claims remain
+unestablished.

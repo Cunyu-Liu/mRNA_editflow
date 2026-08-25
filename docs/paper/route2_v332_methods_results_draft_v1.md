@@ -1070,3 +1070,12 @@ The recurring Route 2 executor now uses the V4 protocol and the preregistered
 60-minute cadence for long-running jobs. This corrects execution scheduling only;
 no remote result or protected outcome was read during the migration, so the
 manuscript evidence and submission-readiness verdict are unchanged.
+
+The software path from a frozen V4 guidance-screen selection to the terminal
+three-seed matched-compute gate is now complete and fail-closed. It fixes the
+three SetFlow seeds, seed-local scalar-value training, six compared methods,
+closed/open/independent-evaluator evidence, equal-wall sensitivity, and the
+single final adjudication order. This closes an execution-software gap; it is
+not performance evidence. No final configuration, optimizer job, generation
+run, metric read, Development TEST reopen, or new Evaluation read occurred,
+and the manuscript remains not ready under the model-plus-benchmark standard.

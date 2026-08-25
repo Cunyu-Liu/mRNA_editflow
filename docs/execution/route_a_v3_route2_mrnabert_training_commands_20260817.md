@@ -4450,3 +4450,17 @@ read=0。随后才启动cache：Critic PID `4161802`、SetFlow PID `4161804`。�
 SetFlow summary present/failure absent；Critic summary/failure均absent，exact wrapper与exact builder alive。命令未返回
 CUDA状态行，故不作肯定/否定推断且不立即重查。未读取log/progress/metric；下一本地窗口16:12:02，按+154秒
 偏移对应远端约16:14:36。监控本身无代码变化，不重复测试。
+
+## V4 final three-seed matched-compute launcher（2026-08-25）
+
+正式入口为
+`scripts/route_a_v3/launch_route2_xeditflow_v4_final_after_guidance_screen.py`，调度器为
+`scripts/route_a_v3/run_route2_xeditflow_v4_final_scheduler.py`。项目外helper要求显式提供
+`V4_CURRENT_HEAD`、`V4_EXPERIMENT_HEAD`、`V4_GUIDANCE_RUNNER_HEAD`及位于Route 2 `/mnt`下的
+`V4_STRONGEST_CLOSED_SCORE_TABLE`。三种HEAD分别绑定当前执行代码、冻结V4实验和已terminal的18-cell screen，不能
+互相推断或事后替换。
+
+launcher只在冻结guidance gate、双readiness、同experiment HEAD preflight、clean exact current HEAD和GPU0–5显存
+要求全部通过后物化final config。scheduler不读取active performance output；它先完成两条seed-local value链和一次
+strongest timing，再运行三条29-job seed chain，最后才compose并adjudicate。任何前驱failure使依赖项标记为未运行，
+不自动重试。当前入口尚未执行；cache terminal前不得同步A100或提前运行本链。
