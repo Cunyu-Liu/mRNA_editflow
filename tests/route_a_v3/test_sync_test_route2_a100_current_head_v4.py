@@ -17,6 +17,17 @@ def test_critic_current_head_selection_includes_read_once_and_runner_regressions
     assert sync.V332_TEST_PATTERNS == ("tests/route_a_v3/*v332*.py",)
 
 
+def test_current_head_selection_includes_cache_and_preflight_launch_chain() -> None:
+    operational = {
+        "tests/route_a_v3/test_run_route2_xedit_v4_cache_job.py",
+        "tests/route_a_v3/test_launch_route2_xedit_v4_caches_after_a100_sync.py",
+        "tests/route_a_v3/test_run_route2_xedit_v4_preflight_job.py",
+        "tests/route_a_v3/test_launch_route2_xedit_v4_preflights_after_caches.py",
+    }
+    assert operational.issubset(set(sync.CRITIC_TEST_PATTERNS))
+    assert operational.issubset(set(sync.SETFLOW_TEST_PATTERNS))
+
+
 def test_terminal_package_requires_exactly_one_terminal_artifact_per_run(
     tmp_path: Path, monkeypatch,
 ) -> None:

@@ -4229,3 +4229,15 @@ Critic+SetFlow cache launcher现为Git正式current-HEAD脚本，精确解析aut
 focused=22/22、合并V4相关=173/173、精确V3.3.2=96/96、compile/shell PASS。初次helper smoke因旧路径夹具
 失败，修正为读取正式launcher后PASS。未连接A100或启动cache，protected read=0。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_launcher_formalization_v1.json`。
+
+## V4 preflight launcher terminal exclusivity focused record（2026-08-25）
+
+Critic/SetFlow preflight job runner现以原子PASS/PAUSE output存在性确定唯一terminal；output发布后的非零进程码只
+写入runtime，不再生成并存failure。双组件launcher改为Git正式current-HEAD脚本，并读取最终authorization JSON
+核对component/status/HEAD；项目外壳不再传输Python实现。A100 current-HEAD的两个focused集合均覆盖cache与
+preflight正式运行链。
+
+focused=46/46、合并V4相关=157/157、精确V3.3.2=96/96、compile/shell/helper smoke PASS。误用Python
+3.9产生的147 pass/10 fail只证明解释器不满足项目`>=3.10`要求，不计作有效验证；Python 3.13重跑通过，生产代码
+未为3.9修改。未连接A100，未启动cache/preflight/optimizer，protected read=0。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_launcher_terminal_exclusivity_v1.json`。

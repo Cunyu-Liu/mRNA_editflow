@@ -3347,3 +3347,22 @@ Critic仍新建bottom-six cache，SetFlow仍只读adopt terminal V3 cache，不�
 均PASS。第一次项目外smoke因夹具仍读取已删除旧launcher而失败；夹具改读Git正式launcher后PASS，旧副本未恢复。
 本项未连接A100或启动cache；C3仍1/5 terminal，protected read=0、optimizer不变，claim不变。审计：
 `audits/route_a_v3_route2_xedit_v4_cache_launcher_formalization_v1.json`。
+
+## V4 preflight launcher exact-one-terminal formalization（2026-08-25）
+
+缓存之后的参数量/显存preflight链仍有两个正式运行缺口。项目外wrapper只有在`return_code==0`时才承认已经原子
+发布的PASS/PAUSE output；若preflight在发布output后于stdout/teardown阶段非零退出，wrapper会再发布technical
+failure，形成同一组件两个互斥terminal。项目外launcher同时只检查authorizer stdout中的
+`PREFLIGHT_AUTHORIZED`字符串，未直接核对正式授权JSON。
+
+preflight job runner与双组件launcher现迁入Git正式脚本。PASS或PAUSE output一旦存在即成为唯一terminal，后续非零
+return code只进入runtime记录；output缺失时才允许发布failure。两项授权在staging目录完整生成后统一发布，并逐项读取
+最终JSON核对component、精确status和authorized Git HEAD。A100 exact-current-HEAD的Critic与SetFlow focused cohort
+也都显式包含cache/preflight四个正式运行链测试；项目外壳只调用同步后远端工作树的正式launcher，两个旧Python副本已
+移除。
+
+正式链focused 46/46、合并V4相关157/157、精确V3.3.2 96/96、compile/shell/helper smoke均PASS。第一次
+合并V4命令误用本地Python 3.9，因其不支持`zip(..., strict=True)`得到147 pass/10 fail；该次不计作验证，也没有
+为兼容错误解释器修改生产代码；改用项目既定Python 3.13后157/157通过。当前未连接A100或运行cache/preflight，
+C3仍为1/5 terminal，terminal payload和protected outcome read均为0，optimizer attempt不变，科学claim不变。
+审计：`audits/route_a_v3_route2_xedit_v4_preflight_launcher_terminal_exclusivity_v1.json`。

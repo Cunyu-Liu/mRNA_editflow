@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_launcher_terminal_exclusivity.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED",
+  "date": "2026-08-25",
+  "implementation_parent_head": "b4ea2f43981403c523aa5eb345df050ff8c53678",
+  "finding": "The project-external preflight wrapper could publish a technical failure after a formal preflight had already atomically published its PASS or PAUSE output; the launcher also trusted an authorization stdout substring instead of the terminal authorization JSON.",
+  "remediation": {
+    "formal_job_runner": "scripts/route_a_v3/run_route2_xedit_v4_preflight_job.py",
+    "formal_launcher": "scripts/route_a_v3/launch_route2_xedit_v4_preflights_after_caches.py",
+    "terminal_rule": "An atomically published preflight output is the unique terminal irrespective of a later process return code; failure is published only when no output exists.",
+    "authorization_rule": "Both component authorizations are staged and then validated from final JSON for exact component, status, and authorized Git HEAD.",
+    "a100_current_head_cohort_updated": true,
+    "project_external_python_copies_removed": true
+  },
+  "verification": {
+    "focused_passed": 46,
+    "focused_failed": 0,
+    "combined_v4_passed": 157,
+    "combined_v4_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "compile_passed": true,
+    "shell_syntax_passed": true,
+    "project_external_helper_smoke_passed": true,
+    "invalid_interpreter_attempt": {
+      "python_version": "3.9.6",
+      "passed": 147,
+      "failed": 10,
+      "counted_as_verification": false,
+      "cause": "Python 3.9 does not support zip(..., strict=True); the formal project and A100 runtimes require Python 3.10 or later.",
+      "production_code_changed_for_python39": false
+    },
+    "valid_local_python_version": "3.13.5"
+  },
+  "execution_state": {
+    "c3_terminal_count": 1,
+    "c3_terminal_payloads_read": 0,
+    "a100_connected_or_synchronized": false,
+    "cache_jobs_started": false,
+    "preflight_jobs_started": false,
+    "optimizer_attempt_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_effect": "NONE_SOFTWARE_EXECUTION_CORRECTNESS_ONLY"
+}

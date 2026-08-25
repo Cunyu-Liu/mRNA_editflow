@@ -39,6 +39,10 @@ CRITIC_TEST_PATTERNS = (
     "tests/route_a_v3/test_route2_mrnabert_bottom_six_encoder_v4.py",
     "tests/route_a_v3/test_route2_xedit_v4_interfaces.py",
     "tests/route_a_v3/test_authorize_route2_xedit_v4_screen_stages.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_cache_job.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_caches_after_a100_sync.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_preflight_job.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_preflights_after_caches.py",
 )
 SETFLOW_TEST_PATTERNS = (
     "tests/route_a_v3/*xeditsetflow_v4*.py",
@@ -46,6 +50,10 @@ SETFLOW_TEST_PATTERNS = (
     "tests/route_a_v3/test_route2_source_token_cache_v3.py",
     "tests/route_a_v3/test_route2_xedit_v4_interfaces.py",
     "tests/route_a_v3/test_authorize_route2_xedit_v4_screen_stages.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_cache_job.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_caches_after_a100_sync.py",
+    "tests/route_a_v3/test_run_route2_xedit_v4_preflight_job.py",
+    "tests/route_a_v3/test_launch_route2_xedit_v4_preflights_after_caches.py",
 )
 V332_TEST_PATTERNS = ("tests/route_a_v3/*v332*.py",)
 
