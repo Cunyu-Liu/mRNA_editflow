@@ -4324,3 +4324,16 @@ manifest明确`loso_authorized=true`才开放下一阶段，任一failure形成�
 当前同定义V4=207/207、V3.3.2=96/96、compile/shell/helper/diff-check PASS。当前TEST/refit均未运行，
 Development TEST access=0，new Evaluation read=0。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_refit_formal_launcher_v1.json`。
+
+## Critic V4 exact 42-job LOSO launcher/readiness composer（2026-08-25）
+
+LOSO正式入口只接受同HEAD refit runtime的`3/3 complete + loso_authorized=true`和原子refit manifest。
+在物化LOSO config/authorization前，先读取Critic preflight并选取GPU0–5中全部满足`peak+2 GiB`的卡；42项固定
+`3 seeds × 7 held-out studies × {v4_full,c0_v4}`按manifest顺序轮转入这些队列。设备数量只影响吞吐，不改变
+seed/fold/run identity、8-pass预算或unknown held-out study scale=1。
+
+每项必须summary XOR failure；全部terminal后一次性LOSO adjudication，再以three-seed gate、无metric receipt、
+refit manifest与LOSO terminal组合readiness。LOSO NO-GO形成`CRITIC_V4_NOT_READY_FOR_GUIDANCE`，不得继续guidance。
+focused=15/15、A100同步器当前同定义V4=213/213、V3.3.2=96/96、compile/shell/helper/diff-check PASS。
+当前refit/LOSO/readiness均未执行，protected read=0。审计：
+`audits/route_a_v3_route2_xeditcritic_v4_loso_formal_launcher_v1.json`。

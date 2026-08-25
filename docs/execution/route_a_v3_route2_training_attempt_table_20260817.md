@@ -3462,3 +3462,13 @@ PASS后在物化config前从GPU0–5选三张满足`preflight peak + 2 GiB`的�
 focused 17/17、current-A100-selection local 207/207、V3.3.2 96/96、compile/shell/helper/diff-check PASS。
 本项未执行TEST/refit，不新增optimizer attempt，C3仍按低频窗口运行，protected read=0，claim不变。审计：
 `audits/route_a_v3_route2_xeditcritic_v4_refit_formal_launcher_v1.json`。
+
+## Critic V4 refit PASS → 42 paired LOSO → readiness（2026-08-25）
+
+已实现严格后继链：只有三refit完整terminal才可生成42项LOSO；身份全集固定为20260908/09/10 × 7 studies ×
+full/C0。显存检查在config物化前完成，使用GPU0–5中全部合格卡按manifest顺序轮转；每项summary XOR failure。
+所有job terminal后只运行一次LOSO gate与一次readiness composer，NO-GO永久阻止guidance。
+
+focused 15/15、current-A100-selection local 213/213、V3.3.2 96/96、compile/shell/helper/diff-check PASS。
+本项未执行refit/LOSO，不新增optimizer attempt，Development TEST仍0 access，new Evaluation read=0，claim不变。
+审计：`audits/route_a_v3_route2_xeditcritic_v4_loso_formal_launcher_v1.json`。
