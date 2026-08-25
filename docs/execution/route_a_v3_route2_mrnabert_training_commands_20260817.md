@@ -4275,3 +4275,14 @@ CUDA、optimizer和metric均未运行，Development TEST/new Evaluation read=0�
 仍待单独实现。提交前按A100同步器当前精确文件选择复核为183/183，精确V3.3.2仍为96/96；一次引用不存在的
 Critic authorizer测试路径在collection前停止，不计入验证。审计：
 `audits/route_a_v3_route2_xedit_v4_confirmation_training_launcher_v1.json`。
+
+## C3 low-frequency health record（2026-08-25 14:04:10 remote）
+
+本地14:01:36完成最后时间读取后执行一次SSH；远端14:04:10时仍为1/5 terminal：`c3_source_only`
+summary存在且内容未读，full、edit-metadata-only、no-candidate与permutation四项进程仍存活并保持CUDA，
+各自占用2,120–2,190 MiB。未读取stdout/stderr、active curve、terminal payload、Development TEST或
+new Evaluation；未执行read-once、A100 current-HEAD sync或V4运行。
+
+远端时钟相对本地快154秒，下一次不得早于远端15:04:10/本地15:01:36。监控本身无代码变化，未重复
+focused/V3.3.2 tests。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_140410.json`。

@@ -3419,3 +3419,12 @@ focused 38/38、合并V4相关186/186、精确V3.3.2 96/96、compile/shell/helpe
 Development TEST/new Evaluation read=0，科学claim不变。提交前按A100同步器当前精确文件选择复核183/183，
 精确V3.3.2仍96/96；一次不存在的测试路径在collection前停止且不计入。审计：
 `audits/route_a_v3_route2_xedit_v4_confirmation_training_launcher_v1.json`。
+
+## C3 14:04:10 remote low-frequency terminal check（2026-08-25）
+
+在本地14:01:36越过既定边界后单次检查，远端14:04:10仍为1/5 terminal。`c3_source_only`仅确认summary
+存在且payload未读；其余四项仍为存活CUDA进程，显存2,120–2,190 MiB。read-once reference与screen gate均未
+生成，active metric/log/protected outcome read均为0，中央optimizer attempt不变，A100 current-HEAD sync与
+V4执行继续关闭。远端偏移更新为+154秒；下一边界为远端15:04:10/本地15:01:36。监控无代码变化，故不重复
+focused/V3.3.2 cohort。审计：
+`audits/route_a_v3_route2_xeditcritic_v3_c3_screen_health_20260825_140410.json`。
