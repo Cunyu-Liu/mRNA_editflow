@@ -172,6 +172,30 @@ def test_semantic_router_selects_exactly_top_two_without_study_input() -> None:
     assert not any("study" in name for name, _ in router.named_parameters())
 
 
+def test_semantic_router_accepts_autocast_promoted_softmax(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    router = EndpointSemanticRouterV4(8, expert_count=4, top_k=2).to(
+        dtype=torch.bfloat16
+    )
+    original_softmax = torch.softmax
+
+    def promoted_softmax(values: torch.Tensor, *, dim: int) -> torch.Tensor:
+        return original_softmax(values.float(), dim=dim)
+
+    monkeypatch.setattr(torch, "softmax", promoted_softmax)
+    weights, balance = router(torch.randn(6, 8, dtype=torch.bfloat16))
+    assert weights.dtype == torch.bfloat16
+    assert torch.equal((weights > 0).sum(dim=1), torch.full((6,), 2))
+    assert torch.allclose(
+        weights.float().sum(dim=1),
+        torch.ones(6),
+        atol=1e-2,
+        rtol=0.0,
+    )
+    assert balance.dtype == torch.float32 and torch.isfinite(balance)
+
+
 def test_local_context_gather_ignores_every_token_outside_declared_windows() -> None:
     batch = _batch()
     upper = batch["chunk_hidden"].clone()

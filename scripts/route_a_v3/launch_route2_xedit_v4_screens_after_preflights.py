@@ -145,10 +145,10 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         WORKTREE / "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json"
     )
     critic_preflight_path = (
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json"
+        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_3/preflight.json"
     )
     setflow_preflight_path = (
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.json"
+        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_3/preflight.json"
     )
     source_audit_path = (
         ROOT

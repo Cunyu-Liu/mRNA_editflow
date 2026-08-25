@@ -145,9 +145,12 @@ class EndpointSemanticRouterV4(nn.Module):
     def forward(self, condition: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         logits = self.router(condition)
         top_values, top_indices = torch.topk(logits, self.top_k, dim=-1)
-        selected = torch.softmax(top_values, dim=-1)
+        # CUDA autocast promotes softmax to float32 while the router logits and
+        # scatter destination remain BF16.  scatter requires an exact dtype
+        # match, so return the normalized routing weights to the model dtype.
+        selected = torch.softmax(top_values, dim=-1).to(dtype=logits.dtype)
         weights = torch.zeros_like(logits).scatter(-1, top_indices, selected)
-        aggregate = weights.mean(dim=0)
+        aggregate = weights.float().mean(dim=0)
         balance = self.expert_count * torch.square(
             aggregate - 1.0 / self.expert_count
         ).sum()

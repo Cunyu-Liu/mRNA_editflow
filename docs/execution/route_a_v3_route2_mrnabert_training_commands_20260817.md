@@ -4546,3 +4546,8 @@ cache experiment HEAD、GPU0/GPU0与`sequential_single_gpu`；新底线是版本
 精确HEAD `8db364cadf23bf3a0144e34aff9c4519b323221f`的A100三套测试随后全部PASS。正式launcher在
 2026-08-25 19:18:20 +08:00后以GPU0空闲38,634 MiB通过启动门槛，共享scheduler PID `1427509`
 按Critic→SetFlow串行启动attempt 2。首次alive/CUDA/terminal/failure检查不早于约5分钟；不读取active curve。
+
+Attempt 2随后自然terminal：SetFlow preflight PASS；Critic首次BF16 forward因autocast softmax FP32结果不能直接
+scatter进BF16 destination而技术失败。terminal log只在failure JSON不含reason后读取一次。修复为selected routing
+weights在scatter前显式恢复logits dtype，并以FP32计算balance；不改参数或训练定义。新正式输出为
+`preflight_attempt_3/`，旧attempt 2不覆盖。新HEAD仍需先完成A100 187/137/96 exact-HEAD tests后才能GPU0重试。

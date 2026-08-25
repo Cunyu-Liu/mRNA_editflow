@@ -325,3 +325,14 @@ floor remains 20,000 MiB, the allowed device set remains GPU0–5, and the retry
 remains a single-GPU Critic-then-SetFlow sequence. No model architecture, data,
 seed, loss, gate, protected-outcome boundary or claim is changed by this
 authorization.
+
+The second preflight attempt reached a terminal state without any Validation,
+Development TEST or new Evaluation performance read. SetFlow passed its formal
+capacity, BF16 and execution preflight with 100,099,998 trainable parameters.
+Critic failed technically on its first BF16 forward because CUDA autocast
+returned float32 softmax weights to a bfloat16 scatter destination. The repair
+casts normalized top-two routing weights back to the router-logit dtype before
+scatter and accumulates the balance term in float32. This is a numerical dtype
+repair only: architecture, parameter count, routing semantics, data, seeds,
+losses, budgets and gates remain frozen. Attempt 2 remains read-only and the
+next exact-head preflight writes to non-overwriting attempt-3 paths.

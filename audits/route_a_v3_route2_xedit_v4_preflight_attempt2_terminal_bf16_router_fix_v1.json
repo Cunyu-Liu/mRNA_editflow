@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt2_terminal_bf16_router_fix.v1",
+  "status": "ATTEMPT_2_TERMINAL_TECHNICAL_REPAIR_PREPARED_FOR_ATTEMPT_3",
+  "terminal_read_local_time": "2026-08-25T19:24:29+08:00",
+  "terminal_remote_time_reference": "2026-08-25T19:26:13.702513+08:00",
+  "attempt_2_runner_git_head": "8db364cadf23bf3a0144e34aff9c4519b323221f",
+  "critic": {
+    "status": "TECHNICAL_FAILURE",
+    "return_code": 1,
+    "failure_stage": "FIRST_FORMAL_BF16_MODEL_FORWARD_DURING_MEMORY_PREFLIGHT",
+    "failure_type": "ROUTER_SCATTER_SOURCE_DESTINATION_DTYPE_MISMATCH",
+    "failure_message": "scatter(): Expected self.dtype to be equal to src.dtype",
+    "cause": "CUDA autocast promoted softmax routing weights to float32 while the router logits and scatter destination remained bfloat16",
+    "preflight_output_present": false,
+    "validation_metric_read": false,
+    "performance_gate_adjudicated": false,
+    "scientific_no_go": false
+  },
+  "setflow": {
+    "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+    "passed": true,
+    "full_trainable_parameter_count": 100099998,
+    "single_mode_trainable_parameter_count": 98628717,
+    "physical_and_effective_batch_size": 32,
+    "precision": "BF16",
+    "physical_gpu_index": 0,
+    "peak_memory_allocated_gib": 1.5445160865783691,
+    "optimizer_state_materialized": true,
+    "cpu_fallback_used": false,
+    "validation_metric_read": false
+  },
+  "repair": {
+    "scope": "ENDPOINT_SEMANTIC_ROUTER_NUMERICAL_DTYPE_ONLY",
+    "selected_weights_cast_to_router_logits_dtype_before_scatter": true,
+    "router_balance_accumulated_in_float32": true,
+    "architecture_changed": false,
+    "trainable_parameter_count_changed": false,
+    "data_seed_loss_budget_or_gate_changed": false,
+    "attempt_3_uses_new_non_overwriting_preflight_paths": true,
+    "attempt_2_artifacts_remain_read_only": true
+  },
+  "local_verification": {
+    "bf16_router_regression_passed": 2,
+    "critic_v4_focused_passed": 187,
+    "setflow_v4_focused_passed": 137,
+    "v332_cohort_passed": 96,
+    "compileall_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "active_performance_curve_read": false,
+  "screen_authorized": false,
+  "submission_ready": false
+}

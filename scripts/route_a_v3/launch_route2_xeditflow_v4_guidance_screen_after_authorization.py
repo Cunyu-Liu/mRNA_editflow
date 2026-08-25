@@ -184,10 +184,10 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "V4 guidance screen config, output, or runtime already exists",
     )
     critic_preflight = read_json(
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json"
+        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_3/preflight.json"
     )
     setflow_preflight = read_json(
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_2/preflight.json"
+        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_3/preflight.json"
     )
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"

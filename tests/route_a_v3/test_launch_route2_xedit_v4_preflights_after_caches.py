@@ -35,7 +35,7 @@ def test_preflight_components_consume_exact_cache_terminals() -> None:
     )
     for component in ("critic", "setflow"):
         assert Path(components[component]["output"]).parent.name == (
-            "preflight_attempt_2"
+            "preflight_attempt_3"
         )
         assert Path(components[component]["failure"]).name == (
             "preflight.failure.json"

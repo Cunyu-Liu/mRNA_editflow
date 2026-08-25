@@ -3758,3 +3758,17 @@ launch manifest位于`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/
 preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_8db364cadf23bf3a0144e34aff9c4519b323221f/
 launch_manifest.json`。当前只形成LAUNCHED状态，不读取active log/metric，不授权screen；Development TEST/new Evaluation
 outcome reads仍为0。审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt2_launch_v1.json`。
+
+### Attempt 2 terminal 与 BF16 router 技术修复（2026-08-25）
+
+首次合规低频检查时共享scheduler已自然terminal。SetFlow正式PASS：100,099,998个full参数、98,628,717个
+single-mode参数、BF16、physical/effective batch 32、GPU0、optimizer state已物化、进程内峰值1.5445 GiB，
+无CPU fallback且没有读取Validation metric。Critic在第一次正式BF16模型forward时发生技术失败：CUDA autocast
+将top-2 softmax权重提升为FP32，而BF16 router logits与`zeros_like` scatter destination仍为BF16，触发
+`scatter(): Expected self.dtype to be equal to src.dtype`。Critic没有形成preflight output，也没有性能读或科学NO-GO。
+
+窄修复只把softmax后的selected weights转换回router logits dtype再scatter，并让router-balance以FP32聚合；
+架构、参数、路由top-2语义、数据、seed、loss、预算与gate不变。新增CUDA-autocast-promotion回归测试；本地Critic
+187/187、SetFlow 137/137、V3.3.2 96/96及compile均PASS。attempt 2全部只读保留，正式路径前移到新的
+`preflight_attempt_3/`，不得覆盖旧terminal。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_attempt2_terminal_bf16_router_fix_v1.json`。

@@ -1112,3 +1112,11 @@ current-head A100 verification cohorts passed before attempt 2 was launched on
 GPU0 in the preregistered Critic-then-SetFlow sequence. This launch event is
 provenance only: no active performance trajectory, Development TEST outcome or
 new Evaluation outcome was read, and no model-advantage claim is available yet.
+
+Attempt 2 then terminaled before any performance evaluation. SetFlow passed its
+formal preflight at 100,099,998 trainable parameters. Critic encountered a
+mixed-precision implementation error on its first formal BF16 forward: an
+autocast-promoted float32 softmax result was scattered into a bfloat16 tensor.
+The narrowly scoped dtype correction changes neither the model nor its training
+objective and therefore supplies no performance evidence. Attempt 3 remains a
+technical prerequisite; the manuscript remains not ready for submission.

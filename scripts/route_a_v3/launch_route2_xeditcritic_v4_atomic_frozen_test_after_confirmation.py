@@ -154,7 +154,7 @@ def run(head: str) -> dict[str, Any]:
     output_directory = Path(frozen_protocol["output_directory"])
     require(not output_directory.exists(), "Critic V4 atomic TEST was already consumed")
     preflight = read_json(
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_2/preflight.json"
+        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_3/preflight.json"
     )
     required_mib = math.ceil(
         (float(preflight["selected_peak_allocated_gib"]) + 2.0) * 1024
