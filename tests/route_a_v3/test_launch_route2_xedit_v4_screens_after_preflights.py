@@ -71,3 +71,34 @@ def test_screen_authorization_status_is_component_exact() -> None:
     )
     with pytest.raises(Exception, match="unknown V4 screen component"):
         launcher.expected_authorization_status("other")
+
+
+def test_screen_jobs_use_any_sufficient_gpu_and_preserve_exact_frozen_package() -> None:
+    free_memory = {0: 39000, 1: 7000, 2: 7000, 3: 12000, 4: 5000, 5: 3000}
+    queues = launcher.assign_screen_jobs_to_gpu_queues(
+        free_memory,
+        critic_required_mib=9000,
+        setflow_required_mib=4000,
+    )
+    assert set(queues).issubset(range(6))
+    assigned = [job for jobs in queues.values() for job in jobs]
+    assert {run_id for component, run_id in assigned if component == "critic"} == set(
+        launcher.screen_run_ids()["critic"]
+    )
+    assert {run_id for component, run_id in assigned if component == "setflow"} == set(
+        launcher.screen_run_ids()["setflow"]
+    )
+    for gpu, jobs in queues.items():
+        for component, _ in jobs:
+            required = 9000 if component == "critic" else 4000
+            assert free_memory[gpu] >= required
+
+
+def test_screen_assignment_fails_only_when_no_gpu_has_measured_capacity() -> None:
+    free_memory = {gpu: 8000 for gpu in range(6)}
+    with pytest.raises(Exception, match="enough measured memory for Critic"):
+        launcher.assign_screen_jobs_to_gpu_queues(
+            free_memory,
+            critic_required_mib=9000,
+            setflow_required_mib=4000,
+        )

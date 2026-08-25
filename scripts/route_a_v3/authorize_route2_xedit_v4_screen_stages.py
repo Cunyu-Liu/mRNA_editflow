@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -352,8 +353,9 @@ def build_screen_launch_authorization_v4(
             and 165_000_000
             <= int(preflight.get("trainable_parameter_count", -1))
             <= 175_000_000
-            and 20.0
-            <= float(preflight.get("selected_peak_allocated_gib", -1))
+            and math.isfinite(float(preflight.get("selected_peak_allocated_gib", -1)))
+            and 0.0
+            < float(preflight.get("selected_peak_allocated_gib", -1))
             <= 35.0
             and int(preflight.get("selected_physical_batch", -1)) in {4, 8, 16, 32},
             "Critic V4 formal parameter/memory preflight did not pass",

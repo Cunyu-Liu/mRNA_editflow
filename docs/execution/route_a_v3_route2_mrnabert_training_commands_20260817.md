@@ -4567,3 +4567,14 @@ Attempt 4 formal terminal：SetFlow PASS；Critic参数170,481,957且cache/onlin
 4/8/16/32的`max_memory_allocated`仅2.8230/2.8229/3.8728/6.6399 GiB。冻结20 GiB下限未满足，
 故正式状态`XEDITCRITIC_V4_PREFLIGHT_PAUSE`，screen不得启动。没有Validation/TEST/Evaluation read；不得通过
 无意义tensor、CPU fallback或隐式改模伪造20 GiB。所有active job已terminal，下一步等待前瞻协议决策。
+
+## V4.0.1 no-lower-occupancy amendment and attempt 5（2026-08-25）
+
+用户选择Candidate A并授权精确资源修订：Critic `minimum_peak_allocated_gib=null`、
+`minimum_occupancy_gate_enabled=false`，保留`maximum_peak_allocated_gib=35.0`、physical/effective batch 32、
+参数、BF16及全部科学门槛。Preflight launcher不再接受或记录固定空闲显存数字门，manifest记录两组件minimum为
+`null`并以正式CUDA/BF16执行作为容量判定。正式输出统一前移到`preflight_attempt_5/`。
+
+Attempt 5使用GPU0/GPU0 `sequential_single_gpu`；双PASS后立即运行既有screen launcher。Screen launcher根据
+attempt-5组件实测峰值+2 GiB，在GPU0–5中动态选择足够设备并保持每张卡串行队列；Critic八个run和SetFlow两个
+run、seed、预算、gate全部不变。Attempt 1–4只读，protected reads=0。

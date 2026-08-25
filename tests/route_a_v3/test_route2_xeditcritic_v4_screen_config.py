@@ -67,7 +67,9 @@ def test_v4_screen_capacity_and_memory_preflight_cannot_silently_shrink() -> Non
     ) == (165_000_000, 175_000_000)
     assert memory["physical_batch_candidates"] == [4, 8, 16, 32]
     assert memory["minimum_physical_batch"] == 4
-    assert (memory["minimum_peak_allocated_gib"], memory["maximum_peak_allocated_gib"]) == (20.0, 35.0)
+    assert memory["minimum_peak_allocated_gib"] is None
+    assert memory["minimum_occupancy_gate_enabled"] is False
+    assert memory["maximum_peak_allocated_gib"] == 35.0
     assert memory["measurement"] == "TORCH_CUDA_MAX_MEMORY_ALLOCATED"
     assert memory["cpu_fallback"] is False
     assert memory["artificial_padding_or_unused_tensor"] is False

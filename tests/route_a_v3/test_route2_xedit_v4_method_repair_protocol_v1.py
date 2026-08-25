@@ -53,13 +53,23 @@ def test_v4_critic_capacity_batches_and_memory_preflight_are_exactly_frozen() ->
     assert memory["physical_batch_candidates"] == [4, 8, 16, 32]
     assert memory["minimum_physical_batch"] == 4
     assert memory["effective_batch"] == 32
-    assert (memory["peak_allocated_memory_gib_minimum"], memory["peak_allocated_memory_gib_maximum"]) == (
-        20,
-        35,
-    )
+    assert memory["peak_allocated_memory_gib_minimum"] is None
+    assert memory["minimum_occupancy_gate_enabled"] is False
+    assert memory["peak_allocated_memory_gib_maximum"] == 35
     assert memory["measurement"] == "TORCH_CUDA_MAX_MEMORY_ALLOCATED"
     assert memory["cpu_fallback"] is False
     assert memory["artificial_padding_or_unused_tensor_allowed"] is False
+
+
+def test_v401_resource_amendment_is_frozen_before_attempt5_or_performance_read() -> None:
+    amendment = _load()["prospective_resource_amendment_v401"]
+    assert amendment["authorized_by_user"] is True
+    assert amendment["attempt_5_authorized"] is True
+    assert amendment["screen_authorized_only_after_attempt_5_dual_pass"] is True
+    assert amendment["architecture_training_and_scientific_gates_changed"] is False
+    assert amendment["development_validation_performance_read_before_amendment"] is False
+    assert amendment["development_test_outcome_reads"] == 0
+    assert amendment["new_final_evaluation_outcome_reads"] == 0
 
 
 def test_v4_critic_architecture_losses_controls_and_seeds_are_prefrozen() -> None:

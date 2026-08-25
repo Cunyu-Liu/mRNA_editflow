@@ -35,7 +35,7 @@ def test_preflight_components_consume_exact_cache_terminals() -> None:
     )
     for component in ("critic", "setflow"):
         assert Path(components[component]["output"]).parent.name == (
-            "preflight_attempt_4"
+            "preflight_attempt_5"
         )
         assert Path(components[component]["failure"]).name == (
             "preflight.failure.json"
@@ -108,7 +108,7 @@ def test_preflight_launcher_keeps_runner_and_cache_heads_distinct() -> None:
     assert '"experiment_head": experiment_head' in source
 
 
-def test_preflight_gpu_availability_reports_both_selected_gaps_and_full_allowed_snapshot() -> None:
+def test_preflight_launcher_has_no_fixed_free_memory_floor() -> None:
     free_memory = {
         0: 36999,
         1: 8775,
@@ -119,38 +119,20 @@ def test_preflight_gpu_availability_reports_both_selected_gaps_and_full_allowed_
         6: 36631,
         7: 22296,
     }
-    with pytest.raises(
-        launcher.XEditV4PreflightLaunchError,
-        match=(
-            r"Critic GPU0 has 36999 MiB free; requires at least 37000 MiB; "
-            r"SetFlow GPU3 has 18870 MiB free; requires at least 20000 MiB; "
-            r"allowed_gpu_free_memory_mib="
-        ),
-    ) as captured:
-        launcher.require_preflight_gpu_availability(
-            free_memory,
+    launcher.require_selected_gpus_visible(
+        free_memory,
+        critic_gpu=0,
+        setflow_gpu=5,
+    )
+
+
+def test_preflight_gpu_visibility_rejects_missing_selected_gpu() -> None:
+    with pytest.raises(Exception, match="SetFlow GPU3 is not a visible"):
+        launcher.require_selected_gpus_visible(
+            {0: 1, 1: 1, 2: 1},
             critic_gpu=0,
             setflow_gpu=3,
-            critic_minimum_free_mib=launcher.CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
-            setflow_minimum_free_mib=20000,
         )
-    message = str(captured.value)
-    assert '"0": 36999' in message
-    assert '"5": 334' in message
-    assert '"6"' not in message
-    assert '"7"' not in message
-
-
-def test_preflight_gpu_availability_accepts_exact_thresholds() -> None:
-    assert launcher.CRITIC_PREFLIGHT_MINIMUM_FREE_MIB == 37_000
-    assert launcher.SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB == 20_000
-    launcher.require_preflight_gpu_availability(
-        {0: 37000, 3: 20000},
-        critic_gpu=0,
-        setflow_gpu=3,
-        critic_minimum_free_mib=launcher.CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
-        setflow_minimum_free_mib=launcher.SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB,
-    )
 
 
 def test_preflight_gpu_layout_distinguishes_concurrent_and_sequential_modes() -> None:

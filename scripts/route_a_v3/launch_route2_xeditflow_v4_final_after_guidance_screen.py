@@ -513,10 +513,10 @@ def run(
         "V4 guidance screen runtime identity or protected-read boundary differs",
     )
     critic_preflight = read_json(
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_4/preflight.json"
+        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_5/preflight.json"
     )
     setflow_preflight = read_json(
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_4/preflight.json"
+        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_5/preflight.json"
     )
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"

@@ -1135,3 +1135,20 @@ frozen 20-GiB floor. It was therefore paused before training. XEditSetFlow V4
 passed its preflight. Because no V4 screen was authorized and no performance
 metric was read, these results provide no predictor or generator advantage and
 the manuscript remains not ready for submission.
+
+A subsequent discussion-only memo distinguishes the non-scientific lower
+memory-occupancy rule from model capacity. It recommends a prospectively logged
+resource-only amendment but leaves the user decision and all authorizations
+unset. An alternative batch-128 proposal was found incompatible with retaining
+2,802 updates per pass and the four-presentation cap (358,656 required versus
+358,320 available), even before preserving capped-sqrt task balance. No protocol
+or performance claim changes until the user selects and freezes a path.
+
+The user prospectively selected the resource-only V4.0.1 amendment before any
+V4 Validation performance read. It removes the 20-GiB lower occupancy rule and
+fixed launcher free-memory floors while retaining the exact models, batch 32,
+35-GiB ceiling, training objectives, controls and scientific gates. Attempt 4
+remains a historical pause; a new attempt 5 must independently pass both model
+preflights before the unchanged screens begin. This amendment supplies no
+ranking or generation evidence, so the manuscript remains not ready pending
+the screen and all preregistered downstream gates.

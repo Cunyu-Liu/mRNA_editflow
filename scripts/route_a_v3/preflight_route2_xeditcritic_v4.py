@@ -567,9 +567,16 @@ def run(
         "formal parameter count differs across batch preflights",
     )
     try:
+        minimum_peak_gib = config["memory_preflight"][
+            "minimum_peak_allocated_gib"
+        ]
+        _require(
+            minimum_peak_gib is None,
+            "Critic V4 lower memory-occupancy gate is not disabled",
+        )
         selection = select_physical_batch_from_memory_v4(
             peak_map,
-            minimum_peak_gib=float(config["memory_preflight"]["minimum_peak_allocated_gib"]),
+            minimum_peak_gib=None,
             maximum_peak_gib=float(config["memory_preflight"]["maximum_peak_allocated_gib"]),
         )
         passed = True

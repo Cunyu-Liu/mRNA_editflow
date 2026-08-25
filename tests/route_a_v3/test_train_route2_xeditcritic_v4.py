@@ -147,7 +147,7 @@ def test_launch_authorization_requires_every_c3_sync_cache_and_preflight_barrier
         )
 
 
-def test_launch_authorization_rejects_head_batch_memory_parameter_or_protected_read_drift() -> None:
+def test_launch_authorization_accepts_low_positive_peak_but_rejects_upper_memory_drift() -> None:
     config = _config()
     authorization = _authorization(config)
     with pytest.raises(XEditCriticTrainingV4RunnerError, match="another Git HEAD"):
@@ -161,7 +161,16 @@ def test_launch_authorization_rejects_head_batch_memory_parameter_or_protected_r
         )
     preflight = _preflight()
     preflight["selected_peak_allocated_gib"] = 19.9
-    with pytest.raises(XEditCriticTrainingV4RunnerError, match="20–35"):
+    require_screen_launch_authorization_v4(
+        config,
+        authorization,
+        preflight,
+        run_id="v4_full",
+        physical_batch_size=8,
+        current_git_head="head",
+    )
+    preflight["selected_peak_allocated_gib"] = 35.1
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="above 35"):
         require_screen_launch_authorization_v4(
             config,
             authorization,

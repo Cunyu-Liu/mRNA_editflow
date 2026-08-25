@@ -37,6 +37,11 @@ def test_current_head_selection_includes_cache_and_preflight_launch_chain() -> N
     }
     assert operational.issubset(set(sync.CRITIC_TEST_PATTERNS))
     assert operational.issubset(set(sync.SETFLOW_TEST_PATTERNS))
+    amendment_test = (
+        "tests/route_a_v3/test_route2_xedit_v4_method_repair_protocol_v1.py"
+    )
+    assert amendment_test in sync.CRITIC_TEST_PATTERNS
+    assert amendment_test in sync.SETFLOW_TEST_PATTERNS
 
 
 def test_terminal_package_requires_exactly_one_terminal_artifact_per_run(

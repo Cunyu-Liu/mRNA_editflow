@@ -3816,3 +3816,28 @@ alignment PASS，正式dataset-bound trainable count为170,481,957（位于165�
 
 此前170,481,733为不绑定实际endpoint/study vocabulary的静态构造计数；正式数据绑定后准确值为
 170,481,957，差224个参数，不影响冻结120–180M范围或165–175M设计目标。
+
+### Memory-pause discussion memo（DRAFT；未冻结）
+
+已新增`docs/paper/route2_xedit_v4_memory_pause_prospective_decision_memo_v1.md`，将A（取消非科学20 GiB
+下限、其余V4不变）与B（batch 128 ranking）写成可反证的前瞻候选。新增TRAIN-only几何核查发现B若同时
+保持batch 128、2,802 updates/pass和record repeat cap 4，需要358,656次呈现，超过绝对上限358,320；
+且七个TRAIN task规模为204/893/1,308/2,443/3,318/25,710/55,704，会破坏原capped-sqrt平衡。
+因此备忘录推荐A，但明确记录decision/authorization均为PENDING/NO；没有修改冻结协议、没有attempt 5、没有screen。
+
+### V4.0.1 resource amendment frozen; attempt 5 authorized（2026-08-25）
+
+用户在任何attempt 5、V4参数更新或V4 Validation性能读取前正式选择Candidate A：取消Critic的20 GiB
+进程内最低占用门，不改变170,481,957参数模型、physical/effective batch 32、35 GiB上限、BF16、passes、updates、
+loss、seed、controls、ablations或任何scientific gate。Attempt 4保持原协议下的terminal `PAUSE`，不追溯改判。
+
+同时取消preflight launcher固定37,000/20,000 MiB空闲显存底线；GPU只需为可见物理GPU0–5，实际CUDA/BF16
+preflight决定能否执行。Attempt 5仍用GPU0串行Critic→SetFlow并写入新的`preflight_attempt_5/`；双PASS后，
+现有V4 screen按attempt-5实测峰值+2 GiB在任一足够的GPU0–5上动态排队，所有10个冻结arm不变。Development
+TEST/new Evaluation outcome reads仍为0；screen授权严格条件为attempt-5双PASS。审计：
+`audits/route_a_v3_route2_xedit_v4_v401_resource_amendment_v1.json`。
+
+本地amendment/launcher focused为72/72（另有2项仅因本机Python3.9不支持`zip(strict=True)`而按已知环境差异
+deselect），V3.3.2为96/96，compile/JSON/helper shell/diff-check均PASS。完整本地Critic/SetFlow在Python3.9
+分别为187 PASS+11个同一接口失败、144 PASS+4个同一接口失败；生产放行以A100 Python3.10精确新HEAD预期
+198/198、148/148与96/96为准，未通过前不得启动attempt 5。

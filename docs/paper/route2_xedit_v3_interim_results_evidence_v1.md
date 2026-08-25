@@ -218,3 +218,14 @@ Before another full cache attempt, a fixed synthetic-RNA smoke test showed that 
 A follow-up synthetic smoke caught one remaining device-binding detail before a full cache attempt: the remote encoder stores its prebuilt ALiBi tensor as a plain CPU attribute, so moving the model did not move that tensor. The frozen bottom encoder now transfers ALiBi once at initialization and the shared layer stack requires hidden states, masks, and ALiBi to share one device. The upper adapter already manages ALiBi as a nonpersistent buffer. No project record, outcome, optimizer step, or performance metric was involved.
 
 After exact-current-HEAD A100 tests, the corrected shared path passed a formal synthetic smoke through frozen blocks 0–5 and trainable blocks 6–11. The bottom representation had the expected 66-token by 768-feature geometry; the checkpointed BF16 upper path completed forward and backward with finite input and parameter gradients, but no optimizer update. The same frozen cache task was launched only after this pass. These facts establish executable representation plumbing, not predictive or generative performance.
+
+Attempt 4 later established the exact formal capacities and executable batch-32
+paths but paused Critic solely under the preregistered 20-GiB lower occupancy
+rule. Before any V4 Validation performance read, the user selected a prospective
+V4.0.1 resource amendment that removes this non-scientific lower rule and the
+fixed launcher free-memory floors while retaining the 35-GiB ceiling, exact
+models, batch 32, all training objectives, controls and scientific gates.
+Attempt 4 remains unchanged; only a new attempt-5 dual preflight PASS can start
+the existing screens. This amendment is execution authority, not evidence of a
+Spearman, recovery, diversity or publication-quality advantage. Development
+TEST and new Evaluation outcome reads remain zero.

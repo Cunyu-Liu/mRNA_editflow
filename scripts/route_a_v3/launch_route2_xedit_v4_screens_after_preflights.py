@@ -98,6 +98,62 @@ def screen_run_ids() -> dict[str, list[str]]:
     }
 
 
+def assign_screen_jobs_to_gpu_queues(
+    free_memory_mib: dict[int, int],
+    *,
+    critic_required_mib: int,
+    setflow_required_mib: int,
+) -> dict[int, list[tuple[str, str]]]:
+    """Assign the frozen screen arms to any sufficient physical GPU 0–5."""
+
+    require(
+        set(free_memory_mib).issuperset(range(6)),
+        "physical GPU inventory 0–5 is incomplete",
+    )
+    critic_gpus = [
+        gpu for gpu in range(6) if free_memory_mib[gpu] >= critic_required_mib
+    ]
+    setflow_gpus = [
+        gpu for gpu in range(6) if free_memory_mib[gpu] >= setflow_required_mib
+    ]
+    require(bool(critic_gpus), "no GPU 0–5 has enough measured memory for Critic V4")
+    require(bool(setflow_gpus), "no GPU 0–5 has enough measured memory for SetFlow V4")
+
+    queues: dict[int, list[tuple[str, str]]] = {}
+    for run_id in (
+        "v4_full",
+        "v4_source_only",
+        "v4_edit_metadata_only",
+        "v4_no_candidate_sequence",
+        "c0_v4",
+        "v4_candidate_bundle_permutation",
+        "v4_no_cross",
+        "v4_no_moe",
+    ):
+        gpu = min(
+            critic_gpus,
+            key=lambda candidate: (
+                sum(
+                    component == "critic"
+                    for component, _ in queues.get(candidate, [])
+                ),
+                len(queues.get(candidate, [])),
+                candidate,
+            ),
+        )
+        queues.setdefault(gpu, []).append(("critic", run_id))
+
+    setflow_only_gpus = [gpu for gpu in setflow_gpus if gpu not in critic_gpus]
+    for run_id in ("v4_full", "v4_single_mode"):
+        candidates = setflow_only_gpus or setflow_gpus
+        gpu = min(
+            candidates,
+            key=lambda candidate: (len(queues.get(candidate, [])), candidate),
+        )
+        queues.setdefault(gpu, []).append(("setflow", run_id))
+    return {gpu: queues[gpu] for gpu in sorted(queues)}
+
+
 def validate_screen_authorization(
     path: Path, *, component: str, head: str, experiment_head: str
 ) -> None:
@@ -145,15 +201,15 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         WORKTREE / "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json"
     )
     critic_preflight_path = (
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_4/preflight.json"
+        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_5/preflight.json"
     )
     setflow_preflight_path = (
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_4/preflight.json"
+        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_5/preflight.json"
     )
     source_audit_path = (
         ROOT
         / "experiments/xeditsetflow_v4/screen_seed_20260911/"
-        "source_level_data_audit.json"
+        "preflight_attempt_5/source_level_data_audit.json"
     )
     critic_preflight = read_json(critic_preflight_path)
     setflow_preflight = read_json(setflow_preflight_path)
@@ -189,31 +245,15 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     setflow_required = math.ceil(
         (float(setflow_preflight["peak_memory_allocated_gib"]) + 2.0) * 1024
     )
-    for gpu in range(4):
-        require(
-            free_memory[gpu] >= critic_required,
-            f"GPU {gpu} lacks Critic V4 screen memory",
-        )
-    for gpu in (4, 5):
-        require(
-            free_memory[gpu] >= setflow_required,
-            f"GPU {gpu} lacks SetFlow V4 screen memory",
-        )
-
-    critic_runs = {
-        0: ("v4_full", "v4_no_cross"),
-        1: ("v4_source_only", "v4_no_moe"),
-        2: ("v4_edit_metadata_only", "v4_candidate_bundle_permutation"),
-        3: ("v4_no_candidate_sequence", "c0_v4"),
-    }
-    for run_ids in critic_runs.values():
-        for run_id in run_ids:
-            output = (
-                ROOT
-                / f"experiments/xeditcritic_v4/screen_seed_20260907/{run_id}"
-            )
-            require(not output.exists(), f"Critic output already exists: {run_id}")
-    for run_id in ("v4_full", "v4_single_mode"):
+    screen_assignments = assign_screen_jobs_to_gpu_queues(
+        free_memory,
+        critic_required_mib=critic_required,
+        setflow_required_mib=setflow_required,
+    )
+    for run_id in screen_run_ids()["critic"]:
+        output = ROOT / f"experiments/xeditcritic_v4/screen_seed_20260907/{run_id}"
+        require(not output.exists(), f"Critic output already exists: {run_id}")
+    for run_id in screen_run_ids()["setflow"]:
         output = ROOT / f"experiments/xeditsetflow_v4/screen_seed_20260911/{run_id}"
         require(not output.exists(), f"SetFlow output already exists: {run_id}")
 
@@ -304,63 +344,41 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     gpu_queues: list[dict[str, Any]] = []
     critic_trainer = WORKTREE / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
     setflow_trainer = WORKTREE / "scripts/route_a_v3/train_route2_xeditsetflow_v4.py"
-    for gpu, run_ids in critic_runs.items():
+    for gpu, assigned_jobs in screen_assignments.items():
         jobs = []
-        for run_id in run_ids:
-            output = (
-                ROOT
-                / f"experiments/xeditcritic_v4/screen_seed_20260907/{run_id}"
-            )
+        for component, run_id in assigned_jobs:
+            if component == "critic":
+                output = ROOT / f"experiments/xeditcritic_v4/screen_seed_20260907/{run_id}"
+                trainer = critic_trainer
+                config = critic_config
+                authorization_flag = "--launch-authorization"
+            else:
+                output = ROOT / f"experiments/xeditsetflow_v4/screen_seed_20260911/{run_id}"
+                trainer = setflow_trainer
+                config = setflow_config
+                authorization_flag = "--authorization"
             jobs.append(
                 {
-                    "job_key": f"critic:{run_id}",
-                    "component": "critic",
+                    "job_key": f"{component}:{run_id}",
+                    "component": component,
                     "run_id": run_id,
                     "output_directory": str(output),
-                    "log_path": str(log_root / f"critic_{run_id}.log"),
+                    "log_path": str(log_root / f"{component}_{run_id}.log"),
                     "command": [
                         str(PYTHON),
-                        str(critic_trainer),
+                        str(trainer),
                         "--config",
-                        str(critic_config),
+                        str(config),
                         "--run-id",
                         run_id,
                         "--physical-gpu-index",
                         str(gpu),
-                        "--launch-authorization",
-                        str(authorization_root / "critic.json"),
+                        authorization_flag,
+                        str(authorization_root / f"{component}.json"),
                     ],
                 }
             )
         gpu_queues.append({"physical_gpu_index": gpu, "jobs": jobs})
-    for gpu, run_id in ((4, "v4_full"), (5, "v4_single_mode")):
-        output = ROOT / f"experiments/xeditsetflow_v4/screen_seed_20260911/{run_id}"
-        gpu_queues.append(
-            {
-                "physical_gpu_index": gpu,
-                "jobs": [
-                    {
-                        "job_key": f"setflow:{run_id}",
-                        "component": "setflow",
-                        "run_id": run_id,
-                        "output_directory": str(output),
-                        "log_path": str(log_root / f"setflow_{run_id}.log"),
-                        "command": [
-                            str(PYTHON),
-                            str(setflow_trainer),
-                            "--config",
-                            str(setflow_config),
-                            "--run-id",
-                            run_id,
-                            "--physical-gpu-index",
-                            str(gpu),
-                            "--authorization",
-                            str(authorization_root / "setflow.json"),
-                        ],
-                    }
-                ],
-            }
-        )
 
     runtime_root.mkdir(parents=True)
     log_root.mkdir(parents=True)
@@ -376,6 +394,9 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "gpu_free_memory_mib_before_launch": free_memory,
         "critic_required_free_memory_mib": critic_required,
         "setflow_required_free_memory_mib": setflow_required,
+        "gpu_assignment_policy": (
+            "ANY_PHYSICAL_GPU_0_TO_5_MEETING_MEASURED_PEAK_PLUS_2_GIB"
+        ),
         "gpu_queues": gpu_queues,
         "active_performance_output_read": False,
         "development_test_outcome_reads": 0,

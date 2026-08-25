@@ -355,3 +355,34 @@ than manufacture memory use, the Critic terminal state is
 Validation performance, Development TEST outcome or new Evaluation outcome was
 read. Consequently the V4 screen is not authorized; changing the memory floor
 or architecture requires a new prospective decision.
+
+## V4.0.1 prospective resource amendment after attempt 4
+
+Before attempt 5, any V4 parameter update, and any V4 Validation performance
+read, the user selected the resource-only Candidate A. Attempt 4 remains the
+terminal `XEDITCRITIC_V4_PREFLIGHT_PAUSE` produced under its original 20-GiB
+lower-occupancy rule and is not retroactively relabeled.
+
+For attempt 5 and every downstream V4 launch, the lower memory-occupancy gate
+is removed. The Critic remains the exact 170.48M-class architecture, physical
+and effective batch remain 32, and the 35-GiB process-recorded allocation
+ceiling remains mandatory. BF16, activation checkpointing, SDPA, no CPU
+fallback, all data isolation, passes, updates, seeds, losses, controls,
+ablations, performance gates and claim boundaries remain unchanged. A formal
+preflight is eligible when physical batch 32 completes CUDA BF16 forward,
+backward, finite-gradient checks and optimizer-state materialization at a
+positive finite peak no greater than 35 GiB.
+
+The launcher no longer enforces fixed 37,000/20,000-MiB free-memory floors.
+Attempt 5 uses visible physical GPU0 in the frozen single-GPU Critic-then-
+SetFlow sequence; actual CUDA execution is authoritative. After attempt 5, the
+unchanged screen arms may be assigned to any physical GPU0–5 whose launch-time
+free memory is at least that component's measured attempt-5 peak plus 2 GiB.
+This workload-derived scheduling margin does not select a model, change a
+metric, or require high occupancy.
+
+Attempt 5 writes only to new `preflight_attempt_5/` paths. Attempts 1–4 remain
+read-only. Only exact-HEAD Critic and SetFlow preflight PASS artifacts with all
+protected-read counters at zero authorize immediate launch of the already
+preregistered V4 screens. No extra screen arm, seed, threshold or TEST access is
+authorized by this amendment.

@@ -18,8 +18,6 @@ WORKTREE = Path(
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 LOCAL_REPO_ROOT = Path(__file__).resolve().parents[2]
-CRITIC_PREFLIGHT_MINIMUM_FREE_MIB = 37_000
-SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB = 20_000
 C3_REFERENCE = (
     ROOT
     / "experiments/xeditcritic_v3/screen_seed_20260830/"
@@ -74,29 +72,23 @@ def gpu_free_memory_mib() -> dict[int, int]:
     return values
 
 
-def require_preflight_gpu_availability(
+def require_selected_gpus_visible(
     free_memory: dict[int, int],
     *,
     critic_gpu: int,
     setflow_gpu: int,
-    critic_minimum_free_mib: int,
-    setflow_minimum_free_mib: int,
 ) -> None:
-    requirements = (
-        ("Critic", critic_gpu, critic_minimum_free_mib),
-        ("SetFlow", setflow_gpu, setflow_minimum_free_mib),
-    )
+    requirements = (("Critic", critic_gpu), ("SetFlow", setflow_gpu))
     failures = [
-        f"{component} GPU{gpu} has {free_memory.get(gpu, -1)} MiB free; "
-        f"requires at least {minimum} MiB"
-        for component, gpu, minimum in requirements
-        if free_memory.get(gpu, -1) < minimum
+        f"{component} GPU{gpu} is not a visible physical GPU in scope 0–5"
+        for component, gpu in requirements
+        if gpu not in range(6) or gpu not in free_memory
     ]
     if failures:
         snapshot = {gpu: free_memory.get(gpu, -1) for gpu in range(6)}
         raise XEditV4PreflightLaunchError(
             "; ".join(failures)
-            + f"; allowed_gpu_free_memory_mib={json.dumps(snapshot, sort_keys=True)}"
+            + f"; visible_gpu_free_memory_mib={json.dumps(snapshot, sort_keys=True)}"
         )
 
 
@@ -229,8 +221,6 @@ def run(
     critic_gpu: int,
     setflow_gpu: int,
     sequential_single_gpu: bool = False,
-    critic_minimum_free_mib: int = CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
-    setflow_minimum_free_mib: int = SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB,
 ) -> dict[str, object]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
@@ -265,12 +255,10 @@ def run(
     a100_audit = ROOT / f"audits/a100_current_head_v4/sync_tests_{current_head}.json"
     require(a100_audit.is_file(), "exact current-HEAD A100 test audit is absent")
     free_memory = gpu_free_memory_mib()
-    require_preflight_gpu_availability(
+    require_selected_gpus_visible(
         free_memory,
         critic_gpu=critic_gpu,
         setflow_gpu=setflow_gpu,
-        critic_minimum_free_mib=critic_minimum_free_mib,
-        setflow_minimum_free_mib=setflow_minimum_free_mib,
     )
 
     authorization_root = (
@@ -501,10 +489,10 @@ def run(
             "c3_reference": str(C3_REFERENCE),
             "a100_audit": str(a100_audit),
             "gpu_free_memory_mib_before_launch": free_memory,
-            "minimum_free_memory_mib": {
-                "critic": critic_minimum_free_mib,
-                "setflow": setflow_minimum_free_mib,
-            },
+            "minimum_free_memory_mib": {"critic": None, "setflow": None},
+            "gpu_sufficiency_policy": (
+                "NO_FIXED_FREE_MEMORY_FLOOR_ACTUAL_CUDA_BF16_PREFLIGHT_IS_AUTHORITATIVE"
+            ),
             "jobs": launches,
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
@@ -520,16 +508,6 @@ def main() -> None:
     parser.add_argument("--critic-gpu", type=int, required=True)
     parser.add_argument("--setflow-gpu", type=int, required=True)
     parser.add_argument("--sequential-single-gpu", action="store_true")
-    parser.add_argument(
-        "--critic-minimum-free-mib",
-        type=int,
-        default=CRITIC_PREFLIGHT_MINIMUM_FREE_MIB,
-    )
-    parser.add_argument(
-        "--setflow-minimum-free-mib",
-        type=int,
-        default=SETFLOW_PREFLIGHT_MINIMUM_FREE_MIB,
-    )
     arguments = parser.parse_args()
     print(
         json.dumps(
@@ -539,8 +517,6 @@ def main() -> None:
                 critic_gpu=arguments.critic_gpu,
                 setflow_gpu=arguments.setflow_gpu,
                 sequential_single_gpu=arguments.sequential_single_gpu,
-                critic_minimum_free_mib=arguments.critic_minimum_free_mib,
-                setflow_minimum_free_mib=arguments.setflow_minimum_free_mib,
             ),
             indent=2,
             sort_keys=True,

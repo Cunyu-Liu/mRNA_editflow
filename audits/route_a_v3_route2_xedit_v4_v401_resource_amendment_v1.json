@@ -1,0 +1,50 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_v401_resource_amendment.v1",
+  "status": "FROZEN_BEFORE_ATTEMPT_5_OR_V4_VALIDATION_PERFORMANCE_READ",
+  "decision_owner": "USER",
+  "decision": "CANDIDATE_A_RESOURCE_ONLY_AMENDMENT",
+  "decision_time_local": "2026-08-25T20:16:23+08:00",
+  "historical_attempt_4_status_preserved": "XEDITCRITIC_V4_PREFLIGHT_PAUSE",
+  "critic": {
+    "formal_trainable_parameter_count_reference": 170481957,
+    "physical_batch_size": 32,
+    "effective_batch_size": 32,
+    "minimum_peak_allocated_gib": null,
+    "minimum_occupancy_gate_enabled": false,
+    "maximum_peak_allocated_gib": 35.0,
+    "cuda_bf16_only": true,
+    "cpu_fallback": false
+  },
+  "launcher": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "fixed_critic_free_memory_floor_mib": null,
+    "fixed_setflow_free_memory_floor_mib": null,
+    "attempt_5_gpu_layout": "GPU0_SEQUENTIAL_CRITIC_THEN_SETFLOW",
+    "screen_assignment": "ANY_GPU_0_TO_5_WITH_ATTEMPT5_MEASURED_PEAK_PLUS_2_GIB"
+  },
+  "attempt_5_authorized": true,
+  "screen_authorized_only_after_attempt_5_dual_pass": true,
+  "local_verification": {
+    "amendment_and_launcher_focused_passed": 72,
+    "amendment_and_launcher_focused_deselected_python39_only": 2,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "critic_v4_python39_passed": 187,
+    "critic_v4_python39_failed_only_on_zip_strict": 11,
+    "setflow_v4_python39_passed": 144,
+    "setflow_v4_python39_failed_only_on_zip_strict": 4,
+    "production_python310_a100_exact_head_tests": "PENDING_COMMIT_AND_SYNC",
+    "py_compile": "PASS",
+    "json_validation": "PASS",
+    "external_helper_shell_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "model_architecture_changed": false,
+  "training_objective_changed": false,
+  "scientific_gate_changed": false,
+  "development_validation_performance_read_before_decision": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "shared_history_rewritten": false,
+  "formal_tag_or_release_created": false
+}

@@ -3,6 +3,18 @@
   "status": "FROZEN_PROSPECTIVE_BEFORE_XEDIT_V4_PARAMETER_UPDATE_OR_VALIDATION_OUTCOME_READ",
   "authorized_by_user": true,
   "frozen_at_local": "2026-08-24T16:45:43+08:00",
+  "prospective_resource_amendment_v401": {
+    "authorized_by_user": true,
+    "frozen_at_local": "2026-08-25T20:16:23+08:00",
+    "decision": "CANDIDATE_A_REMOVE_LOWER_OCCUPANCY_AND_FIXED_LAUNCH_FLOORS",
+    "historical_attempt_4_reclassified": false,
+    "attempt_5_authorized": true,
+    "screen_authorized_only_after_attempt_5_dual_pass": true,
+    "architecture_training_and_scientific_gates_changed": false,
+    "development_validation_performance_read_before_amendment": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
   "authority_order": [
     "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -166,15 +178,16 @@
       "choose_largest_within_maximum": true,
       "minimum_physical_batch": 4,
       "effective_batch": 32,
-      "peak_allocated_memory_gib_minimum": 20,
+      "peak_allocated_memory_gib_minimum": null,
       "peak_allocated_memory_gib_maximum": 35,
+      "minimum_occupancy_gate_enabled": false,
       "measurement": "TORCH_CUDA_MAX_MEMORY_ALLOCATED",
       "precision": "BF16",
       "activation_checkpointing": true,
       "attention_backend": "PYTORCH_SDPA_OR_VERIFIED_EQUIVALENT",
       "cpu_fallback": false,
       "artificial_padding_or_unused_tensor_allowed": false,
-      "below_minimum_at_physical_batch_32_action": "PAUSE_AND_REPORT",
+      "below_minimum_at_physical_batch_32_action": "NOT_APPLICABLE_NO_LOWER_OCCUPANCY_GATE",
       "above_maximum_at_physical_batch_4_action": "PAUSE_AND_REPORT"
     },
     "training": {

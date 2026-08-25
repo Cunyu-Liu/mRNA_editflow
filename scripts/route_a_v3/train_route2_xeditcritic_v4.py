@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import random
 import subprocess
@@ -212,7 +213,11 @@ def require_screen_launch_authorization_v4(
     _require(int(preflight.get("selected_physical_batch", -1)) == int(physical_batch_size), "runner physical batch differs from frozen preflight selection")
     count = int(preflight.get("trainable_parameter_count", -1))
     _require(165_000_000 <= count <= 175_000_000, "formal preflight parameter count missed the frozen design target")
-    _require(20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0, "formal preflight peak memory is outside 20–35 GiB")
+    selected_peak = float(preflight.get("selected_peak_allocated_gib", -1))
+    _require(
+        math.isfinite(selected_peak) and 0.0 < selected_peak <= 35.0,
+        "formal preflight peak memory is nonpositive, nonfinite, or above 35 GiB",
+    )
     _require(int(preflight.get("development_test_outcome_reads", -1)) == 0, "preflight reports a Development TEST read")
     _require(int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0, "preflight reports a new Evaluation read")
     _require_bottom_six_preflight_identity_v4(config, preflight)
@@ -351,7 +356,8 @@ def require_confirmation_launch_authorization_v4(
         and preflight.get("passed") is True
         and int(preflight.get("selected_physical_batch", -1)) == physical_batch_size
         and 165_000_000 <= int(preflight.get("trainable_parameter_count", -1)) <= 175_000_000
-        and 20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0,
+        and math.isfinite(float(preflight.get("selected_peak_allocated_gib", -1)))
+        and 0.0 < float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0,
         "Critic V4 confirmation preflight identity changed",
     )
     _require_bottom_six_preflight_identity_v4(config, preflight)
@@ -444,7 +450,8 @@ def require_posttest_launch_authorization_v4(
         and 165_000_000
         <= int(preflight.get("trainable_parameter_count", -1))
         <= 175_000_000
-        and 20.0 <= float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0
+        and math.isfinite(float(preflight.get("selected_peak_allocated_gib", -1)))
+        and 0.0 < float(preflight.get("selected_peak_allocated_gib", -1)) <= 35.0
         and int(preflight.get("development_test_outcome_reads", -1)) == 0
         and int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0,
         "Critic V4 posttest preflight identity changed",

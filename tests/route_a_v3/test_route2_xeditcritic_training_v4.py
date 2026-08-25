@@ -182,19 +182,30 @@ def test_effective_objective_rejects_same_group_or_mixed_task_batches() -> None:
         )
 
 
-def test_memory_selection_chooses_largest_under_35_and_requires_20_to_35_target() -> None:
+def test_memory_selection_chooses_largest_under_35_without_lower_occupancy_gate() -> None:
     selected = select_physical_batch_from_memory_v4(
         {4: 22.0, 8: 29.0, 16: 34.5, 32: None}
     )
     assert selected["selected_physical_batch"] == 16
     assert selected["selected_peak_allocated_gib"] == 34.5
-    with pytest.raises(XEditCriticTrainingV4Error, match="below 20"):
+    low_peak = select_physical_batch_from_memory_v4(
+        {4: 8.0, 8: 10.0, 16: 12.0, 32: 15.0}
+    )
+    assert low_peak["selected_physical_batch"] == 32
+    assert low_peak["selected_peak_allocated_gib"] == 15.0
+    assert low_peak["minimum_peak_allocated_gib"] is None
+    with pytest.raises(XEditCriticTrainingV4Error, match="must remain disabled"):
         select_physical_batch_from_memory_v4(
-            {4: 8.0, 8: 10.0, 16: 12.0, 32: 15.0}
+            {4: 8.0, 8: 10.0, 16: 12.0, 32: 15.0},
+            minimum_peak_gib=20.0,
         )
     with pytest.raises(XEditCriticTrainingV4Error, match="batch four exceeds"):
         select_physical_batch_from_memory_v4(
             {4: 36.0, 8: None, 16: None, 32: None}
+        )
+    with pytest.raises(XEditCriticTrainingV4Error, match="nonpositive or nonfinite"):
+        select_physical_batch_from_memory_v4(
+            {4: 8.0, 8: 10.0, 16: 12.0, 32: float("nan")}
         )
 
 

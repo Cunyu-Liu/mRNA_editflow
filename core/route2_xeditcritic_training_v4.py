@@ -416,10 +416,10 @@ def effective_prediction_objective_v4(
 def select_physical_batch_from_memory_v4(
     peak_allocated_gib: Mapping[int, float | None],
     *,
-    minimum_peak_gib: float = 20.0,
+    minimum_peak_gib: float | None = None,
     maximum_peak_gib: float = 35.0,
-) -> dict[str, float | int | bool]:
-    """Choose the largest measured batch within the frozen 20–35 GiB target."""
+) -> dict[str, float | int | bool | None]:
+    """Choose the largest measured batch below the frozen 35-GiB ceiling."""
 
     _require(set(peak_allocated_gib) == set(PHYSICAL_BATCH_CANDIDATES_V4), "memory preflight did not cover {4,8,16,32}")
     measured = {
@@ -428,12 +428,20 @@ def select_physical_batch_from_memory_v4(
         if value is not None
     }
     _require(bool(measured), "every Critic V4 physical batch preflight failed")
+    _require(
+        all(math.isfinite(peak) and peak > 0.0 for peak in measured.values()),
+        "Critic V4 memory preflight contains a nonpositive or nonfinite peak",
+    )
     _require(4 in measured, "physical batch four failed; model must pause rather than shrink")
     _require(measured[4] <= maximum_peak_gib, "physical batch four exceeds 35 GiB")
     eligible = [batch for batch, peak in measured.items() if peak <= maximum_peak_gib]
+    _require(bool(eligible), "no Critic V4 physical batch fits the 35-GiB ceiling")
     selected = max(eligible)
     selected_peak = measured[selected]
-    _require(selected_peak >= minimum_peak_gib, "largest eligible Critic V4 batch remains below 20 GiB")
+    _require(
+        minimum_peak_gib is None,
+        "Critic V4 lower memory-occupancy gate must remain disabled",
+    )
     return {
         "selected_physical_batch": selected,
         "selected_peak_allocated_gib": selected_peak,
