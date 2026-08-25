@@ -3864,3 +3864,24 @@ current HEAD，因而双PASS也会被错误拒绝。该问题不涉及任何远�
 与实际artifact一致。模型、batch、训练、十个arms、seed、metric、gate和protected boundary全部不变。定向39/39
 与expanded successor chain 49/49、V3.3.2 96/96均PASS；完整A100 current-HEAD测试须在attempt 5全部terminal后运行。审计：
 `audits/route_a_v3_route2_xedit_v4_preflight_screen_dual_head_binding_v1.json`。
+
+### Attempt 5 formal terminal read-once / dual preflight PASS（2026-08-25）
+
+在本地 `21:02:58` 越过冻结窗口后，状态检查仅观察 scheduler、CUDA 与 terminal/failure artifact：共享
+scheduler PID `1939251` 已退出，Critic/SetFlow 两份正式 `preflight.json` 均存在，组件 failure 与 sequence
+failure 均不存在。随后在本地 `21:03:33` 进行唯一一次正式 payload read；sequence 状态为
+`TERMINAL_COMPLETE`。
+
+Critic 正式状态为 `XEDITCRITIC_V4_PREFLIGHT_PASS`：数据绑定参数量 `170,481,957`，BF16 physical/effective
+batch 32，进程内 `max_memory_allocated=6.6399488449 GiB`，满足 V4.0.1 取消下限后的正有限显存与 `<=35 GiB`
+上限；optimizer state 已物化，cache/online alignment PASS（max abs `0.0182235241 <= 0.02`，mean abs
+`0.0000860665 <= 0.005`），无人工 padding、CPU fallback 或 runtime failure。SetFlow 正式状态为
+`XEDITSETFLOW_V4_PREFLIGHT_PASS`：Full `100,099,998`、single-mode `98,628,717` 参数，BF16 batch 32，峰值
+`1.5445160866 GiB`，optimizer state 已物化，无 CPU fallback。
+
+两组件均 `validation_metric_read=false`，Critic `target_value_accessed=false`，SetFlow 只使用 outcome-free
+geometry；Development TEST/new Evaluation outcome reads 均为0。该双PASS只解除screen的preflight屏障，尚未
+生成screen authorization或启动optimizer。下一步严格为：先提交推送本终态记录，再同步A100到精确current HEAD并
+通过Critic/SetFlow/V3.3.2测试，之后才用独立preflight/cache/current三个HEAD启动冻结的十项screen package。
+本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
+审计：`audits/route_a_v3_route2_xedit_v4_preflight_attempt5_terminal_dual_pass_v1.json`。

@@ -4589,3 +4589,22 @@ Attempt-5 terminal后的screen命令必须同时传入三个独立身份：`--ex
 `--experiment-head a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d`、
 `--preflight-head 107fa43d9990e4f72f989ca0cf417260bfb10de8`。Authorizer和两个screen trainer均核对
 preflight artifact的`git_head`与该preflight HEAD，不再错误要求它等于后续current HEAD。
+
+Attempt 5 已自然terminal并完成read-once：Critic/SetFlow分别为
+`XEDITCRITIC_V4_PREFLIGHT_PASS`/`XEDITSETFLOW_V4_PREFLIGHT_PASS`，sequence为`TERMINAL_COMPLETE`，无failure
+artifact。Critic数据绑定参数量170,481,957、BF16 batch32、峰值6.6399488449GiB且cache/online alignment PASS；
+SetFlow Full/Single参数量100,099,998/98,628,717、BF16 batch32、峰值1.5445160866GiB。两者protected reads均为0。
+
+正式screen不得直接从旧launch HEAD启动。先提交本终态记录并把A100快进到该精确current HEAD，运行正式
+Critic/SetFlow/V3.3.2 current-HEAD tests；全部PASS后执行：
+
+```bash
+/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10 \
+  scripts/route_a_v3/launch_route2_xedit_v4_screens_after_preflights.py \
+  --expected-head <terminal-record-current-head> \
+  --experiment-head a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d \
+  --preflight-head 107fa43d9990e4f72f989ca0cf417260bfb10de8
+```
+
+该入口只按attempt-5实测峰值加2GiB为任一足够GPU0–5排队，不恢复固定空闲显存门，也不更改十个arm、seed、
+训练预算或scientific gate。

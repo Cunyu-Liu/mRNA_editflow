@@ -1166,3 +1166,15 @@ screen current HEAD tested after terminal documentation. Authorizations bind
 both and trainers reject a preflight-head mismatch. This is provenance and
 execution-correctness evidence only; it does not inspect or improve any model
 metric and leaves all manuscript claims unchanged.
+
+Attempt 5 subsequently completed with both formal preflights passing. The
+dataset-bound Critic contained 170,481,957 trainable parameters, completed a
+BF16 batch-32 forward/backward and optimizer-state materialization at 6.640 GiB
+peak allocated memory, and passed the frozen cache/online alignment tolerances.
+The SetFlow full and single-mode models contained 100,099,998 and 98,628,717
+trainable parameters and completed their BF16 batch-32 preflight at 1.545 GiB.
+Neither preflight read a Validation metric, Development TEST outcome, or new
+Evaluation outcome. These results establish implementation and capacity
+readiness only: no V4 optimizer screen or performance evaluation has yet run,
+so they provide no Spearman, recovery, diversity, model-advantage, or
+submission-readiness evidence.

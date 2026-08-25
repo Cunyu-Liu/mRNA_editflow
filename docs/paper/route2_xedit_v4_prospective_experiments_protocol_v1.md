@@ -398,3 +398,16 @@ consumed preflight artifact's `git_head`. This successor-binding repair was
 implemented during the attempt-5 silent window without reading a remote status,
 preflight result, Validation metric, Development TEST outcome, or new Evaluation
 outcome. It changes no model, training, arm, seed, metric or gate.
+
+Attempt 5 later reached a natural terminal state and was read exactly once.
+Both formal preflights passed: the dataset-bound Critic had 170,481,957
+trainable parameters, selected BF16 physical/effective batch 32, recorded
+6.6399488449 GiB peak allocated memory, materialized optimizer state, and
+passed cache/online alignment; SetFlow recorded 100,099,998 full and 98,628,717
+single-mode trainable parameters, BF16 batch 32, 1.5445160866 GiB peak allocated
+memory, and materialized optimizer state. Neither component used CPU fallback
+or read a Validation metric, Development TEST outcome, or new Evaluation
+outcome. This terminal fact satisfies only the frozen preflight barrier. Screen
+authorization and parameter updates remain prohibited until the terminal record
+is committed, the A100 worktree is synchronized to that exact current HEAD, and
+the full current-HEAD Critic, SetFlow, and V3.3.2 test cohorts pass.
