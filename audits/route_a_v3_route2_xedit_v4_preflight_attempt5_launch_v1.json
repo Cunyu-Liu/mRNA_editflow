@@ -1,0 +1,29 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_preflight_attempt5_launch.v1",
+  "status": "PREFLIGHT_ATTEMPT_5_LAUNCHED_SEQUENTIALLY_ON_GPU0",
+  "launch_local_time": "2026-08-25T20:26:51+08:00",
+  "runner_git_head": "107fa43d9990e4f72f989ca0cf417260bfb10de8",
+  "cache_experiment_git_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "a100_current_head_verification": {
+    "critic_v4_focused_passed": 198,
+    "setflow_v4_focused_passed": 148,
+    "v332_cohort_passed": 96,
+    "failed": 0,
+    "audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/a100_current_head_v4/sync_tests_107fa43d9990e4f72f989ca0cf417260bfb10de8.json"
+  },
+  "physical_gpu_index": 0,
+  "launch_mode": "SEQUENTIAL_SINGLE_GPU_CRITIC_THEN_SETFLOW",
+  "fixed_critic_minimum_free_memory_mib": null,
+  "fixed_setflow_minimum_free_memory_mib": null,
+  "gpu0_free_memory_mib_before_launch": 37294,
+  "shared_sequence_scheduler_pid": 1939251,
+  "launch_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_107fa43d9990e4f72f989ca0cf417260bfb10de8/launch_manifest.json",
+  "critic_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_5/preflight.json",
+  "setflow_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_5/preflight.json",
+  "attempt_1_through_4_artifacts_preserved": true,
+  "active_performance_curve_read": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "screen_authorized": false,
+  "submission_ready": false
+}

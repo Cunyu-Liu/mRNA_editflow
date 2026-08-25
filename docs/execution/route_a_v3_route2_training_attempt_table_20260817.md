@@ -3841,3 +3841,14 @@ TEST/new Evaluation outcome reads仍为0；screen授权严格条件为attempt-5�
 deselect），V3.3.2为96/96，compile/JSON/helper shell/diff-check均PASS。完整本地Critic/SetFlow在Python3.9
 分别为187 PASS+11个同一接口失败、144 PASS+4个同一接口失败；生产放行以A100 Python3.10精确新HEAD预期
 198/198、148/148与96/96为准，未通过前不得启动attempt 5。
+
+### Attempt 5 launch without fixed free-memory floors（2026-08-25 20:26:51 +08:00）
+
+精确runner HEAD `107fa43d9990e4f72f989ca0cf417260bfb10de8`先在A100 Python3.10完成Critic 198/198、
+SetFlow 148/148、V3.3.2 96/96。随后正式launcher在GPU0空闲37,294 MiB时创建attempt-5双授权与runtime；
+manifest中的两组件minimum free memory均为`null`，实际CUDA/BF16 preflight为容量依据。共享scheduler PID
+`1939251`按Critic→SetFlow串行执行，输出分别进入新的`preflight_attempt_5/`，attempt 1–4不覆盖。
+
+首次alive/CUDA/terminal/failure检查不早于本地20:31:51；之后按少于4小时任务每30分钟。不得读取active log/
+curve/metric。双PASS后才立即运行现有screen；protected reads保持0。审计：
+`audits/route_a_v3_route2_xedit_v4_preflight_attempt5_launch_v1.json`。

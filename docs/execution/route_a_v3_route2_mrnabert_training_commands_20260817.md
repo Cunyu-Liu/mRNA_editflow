@@ -4578,3 +4578,9 @@ Attempt 4 formal terminal：SetFlow PASS；Critic参数170,481,957且cache/onlin
 Attempt 5使用GPU0/GPU0 `sequential_single_gpu`；双PASS后立即运行既有screen launcher。Screen launcher根据
 attempt-5组件实测峰值+2 GiB，在GPU0–5中动态选择足够设备并保持每张卡串行队列；Critic八个run和SetFlow两个
 run、seed、预算、gate全部不变。Attempt 1–4只读，protected reads=0。
+
+Attempt-5 exact launch HEAD为`107fa43d9990e4f72f989ca0cf417260bfb10de8`；A100测试Critic 198/198、
+SetFlow 148/148、V3.3.2 96/96。GPU0启动快照空闲37,294 MiB，共享scheduler PID `1939251`，先Critic
+后SetFlow；manifest为`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xedit_v4/
+preflight_launch_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_107fa43d9990e4f72f989ca0cf417260bfb10de8/
+launch_manifest.json`。首次检查不早于本地20:31:51，只读terminal/failure/alive/CUDA。

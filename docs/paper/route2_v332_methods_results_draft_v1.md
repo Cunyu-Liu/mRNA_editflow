@@ -1152,3 +1152,10 @@ remains a historical pause; a new attempt 5 must independently pass both model
 preflights before the unchanged screens begin. This amendment supplies no
 ranking or generation evidence, so the manuscript remains not ready pending
 the screen and all preregistered downstream gates.
+
+At the exact amended launch commit, A100 verification passed 198 Critic, 148
+SetFlow, and 96 V3.3.2 tests with no failures. Attempt 5 was then launched on
+GPU0 in the frozen Critic-then-SetFlow sequence without a fixed free-memory
+floor. This is launch provenance only; neither preflight terminal nor any V4
+Validation performance result had been read at launch, so no model claim or
+submission-readiness conclusion changes.

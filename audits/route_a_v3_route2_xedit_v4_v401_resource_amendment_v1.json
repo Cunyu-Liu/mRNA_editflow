@@ -33,7 +33,14 @@
     "critic_v4_python39_failed_only_on_zip_strict": 11,
     "setflow_v4_python39_passed": 144,
     "setflow_v4_python39_failed_only_on_zip_strict": 4,
-    "production_python310_a100_exact_head_tests": "PENDING_COMMIT_AND_SYNC",
+    "production_python310_a100_exact_head_tests": {
+      "git_head": "107fa43d9990e4f72f989ca0cf417260bfb10de8",
+      "critic_passed": 198,
+      "setflow_passed": 148,
+      "v332_passed": 96,
+      "failed": 0,
+      "audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/a100_current_head_v4/sync_tests_107fa43d9990e4f72f989ca0cf417260bfb10de8.json"
+    },
     "py_compile": "PASS",
     "json_validation": "PASS",
     "external_helper_shell_syntax": "PASS",
