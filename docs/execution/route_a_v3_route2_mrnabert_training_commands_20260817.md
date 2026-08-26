@@ -4693,3 +4693,10 @@ fair queue和四次repeat cap，随后沿用原study/source-group cycles抽样�
 8 passes、seed、loss、模型、controls和gate均不变。本地sampler geometry 3/3、trainer/read-once 12/12、精确
 V3.3.2 96/96、py_compile/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix_v1.json`。
+
+独立recovery worktree已在修复HEAD通过A100 production Python 3.10 Critic focused 202/202与精确V3.3.2 96/96，
+worktree前后均干净。随后实现单次TRAIN-only GPU5 smoke runner：先对8个pass逐一验证2,802个task-homogeneous
+batch、batch32与repeat cap4，再仅用首个实际sampler batch完成170M模型BF16 forward/backward和optimizer-state
+materialization；不读取target/Validation metric，不保存checkpoint。启动显存要求仍为attempt5实测peak+2GiB。
+本地smoke/sampler 5/5、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_train_only_gpu5_smoke_runner_v1.json`。

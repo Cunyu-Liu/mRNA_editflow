@@ -4031,3 +4031,9 @@ eligible row。八项均无summary或有效Validation性能摘要，Development 
 8 passes、repeat cap4、seed、loss、架构、参数、controls、ablations和gate全部不变。总draw为89,664且所有task分配
 均在`floor(4*task_size/32)`容量内。本地focused 15/15、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix_v1.json`。
+
+独立A100 recovery worktree在精确修复HEAD通过Critic focused 202/202与V3.3.2 96/96。V4.0.2 TRAIN-only GPU5
+smoke runner随后前瞻实现：完整检查8个sampler pass的2,802×32几何与repeat cap，再用一个实际TRAIN sampler
+batch执行BF16 forward/backward及optimizer-state materialization；不读取target、Validation metric或protected
+outcome，不保存权重。本地focused 5/5、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_train_only_gpu5_smoke_runner_v1.json`。

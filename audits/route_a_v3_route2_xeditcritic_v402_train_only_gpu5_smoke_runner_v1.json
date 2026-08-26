@@ -1,0 +1,32 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_train_only_gpu5_smoke_runner.v1",
+  "status": "IMPLEMENTED_BEFORE_REMOTE_GPU5_SMOKE",
+  "runner": "scripts/route_a_v3/smoke_route2_xeditcritic_v402_recovery.py",
+  "physical_gpu_index": 5,
+  "exact_git_head_required": true,
+  "projection_scope": ["TRAIN", "VALIDATION_OUTCOME_FREE_VOCAB_ONLY"],
+  "sampler_target_value_accessed": false,
+  "all_eight_sampler_passes_checked": true,
+  "expected_updates_per_pass": 2802,
+  "expected_effective_batch_size": 32,
+  "expected_repeat_cap": 4,
+  "cuda_bf16_batch32_forward_backward": true,
+  "optimizer_state_materialization": true,
+  "checkpoint_or_weight_persisted": false,
+  "validation_metric_read": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "gpu_launch_memory_rule": "ATTEMPT5_MEASURED_PEAK_PLUS_2_GIB",
+  "cpu_fallback": false,
+  "local_validation": {
+    "focused_smoke_and_sampler_tests_passed": 5,
+    "focused_smoke_and_sampler_tests_failed": 0,
+    "exact_v332_tests_passed": 96,
+    "exact_v332_tests_failed": 0,
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "model_architecture_changed": false,
+  "training_objective_changed": false,
+  "scientific_gate_changed": false
+}
