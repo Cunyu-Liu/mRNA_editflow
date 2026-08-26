@@ -4760,3 +4760,8 @@ Evaluation均未读；下一窗口`>=16:05:15`。审计：
 本地21:37:24/远端21:39:41窗口状态未变：Critic source-only仍GPU5 alive+CUDA 15,270MiB；原SetFlow两项
 仍GPU1/GPU2 alive+CUDA且无terminal。未读payload/curve/metric/TEST/Evaluation；下一检查`>=22:37:24`。
 审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_213724.json`。
+
+本地2026-08-27 02:42:43/远端02:45:00低频窗口状态未变：Critic source-only仍GPU5 alive+CUDA
+15,270MiB；原SetFlow两项仍GPU1/GPU2 alive+CUDA且无terminal。未读payload/curve/metric/TEST/Evaluation；
+不补造heartbeat间隔内未执行的中间轮询，下一检查`>=03:42:43`。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_024243.json`。
