@@ -4070,3 +4070,12 @@ failure产物保留且未覆盖，SetFlow没有停止、修改或重启。启动
 new Evaluation。首次terminal/failure/alive/CUDA检查不早于本地11:58:57；之后若仍active，按预计超过4小时的
 任务每60分钟检查一次。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_recovery_launch_v1.json`。
+
+### V4.0.2 Critic recovery first health window（2026-08-26 11:59:14 +08:00）
+
+启动后5分17秒执行首次低频检查。远端12:01:51（新偏移约+157秒）确认recovery runtime状态为
+`XEDITCRITIC_V402_RECOVERY_SCHEDULER_RUNNING`且scheduler PID `1300230`存活。存在性检查脚本随后因shell
+引用导致`NameError`，因此本窗口没有获得per-arm、CUDA或旧SetFlow的新快照；严格遵守低频纪律，没有立即
+补查，也没有读取active log/curve/metric或任何terminal payload。下一统一SSH不早于本地12:59:14；作业未停止、
+修改或重启，protected reads保持0。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_recovery_first_health_20260826_115914.json`。

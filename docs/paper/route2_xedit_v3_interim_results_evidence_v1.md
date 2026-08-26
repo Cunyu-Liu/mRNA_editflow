@@ -267,3 +267,8 @@ exact A100-tested revision. No active performance output or protected outcome
 was read at launch. Accordingly, this changes the execution state from pending
 to running but adds no Spearman, control-margin, model-advantage, or publication-
 readiness evidence.
+
+The first protocol-timed recovery health window confirmed only that the detached
+scheduler and runtime were alive. No arm-level performance, CUDA utilization,
+terminal payload, or protected outcome was read, so the evidence and manuscript
+claim status remain unchanged.

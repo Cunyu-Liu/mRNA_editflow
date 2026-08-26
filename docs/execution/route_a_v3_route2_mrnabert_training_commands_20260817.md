@@ -4724,3 +4724,9 @@ V4.0.2恢复包已由精确HEAD `93703adec7a4c76b4466d3aaae8684620bee985a`在独
 首次合规检查不早于本地11:58:57，只查看terminal/failure/alive/CUDA；不读active curve/log/metric。旧failure
 产物和正在运行的SetFlow保持不变，protected reads为0。启动审计：
 `audits/route_a_v3_route2_xeditcritic_v402_recovery_launch_v1.json`。
+
+首次恢复健康检查在本地11:59:14执行：远端12:01:51，时钟偏移更新为约+157秒；runtime为RUNNING且
+scheduler PID `1300230`存活。检查脚本在输出per-arm/CUDA/SetFlow行前因shell引用`NameError`中止，本窗口仅把
+已经取得的scheduler事实入账，不立即补查、不作CUDA推断。下一SSH不早于本地12:59:14；活动日志、曲线、指标、
+terminal payload与protected outcome均未读取。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_recovery_first_health_20260826_115914.json`。
