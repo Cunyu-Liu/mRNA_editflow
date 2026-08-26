@@ -1213,3 +1213,13 @@ The model, parameter reference, seed, batches, passes, objectives, controls,
 ablations and gates are unchanged; the two active SetFlow jobs remain untouched.
 This authorization is not performance evidence and leaves the manuscript not
 ready for submission.
+
+The authorized read-once diagnosis then showed a single shared technical cause
+across all eight Critic arms. Three small tasks had already reached the four-draw
+per-record cap in the row-level sqrt allocation, after which post hoc padding of
+their task-local tails to 32 was mathematically impossible. No arm produced a
+Validation performance summary. The V4.0.2 repair therefore quantizes the same
+sqrt allocation into complete task-homogeneous batches before drawing records,
+while retaining 2,802 updates per pass, batch 32, the repeat cap, all balancing
+cycles, seeds, objectives, models, controls and gates. This is technical recovery
+evidence only and supplies no Spearman result.

@@ -4682,3 +4682,14 @@ V4.0.2 failure read-once producer已在远端payload读取前实现。入口先�
 exclusive marker不可逆登记消费开始，最后才各打开一次payload并原子发布诊断；若marker存在但diagnosis缺失，
 自动重读硬失败。本地read-once focused 8/8、精确V3.3.2 96/96、py_compile/diff-check均PASS。实现审计：
 `audits/route_a_v3_route2_xeditcritic_v402_failure_read_once_producer_v1.json`。
+
+八份Critic failure随后由该producer唯一读取：8/8均为`XEditCriticTrainingV4Error`，错误完全相同——
+`Critic V4 cannot fill an effective batch within repeat cap`；耗时15.62–111.03秒，零summary、零有效Validation性能
+摘要、protected reads为0。TRAIN几何核查定位到三项小任务已在V3 row allocator中精确达到每record四次容量，V4再
+事后把各自tail补到32时必然无eligible row。
+
+窄修复改为在draw前就把冻结的2,802 updates分配为完整task-homogeneous 32-row batch，仍用相同sqrt-task weighted
+fair queue和四次repeat cap，随后沿用原study/source-group cycles抽样。总draw保持89,664、batch32、2,802 updates、
+8 passes、seed、loss、模型、controls和gate均不变。本地sampler geometry 3/3、trainer/read-once 12/12、精确
+V3.3.2 96/96、py_compile/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix_v1.json`。

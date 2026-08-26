@@ -4019,3 +4019,15 @@ V4.0.2 read-once producer随后在任何远端failure payload读取前实现。�
 消费marker，再各打开一次payload并原子发布完整诊断；中断后不得自动重读。该实现不读取active输出或protected
 outcome，也不改变模型/训练/gate。本地focused 8/8、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_failure_read_once_producer_v1.json`。
+
+### V4.0.2 eight-arm terminal diagnosis and sampler repair
+
+唯一read-once诊断确认八个arm均在15.62–111.03秒以同一`XEditCriticTrainingV4Error`技术退出：V3 row-level
+sqrt allocator已把三个小任务用满四次repeat capacity，V4的事后task-tail padding仍试图补足32，因而必然没有
+eligible row。八项均无summary或有效Validation性能摘要，Development TEST/new Evaluation reads为0，符合V4.0.2
+技术恢复资格。
+
+修复只把相同sqrt-task分配量化为完整32-row task batches后再抽样；study/source-group cycle、2,802 updates/pass、
+8 passes、repeat cap4、seed、loss、架构、参数、controls、ablations和gate全部不变。总draw为89,664且所有task分配
+均在`floor(4*task_size/32)`容量内。本地focused 15/15、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix_v1.json`。

@@ -239,3 +239,12 @@ The model, 170,481,957-parameter reference, seed, batches, passes, objectives,
 controls, ablations and gates remain fixed; the two active SetFlow jobs remain
 untouched. This authorization is technical workflow evidence, not model-performance
 evidence, and the manuscript remains unready for submission.
+
+The authorized read-once diagnosis then established one shared technical cause
+for all eight Critic failures: three small tasks had exhausted the four-draw
+per-record capacity before V4 attempted to pad their task-local tail batches to
+32. None of the arms produced a Validation performance summary. The narrow repair
+allocates the unchanged 2,802-update pass directly in complete, task-homogeneous
+32-row units under the same sqrt weighting and repeat cap before invoking the
+unchanged study/source-group cycles. No model, seed, objective, control, ablation
+or gate changed, so this remains engineering evidence rather than a Critic claim.

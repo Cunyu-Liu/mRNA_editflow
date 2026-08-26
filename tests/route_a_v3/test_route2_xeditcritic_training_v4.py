@@ -17,6 +17,7 @@ from core.route2_xeditcritic_training_v4 import (
     effective_prediction_objective_v4,
     pairwise_sigmoid_soft_ranks_v4,
     physical_microbatch_partitions_v4,
+    quantized_sqrt_task_batch_allocations_v4,
     require_physical_gpu_scope_v4,
     select_physical_batch_from_memory_v4,
     soft_spearman_loss_v4,
@@ -94,6 +95,39 @@ def test_fixed_sampler_emits_task_homogeneous_batches_of_exactly_32_with_cap_fou
     assert all(len({records[index].task for index in batch}) == 1 for batch in batches)
     counts = Counter(index for batch in batches for index in batch)
     assert max(counts.values()) <= 4
+
+
+def test_fixed_sampler_quantizes_saturated_task_before_drawing_rows() -> None:
+    records = [_record(index, "small" if index < 9 else "large") for index in range(202)]
+    sampler = FixedEffectiveTaskBatchSamplerV4(records, seed=20260907)
+    sampler.set_pass(0)
+    batches = sampler.batches_for_pass()
+    assert len(batches) == 8
+    assert all(len(batch) == 32 for batch in batches)
+    assert all(len({records[index].task for index in batch}) == 1 for batch in batches)
+    counts = Counter(index for batch in batches for index in batch)
+    assert max(counts.values()) <= 4
+    assert sampler.task_batch_allocations["small"] == 1
+
+
+def test_real_geometry_batch_allocation_respects_saturated_task_caps() -> None:
+    sizes = {
+        "MEAN_RIBOSOME_LOAD::region=0": 2443,
+        "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1": 55704,
+        "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1": 25710,
+        "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1": 204,
+        "RNA_HALF_LIFE_MINUTES::region=0": 893,
+        "RNA_HALF_LIFE_MINUTES::region=1": 1308,
+        "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1": 3318,
+    }
+    allocations = quantized_sqrt_task_batch_allocations_v4(
+        sizes, batch_count=2802
+    )
+    assert sum(allocations.values()) == 2802
+    assert all(allocations[task] * 32 <= 4 * size for task, size in sizes.items())
+    assert allocations["PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1"] == 25
+    assert allocations["RNA_HALF_LIFE_MINUTES::region=0"] == 111
+    assert allocations["RNA_HALF_LIFE_MINUTES::region=1"] == 163
 
 
 def test_physical_partitions_never_create_singleton_or_sub_four_forwards() -> None:

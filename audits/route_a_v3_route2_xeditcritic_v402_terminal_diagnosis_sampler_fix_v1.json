@@ -1,0 +1,77 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix.v1",
+  "status": "TECHNICAL_RECOVERY_ELIGIBLE_AND_NARROW_FIX_IMPLEMENTED",
+  "failure_read_once_receipt": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditcritic_v4/v402_failure_diagnosis_read_once.json",
+  "consumption_marker": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditcritic_v4/v402_failure_diagnosis_read_once.json.consumption_started.json",
+  "terminal_failure_payloads_read_count": 8,
+  "terminal_summary_artifacts_present": 0,
+  "valid_validation_performance_summary_present": false,
+  "common_failure": {
+    "error_type": "XEditCriticTrainingV4Error",
+    "error": "Critic V4 cannot fill an effective batch within repeat cap",
+    "affected_arm_count": 8,
+    "minimum_elapsed_seconds": 15.624061346054077,
+    "maximum_elapsed_seconds": 111.03146743774414
+  },
+  "root_cause": {
+    "class": "TASK_TAIL_PADDING_AFTER_ROW_LEVEL_CAP_SATURATION",
+    "description": "The V3 row allocator legally saturated three small tasks at four draws per record. The V4 wrapper then tried to pad each task-local tail to 32 after all eligible rows for those tasks had already reached the repeat cap.",
+    "train_record_count": 89580,
+    "frozen_updates_per_pass": 2802,
+    "frozen_effective_batch_size": 32,
+    "required_rows_per_pass": 89664,
+    "saturated_tasks": {
+      "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1": {
+        "task_size": 204,
+        "row_allocation": 816,
+        "repeat_capacity": 816,
+        "invalid_posthoc_padded_rows": 832
+      },
+      "RNA_HALF_LIFE_MINUTES::region=0": {
+        "task_size": 893,
+        "row_allocation": 3572,
+        "repeat_capacity": 3572,
+        "invalid_posthoc_padded_rows": 3584
+      },
+      "RNA_HALF_LIFE_MINUTES::region=1": {
+        "task_size": 1308,
+        "row_allocation": 5232,
+        "repeat_capacity": 5232,
+        "invalid_posthoc_padded_rows": 5248
+      }
+    }
+  },
+  "narrow_fix": {
+    "description": "Allocate the frozen update budget directly as complete 32-row task batches using the same deterministic sqrt-task weighted fair queue, with each task capped at floor(4*task_size/32) batches, before drawing any rows through the unchanged study/source-group cycles.",
+    "task_batch_allocations": {
+      "MEAN_RIBOSOME_LOAD::region=0": 245,
+      "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1": 1174,
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1": 798,
+      "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1": 25,
+      "RNA_HALF_LIFE_MINUTES::region=0": 111,
+      "RNA_HALF_LIFE_MINUTES::region=1": 163,
+      "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1": 286
+    },
+    "task_batch_allocation_sum": 2802,
+    "record_repeat_cap": 4,
+    "task_homogeneous_batches": true,
+    "study_source_group_cycles_changed": false,
+    "model_architecture_changed": false,
+    "trainable_parameter_reference_changed": false,
+    "training_loss_changed": false,
+    "training_seed_changed": false,
+    "training_passes_or_updates_changed": false,
+    "screen_controls_or_gates_changed": false
+  },
+  "local_validation": {
+    "sampler_geometry_tests_passed": 3,
+    "trainer_and_read_once_tests_passed": 12,
+    "exact_v332_tests_passed": 96,
+    "failed": 0,
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "setflow_jobs_stopped_modified_or_restarted": false
+}

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 import math
+import random
 from typing import Callable, Mapping, Sequence
 
 import torch
@@ -12,8 +13,9 @@ from torch.nn import functional as F
 from torch.utils.data import Sampler
 
 from core.route2_xeditcritic_training_data_v3 import (
-    SqrtTaskStudySourcePassSamplerV3,
     XEditCriticRecordV3,
+    _StudyCycle,
+    capped_sqrt_task_allocations,
     different_source_group_pair_indices,
 )
 
@@ -57,6 +59,50 @@ def require_physical_gpu_scope_v4(
     )
 
 
+def quantized_sqrt_task_batch_allocations_v4(
+    task_sizes: Mapping[str, int],
+    *,
+    batch_count: int,
+    repeat_cap: int = 4,
+    effective_batch: int = EFFECTIVE_BATCH_V4,
+) -> dict[str, int]:
+    """Allocate complete task batches in sqrt proportions within row caps."""
+
+    checked = {str(task): int(size) for task, size in task_sizes.items()}
+    _require(bool(checked) and min(checked.values()) > 0, "Critic V4 task sizes are invalid")
+    _require(batch_count > 0, "Critic V4 batch count is not positive")
+    _require(repeat_cap == 4, "Critic V4 repeat cap drifted from four")
+    _require(effective_batch == EFFECTIVE_BATCH_V4, "Critic V4 effective batch drifted from 32")
+    capacities = {
+        task: (repeat_cap * size) // effective_batch
+        for task, size in checked.items()
+    }
+    _require(min(capacities.values()) >= 1, "Critic V4 task cannot form one capped effective batch")
+    _require(sum(capacities.values()) >= batch_count, "Critic V4 complete-batch repeat capacity is insufficient")
+    allocations = {task: 0 for task in checked}
+    weights = {task: math.sqrt(size) for task, size in checked.items()}
+    for _ in range(batch_count):
+        eligible = [
+            task for task in checked if allocations[task] < capacities[task]
+        ]
+        _require(bool(eligible), "Critic V4 complete-batch allocation exhausted")
+        selected = min(
+            eligible,
+            key=lambda task: (
+                ((allocations[task] + 1) * effective_batch) / weights[task],
+                task,
+            ),
+        )
+        allocations[selected] += 1
+    _require(sum(allocations.values()) == batch_count, "Critic V4 batch allocation count changed")
+    _require(min(allocations.values()) >= 1, "Critic V4 sqrt allocation omitted a task")
+    _require(
+        all(allocations[task] <= capacities[task] for task in allocations),
+        "Critic V4 batch allocation exceeded repeat capacity",
+    )
+    return allocations
+
+
 class FixedEffectiveTaskBatchSamplerV4(Sampler[list[int]]):
     """Sqrt-task/source-balanced sampler with exactly 32 rows per update."""
 
@@ -76,51 +122,50 @@ class FixedEffectiveTaskBatchSamplerV4(Sampler[list[int]]):
         self.repeat_cap = int(repeat_cap)
         self.effective_batch = int(effective_batch)
         self.pass_index = 0
-        self.base_sampler = SqrtTaskStudySourcePassSamplerV3(
-            self.records,
-            batch_size=self.effective_batch,
-            seed=self.seed,
+        self.task_sizes = Counter(record.task for record in self.records)
+        base_row_allocations = capped_sqrt_task_allocations(
+            self.task_sizes,
+            draw_count=len(self.records),
             repeat_cap=self.repeat_cap,
+        )
+        self.update_count = sum(
+            math.ceil(allocation / self.effective_batch)
+            for allocation in base_row_allocations.values()
+        )
+        self.task_batch_allocations = quantized_sqrt_task_batch_allocations_v4(
+            self.task_sizes,
+            batch_count=self.update_count,
+            repeat_cap=self.repeat_cap,
+            effective_batch=self.effective_batch,
         )
 
     def set_pass(self, pass_index: int) -> None:
         _require(pass_index >= 0, "Critic V4 pass index is negative")
         self.pass_index = int(pass_index)
-        self.base_sampler.set_pass(pass_index)
 
     def batches_for_pass(self) -> list[list[int]]:
-        base_batches = self.base_sampler.batches_for_pass()
-        counts = Counter(index for batch in base_batches for index in batch)
-        task_indices: dict[str, list[int]] = {}
+        rng = random.Random(self.seed + self.pass_index)
+        hierarchy: dict[str, dict[str, dict[str, list[int]]]] = {}
         for index, record in enumerate(self.records):
-            task_indices.setdefault(record.task, []).append(index)
+            hierarchy.setdefault(record.task, {}).setdefault(record.study, {}).setdefault(
+                record.source_group, []
+            ).append(index)
         completed: list[list[int]] = []
-        for batch_number, base_batch in enumerate(base_batches):
-            _require(bool(base_batch), "Critic V4 sampler emitted an empty batch")
-            task = self.records[base_batch[0]].task
-            _require(all(self.records[index].task == task for index in base_batch), "Critic V4 effective batch mixes tasks")
-            batch = list(base_batch)
-            while len(batch) < self.effective_batch:
-                eligible = [
-                    index
-                    for index in task_indices[task]
-                    if counts[index] < self.repeat_cap
-                ]
-                _require(bool(eligible), "Critic V4 cannot fill an effective batch within repeat cap")
-                previous_groups = {self.records[index].source_group for index in batch[-2:]}
-                chosen = min(
-                    eligible,
-                    key=lambda index: (
-                        counts[index],
-                        self.records[index].source_group in previous_groups,
-                        (index + self.seed + self.pass_index + batch_number) % len(self.records),
-                        self.records[index].record_id,
-                    ),
-                )
-                batch.append(chosen)
-                counts[chosen] += 1
-            _require(len(batch) == self.effective_batch, "Critic V4 effective batch is not 32")
-            completed.append(batch)
+        for task in sorted(hierarchy):
+            cycle = _StudyCycle(hierarchy[task], rng, self.repeat_cap)
+            draw_count = self.task_batch_allocations[task] * self.effective_batch
+            draws = [cycle.draw() for _ in range(draw_count)]
+            task_batches = [
+                draws[start : start + self.effective_batch]
+                for start in range(0, draw_count, self.effective_batch)
+            ]
+            for batch in task_batches:
+                rng.shuffle(batch)
+            completed.extend(task_batches)
+        rng.shuffle(completed)
+        counts = Counter(index for batch in completed for index in batch)
+        _require(len(completed) == self.update_count, "Critic V4 updates/pass changed")
+        _require(sum(counts.values()) == self.update_count * self.effective_batch, "Critic V4 pass draw count changed")
         _require(max(counts.values()) <= self.repeat_cap, "Critic V4 record repeat cap was exceeded")
         _require(
             all(
@@ -135,7 +180,7 @@ class FixedEffectiveTaskBatchSamplerV4(Sampler[list[int]]):
         yield from self.batches_for_pass()
 
     def __len__(self) -> int:
-        return len(self.base_sampler)
+        return self.update_count
 
 
 def physical_microbatch_partitions_v4(
