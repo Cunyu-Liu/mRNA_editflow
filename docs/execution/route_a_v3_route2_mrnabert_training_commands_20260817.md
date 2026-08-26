@@ -4736,3 +4736,9 @@ terminal payload与protected outcome均未读取。审计：
 CUDA 2,912/2,774MiB，零terminal artifact。只读取runtime状态、artifact存在性、PID和CUDA，不读active性能
 输出；下一窗口`>=14:03:50`。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_130350.json`。
+
+本地14:04:35/远端14:06:52窗口：Critic `c0_v4`为SUMMARY terminal，`v4_full`为FAILURE terminal，payload
+均未读；因此performance PASS已不可能，但正式failure分类和NO-GO发布继续等待完整八-arm terminal。scheduler按
+协议继续运行source-only（PID `1766545`，GPU5，14,342MiB），后五项PENDING，不停止或重启。原SetFlow两项仍
+alive+CUDA且无terminal。下一窗口`>=15:04:35`，protected reads仍为0。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_140435.json`。

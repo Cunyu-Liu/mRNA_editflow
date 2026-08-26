@@ -4088,3 +4088,15 @@ new Evaluation。首次terminal/failure/alive/CUDA检查不早于本地11:58:57�
 注册CUDA并占用2,912/2,774MiB，仍无summary或failure。没有读取active log/curve/metric或terminal payload，
 没有停止、修改或重启任何作业，protected reads为0。下一SSH不早于本地14:03:50。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_130350.json`。
+
+### V4 dual-package hourly health window（2026-08-26 14:04:35 +08:00）
+
+远端14:06:52（偏移约+137秒）确认Critic recovery scheduler继续RUNNING。`c0_v4`已发布SUMMARY terminal，
+`v4_full`已发布FAILURE terminal；两份payload均保持0 read。由于唯一selectable full没有summary，本恢复包已不可能
+形成Critic performance screen PASS，但failure类型和正式裁决仍按冻结纪律等待八项全部terminal后一次性读取。
+scheduler没有停止：`v4_source_only` PID `1766545`正在GPU5运行并注册CUDA 14,342MiB，后五项PENDING。
+V4.0.2不授权第二次recovery。
+
+原SetFlow scheduler及full/single-mode仍分别在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，无summary或failure。
+没有读取active log/curve/metric或terminal payload，没有停止、修改或重启作业，protected reads为0。下一SSH不早于
+本地15:04:35。审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_140435.json`。

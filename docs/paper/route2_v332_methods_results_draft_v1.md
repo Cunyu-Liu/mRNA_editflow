@@ -1247,3 +1247,11 @@ its exact tested revision on physical GPU5 after 137 focused A100 tests and the
 screen, not a performance result: active metrics and protected outcomes remain
 unread, and model advantage and submission readiness remain pending terminal
 eight-arm adjudication.
+
+During existence-only monitoring, the selectable V4.0.2 full arm published a
+failure terminal rather than a performance summary, while the C0 baseline
+published a summary and the remaining controls continued. The failure payload
+and all performance metrics remain unread until the complete eight-arm package
+is terminal. Consequently, a Critic performance-screen PASS is no longer
+possible from this single authorized recovery, but its failure class and formal
+NO-GO remain pending terminal read-once adjudication.

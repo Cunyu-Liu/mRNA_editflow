@@ -277,3 +277,9 @@ The next hourly existence-only window confirmed that the first recovery arm and
 both SetFlow arms remained alive on their assigned CUDA devices. No performance
 or terminal payload was read; the scientific claim status therefore remains
 unchanged.
+
+The selectable V4.0.2 full arm has now produced a failure artifact without a
+summary, whereas C0 produced a summary and the remaining controls continue. No
+payload or performance metric has been read. Thus this recovery can no longer
+establish a Critic screen PASS, although the formal technical classification and
+NO-GO evidence await complete-package read-once adjudication.
