@@ -4648,3 +4648,8 @@ GPU1/GPU2注册CUDA并占用2,912/2,774MiB。没有读取failure payload或activ
 Critic arm仍为failure、零summary；SetFlow full/single-mode无terminal artifact，两个固定PID继续在GPU1/GPU2
 注册CUDA并占用2,912/2,774MiB。没有读取failure payload或active log/curve/metric，也没有停止、修改或重启
 作业。下一窗口`>=2026-08-26 08:21:10 +08:00`。
+
+第八个实际记录窗口本地08:23:09、远端08:25:31确认状态仍未变化：scheduler存活且已运行40,489秒；八个
+Critic arm仍为failure、零summary；SetFlow full/single-mode无terminal artifact，两个固定PID继续在GPU1/GPU2
+注册CUDA并占用2,912/2,774MiB。没有读取failure payload或active log/curve/metric，也没有停止、修改或重启
+作业。下一窗口`>=2026-08-26 09:23:09 +08:00`。

@@ -3976,3 +3976,12 @@ full/single-mode仍无terminal artifact，PID `2218814/2218813`分别在GPU1/GPU
 Development TEST/new Evaluation reads保持0；下一窗口不早于本地08:21:10。审计：
 本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
 `audits/route_a_v3_route2_xedit_v4_screen_seventh_health_20260826_072110.json`。
+
+### V4 screen eighth recorded hourly health window（2026-08-26 08:23:09 +08:00）
+
+远端08:25:31时scheduler PID `2218802`运行40,489秒并存活。八个Critic arm仍为failure、零summary；SetFlow
+full/single-mode仍无terminal artifact，PID `2218814/2218813`分别在GPU1/GPU2注册CUDA并占用
+2,912/2,774MiB。没有读取failure payload、active log、curve或metric，也没有停止、修改或重启作业。
+Development TEST/new Evaluation reads保持0；下一窗口不早于本地09:23:09。审计：
+本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
+`audits/route_a_v3_route2_xedit_v4_screen_eighth_health_20260826_082309.json`。
