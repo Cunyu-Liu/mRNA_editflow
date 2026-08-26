@@ -4700,3 +4700,10 @@ batch、batch32与repeat cap4，再仅用首个实际sampler batch完成170M模�
 materialization；不读取target/Validation metric，不保存checkpoint。启动显存要求仍为attempt5实测peak+2GiB。
 本地smoke/sampler 5/5、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_train_only_gpu5_smoke_runner_v1.json`。
+
+GPU5 smoke已在精确HEAD `db49b62745316ed56cf8b64fc4fee455ff50e5ce`自然terminal并发布PASS：真实
+170,481,957参数模型以batch32/BF16完成forward、backward和optimizer-state materialization，进程内峰值
+allocated显存5.8395GiB；八个pass的sampler几何均为89,664 rows、2,802 updates、repeat cap 4。A100同HEAD
+Critic focused 204/204、V3.3.2 96/96。该smoke不访问target或Validation metric、不保存checkpoint，Development
+TEST/new Evaluation reads为0；它只解除已诊断技术故障的启动风险，不构成性能结果。终态审计：
+`audits/route_a_v3_route2_xeditcritic_v402_gpu5_smoke_terminal_v1.json`。

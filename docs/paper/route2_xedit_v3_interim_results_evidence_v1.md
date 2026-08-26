@@ -248,3 +248,10 @@ allocates the unchanged 2,802-update pass directly in complete, task-homogeneous
 32-row units under the same sqrt weighting and repeat cap before invoking the
 unchanged study/source-group cycles. No model, seed, objective, control, ablation
 or gate changed, so this remains engineering evidence rather than a Critic claim.
+
+The subsequent target-free GPU5 smoke completed BF16 forward/backward and
+optimizer-state materialization for the exact 170,481,957-parameter recovery
+model at batch 32. All eight passes preserved 2,802 task-homogeneous updates and
+the four-repeat cap; target values, Validation metrics, Development TEST, new
+Evaluation outcomes, and checkpoints remained untouched. This closes the
+reachable training-path fault but is not performance or model-advantage evidence.

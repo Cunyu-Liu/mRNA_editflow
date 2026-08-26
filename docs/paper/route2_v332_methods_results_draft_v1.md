@@ -1223,3 +1223,11 @@ sqrt allocation into complete task-homogeneous batches before drawing records,
 while retaining 2,802 updates per pass, batch 32, the repeat cap, all balancing
 cycles, seeds, objectives, models, controls and gates. This is technical recovery
 evidence only and supplies no Spearman result.
+
+A target-free TRAIN smoke then exercised the repaired path on physical GPU5 at
+the exact tested recovery revision. The 170,481,957-parameter model completed a
+BF16 batch-32 forward pass, backward pass, and optimizer-state materialization;
+all eight sampler passes retained 2,802 task-homogeneous updates and the
+four-repeat cap. No target, Validation metric, protected outcome, or checkpoint
+was read or written. This is implementation-readiness evidence only; it does not
+establish ranking performance, model advantage, or submission readiness.

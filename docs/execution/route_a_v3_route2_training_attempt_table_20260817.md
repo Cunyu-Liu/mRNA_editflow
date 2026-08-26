@@ -4037,3 +4037,14 @@ smoke runner随后前瞻实现：完整检查8个sampler pass的2,802×32几何�
 batch执行BF16 forward/backward及optimizer-state materialization；不读取target、Validation metric或protected
 outcome，不保存权重。本地focused 5/5、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_train_only_gpu5_smoke_runner_v1.json`。
+
+### V4.0.2 TRAIN-only GPU5 smoke terminal PASS（2026-08-26 11:41:12 +08:00）
+
+独立A100 recovery worktree在精确HEAD `db49b62745316ed56cf8b64fc4fee455ff50e5ce`通过Critic focused
+204/204与精确V3.3.2 96/96，随后在物理GPU5完成唯一一次TRAIN-only smoke。真实V4模型含
+170,481,957个可训练参数；batch32、BF16、activation checkpointing完成forward/backward与optimizer-state
+materialization，进程内峰值allocated显存为5.8395GiB。八个pass均验证为89,664 rows、2,802 updates、
+record repeat cap 4，未访问sampler target、Validation metric、Development TEST或new Evaluation，未保存权重，
+无CPU fallback。该结果只证明V4.0.2采样器修复与训练路径可运行，不是Spearman或screen性能证据；正式八-arm
+恢复仍只能启动一次。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_gpu5_smoke_terminal_v1.json`。
