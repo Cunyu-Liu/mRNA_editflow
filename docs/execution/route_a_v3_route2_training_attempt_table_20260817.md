@@ -4079,3 +4079,12 @@ new Evaluation。首次terminal/failure/alive/CUDA检查不早于本地11:58:57�
 补查，也没有读取active log/curve/metric或任何terminal payload。下一统一SSH不早于本地12:59:14；作业未停止、
 修改或重启，protected reads保持0。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_recovery_first_health_20260826_115914.json`。
+
+### V4 dual-package hourly health window（2026-08-26 13:03:50 +08:00）
+
+远端13:06:07（偏移约+137秒）确认两个隔离package均正常存活。Critic V4.0.2 scheduler PID `1300230`
+为RUNNING；首个串行arm `c0_v4` PID `1300237`存活并在物理GPU5注册CUDA，占用636MiB，其余七项仍PENDING，
+零terminal。原SetFlow scheduler PID `2218802`存活；full/single-mode PID `2218814/2218813`分别在GPU1/GPU2
+注册CUDA并占用2,912/2,774MiB，仍无summary或failure。没有读取active log/curve/metric或terminal payload，
+没有停止、修改或重启任何作业，protected reads为0。下一SSH不早于本地14:03:50。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_130350.json`。

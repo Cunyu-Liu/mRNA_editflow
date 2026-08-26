@@ -272,3 +272,8 @@ The first protocol-timed recovery health window confirmed only that the detached
 scheduler and runtime were alive. No arm-level performance, CUDA utilization,
 terminal payload, or protected outcome was read, so the evidence and manuscript
 claim status remain unchanged.
+
+The next hourly existence-only window confirmed that the first recovery arm and
+both SetFlow arms remained alive on their assigned CUDA devices. No performance
+or terminal payload was read; the scientific claim status therefore remains
+unchanged.

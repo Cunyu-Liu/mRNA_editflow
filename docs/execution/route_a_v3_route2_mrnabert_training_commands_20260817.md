@@ -4730,3 +4730,9 @@ scheduler PID `1300230`存活。检查脚本在输出per-arm/CUDA/SetFlow行前�
 已经取得的scheduler事实入账，不立即补查、不作CUDA推断。下一SSH不早于本地12:59:14；活动日志、曲线、指标、
 terminal payload与protected outcome均未读取。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_recovery_first_health_20260826_115914.json`。
+
+本地13:03:50/远端13:06:07的统一低频窗口确认：Critic recovery scheduler与当前`c0_v4` PID `1300237`
+存活，后者在GPU5注册CUDA 636MiB；其余七臂PENDING。原SetFlow full/single仍分别在GPU1/GPU2存活并注册
+CUDA 2,912/2,774MiB，零terminal artifact。只读取runtime状态、artifact存在性、PID和CUDA，不读active性能
+输出；下一窗口`>=14:03:50`。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_130350.json`。

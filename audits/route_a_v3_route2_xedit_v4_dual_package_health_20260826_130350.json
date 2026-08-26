@@ -1,0 +1,48 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v4_dual_package_health.v1",
+  "status": "CRITIC_RECOVERY_AND_SETFLOW_PACKAGES_ALIVE",
+  "local_check_time": "2026-08-26 13:03:50 +0800",
+  "remote_observed_time": "2026-08-26T13:06:07+08:00",
+  "remote_clock_offset_seconds": 137,
+  "critic_recovery": {
+    "launch_git_head": "93703adec7a4c76b4466d3aaae8684620bee985a",
+    "scheduler_pid": 1300230,
+    "scheduler_alive": true,
+    "runtime_status": "XEDITCRITIC_V402_RECOVERY_SCHEDULER_RUNNING",
+    "current_run_id": "c0_v4",
+    "current_training_pid": 1300237,
+    "current_training_pid_alive": true,
+    "physical_gpu_index": 5,
+    "cuda_memory_mib": 636,
+    "pending_run_count": 7,
+    "terminal_run_count": 0
+  },
+  "setflow_screen": {
+    "launch_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+    "scheduler_pid": 2218802,
+    "scheduler_alive": true,
+    "full": {
+      "training_pid": 2218814,
+      "alive": true,
+      "physical_gpu_index": 1,
+      "cuda_memory_mib": 2912,
+      "summary_exists": false,
+      "failure_exists": false
+    },
+    "single_mode": {
+      "training_pid": 2218813,
+      "alive": true,
+      "physical_gpu_index": 2,
+      "cuda_memory_mib": 2774,
+      "summary_exists": false,
+      "failure_exists": false
+    }
+  },
+  "active_log_read": false,
+  "active_curve_or_metric_read": false,
+  "terminal_artifact_payload_read": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "job_stopped_modified_or_restarted": false,
+  "next_check_not_before_local": "2026-08-26 14:03:50 +0800"
+}
