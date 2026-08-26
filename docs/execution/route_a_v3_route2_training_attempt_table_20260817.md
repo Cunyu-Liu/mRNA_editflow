@@ -4108,3 +4108,11 @@ SUMMARY、full仍为FAILURE，payload保持0 read；source-only PID `1766545`继
 14,342MiB，后五项PENDING。原SetFlow scheduler与两项训练继续存活，GPU1/GPU2 CUDA为2,912/2,774MiB，
 零terminal artifact。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH不早于
 本地16:05:15。审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_150515.json`。
+
+### V4 dual-package hourly health window（2026-08-26 16:06:13 +08:00）
+
+远端16:08:30（偏移约+137秒）状态仍未变化。Critic recovery scheduler与source-only PID `1766545`存活，
+source-only继续在GPU5注册CUDA 14,342MiB；C0 summary/full failure只做存在性确认，后五项PENDING。原SetFlow
+scheduler和两项训练继续在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，零terminal artifact。没有读取active
+性能输出、terminal payload或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地17:06:13。
+审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_160613.json`。
