@@ -4166,3 +4166,12 @@ source-only继续在GPU5注册CUDA 15,270MiB；C0 summary/full failure只做存�
 scheduler和两项训练继续在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，零terminal artifact。没有读取active
 性能输出、terminal payload或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地06:45:41。
 审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_054541.json`。
+
+### V4 dual-package hourly health window（2026-08-27 06:46:42 +08:00）
+
+远端06:48:59（偏移约+137秒）出现一项terminal进展：SetFlow single-mode已原子发布SUMMARY并自然退出；
+本窗口只确认artifact存在性，summary payload保持0 read。SetFlow full PID `2218814`继续在GPU1存活并注册CUDA
+2,912MiB，package尚未达到双臂terminal，故不提前裁决。Critic recovery状态未变：source-only PID `1766545`
+继续在GPU5存活并注册CUDA 15,270MiB；C0 summary/full failure payload均未读，后五项PENDING。没有读取active
+性能输出或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地07:46:42。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_064642.json`。

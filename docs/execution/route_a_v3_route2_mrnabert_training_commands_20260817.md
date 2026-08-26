@@ -4777,3 +4777,8 @@ Evaluation均未读；下一窗口`>=16:05:15`。审计：
 本地05:45:41/远端05:47:58窗口状态未变：Critic source-only仍GPU5 alive+CUDA 15,270MiB；原SetFlow
 两项仍GPU1/GPU2 alive+CUDA且无terminal。未读payload/curve/metric/TEST/Evaluation；下一检查`>=06:45:41`。
 审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_054541.json`。
+
+本地06:46:42/远端06:48:59窗口：SetFlow single-mode已SUMMARY terminal并自然退出，payload保持0 read；full
+仍在GPU1 alive+CUDA 2,912MiB，因此尚不裁决。Critic source-only仍GPU5 alive+CUDA 15,270MiB，既有terminal
+payload也未读。未读active curve/metric/TEST/Evaluation；下一检查`>=07:46:42`。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_064642.json`。
