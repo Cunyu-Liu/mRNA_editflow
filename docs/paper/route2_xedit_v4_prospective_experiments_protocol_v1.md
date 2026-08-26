@@ -424,6 +424,14 @@ completion and the preregistered screen adjudicators can do so.
 
 ## V4.0.2 prospective Critic technical-recovery amendment
 
+
+The authorized recovery is operationally bound to one independent-worktree,
+physical-GPU5, sequential eight-arm package. The materialized screen config may
+change only its isolated output and screen-gate paths; every scientific field is
+compared with the original frozen V4 config before launch. A fixed exclusive
+launch marker permits exactly one package, and a per-arm technical failure does
+not cancel the remaining controls or mechanism ablations. This execution binding
+does not alter the screen gate or supply performance evidence.
 After all eight Critic screen arms had independently published failure artifacts,
 none had published a performance summary, and both SetFlow arms remained active,
 the user prospectively authorized one narrow Critic technical-recovery path. The

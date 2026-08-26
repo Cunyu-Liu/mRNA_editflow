@@ -1,0 +1,39 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_recovery_launcher.v1",
+  "status": "IMPLEMENTED_BEFORE_RECOVERY_PARAMETER_UPDATE",
+  "launcher": "scripts/route_a_v3/launch_route2_xeditcritic_v402_gpu5_recovery.py",
+  "scheduler": "scripts/route_a_v3/run_route2_xeditcritic_v402_recovery_scheduler.py",
+  "independent_a100_worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_v402_recovery_20260826",
+  "physical_gpu_index": 5,
+  "required_run_ids": [
+    "c0_v4",
+    "v4_full",
+    "v4_source_only",
+    "v4_edit_metadata_only",
+    "v4_no_candidate_sequence",
+    "v4_candidate_bundle_permutation",
+    "v4_no_cross",
+    "v4_no_moe"
+  ],
+  "execution_policy": "SINGLE_GPU_SEQUENTIAL_CONTINUE_AFTER_EXACT_TERMINAL_FAILURE",
+  "single_launch_marker": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditcritic_v4/v402_recovery_launch_consumed.json",
+  "scientific_config_mutable_fields": [
+    "output_root",
+    "screen_gate_output"
+  ],
+  "scientific_config_changed": false,
+  "old_failure_artifacts_overwritten": false,
+  "setflow_jobs_stopped_modified_or_restarted": false,
+  "memory_launch_rule": "TRAIN_ONLY_GPU5_SMOKE_PEAK_PLUS_2_GIB",
+  "fixed_free_memory_floor_mib": null,
+  "cuda_bf16_only": true,
+  "cpu_fallback": false,
+  "terminal_artifact_payloads_read_while_active": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "model_architecture_changed": false,
+  "training_objective_changed": false,
+  "sampler_semantics_beyond_diagnosed_fix_changed": false,
+  "controls_or_ablations_changed": false,
+  "scientific_gate_changed": false
+}

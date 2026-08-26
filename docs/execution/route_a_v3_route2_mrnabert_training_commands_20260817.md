@@ -4707,3 +4707,12 @@ allocated显存5.8395GiB；八个pass的sampler几何均为89,664 rows、2,802 u
 Critic focused 204/204、V3.3.2 96/96。该smoke不访问target或Validation metric、不保存checkpoint，Development
 TEST/new Evaluation reads为0；它只解除已诊断技术故障的启动风险，不构成性能结果。终态审计：
 `audits/route_a_v3_route2_xeditcritic_v402_gpu5_smoke_terminal_v1.json`。
+
+正式恢复入口已在参数更新前冻结为
+`scripts/route_a_v3/launch_route2_xeditcritic_v402_gpu5_recovery.py`，其独立scheduler为
+`scripts/route_a_v3/run_route2_xeditcritic_v402_recovery_scheduler.py`。入口现场要求精确clean HEAD与A100
+Critic/V3.3.2 tests PASS，只在GPU5空闲显存不低于TRAIN-only smoke peak+2GiB时写入不可重复launch marker，
+随后按C0、full、四controls、no-cross、no-MoE的冻结顺序串行运行八项。runtime只发布alive/terminal/failure
+状态和CUDA身份，不读取active性能输出；旧八份failure和两个SetFlow作业完全隔离。除新`output_root`与
+`screen_gate_output`外，runtime config必须与原V4 screen config逐字段相同。实现focused 36/36、V3.3.2
+96/96。审计：`audits/route_a_v3_route2_xeditcritic_v402_recovery_launcher_v1.json`。

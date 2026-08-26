@@ -4048,3 +4048,14 @@ record repeat cap 4，未访问sampler target、Validation metric、Development 
 无CPU fallback。该结果只证明V4.0.2采样器修复与训练路径可运行，不是Spearman或screen性能证据；正式八-arm
 恢复仍只能启动一次。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_gpu5_smoke_terminal_v1.json`。
+
+### V4.0.2 single GPU5 recovery launcher frozen（2026-08-26 11:51:09 +08:00）
+
+在任何恢复参数更新前实现独立V4.0.2 launcher与scheduler。它要求独立A100 recovery worktree处于精确且clean的
+current HEAD，现场运行Critic focused与精确V3.3.2 tests，验证read-once诊断、GPU5 TRAIN-only smoke、原八份
+failure-only terminal存在性和attempt-5 preflight；不重读旧failure payload。运行时config只允许把`output_root`与
+`screen_gate_output`改到带精确HEAD的新目录，其余architecture、data、seed、sampler、loss、controls、ablations、
+gate逐字段相同。完整八-arm在物理GPU5串行执行，即使一个arm产生精确failure terminal也继续后续arm；固定单次
+launch marker禁止第二次恢复启动。GPU5只需满足smoke实测peak+2GiB，不设固定空闲显存门槛。SetFlow不停止、
+修改或重启，protected reads为0。本地focused 36/36、精确V3.3.2 96/96、compile/JSON/diff-check PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_recovery_launcher_v1.json`。本项尚未启动参数更新，不新增optimizer结果。

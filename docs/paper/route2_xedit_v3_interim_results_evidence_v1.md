@@ -255,3 +255,9 @@ model at batch 32. All eight passes preserved 2,802 task-homogeneous updates and
 the four-repeat cap; target values, Validation metrics, Development TEST, new
 Evaluation outcomes, and checkpoints remained untouched. This closes the
 reachable training-path fault but is not performance or model-advantage evidence.
+
+The recovery launcher was frozen before parameter updates as one isolated,
+sequential eight-arm GPU5 package with a one-use launch marker. Its runtime
+config can change only the two output paths; all scientific fields, controls,
+ablations and gates remain those of the original V4 screen. This is prospective
+provenance and adds no Critic-performance or publication-readiness claim.

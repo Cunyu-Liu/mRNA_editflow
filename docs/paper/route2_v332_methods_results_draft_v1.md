@@ -1231,3 +1231,12 @@ all eight sampler passes retained 2,802 task-homogeneous updates and the
 four-repeat cap. No target, Validation metric, protected outcome, or checkpoint
 was read or written. This is implementation-readiness evidence only; it does not
 establish ranking performance, model advantage, or submission readiness.
+
+Before recovery training, the full eight-arm execution was bound to a single
+physical-GPU5 sequential scheduler and an exclusive one-use launch marker. The
+runtime config is required to match the original V4 scientific config exactly,
+apart from isolated output paths, and all controls and mechanism ablations must
+reach a natural terminal state even if an earlier arm fails technically. This
+prospective execution constraint prevents the recovery from becoming an
+unregistered model or seed change; it remains workflow provenance rather than a
+result.
