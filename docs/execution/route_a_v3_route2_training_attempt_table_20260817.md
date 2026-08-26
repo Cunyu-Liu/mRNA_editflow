@@ -4014,3 +4014,8 @@ Evaluation均为0 read。本修订只允许共同/可达技术故障且无有效
 attempt或性能证据。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_technical_recovery_amendment_v1.json`。
 本地focused protocol 13/13、精确V3.3.2 96/96、JSON/diff-check均PASS。
+
+V4.0.2 read-once producer随后在任何远端failure payload读取前实现。它只接受八个failure-only terminal，先原子创建
+消费marker，再各打开一次payload并原子发布完整诊断；中断后不得自动重读。该实现不读取active输出或protected
+outcome，也不改变模型/训练/gate。本地focused 8/8、精确V3.3.2 96/96、py_compile/diff-check均PASS。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_failure_read_once_producer_v1.json`。

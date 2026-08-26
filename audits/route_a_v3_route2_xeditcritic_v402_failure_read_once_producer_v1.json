@@ -1,0 +1,25 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_failure_read_once_producer.v1",
+  "status": "IMPLEMENTED_BEFORE_REMOTE_FAILURE_PAYLOAD_READ",
+  "producer": "scripts/route_a_v3/produce_route2_xeditcritic_v402_failure_diagnosis.py",
+  "required_run_count": 8,
+  "requires_failure_only_terminal_for_every_arm": true,
+  "consumption_marker_published_before_payload_open": true,
+  "automatic_reread_after_interruption": false,
+  "atomic_diagnosis_publication": true,
+  "active_logs_curves_or_metrics_read": false,
+  "remote_failure_payloads_read_during_implementation": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "local_validation": {
+    "focused_read_once_tests_passed": 8,
+    "focused_read_once_tests_failed": 0,
+    "exact_v332_tests_passed": 96,
+    "exact_v332_tests_failed": 0,
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "model_architecture_changed": false,
+  "training_objective_changed": false,
+  "scientific_gate_changed": false
+}

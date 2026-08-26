@@ -4677,3 +4677,8 @@ projection、checkpoint选择、C0、四controls、两ablations与全部gate不�
 worktree保持launch HEAD，两个SetFlow作业继续自然运行。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_technical_recovery_amendment_v1.json`。
 冻结后的本地focused protocol 13/13、精确V3.3.2 96/96、JSON/diff-check均PASS。
+
+V4.0.2 failure read-once producer已在远端payload读取前实现。入口先解析八个failure-only terminal路径，再用
+exclusive marker不可逆登记消费开始，最后才各打开一次payload并原子发布诊断；若marker存在但diagnosis缺失，
+自动重读硬失败。本地read-once focused 8/8、精确V3.3.2 96/96、py_compile/diff-check均PASS。实现审计：
+`audits/route_a_v3_route2_xeditcritic_v402_failure_read_once_producer_v1.json`。
