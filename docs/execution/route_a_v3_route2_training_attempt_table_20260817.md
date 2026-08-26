@@ -4059,3 +4059,14 @@ gate逐字段相同。完整八-arm在物理GPU5串行执行，即使一个arm�
 launch marker禁止第二次恢复启动。GPU5只需满足smoke实测peak+2GiB，不设固定空闲显存门槛。SetFlow不停止、
 修改或重启，protected reads为0。本地focused 36/36、精确V3.3.2 96/96、compile/JSON/diff-check PASS。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_recovery_launcher_v1.json`。本项尚未启动参数更新，不新增optimizer结果。
+
+### V4.0.2 Critic eight-arm recovery launched on GPU5（2026-08-26 11:53:57 +08:00）
+
+独立A100 recovery worktree已快进到精确launch HEAD
+`93703adec7a4c76b4466d3aaae8684620bee985a`；原SetFlow launch-head worktree未移动。启动入口现场通过
+Critic focused 137/137与精确V3.3.2 96/96，随后消费唯一V4.0.2 launch marker并在物理GPU5启动串行八-arm
+scheduler PID `1300230`。新运行根、authorization、schedule和runtime均带精确launch HEAD；旧八份Critic
+failure产物保留且未覆盖，SetFlow没有停止、修改或重启。启动时未读取active curve/metric、Development TEST或
+new Evaluation。首次terminal/failure/alive/CUDA检查不早于本地11:58:57；之后若仍active，按预计超过4小时的
+任务每60分钟检查一次。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_recovery_launch_v1.json`。

@@ -4716,3 +4716,11 @@ Critic/V3.3.2 tests PASS，只在GPU5空闲显存不低于TRAIN-only smoke peak+
 状态和CUDA身份，不读取active性能输出；旧八份failure和两个SetFlow作业完全隔离。除新`output_root`与
 `screen_gate_output`外，runtime config必须与原V4 screen config逐字段相同。实现focused 36/36、V3.3.2
 96/96。审计：`audits/route_a_v3_route2_xeditcritic_v402_recovery_launcher_v1.json`。
+
+V4.0.2恢复包已由精确HEAD `93703adec7a4c76b4466d3aaae8684620bee985a`在独立A100 worktree启动。
+现场Critic focused 137/137、V3.3.2 96/96；scheduler PID `1300230`，物理GPU5，八项严格串行。runtime：
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/`
+`v402_recovery_package_runner_93703adec7a4c76b4466d3aaae8684620bee985a/runtime.json`。
+首次合规检查不早于本地11:58:57，只查看terminal/failure/alive/CUDA；不读active curve/log/metric。旧failure
+产物和正在运行的SetFlow保持不变，protected reads为0。启动审计：
+`audits/route_a_v3_route2_xeditcritic_v402_recovery_launch_v1.json`。

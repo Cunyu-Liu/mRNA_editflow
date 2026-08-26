@@ -1240,3 +1240,10 @@ reach a natural terminal state even if an earlier arm fails technically. This
 prospective execution constraint prevents the recovery from becoming an
 unregistered model or seed change; it remains workflow provenance rather than a
 result.
+
+The single authorized V4.0.2 recovery package was subsequently launched from
+its exact tested revision on physical GPU5 after 137 focused A100 tests and the
+96-test V3.3.2 cohort passed. This marks the start of the preregistered optimizer
+screen, not a performance result: active metrics and protected outcomes remain
+unread, and model advantage and submission readiness remain pending terminal
+eight-arm adjudication.

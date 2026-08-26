@@ -261,3 +261,9 @@ sequential eight-arm GPU5 package with a one-use launch marker. Its runtime
 config can change only the two output paths; all scientific fields, controls,
 ablations and gates remain those of the original V4 screen. This is prospective
 provenance and adds no Critic-performance or publication-readiness claim.
+
+The one permitted recovery package has now launched on physical GPU5 from its
+exact A100-tested revision. No active performance output or protected outcome
+was read at launch. Accordingly, this changes the execution state from pending
+to running but adds no Spearman, control-margin, model-advantage, or publication-
+readiness evidence.
