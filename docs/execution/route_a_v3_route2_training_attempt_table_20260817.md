@@ -4158,3 +4158,11 @@ source-only继续在GPU5注册CUDA 15,270MiB；C0 summary/full failure只做存�
 scheduler和两项训练继续在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，零terminal artifact。没有读取active
 性能输出、terminal payload或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地05:45:11。
 审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_044511.json`。
+
+### V4 dual-package hourly health window（2026-08-27 05:45:41 +08:00）
+
+远端05:47:58（偏移约+137秒）状态仍未变化。Critic recovery scheduler与source-only PID `1766545`存活，
+source-only继续在GPU5注册CUDA 15,270MiB；C0 summary/full failure只做存在性确认，后五项PENDING。原SetFlow
+scheduler和两项训练继续在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，零terminal artifact。没有读取active
+性能输出、terminal payload或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地06:45:41。
+审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_054541.json`。
