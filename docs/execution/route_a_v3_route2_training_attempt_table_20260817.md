@@ -4175,3 +4175,12 @@ scheduler和两项训练继续在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，�
 继续在GPU5存活并注册CUDA 15,270MiB；C0 summary/full failure payload均未读，后五项PENDING。没有读取active
 性能输出或protected outcome，没有停止、修改或重启作业。下一SSH不早于本地07:46:42。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_064642.json`。
+
+### V4 dual-package hourly health window（2026-08-27 07:47:11 +08:00）
+
+远端07:49:28（偏移约+137秒）状态相对上一窗口未变。SetFlow single-mode保持SUMMARY terminal且payload
+0 read；full PID `2218814`继续在GPU1存活并注册CUDA 2,912MiB，package尚未达到双臂terminal。Critic
+recovery source-only PID `1766545`继续在GPU5存活并注册CUDA 15,270MiB；C0 summary/full failure payload
+均未读，后五项PENDING。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH
+不早于本地08:47:11。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_074711.json`。
