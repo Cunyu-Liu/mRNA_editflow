@@ -4100,3 +4100,11 @@ V4.0.2不授权第二次recovery。
 原SetFlow scheduler及full/single-mode仍分别在GPU1/GPU2存活并注册CUDA 2,912/2,774MiB，无summary或failure。
 没有读取active log/curve/metric或terminal payload，没有停止、修改或重启作业，protected reads为0。下一SSH不早于
 本地15:04:35。审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_140435.json`。
+
+### V4 dual-package hourly health window（2026-08-26 15:05:15 +08:00）
+
+远端15:07:31（偏移约+136秒）状态相对上一窗口未变。Critic recovery scheduler存活并RUNNING；C0仍为
+SUMMARY、full仍为FAILURE，payload保持0 read；source-only PID `1766545`继续在GPU5存活并注册CUDA
+14,342MiB，后五项PENDING。原SetFlow scheduler与两项训练继续存活，GPU1/GPU2 CUDA为2,912/2,774MiB，
+零terminal artifact。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH不早于
+本地16:05:15。审计：`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260826_150515.json`。
