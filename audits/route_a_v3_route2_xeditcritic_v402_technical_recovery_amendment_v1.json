@@ -1,0 +1,87 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_technical_recovery_amendment.v1",
+  "status": "PROSPECTIVELY_FROZEN_BEFORE_FAILURE_PAYLOAD_READ_OR_RECOVERY_PARAMETER_UPDATE",
+  "decision_owner": "USER",
+  "decision": "AUTHORIZE_NARROW_CRITIC_TECHNICAL_RECOVERY_ON_GPU5",
+  "decision_time_local": "2026-08-26T11:15:24+08:00",
+  "historical_screen_runner_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "historical_screen_state_at_decision": {
+    "critic_terminal_failure_count": 8,
+    "critic_terminal_summary_count": 0,
+    "setflow_active_count": 2,
+    "critic_failure_payloads_read": 0,
+    "development_validation_performance_summaries_read": 0,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "read_authorization": {
+    "critic_terminal_failure_payloads": "READ_EXACTLY_ONCE_AS_EIGHT_ARM_PACKAGE_NOW",
+    "critic_active_logs_curves_or_metrics": "PROHIBITED",
+    "setflow_active_logs_curves_or_metrics": "PROHIBITED",
+    "development_test_outcomes": "PROHIBITED",
+    "new_final_evaluation_outcomes": "PROHIBITED"
+  },
+  "recovery_eligibility": {
+    "required_failure_class": "COMMON_OR_REACHABLE_TECHNICAL_FAILURE",
+    "requires_no_valid_validation_performance_summary": true,
+    "performance_or_gate_failure_is_retriable": false,
+    "multiple_unrelated_failures_must_be_recorded_before_any_fix": true
+  },
+  "immutable_scientific_contract": {
+    "critic_architecture_changed": false,
+    "formal_trainable_parameter_count_reference": 170481957,
+    "physical_batch_size": 32,
+    "effective_batch_size": 32,
+    "passes": 8,
+    "screen_seed": 20260907,
+    "losses_changed": false,
+    "sampler_changed": false,
+    "controls_or_ablations_changed": false,
+    "metrics_or_gates_changed": false,
+    "development_projection_changed": false,
+    "checkpoint_selection_changed": false
+  },
+  "technical_fix_scope": "ONLY_THE_DIAGNOSED_ROOT_CAUSE",
+  "recovery_package": {
+    "required_arms": [
+      "c0_v4",
+      "v4_full",
+      "v4_source_only",
+      "v4_edit_metadata_only",
+      "v4_no_candidate_sequence",
+      "v4_candidate_bundle_permutation",
+      "v4_no_cross",
+      "v4_no_moe"
+    ],
+    "complete_eight_arm_package_required": true,
+    "gpu_preference": 5,
+    "gpu_scope": [5],
+    "launch_only_if_sufficient_free_memory": true,
+    "fixed_free_memory_floor_mib": null,
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "single_technical_recovery_attempt": true,
+    "extra_seed_authorized": false
+  },
+  "remote_execution": {
+    "independent_recovery_worktree_required": true,
+    "active_setflow_launch_head_worktree_must_not_move": true,
+    "current_setflow_jobs_must_continue_naturally": true,
+    "setflow_jobs_may_be_stopped_modified_or_restarted": false
+  },
+  "downstream_authorization": {
+    "critic_confirmation": "ONLY_AFTER_ORIGINAL_STRICT_SCREEN_GATE_PASS",
+    "development_test": "ONLY_AFTER_ORIGINAL_STRICT_THREE_SEED_GATE_PASS",
+    "guidance": "UNCHANGED_DUAL_READINESS_REQUIRED"
+  },
+  "local_validation": {
+    "focused_protocol_tests_passed": 13,
+    "focused_protocol_tests_failed": 0,
+    "exact_v332_tests_passed": 96,
+    "exact_v332_tests_failed": 0,
+    "json_validation_passed": true,
+    "git_diff_check_passed": true
+  },
+  "shared_history_rewritten": false,
+  "formal_tag_or_release_created": false
+}

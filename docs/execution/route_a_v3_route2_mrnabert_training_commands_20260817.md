@@ -4663,3 +4663,17 @@ Critic arm仍为failure、零summary；SetFlow full/single-mode无terminal artif
 Critic arm仍为failure、零summary；SetFlow full/single-mode无terminal artifact，两个固定PID继续在GPU1/GPU2
 注册CUDA并占用2,912/2,774MiB。没有读取failure payload或active log/curve/metric，也没有停止、修改或重启
 作业。下一窗口`>=2026-08-26 11:25:47 +08:00`。
+
+## V4.0.2 Critic technical-recovery amendment（2026-08-26）
+
+用户在八个Critic failure均已terminal、零Critic summary且failure payload仍为0 read时，前瞻确认一条窄技术恢复
+路径。现授权把八份Critic failure作为单包一次性读取以诊断根因；仍禁止读取任何active log/curve/metric、SetFlow
+active输出、Development TEST或new Evaluation。只有共同或可达技术故障且没有有效Validation性能summary时才允许
+恢复；性能或gate失败不可重跑。
+
+任何修复只能覆盖已诊断根因。Critic架构、170,481,957参数参考、batch32、8 passes、seed20260907、loss、sampler、
+projection、checkpoint选择、C0、四controls、两ablations与全部gate不变。恢复必须在独立A100 worktree上使用GPU5
+完整重跑八个arm一次；GPU5只在显存足够时使用，不设人为free-memory下限，CUDA/BF16且无CPU fallback。旧screen
+worktree保持launch HEAD，两个SetFlow作业继续自然运行。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_technical_recovery_amendment_v1.json`。
+冻结后的本地focused protocol 13/13、精确V3.3.2 96/96、JSON/diff-check均PASS。

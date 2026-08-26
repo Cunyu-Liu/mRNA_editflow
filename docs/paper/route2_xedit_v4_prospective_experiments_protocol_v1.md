@@ -421,3 +421,33 @@ the measured component peak plus 2 GiB and does not change the architecture,
 arms, seeds, training budgets, losses, metrics, or scientific gates. This launch
 does not authorize TEST access or any model claim; only natural terminal
 completion and the preregistered screen adjudicators can do so.
+
+## V4.0.2 prospective Critic technical-recovery amendment
+
+After all eight Critic screen arms had independently published failure artifacts,
+none had published a performance summary, and both SetFlow arms remained active,
+the user prospectively authorized one narrow Critic technical-recovery path. The
+decision was frozen before any of the eight failure payloads was opened and before
+any recovery parameter update or Validation performance read.
+
+The eight Critic failure payloads may now be consumed exactly once as a single
+terminal diagnostic package. Active Critic or SetFlow logs, curves and metrics,
+Development TEST outcomes, and new Evaluation outcomes remain prohibited. A
+recovery is eligible only if the package demonstrates a common or otherwise
+reachable technical failure and confirms that no valid Validation performance
+summary was produced. A scientific performance or gate failure is not retriable.
+
+Any repair is restricted to the diagnosed technical cause. The exact Critic
+architecture and 170,481,957-parameter reference, physical/effective batch 32,
+eight passes, seed 20260907, losses, sampler, projection, checkpoint rule, four
+candidate controls, two mechanism ablations, matched C0 and all screen gates remain
+unchanged. Recovery must rerun the complete eight-arm package once; a full-only
+or selectively repeated package is invalid. GPU5 is preferred and is used only
+if it has sufficient launch-time memory. CUDA/BF16 and no CPU fallback remain
+mandatory, while no artificial free-memory floor is imposed.
+
+The repair and recovery tests must use an independent A100 worktree so that the
+original screen-launch worktree remains fixed while the two SetFlow jobs finish
+naturally. The SetFlow jobs may not be stopped, modified or restarted. This
+amendment authorizes neither an extra seed nor Critic confirmation, Development
+TEST, or guidance. Those stages retain every original strict gate.

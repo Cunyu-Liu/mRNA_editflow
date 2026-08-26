@@ -229,3 +229,13 @@ Attempt 4 remains unchanged; only a new attempt-5 dual preflight PASS can start
 the existing screens. This amendment is execution authority, not evidence of a
 Spearman, recovery, diversity or publication-quality advantage. Development
 TEST and new Evaluation outcome reads remain zero.
+
+Before any Critic failure payload or recovery Validation performance was read,
+the user prospectively froze V4.0.2 as a technical-recovery amendment. It permits
+one exact eight-artifact diagnostic read and, only if those artifacts establish a
+technical failure without a valid performance summary, one complete eight-arm
+recovery on an independent A100 worktree with GPU5 preferred when memory permits.
+The model, 170,481,957-parameter reference, seed, batches, passes, objectives,
+controls, ablations and gates remain fixed; the two active SetFlow jobs remain
+untouched. This authorization is technical workflow evidence, not model-performance
+evidence, and the manuscript remains unready for submission.

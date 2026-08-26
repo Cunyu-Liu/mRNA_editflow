@@ -1203,3 +1203,13 @@ but it still supplies no Spearman result or technical root cause because the
 failure payloads remained unread. The preregistered terminal NO-GO and its
 failure provenance will be published only after the independent SetFlow arms
 finish and the complete screen package is adjudicated.
+
+Before any Critic failure payload or recovery Validation performance was read,
+the user prospectively froze V4.0.2 as a technical-recovery amendment. It permits
+one exact eight-artifact diagnostic read and, only if those artifacts establish a
+technical failure without a valid performance summary, one complete eight-arm
+recovery on an independent A100 worktree with GPU5 preferred when memory permits.
+The model, parameter reference, seed, batches, passes, objectives, controls,
+ablations and gates are unchanged; the two active SetFlow jobs remain untouched.
+This authorization is not performance evidence and leaves the manuscript not
+ready for submission.

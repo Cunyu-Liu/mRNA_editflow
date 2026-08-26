@@ -4003,3 +4003,14 @@ full/single-mode仍无terminal artifact，PID `2218814/2218813`分别在GPU1/GPU
 Development TEST/new Evaluation reads保持0；下一窗口不早于本地11:25:47。审计：
 本地successor focused 39/39、精确V3.3.2 96/96、JSON/diff-check均PASS。
 `audits/route_a_v3_route2_xedit_v4_screen_tenth_health_20260826_102547.json`。
+
+## V4.0.2 Critic technical recovery frozen before diagnostic read（2026-08-26 11:15:24 +08:00）
+
+用户已前瞻授权在不干预两个active SetFlow作业的前提下，对八份已terminal Critic failure执行一次性单包读取并
+诊断。冻结时八个Critic均为failure、零summary；failure payload、Validation性能summary、Development TEST和new
+Evaluation均为0 read。本修订只允许共同/可达技术故障且无有效性能summary时进行一次完整八-arm恢复；架构、
+170,481,957参数参考、batch32、8 passes、seed20260907、目标、controls、ablations与gate全部不变。恢复偏好GPU5，
+使用独立A100 worktree，CUDA/BF16、无CPU fallback、无固定显存下限。该项是技术恢复授权，不是新的optimizer
+attempt或性能证据。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_technical_recovery_amendment_v1.json`。
+本地focused protocol 13/13、精确V3.3.2 96/96、JSON/diff-check均PASS。
