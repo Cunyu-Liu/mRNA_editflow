@@ -278,3 +278,39 @@ or terminal artifacts.
   comparison must still complete before any Development result can be called
   excellent; external confirmation still requires a new outcome-unexposed
   Evaluation cohort.
+
+## Iteration 5 — Bind every future LOSO job to clean code and stop on first technical failure
+
+- Objective: close the two remaining reachable refit/LOSO execution gaps before
+  that successor stage starts, without touching either active V4.0.3 recovery
+  process or changing any scientific contract term.
+- Exact-code correction: every newly started Critic V4 training process now
+  requires both the authorized Git HEAD and a clean worktree before it reads the
+  launch authorization, initializes CUDA, or creates an output directory. This
+  prevents a long 42-job LOSO queue from mixing uncommitted code under one
+  recorded commit identity.
+- First-failure correction: the six-GPU LOSO scheduler now uses one package-wide
+  stop event. A unique failure artifact or a non-exact terminal state records
+  the first affected job, return code, summary/failure paths, and log; no later
+  queued job is launched. Jobs already in flight are allowed to reach their
+  exact terminal artifacts, after which adjudication and readiness are skipped
+  and the package publishes `XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE`.
+- Preserved semantics: a unique summary remains authoritative even when its
+  subprocess return code is nonzero; exact terminal job status remains backward
+  compatible and `terminal_artifact_kind` continues to distinguish SUMMARY from
+  FAILURE. The frozen three seeds, seven studies, paired `v4_full`/`c0_v4` arms,
+  42-job count, fixed pass 8, GPU order, CUDA/BF16 requirement, and all gates are
+  unchanged. Free-memory values remain diagnostics and never authorize launch.
+- Verification: the two directly affected test modules pass 14/14 in the A100
+  Python 3.10 environment, including clean/dirty worktree refusal, exact-summary
+  compatibility, first-failure evidence, skipped queued work, and suppression
+  of LOSO adjudication/readiness after technical failure. These are CPU-native
+  orchestration tests, not model validation or scientific evidence.
+- Active and protected scope: the current SetFlow `37c59010` and Critic
+  `f34ab7d8` processes and artifact families are unchanged. No active training
+  metric, Development TEST outcome, or new final Evaluation outcome was read;
+  the two-hour heartbeat remains the only training-progress monitor.
+- Conclusion: future refit/LOSO execution will either use one exact clean code
+  identity throughout or terminate promptly with durable first-failure
+  evidence. Current model quality remains pending the frozen terminal and
+  scientific gates.

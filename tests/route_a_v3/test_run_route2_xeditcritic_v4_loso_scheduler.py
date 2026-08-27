@@ -78,10 +78,14 @@ def test_loso_scheduler_preserves_terminals_and_composes_ready(
     assert not job_failure.exists()
 
 
-def test_loso_scheduler_closes_missing_job_and_not_ready(tmp_path: Path) -> None:
+def test_loso_scheduler_stops_queue_after_first_technical_failure(
+    tmp_path: Path,
+) -> None:
     runtime = tmp_path / "runtime.json"
     job_summary = tmp_path / "job/run_summary.json"
     job_failure = tmp_path / "job/failure.json"
+    skipped_summary = tmp_path / "skipped/run_summary.json"
+    skipped_failure = tmp_path / "skipped/failure.json"
     loso = tmp_path / "loso.json"
     readiness = tmp_path / "readiness.json"
     schedule = {
@@ -101,7 +105,17 @@ def test_loso_scheduler_closes_missing_job_and_not_ready(tmp_path: Path) -> None
                         "failure_path": str(job_failure),
                         "log_path": str(tmp_path / "job.log"),
                         "command": _writer(None, {}, 3),
-                    }
+                    },
+                    {
+                        "job_key": "loso:20260908:GSE114002:v4_full",
+                        "seed": 20260908,
+                        "held_out_study": "GSE114002",
+                        "run_id": "v4_full",
+                        "summary_path": str(skipped_summary),
+                        "failure_path": str(skipped_failure),
+                        "log_path": str(tmp_path / "skipped.log"),
+                        "command": _writer(skipped_summary, {}, 0),
+                    },
                 ],
             }
         ],
@@ -125,9 +139,27 @@ def test_loso_scheduler_closes_missing_job_and_not_ready(tmp_path: Path) -> None
     scheduler.run(schedule)
 
     payload = json.loads(runtime.read_text(encoding="utf-8"))
-    assert payload["status"] == "CRITIC_V4_NOT_READY_FOR_GUIDANCE"
-    assert payload["jobs"]["loso:20260908:GSE200304:v4_full"]["terminal_artifact_kind"] == "FAILURE"
+    assert payload["status"] == "XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE"
+    failed = payload["jobs"]["loso:20260908:GSE200304:v4_full"]
+    assert failed["status"] == "TERMINAL_COMPLETE"
+    assert failed["terminal_artifact_kind"] == "FAILURE"
+    skipped = payload["jobs"]["loso:20260908:GSE114002:v4_full"]
+    assert skipped["status"] == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+    assert skipped["terminal_artifact_kind"] is None
+    assert payload["first_terminal_failure"]["job_key"] == (
+        "loso:20260908:GSE200304:v4_full"
+    )
     assert job_failure.is_file()
+    assert not skipped_summary.exists()
+    assert not skipped_failure.exists()
+    assert not loso.exists()
+    assert not readiness.exists()
+    assert payload["loso_adjudication"]["status"] == (
+        "NOT_RUN_LOSO_JOB_TECHNICAL_FAILURE"
+    )
+    assert payload["readiness"]["status"] == (
+        "NOT_RUN_LOSO_JOB_TECHNICAL_FAILURE"
+    )
     assert payload["readiness"]["guidance_authorized"] is False
 
 

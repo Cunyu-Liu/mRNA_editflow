@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 import torch
 
+import scripts.route_a_v3.train_route2_xeditcritic_v4 as trainer
 from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     XEditCriticTrainingV4RunnerError,
     _move,
@@ -104,6 +105,41 @@ def test_all_training_stages_bind_frozen_physical_gpu_scope_before_cuda() -> Non
     assert source.index(
         "require_physical_gpu_scope_v4(config, physical_gpu_index)"
     ) < source.index("device = require_cuda(physical_gpu_index)")
+
+
+def test_all_training_stages_require_clean_worktree_before_authorization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
+    ).read_text(encoding="utf-8")
+    assert (
+        "current_head = _git_head()\n"
+        "    _require_clean_worktree_v4()\n"
+        "    authorization = _load_json(launch_authorization_path)"
+    ) in source
+
+    statuses = iter(["", " M core/route2_xeditcritic_v4.py\n"])
+
+    class Result:
+        def __init__(self, stdout: str) -> None:
+            self.stdout = stdout
+
+    def fake_git_status(*args: object, **kwargs: object) -> Result:
+        assert args[0] == ["git", "status", "--porcelain"]
+        assert kwargs["cwd"] == trainer.REPO_ROOT
+        return Result(next(statuses))
+
+    monkeypatch.setattr(
+        trainer.subprocess,
+        "run",
+        fake_git_status,
+    )
+    trainer._require_clean_worktree_v4()
+    with pytest.raises(
+        XEditCriticTrainingV4RunnerError, match="requires a clean Git worktree"
+    ):
+        trainer._require_clean_worktree_v4()
 
 
 def test_ragged_structure_stays_on_cpu_while_model_tensors_move() -> None:

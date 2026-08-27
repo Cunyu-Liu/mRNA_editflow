@@ -70,6 +70,8 @@ def run(schedule: dict[str, Any]) -> None:
     runtime_path = Path(schedule["runtime_manifest"])
     worktree = Path(schedule["worktree"])
     lock = threading.Lock()
+    terminal_failure = threading.Event()
+    first_terminal_failure: dict[str, Any] = {}
     states = {
         job["job_key"]: {
             "seed": int(job["seed"]),
@@ -106,6 +108,7 @@ def run(schedule: dict[str, Any]) -> None:
                 "jobs": states,
                 "loso_adjudication": adjudication,
                 "readiness": readiness,
+                "first_terminal_failure": first_terminal_failure or None,
                 "active_performance_output_read": False,
                 "development_test_access_event_count_before_loso": 1,
                 "development_test_outcome_reads_during_loso": 0,
@@ -116,9 +119,21 @@ def run(schedule: dict[str, Any]) -> None:
     publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
 
     def run_queue(queue: dict[str, Any]) -> None:
-        for job in queue["jobs"]:
+        jobs = list(queue["jobs"])
+        for index, job in enumerate(jobs):
             key = str(job["job_key"])
             with lock:
+                if terminal_failure.is_set():
+                    for skipped in jobs[index:]:
+                        states[str(skipped["job_key"])].update(
+                            {
+                                "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                                "terminal_artifact_kind": None,
+                                "stop_reason": "EARLIER_LOSO_JOB_TECHNICAL_FAILURE",
+                            }
+                        )
+                    publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
+                    return
                 states[key].update(
                     {"status": "RUNNING", "started_unix_seconds": time.time()}
                 )
@@ -128,18 +143,35 @@ def run(schedule: dict[str, Any]) -> None:
             )
             terminal = close_missing_job(job, return_code=return_code)
             with lock:
+                status = (
+                    "TERMINAL_COMPLETE"
+                    if terminal is not None
+                    else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                )
                 states[key].update(
                     {
-                        "status": (
-                            "TERMINAL_COMPLETE"
-                            if terminal is not None
-                            else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
-                        ),
+                        "status": status,
                         "return_code": int(return_code),
                         "terminal_artifact_kind": terminal,
                         "finished_unix_seconds": time.time(),
                     }
                 )
+                if terminal != "SUMMARY":
+                    if not first_terminal_failure:
+                        first_terminal_failure.update(
+                            {
+                                "job_key": key,
+                                "seed": int(job["seed"]),
+                                "held_out_study": job["held_out_study"],
+                                "run_id": job["run_id"],
+                                "return_code": int(return_code),
+                                "terminal_artifact_kind": terminal,
+                                "summary_path": job["summary_path"],
+                                "failure_path": job["failure_path"],
+                                "log_path": job["log_path"],
+                            }
+                        )
+                    terminal_failure.set()
                 publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
 
     threads = [
@@ -154,6 +186,32 @@ def run(schedule: dict[str, Any]) -> None:
         thread.start()
     for thread in threads:
         thread.join()
+
+    if terminal_failure.is_set():
+        for state in states.values():
+            if state.get("status") == "PENDING":
+                state.update(
+                    {
+                        "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                        "terminal_artifact_kind": None,
+                        "stop_reason": "EARLIER_LOSO_JOB_TECHNICAL_FAILURE",
+                    }
+                )
+        adjudication.update(
+            {
+                "status": "NOT_RUN_LOSO_JOB_TECHNICAL_FAILURE",
+                "terminal_artifact_kind": None,
+            }
+        )
+        readiness.update(
+            {
+                "status": "NOT_RUN_LOSO_JOB_TECHNICAL_FAILURE",
+                "terminal_artifact_kind": None,
+                "guidance_authorized": False,
+            }
+        )
+        publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+        return
 
     spec = schedule["loso_adjudication"]
     adjudication["status"] = "RUNNING"

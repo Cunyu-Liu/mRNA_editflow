@@ -476,6 +476,17 @@ def _git_head() -> str:
     ).stdout.strip()
 
 
+def _require_clean_worktree_v4() -> None:
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    _require(not status, "Critic V4 training requires a clean Git worktree")
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     _require(isinstance(payload, dict), f"JSON artifact is not an object: {path}")
@@ -762,6 +773,7 @@ def run(
     spec = screen_run_spec_v4(config, run_id)
     run_stage, training_seed = critic_v4_run_stage_seed(config, run_id)
     current_head = _git_head()
+    _require_clean_worktree_v4()
     authorization = _load_json(launch_authorization_path)
     preflight = _load_json(Path(config["preflight_output"]))
     physical_batch_size = int(preflight.get("selected_physical_batch", -1))
