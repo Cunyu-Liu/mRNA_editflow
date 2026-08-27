@@ -37,6 +37,11 @@ or terminal artifacts.
   `1357620`; GPU0–4 eligible; five checkpoint jobs started in parallel and the
   remaining three queued per GPU. Runtime manifest:
   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/runtime.json`.
+- Runtime config:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6.json`.
+- Start evidence: scheduler and the first five validation processes were alive
+  from `2026-08-27 12:23:49 +08:00`; the runtime/schedule files were materialized
+  at approximately `12:21:38 +08:00`.
 - Current status: the first five checkpoint validations remain active; no
   performance artifact has been read while active.
 - Conclusion: no SetFlow model-performance conclusion until the eight
@@ -106,6 +111,8 @@ or terminal artifacts.
   `xeditcritic_v4_screen_seed20260907::v4_full::v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea`.
 - Runtime:
   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_rng_replay_fix_runner_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/runtime.json`.
+- Runtime screen config:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditcritic_v4/v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/screen_config.json`.
 - Output:
   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/v4_full`.
 - Resource coordination: the older V4.0.2 `v4_source_only` process was retained
@@ -140,3 +147,76 @@ or terminal artifacts.
 - Conclusion: future launch code records memory telemetry but no longer treats
   free-memory headroom as a gate. Existing active scientific results remain
   pending their frozen Development Validation terminal artifacts.
+
+## Iteration 3 — Terminal-transition readiness while GPU jobs run
+
+- Objective: remove the concrete blockers that would otherwise stop the two
+  active V4.0.3 runs from entering their next contract stage after terminal,
+  without reading active performance payloads, touching the processes, or
+  opening Development TEST/new Evaluation.
+- Low-frequency snapshot: one read-only check at `2026-08-27 13:31:53 +08:00`.
+  SetFlow runtime remained
+  `XEDITSETFLOW_V403_VALIDATION_RECOVERY_RUNNING`: five validation PIDs were
+  present on physical GPU0–4 at approximately 2.88 GiB each and three jobs were
+  still pending. Critic runtime remained
+  `XEDITCRITIC_V403_FULL_RECOVERY_RUNNING`: trainer PID `1521031` was present on
+  physical GPU5 at approximately 14.91 GiB with `device=cuda:5` and BF16.
+- Failure evidence in that snapshot: no OOM, CUDA unavailable, CPU fallback,
+  traceback, runtime failure, or terminal failure artifact was present. This is
+  an in-progress device/status observation, not a technical or scientific PASS.
+- Protected outcomes: Development TEST reads 0; new final Evaluation reads 0;
+  active performance payloads were not read.
+- Launcher/provenance repair commit: `45842293`. Fourteen currently reachable V4
+  launchers now resolve their actual repository root, retain CUDA/BF16
+  fail-closed behavior, record memory telemetry only, and never filter, sort, or
+  reject a configured GPU by free-memory headroom. The existing f34 CUDA replay
+  smoke is reused only after a cheap training-semantics provenance comparison;
+  this avoids repeating the 170.48M-parameter smoke for launcher-only changes.
+- Critic control-transition commit: `3b452a90`. A new fail-closed path waits for
+  the current f34 `v4_full` exact terminal summary, then launches exactly the six
+  affected non-C0 controls with the same f34 trainer/config on GPU0–5. It does
+  not retrain `v4_full` or C0 and does not resume the old SIGSTOP
+  `v4_source_only`, because all six controls use the repaired V4-FULL retained-
+  graph path. A cross-root adjudicator combines the historical matched C0, the
+  current f34 full result, and the six repaired controls only after all eight are
+  unique successful terminals, then calls the unchanged frozen screen gate once.
+- SetFlow confirmation-transition commit: `9dc31780`. A derived protocol,
+  recovery-aware authorizer, and component-only launcher retain the original
+  training HEAD `edad89392077a0cf56e84dfcf94335606dd2b05a`, validation HEAD
+  `37c5901000cf6bef1606f05af242512f1342ceb6`, and actual future confirmation
+  runner HEAD as three explicit provenance identities. The scientific
+  thresholds, training policy, checkpoints, paired bootstrap, and seeds
+  `20260912/20260913/20260914` are unchanged. Launch remains impossible before
+  the recovered eight-job gate is terminal PASS.
+- Focused verification: 74 launcher tests, 8 Critic transition tests, and 26
+  SetFlow transition/prepare/train-interface tests passed. These CPU-native unit
+  tests prove orchestration and fail-closed boundaries only; they are not model
+  or scientific evidence. No additional GPU run was started for this code work.
+- Milestone review found no P0 and four reachable P1 orchestration defects; all
+  four were fixed before push. Commit `58c34341` requires the current Critic full
+  arm to match the frozen seed, 8-pass/22,416-update budget, data counts, batch,
+  checkpoint policy, and runtime/summary/authorization GPU identity before the
+  six-control package may start. It also derives every cross-root arm HEAD from
+  its real launch authorization instead of a caller-supplied claim. The two
+  corrected Critic transition test files passed 25/25.
+- Commit `a839a71d` makes both original recovery attempts true one-shot
+  identities: changing the orchestration HEAD cannot relaunch the canonical f34
+  Critic full arm or the canonical 37c SetFlow 2x4 validation cohort. A technical
+  failure requires an explicit new retry family. The same commit stops the
+  SetFlow confirmation authorizer from inheriting current-HEAD test booleans
+  from the old screen HEAD; the new runner must provide an exact-HEAD, clean-
+  worktree CPU verification receipt with focused and V3.3.2 tests passing. The
+  affected authorizer/launcher cohorts passed 31/31, 8/8, and 16/16.
+- The exact-runner verification receipt is materialized only after the final
+  documentation commit and final CPU test pass, so its `runner_git_head` names
+  the actual launchable HEAD. Its immutable audit path is
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/confirmation_v403_recovered_runner_verification_{runner_git_head}.json`.
+- Monitoring: a single two-hour heartbeat is the only progress monitor. It is
+  pinned to the two exact active runtime paths, never opens protected outcomes,
+  and will use the repaired no-memory-gate path only for new or still-unstarted
+  work; it does not hot-replace the current processes.
+- Conclusion: both active jobs remain scientifically pending. At terminal,
+  SetFlow is adjudicated once by its recovery scheduler; Critic full is first
+  checked as one technical arm, then the six repaired controls and the exact
+  eight-arm screen gate are required. No smoke, training-set value, single arm,
+  or three-seed Development result is a final project conclusion.
