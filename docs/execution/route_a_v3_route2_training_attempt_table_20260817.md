@@ -4248,3 +4248,14 @@ authorization或阈值。Development TEST/new Evaluation read=0。SetFlow无法�
 但failure分类仍等待完整八项terminal。相关Critic gate/recovery focused 18/18、精确V3.3.2 96/96通过；未连接
 A100、未读取active输出或protected outcome。审计：
 `audits/route_a_v3_route2_xeditcritic_v402_terminal_adjudicator_readiness_v1.json`。
+
+## V4 protocol completion-gap audit（2026-08-27）
+
+逐项对照冻结protocol后，当前完成度不能支持“V4方法修复完成”或“模型+benchmark投稿ready”：projection/isolation、
+cache与双preflight已有证据；SetFlow screen已因集成技术故障terminal NO-GO且没有性能指标；Critic唯一V4.0.2
+recovery仍active，但selectable full已FAILURE，performance PASS已不可能。因而SetFlow confirmation永久关闭，Critic
+confirmation/TEST/refit/LOSO未授权，joint guidance/SMC/matched generation及new external Evaluation均关闭。
+
+当前唯一合法动作仍是等待Critic完整八臂terminal后执行一次原子adjudication。任何SetFlow重跑、authorization
+重写、第二次Critic recovery、额外seed、降gate、TEST/Evaluation读取或guidance launch均未授权。审计：
+`audits/route_a_v3_route2_xedit_v4_protocol_completion_gap_20260827.json`。

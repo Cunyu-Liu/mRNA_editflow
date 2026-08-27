@@ -307,3 +307,11 @@ the preregistered protocol authorizes neither confirmation nor guidance after
 this terminal, so no SetFlow V4 model-advantage claim can be made. Development
 TEST and new Evaluation outcome reads remain zero, and the manuscript remains
 unready for submission.
+
+A requirement-level V4 completion audit confirms that the engineering
+prerequisites are not equivalent to a successful method result. SetFlow V4 is a
+terminal technical NO-GO without performance estimates; the only Critic V4.0.2
+recovery has already lost its selectable full arm and remains incomplete. Thus
+no confirmation, frozen TEST, readiness, joint guidance, SMC comparison, or new
+external Evaluation is authorized. The current manuscript cannot support the
+planned model-plus-benchmark advantage claim.
