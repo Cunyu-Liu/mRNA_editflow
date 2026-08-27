@@ -94,6 +94,8 @@ FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
         "test_compare_route2_xeditflow_independent_evaluator_v4.py",
         "test_xeditflow_v4_final_evidence_chain.py",
         "test_run_route2_xeditflow_strongest_timing_v4.py",
+        "test_reproduce_route2_base_flow_v2_handover_validation.py",
+        "test_export_route2_xeditflow_v4_terminal_training_ledger.py",
     ),
 )
 V332_TEST_GLOB_MARKER = "*v332*.py"

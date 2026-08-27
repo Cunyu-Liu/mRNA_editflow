@@ -159,7 +159,9 @@ def _focused_test_commands() -> list[str]:
         "test_evaluate_route2_xeditflow_closed_scores_v4.py "
         "test_compare_route2_xeditflow_independent_evaluator_v4.py "
         "test_xeditflow_v4_final_evidence_chain.py "
-        "test_run_route2_xeditflow_strongest_timing_v4.py",
+        "test_run_route2_xeditflow_strongest_timing_v4.py "
+        "test_reproduce_route2_base_flow_v2_handover_validation.py "
+        "test_export_route2_xeditflow_v4_terminal_training_ledger.py",
     ]
 
 
@@ -294,6 +296,14 @@ def test_recovered_authorization_accepts_complete_eight_group_runner_receipt() -
             "missing_setflow_authorization_marker",
             "lacks required test-module coverage",
         ),
+        (
+            "missing_handover_validation_marker",
+            "lacks required test-module coverage",
+        ),
+        (
+            "missing_terminal_training_ledger_marker",
+            "lacks required test-module coverage",
+        ),
         ("group_sum_mismatch", "focused tests"),
         ("focused_below_c5db_floor", "focused tests"),
         ("not_isolated", "focused tests"),
@@ -323,6 +333,16 @@ def test_recovered_authorization_runner_receipt_coverage_fails_closed(
     elif case == "missing_setflow_authorization_marker":
         focused["command"][0] = focused["command"][0].replace(
             "test_authorize_route2_xeditsetflow_v403_recovered_confirmation.py",
+            "",
+        )
+    elif case == "missing_handover_validation_marker":
+        focused["command"][7] = focused["command"][7].replace(
+            "test_reproduce_route2_base_flow_v2_handover_validation.py",
+            "",
+        )
+    elif case == "missing_terminal_training_ledger_marker":
+        focused["command"][7] = focused["command"][7].replace(
+            "test_export_route2_xeditflow_v4_terminal_training_ledger.py",
             "",
         )
     elif case == "group_sum_mismatch":

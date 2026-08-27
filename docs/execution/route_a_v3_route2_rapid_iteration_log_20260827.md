@@ -525,3 +525,56 @@ or terminal artifacts.
 - Conclusion: this iteration fixes test-evidence fidelity, not model quality.
   Development remains pending until the frozen Final comparison is terminal and
   reports `XEDITFLOW_V4_PASS`.
+
+## Iteration 10 — Prepare terminal-only handover evidence without touching active training
+
+- Objective: remove the avoidable delay between Final Development terminal and
+  the two remaining machine-executable handover checks. This iteration prepares
+  code and synthetic tests only. It does not inspect any active runtime, metric,
+  curve, log, checkpoint payload, Development TEST outcome, or new Evaluation
+  outcome, and it does not launch training or GPU Validation.
+- R3 scope decision: the minimum contract-complete independent reproduction is
+  a fresh aggregation of the historical Base Flow V2 terminal candidate rows,
+  Development source manifest, and measured-neighborhood rows through the
+  shared evaluator. It does not copy the frozen evaluation JSON, retrain Base
+  Flow, rerun the other six methods, invoke the independent scorer, load a
+  checkpoint, or perform model forward. The runner binds the terminal config,
+  training summary, training attempt, checkpoint locator, seed, and historical
+  commit as provenance, then requires exact source/candidate geometry, exact
+  legality and violation counts, 1e-6 continuous-metric agreement, and an
+  undefined rather than zero closed measured NDCG.
+- Terminal gate: the R3 runner opens historical source/candidate/measured rows
+  only after the Final launch receipt, 98-job runtime, exact adjudication, clean
+  current HEAD, and protected-outcome fields agree. Both scientific PASS and
+  scientific NO_GO may produce handover evidence; RUNNING, technical failure,
+  missing or contradictory terminal evidence stops before those rows open.
+  Output is a new atomic `handover_validation` directory and never overwrites a
+  completed or partial family.
+- Narrow training ledger: the exporter records exactly 72 parameter-updating
+  attempts consumed by Final lineage: Critic screen 8, confirmation 6, refit 3,
+  LOSO 42; SetFlow screen 2 and confirmation 3; guidance value 6 and final value
+  2. A strict explicit inventory identifies only family, frozen schedule, and
+  job key; config, output, GPU, log, attempt, summary, and checkpoint identity
+  are derived from allowlisted schedules and cross-checked. Atomic TEST,
+  Validation, generation, evaluator inference, timing, and adjudication remain
+  stage barriers or frozen dependencies, not fabricated training rows.
+- Ledger boundaries: the exporter requires all 98 Final jobs to have unique
+  successful terminal artifacts, preserves the one authorized atomic TEST event
+  separately, requires no post-atomic TEST reopening and zero new Evaluation
+  reads, and distinguishes PASS from NO_GO while keeping
+  `submission_ready=false`. It does not scan `/mnt`, read private/log/checkpoint
+  payloads, mutate the central CSV or per-run records, or add checksums.
+- Receipt coverage: the two new direct test modules are added to focused process
+  group 8 in both independent receipt consumers and every current positive mock
+  receipt. A future exact-HEAD receipt must therefore prove these closeout tools
+  were tested; the historical 203 floor, eight-process layout, and exact 96
+  V3.3.2 requirement remain unchanged.
+- Verification discipline: direct synthetic tests exercise terminal PASS/NO_GO,
+  pre-read rejection, real shared metric reduction, tolerance/undefined rules,
+  exact 72-row inventory, CUDA/CPU-fallback and protected-read inconsistencies,
+  and non-overwrite publication. After the containing commit, all eight focused
+  groups and the 96-test V3.3.2 cohort must run again before new receipts and the
+  heartbeat may advance to that HEAD.
+- Conclusion: this code shortens terminal handover closure but creates no model
+  result. The real R3 directory and terminal ledger remain gated on Final exact
+  terminal; the excellent-result criterion remains frozen Final PASS only.

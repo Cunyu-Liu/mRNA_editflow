@@ -67,7 +67,9 @@ SetFlow G0_READY + Critic post-test readiness
                         └─> XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN
                             └─> 3-seed, 98-job final Development comparison
                                 └─> XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL
-                                    + XEDITFLOW_V4_PASS
+                                    ├─> gate PASS：优秀 Development 结果
+                                    ├─> gate NO_GO：冻结科学 NO_GO
+                                    └─> 两者均执行 terminal-only 交接收尾
 ```
 
 每一箭头都要求前一阶段产物完整、唯一、精确终态、protected reads 合法且冻结 gate 达标。不得以 smoke、proxy、训练集指标、单 seed、单臂、screen、原子 TEST、G0 或 guidance screen 代替后续 gate。
@@ -102,6 +104,15 @@ SetFlow confirmation 训练 schedule 与 posttraining schedule 是两个不同�
 
 Guidance 必须同时消费 SetFlow posttraining readiness 与 Critic post-test readiness。Final 只能消费 bridge launch receipt 中的 `final_successor` 字段，不能裸调用或回落到 legacy 默认路径。Guidance 的精确终态是 `XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN`；Final 每个 seed 的 evidence 成功标记是 `final_evidence/seed_manifest_row.json`。
 
+### Final terminal 后的交接收尾
+
+- `reproduce_route2_base_flow_v2_handover_validation.py`
+- `export_route2_xeditflow_v4_terminal_training_ledger.py`
+
+两者只在 Final runtime 与 adjudication 均精确为 `XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL` 后执行；科学 gate 为 PASS 或 NO_GO 都应保存交接证据，技术失败或在途状态均不得触发。Base Flow V2 R3 只从 terminal candidate、Development source manifest 与 measured-neighborhood rows 独立重算冻结指标，不重训、不重跑七方法、不读取 TEST/new Evaluation，也不做模型 forward；如果未来另行要求重新生成候选，则该 forward 必须真实使用 CUDA，CUDA 不可用或 CPU fallback 时立即停止留证。Terminal ledger 只导出 Final 实际依赖的 72 个参数更新尝试，不递归扫描历史、不读取日志/checkpoint/private payload、不改中央 ledger，也不改变任何训练、阈值、gate 或科学结论。
+
+上述两个直接测试模块属于 successor focused receipt 第 8 组的强制覆盖。工具可以在 Final 前完成代码和合成测试，但真实 `/mnt` 交接产物只能在 terminal gate 后一次性物化。
+
 ## 6. GPU 与失败处理
 
 - 训练和 GPU 验证必须真实使用 CUDA；神经网络任务按冻结配置使用 CUDA/BF16。
@@ -125,6 +136,8 @@ Confirmation training、confirmation posttraining、guidance screen 和 final co
 6. 把两小时 heartbeat 的 exact HEAD 与 receipt 路径原子更新到新提交。
 
 `c5db9a3617f1798742566ffe23b8e9faa750e7a5` 已验证覆盖给出的 focused 准入下限是 203 项；203 是覆盖下限，不是永久锁死的精确总数。后续新增测试时，八组实际通过数和更高的实际总数必须写入对应 exact-HEAD receipt，且分组之和必须等于总数。
+
+第 8 组必须包含 Base Flow V2 handover reproduction 与 terminal training ledger exporter 的直接测试；不得因它们只在 Final terminal 后运行而从工程准入回执中省略。
 
 Receipt 路径模板：
 
