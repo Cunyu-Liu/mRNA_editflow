@@ -30,6 +30,51 @@ def _write(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
 
+def _focused_test_commands() -> list[str]:
+    return [
+        "python -m pytest -q "
+        "test_score_route2_xeditflow_closed_frozen_methods_v3.py "
+        "test_launch_route2_xeditflow_v403_guidance_after_dual_readiness.py "
+        "test_launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness.py "
+        "test_launch_route2_xeditflow_v4_guidance_screen_after_authorization.py "
+        "test_launch_route2_xeditflow_v4_final_after_guidance_screen.py "
+        "test_launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py "
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py "
+        "test_authorize_route2_xeditsetflow_v403_recovered_confirmation.py",
+        "python -m pytest -q "
+        "test_transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py "
+        "test_prepare_route2_xeditcritic_v4_confirmation_configs.py "
+        "test_route2_xeditcritic_v4_confirmation_runtime.py",
+        "python -m pytest -q "
+        "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py "
+        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+        "python -m pytest -q "
+        "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
+        "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
+        "test_route2_xeditflow_guidance_v4.py",
+        "python -m pytest -q "
+        "test_train_route2_xeditcritic_v4.py "
+        "test_run_route2_xeditcritic_v4_loso_scheduler.py",
+        "python -m pytest -q "
+        "test_run_route2_xedit_v4_confirmation_training_scheduler.py "
+        "test_run_route2_xedit_v4_confirmation_posttraining_scheduler.py",
+        "python -m pytest -q "
+        "test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py "
+        "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py "
+        "test_launch_route2_xeditcritic_v403_controls_after_full.py "
+        "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py "
+        "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py "
+        "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
+        "python -m pytest -q "
+        "test_prepare_route2_xeditflow_final_generation_configs_v4.py "
+        "test_evaluate_route2_xeditflow_closed_scores_v4.py "
+        "test_compare_route2_xeditflow_independent_evaluator_v4.py "
+        "test_xeditflow_v4_final_evidence_chain.py "
+        "test_run_route2_xeditflow_strongest_timing_v4.py",
+    ]
+
+
 def _runner_receipt(head: str = BRIDGE_HEAD) -> dict:
     return {
         "schema_version": (
@@ -40,10 +85,12 @@ def _runner_receipt(head: str = BRIDGE_HEAD) -> dict:
         "runner_git_head": head,
         "worktree_clean": True,
         "focused_tests": {
-            "command": ["python", "-m", "pytest", "tests/focused.py"],
+            "command": _focused_test_commands(),
             "passed": True,
-            "passed_count": 22,
+            "passed_count": 203,
             "failed_count": 0,
+            "isolated_process_groups": True,
+            "group_passed_counts": [75, 14, 4, 26, 14, 8, 36, 26],
         },
         "v332_tests": {
             "command": ["python", "-m", "pytest", "tests/*v332*.py"],
@@ -81,7 +128,7 @@ def test_runner_verification_receipt_is_exact_head_terminal_pass(
     wrong_v332_count = _runner_receipt()
     wrong_v332_count["v332_tests"]["passed_count"] = 95
     _write(path, wrong_v332_count)
-    with pytest.raises(Exception, match="exact 96-test"):
+    with pytest.raises(Exception, match="failed or incomplete V3.3.2 tests"):
         launcher.consume_runner_verification_receipt_v403(path, BRIDGE_HEAD)
 
     _write(path, _runner_receipt())
@@ -89,7 +136,7 @@ def test_runner_verification_receipt_is_exact_head_terminal_pass(
         path, BRIDGE_HEAD
     )
     assert lineage["runner_git_head"] == BRIDGE_HEAD
-    assert lineage["focused_tests"]["passed_count"] == 22
+    assert lineage["focused_tests"]["passed_count"] == 203
     assert lineage["v332_tests"]["passed_count"] == 96
 
 

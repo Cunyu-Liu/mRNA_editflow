@@ -493,3 +493,35 @@ or terminal artifacts.
   The only excellent-result criterion is still terminal Final adjudication plus
   frozen `XEDITFLOW_V4_PASS`; none of the handoff or orchestration evidence in
   this iteration substitutes for that result.
+
+## Iteration 9 — Reject and repair a stale exact-HEAD test receipt fixture
+
+- Objective: preserve fail-closed verification after the Iteration 8 receipt
+  contract was committed. This is an orchestration-test correction only; it does
+  not inspect or change any model runtime, metric, threshold, seed, budget,
+  precision mode, or scientific artifact.
+- Detected failure: the first committed eight-process focused run at
+  `7b21bf9f2449190e656c3c24a47f687531e81a2d` was not accepted. Group 1 reported
+  101 passes and two failures because one guidance-launcher test module still
+  built the former single-command, 22-test mock runner receipt. The tightened
+  consumer correctly rejected that fixture before the tests reached their
+  intended stale-V3.3.2 and launch assertions. The other seven focused processes
+  reported 188 passes and zero failures, and the separate V3.3.2 cohort reported
+  96 passes, but no receipt is created from this mixed run.
+- Minimal repair: only the stale test fixture was updated to model the current
+  eight command groups, all required module markers, the 203-test historical
+  floor, and exactly 96 V3.3.2 tests. Its deliberate stale-HEAD, failed-focused,
+  and 95-test mutations remain intact. No production launcher or scientific
+  rule changed.
+- Pre-final verification: the repaired test module reported 9/9 passes and its
+  complete Group 1 reported 103/103 passes in separate CPU-native processes.
+  These checks establish the local fix only. The final containing commit must
+  still rerun all eight focused groups and the complete V3.3.2 cohort; only that
+  exact clean HEAD may be represented by shared Critic and SetFlow receipts.
+- Active and protected scope: no active runtime, training log, metric, curve,
+  Development TEST outcome, or new final Evaluation outcome was read. No GPU
+  training or validation was launched, and the two-hour heartbeat remains the
+  sole progress monitor.
+- Conclusion: this iteration fixes test-evidence fidelity, not model quality.
+  Development remains pending until the frozen Final comparison is terminal and
+  reports `XEDITFLOW_V4_PASS`.
