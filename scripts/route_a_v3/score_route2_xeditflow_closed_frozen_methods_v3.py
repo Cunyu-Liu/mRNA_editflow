@@ -81,6 +81,40 @@ def validate_closed_frozen_score_config_v3(config: Mapping[str, Any]) -> None:
     else:
         _require(bool(config.get("strongest_generation_baseline_path")), "closed strongest artifact is absent")
         _require(bool(config.get("baseline_selection_input_path")), "closed strongest selection input is absent")
+    if config.get("v4_guidance_authorization_path"):
+        _require(
+            method == "strongest_matched_baseline",
+            "V4 authorization is only valid for the pre-frozen strongest baseline",
+        )
+
+
+def _v4_guidance_authorization_v3(
+    config: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    path_value = config.get("v4_guidance_authorization_path")
+    if not path_value:
+        return None
+    path = Path(str(path_value))
+    authorization = _json(path)
+    _require(
+        authorization.get("schema_version")
+        == "route_a_v3_route2_xeditflow_v4_guidance_authorization.v1"
+        and authorization.get("status") == "XEDITFLOW_V4_GUIDANCE_AUTHORIZED"
+        and authorization.get("critic_ready") is True
+        and authorization.get("setflow_ready") is True
+        and authorization.get("guidance_authorized") is True
+        and authorization.get("development_test_reopened") is False
+        and authorization.get("development_test_outcomes_accessed_after_atomic_test")
+        is False
+        and authorization.get("new_final_evaluation_authorized") is False
+        and int(authorization.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "V4 guidance authorization is not an exact protected-read-free PASS",
+    )
+    return {
+        "guidance_authorization_path": str(path),
+        "guidance_authorization_schema_version": authorization["schema_version"],
+        "guidance_authorization_status": authorization["status"],
+    }
 
 
 def _terminal_state_v3(root: FlowState, candidate_sequence: str) -> FlowState:
@@ -126,11 +160,13 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     validate_closed_frozen_score_config_v3(config)
     _require(output_dir == Path(config["output_dir"]), "closed frozen-score output path differs")
     _require(not output_dir.exists(), f"closed frozen-score output exists: {output_dir}")
-    authorization = authorize_xeditflow_guidance_v3(
-        _json(Path(config["critic_readiness_path"])),
-        _json(Path(config["setflow_confirmation_path"])),
-    )
-    _require(authorization["guidance_authorized"] is True, "closed frozen scoring remains blocked before readiness")
+    v4_authorization = _v4_guidance_authorization_v3(config)
+    if v4_authorization is None:
+        authorization = authorize_xeditflow_guidance_v3(
+            _json(Path(config["critic_readiness_path"])),
+            _json(Path(config["setflow_confirmation_path"])),
+        )
+        _require(authorization["guidance_authorized"] is True, "closed frozen scoring remains blocked before readiness")
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     gpu = int(config["physical_gpu_index"])
@@ -255,6 +291,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "new_final_evaluation_outcomes_accessed": False,
         **cuda,
     }
+    if v4_authorization is not None:
+        summary.update(v4_authorization)
     (output_dir / "run_summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return summary
 

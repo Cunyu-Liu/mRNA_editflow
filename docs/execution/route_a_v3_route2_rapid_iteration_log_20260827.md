@@ -220,3 +220,61 @@ or terminal artifacts.
   checked as one technical arm, then the six repaired controls and the exact
   eight-arm screen gate are required. No smoke, training-set value, single arm,
   or three-seed Development result is a final project conclusion.
+
+## Iteration 4 — Complete the V4.0.3 terminal-to-confirmation and guidance successors
+
+- Objective: make every already-frozen V4.0.3 terminal PASS actionable without
+  changing a scientific threshold, seed, budget, protected-data boundary, or
+  the running SetFlow/Critic attempts.
+- Critic successor: the recovered eight-arm cross-root screen PASS now has a
+  one-shot launcher for the frozen three-seed confirmation package
+  (`20260908/20260909/20260910`, `v4_full` plus matched `c0_v4`, physical
+  GPU0-5). It requires a clean exact runner HEAD, the shared exact-HEAD CPU
+  verification receipt, the persisted source authorizations, and real
+  CUDA/BF16 probes. Free-memory telemetry is diagnostic only.
+- Persisted-gate correction: review found that the upstream atomic JSON writer
+  sorts object keys, while the first successor draft treated
+  `arm_sources` object order as the frozen arm order. The consumer now checks
+  the exact arm-key set and uses the explicit persisted `ordered_run_ids` for
+  order. A real `sort_keys=True` write/read round trip is covered so an actual
+  PASS gate cannot be rejected only because JSON object keys were reordered.
+- SetFlow successor: three recovered confirmation training terminals now bind
+  exactly 12 Validation jobs (`3 seeds x passes 4/6/8/10`) and the existing
+  atomic G0 adjudicator. Training, orchestration, and validation runner HEADs
+  remain distinct provenance identities; all checkpoints require successful
+  CUDA/BF16 training summaries and the recovered protocol/authorization.
+- Guidance successor: the recovery-aware bridge consumes the SetFlow G0 PASS,
+  Critic post-test readiness/refit, the two frozen preflights/caches, and the
+  shared exact-HEAD verification receipt. Before any 18-cell guidance candidate
+  generation, it produces one shared pre-frozen strongest-baseline closed score
+  table from the already selected genetic guiding checkpoint on the common
+  Development Validation measured neighborhood. This table is outcome-free,
+  CUDA/BF16-only, uses `method_id=strongest_matched_baseline` with
+  `frozen_method_score`, and never participates in guidance-winner selection.
+- Guidance-selection correction: an earlier draft incorrectly treated the 18
+  screen `closed_candidate_probabilities.private.jsonl` files as candidate
+  strongest-baseline score tables. Those files contain screen-combination
+  terminal probabilities and are not schema-compatible with the pre-frozen
+  baseline. The final successor now binds the single independently frozen
+  baseline table; only `kappa`, `temperature`, and `beta_max` remain unresolved
+  until the terminal frozen guidance gate selects one combination.
+- Downstream compatibility: the existing V4 authorization, guidance screen,
+  and final launchers accept explicit recovery-aware protocol/runtime/preflight
+  paths while preserving their legacy defaults. No compatibility layer or
+  alternate scientific route was introduced.
+- Verification scope: syntax, focused orchestration, persisted-artifact,
+  scheduler/adjudicator, and exact V3.3.2 CPU-native tests are required on the
+  final committed HEAD before its shared runner receipt is materialized. These
+  tests establish launch readiness only; they are not GPU validation or model
+  evidence.
+- Protected outcomes and active runs: Development TEST reads 0; new final
+  Evaluation reads 0. No active metric, curve, stdout/stderr, or protected
+  outcome was opened for this work, and no running process or artifact family
+  was changed. The existing two-hour heartbeat remains the only progress
+  monitor.
+- Conclusion: the current SetFlow and Critic experiments remain scientifically
+  pending. Their terminal gates, the frozen three-seed confirmations, the
+  atomic TEST/post-test readiness stages, and the final matched three-seed
+  comparison must still complete before any Development result can be called
+  excellent; external confirmation still requires a new outcome-unexposed
+  Evaluation cohort.

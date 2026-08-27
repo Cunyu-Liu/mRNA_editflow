@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 
 import pytest
@@ -71,3 +72,20 @@ def test_guidance_screen_records_memory_without_filtering_or_sorting() -> None:
     assert '"diagnostic_peak_plus_two_gib_mib"' in source
     assert "all(free_memory[gpu]" not in source
     assert "key=lambda gpu" not in source
+
+
+def test_guidance_screen_can_bind_derived_protocol_and_distinct_preflight_heads() -> None:
+    parameters = inspect.signature(launcher.run).parameters
+    assert {
+        "protocol_path",
+        "authorization_decision_path",
+        "critic_preflight_path",
+        "critic_preflight_head",
+        "setflow_preflight_path",
+        "setflow_preflight_head",
+        "execution_runtime_root",
+        "execution_log_root",
+    } <= set(parameters)
+    assert parameters["protocol_path"].default == launcher.PROTOCOL
+    assert parameters["critic_preflight_head"].default is None
+    assert parameters["setflow_preflight_head"].default is None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import inspect
 import runpy
 import sys
 from pathlib import Path
@@ -81,6 +82,23 @@ def test_v4_final_launcher_uses_own_repo_and_does_not_memory_gate() -> None:
     source = Path(launcher.__file__).read_text(encoding="utf-8")
     assert '"free_memory_gate_applied": False' in source
     assert "all(free_memory[gpu]" not in source
+
+
+def test_v4_final_can_reuse_derived_protocol_and_distinct_preflight_heads() -> None:
+    parameters = inspect.signature(launcher.run).parameters
+    assert {
+        "protocol_path",
+        "guidance_runtime_path",
+        "critic_preflight_path",
+        "critic_preflight_head",
+        "setflow_preflight_path",
+        "setflow_preflight_head",
+        "execution_runtime_root",
+        "execution_log_root",
+    } <= set(parameters)
+    assert parameters["protocol_path"].default == launcher.PROTOCOL
+    assert parameters["critic_preflight_head"].default is None
+    assert parameters["setflow_preflight_head"].default is None
 
 
 def _job(tmp_path: Path, key: str, *, succeed: bool = True) -> dict:

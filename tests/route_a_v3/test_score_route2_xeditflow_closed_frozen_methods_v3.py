@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from scripts.route_a_v3.score_route2_xeditflow_closed_frozen_methods_v3 import (
     _terminal_state_v3,
+    _v4_guidance_authorization_v3,
     score_critic_states_for_method_v3,
     validate_closed_frozen_score_config_v3,
 )
@@ -59,6 +63,47 @@ def test_closed_frozen_score_config_requires_strongest_selection_boundary() -> N
     config["baseline_selection_input_path"] = ""
     with pytest.raises(Exception, match="selection input"):
         validate_closed_frozen_score_config_v3(config)
+
+
+def test_v4_authorization_is_strongest_only_and_accepts_exact_pass(
+    tmp_path: Path,
+) -> None:
+    authorization_path = tmp_path / "authorization.json"
+    authorization_path.write_text(
+        json.dumps(
+            {
+                "schema_version": (
+                    "route_a_v3_route2_xeditflow_v4_guidance_authorization.v1"
+                ),
+                "status": "XEDITFLOW_V4_GUIDANCE_AUTHORIZED",
+                "critic_ready": True,
+                "setflow_ready": True,
+                "guidance_authorized": True,
+                "development_test_reopened": False,
+                "development_test_outcomes_accessed_after_atomic_test": False,
+                "new_final_evaluation_authorized": False,
+                "new_final_evaluation_outcome_reads": 0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    strongest = _config("strongest_matched_baseline")
+    strongest["v4_guidance_authorization_path"] = str(authorization_path)
+    validate_closed_frozen_score_config_v3(strongest)
+    provenance = _v4_guidance_authorization_v3(strongest)
+    assert provenance == {
+        "guidance_authorization_path": str(authorization_path),
+        "guidance_authorization_schema_version": (
+            "route_a_v3_route2_xeditflow_v4_guidance_authorization.v1"
+        ),
+        "guidance_authorization_status": "XEDITFLOW_V4_GUIDANCE_AUTHORIZED",
+    }
+
+    rerank = _config("generate_then_rerank")
+    rerank["v4_guidance_authorization_path"] = str(authorization_path)
+    with pytest.raises(Exception, match="only valid for the pre-frozen strongest"):
+        validate_closed_frozen_score_config_v3(rerank)
 
 
 def test_closed_first_order_score_differs_from_terminal_reward_controls() -> None:

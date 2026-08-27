@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 
 import pytest
@@ -107,3 +108,29 @@ def test_joint_authorization_entry_uses_existing_one_shot_authorizer() -> None:
         launcher.WORKTREE
         / "scripts/route_a_v3/authorize_route2_xeditflow_v4_guidance.py"
     )
+
+
+def test_joint_authorization_accepts_distinct_runtime_heads_and_paths() -> None:
+    critic_head = "b" * 40
+    setflow_head = "c" * 40
+    critic = _critic_runtime("CRITIC_V4_READY_FOR_GUIDANCE")
+    critic["git_head"] = critic_head
+    setflow = _setflow_runtime()
+    setflow["git_head"] = setflow_head
+    assert launcher.critic_readiness_state(
+        critic, {}, head=critic_head
+    ) == "READY"
+    assert launcher.setflow_readiness_state(
+        setflow,
+        {"status": "XEDITSETFLOW_V4_G0_READY"},
+        head=setflow_head,
+    ) == "READY"
+    parameters = inspect.signature(launcher.run).parameters
+    assert {
+        "protocol_path",
+        "critic_runtime_path",
+        "critic_runtime_head",
+        "setflow_runtime_path",
+        "setflow_runtime_head",
+        "decision_output",
+    } <= set(parameters)

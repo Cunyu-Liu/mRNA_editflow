@@ -19,6 +19,16 @@ ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 PROTOCOL = WORKTREE / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json"
 PREPARER = WORKTREE / "scripts/route_a_v3/prepare_route2_xeditflow_v4_value_configs.py"
 SCHEDULER = WORKTREE / "scripts/route_a_v3/run_route2_xeditflow_v4_guidance_screen_scheduler.py"
+CRITIC_PREFLIGHT = (
+    ROOT
+    / "experiments/xeditcritic_v4/screen_seed_20260907/"
+    "preflight_attempt_5/preflight.json"
+)
+SETFLOW_PREFLIGHT = (
+    ROOT
+    / "experiments/xeditsetflow_v4/screen_seed_20260911/"
+    "preflight_attempt_5/preflight.json"
+)
 
 
 class XEditFlowV4GuidanceScreenLaunchError(RuntimeError):
@@ -124,17 +134,36 @@ def directory_failure(output: Path) -> Path:
     return output.with_name(output.name + ".failed.json")
 
 
-def run(current_head: str, experiment_head: str) -> dict[str, Any]:
+def run(
+    current_head: str,
+    experiment_head: str,
+    *,
+    protocol_path: Path = PROTOCOL,
+    authorization_decision_path: Path | None = None,
+    critic_preflight_path: Path = CRITIC_PREFLIGHT,
+    critic_preflight_head: str | None = None,
+    setflow_preflight_path: Path = SETFLOW_PREFLIGHT,
+    setflow_preflight_head: str | None = None,
+    execution_runtime_root: Path | None = None,
+    execution_log_root: Path | None = None,
+) -> dict[str, Any]:
+    critic_preflight_head = critic_preflight_head or experiment_head
+    setflow_preflight_head = setflow_preflight_head or experiment_head
     for value, label in (
         (current_head, "current"),
         (experiment_head, "experiment"),
+        (critic_preflight_head, "Critic preflight"),
+        (setflow_preflight_head, "SetFlow preflight"),
     ):
         require(
             re.fullmatch(r"[0-9a-f]{40}", value) is not None,
             f"{label} Git HEAD is invalid",
         )
     require(
-        PYTHON.is_file() and PROTOCOL.is_file() and PREPARER.is_file() and SCHEDULER.is_file(),
+        PYTHON.is_file()
+        and protocol_path.is_file()
+        and PREPARER.is_file()
+        and SCHEDULER.is_file(),
         "formal V4 guidance screen runtime is absent",
     )
     require(
@@ -145,10 +174,11 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 worktree is dirty",
     )
-    authorization_decision = read_json(
+    authorization_decision_path = authorization_decision_path or (
         ROOT
         / f"experiments/xedit_v4/guidance_authorization_{experiment_head}/decision.json"
     )
+    authorization_decision = read_json(authorization_decision_path)
     require(
         authorization_decision.get("status") == "XEDITFLOW_V4_GUIDANCE_AUTHORIZED"
         and authorization_decision.get("git_head") == experiment_head
@@ -166,12 +196,12 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         == 0,
         "V4 joint guidance authorization decision is absent or changed",
     )
-    protocol = read_json(PROTOCOL)
+    protocol = read_json(protocol_path)
     authorization = Path(protocol["authorization_output"])
     require(authorization.is_file(), "V4 joint guidance authorization is absent")
     config_root = Path(protocol["runtime_config_root"])
     output_root = Path(protocol["guidance_screen_output_root"])
-    runtime_root = (
+    runtime_root = execution_runtime_root or (
         ROOT
         / "experiments/xedit_v4"
         / f"guidance_screen_execution_{experiment_head}_runner_{current_head}"
@@ -180,17 +210,13 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         not config_root.exists() and not output_root.exists() and not runtime_root.exists(),
         "V4 guidance screen config, output, or runtime already exists",
     )
-    critic_preflight = read_json(
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_5/preflight.json"
-    )
-    setflow_preflight = read_json(
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_5/preflight.json"
-    )
+    critic_preflight = read_json(critic_preflight_path)
+    setflow_preflight = read_json(setflow_preflight_path)
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
-        and critic_preflight.get("git_head") == experiment_head
+        and critic_preflight.get("git_head") == critic_preflight_head
         and setflow_preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
-        and setflow_preflight.get("git_head") == experiment_head,
+        and setflow_preflight.get("git_head") == setflow_preflight_head,
         "V4 guidance screen preflight identities changed",
     )
     required_mib = math.ceil(
@@ -210,7 +236,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         [
             str(PYTHON),
             str(PREPARER),
-            "--protocol", str(PROTOCOL),
+            "--protocol", str(protocol_path),
             "--rollout-gpu", str(primary_gpu),
             "--critic-gpu", str(primary_gpu),
             "--value-gpus", "0", "1", "2", "3", "4", "5",
@@ -222,7 +248,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     validate_manifest(manifest, config_root=config_root)
 
-    log_root = (
+    log_root = execution_log_root or (
         ROOT
         / "logs/xedit_v4"
         / f"guidance_screen_execution_{experiment_head}_runner_{current_head}"
@@ -410,6 +436,12 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "manifest_path": str(manifest_path),
+        "guidance_protocol_path": str(protocol_path),
+        "authorization_decision_path": str(authorization_decision_path),
+        "critic_preflight_path": str(critic_preflight_path),
+        "critic_preflight_runner_git_head": critic_preflight_head,
+        "setflow_preflight_path": str(setflow_preflight_path),
+        "setflow_preflight_runner_git_head": setflow_preflight_head,
         "serial_value_prerequisites": serial,
         "value_training_queues": value_queues,
         "guidance_queues": [
@@ -446,6 +478,12 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "runtime_manifest": str(runtime_manifest),
         "wrapper_log": str(wrapper_log),
         "guidance_screen_gate_path": str(gate_output),
+        "guidance_protocol_path": str(protocol_path),
+        "authorization_decision_path": str(authorization_decision_path),
+        "critic_preflight_path": str(critic_preflight_path),
+        "critic_preflight_runner_git_head": critic_preflight_head,
+        "setflow_preflight_path": str(setflow_preflight_path),
+        "setflow_preflight_runner_git_head": setflow_preflight_head,
         "development_test_reopened": False,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -457,10 +495,29 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
     parser.add_argument("--experiment-head", required=True)
+    parser.add_argument("--protocol", type=Path, default=PROTOCOL)
+    parser.add_argument("--authorization-decision", type=Path)
+    parser.add_argument("--critic-preflight", type=Path, default=CRITIC_PREFLIGHT)
+    parser.add_argument("--critic-preflight-head")
+    parser.add_argument("--setflow-preflight", type=Path, default=SETFLOW_PREFLIGHT)
+    parser.add_argument("--setflow-preflight-head")
+    parser.add_argument("--execution-runtime-root", type=Path)
+    parser.add_argument("--execution-log-root", type=Path)
     arguments = parser.parse_args()
     print(
         json.dumps(
-            run(arguments.expected_head, arguments.experiment_head),
+            run(
+                arguments.expected_head,
+                arguments.experiment_head,
+                protocol_path=arguments.protocol,
+                authorization_decision_path=arguments.authorization_decision,
+                critic_preflight_path=arguments.critic_preflight,
+                critic_preflight_head=arguments.critic_preflight_head,
+                setflow_preflight_path=arguments.setflow_preflight,
+                setflow_preflight_head=arguments.setflow_preflight_head,
+                execution_runtime_root=arguments.execution_runtime_root,
+                execution_log_root=arguments.execution_log_root,
+            ),
             indent=2,
             sort_keys=True,
         )

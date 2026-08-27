@@ -147,10 +147,40 @@ def guidance_authorization_decision(critic_state: str, setflow_state: str) -> st
     return "AUTHORIZE_EXACT_V4_GUIDANCE"
 
 
-def run(head: str) -> dict[str, Any]:
+def run(
+    head: str,
+    *,
+    protocol_path: Path = GUIDANCE_PROTOCOL,
+    critic_runtime_path: Path | None = None,
+    critic_runtime_head: str | None = None,
+    setflow_runtime_path: Path | None = None,
+    setflow_runtime_head: str | None = None,
+    decision_output: Path | None = None,
+) -> dict[str, Any]:
     require(re.fullmatch(r"[0-9a-f]{40}", head) is not None, "expected Git HEAD is invalid")
+    critic_runtime_head = critic_runtime_head or head
+    setflow_runtime_head = setflow_runtime_head or head
+    for value, label in (
+        (critic_runtime_head, "Critic runtime"),
+        (setflow_runtime_head, "SetFlow runtime"),
+    ):
+        require(
+            re.fullmatch(r"[0-9a-f]{40}", value) is not None,
+            f"expected {label} Git HEAD is invalid",
+        )
+    critic_runtime_path = critic_runtime_path or (
+        ROOT / f"experiments/xedit_v4/loso_execution_{head}/runtime.json"
+    )
+    setflow_runtime_path = setflow_runtime_path or (
+        ROOT
+        / f"experiments/xedit_v4/confirmation_posttraining_{head}/runtime.json"
+    )
+    decision_output = decision_output or (
+        ROOT
+        / f"experiments/xedit_v4/guidance_authorization_{head}/decision.json"
+    )
     require(
-        PYTHON.is_file() and AUTHORIZER.is_file() and GUIDANCE_PROTOCOL.is_file(),
+        PYTHON.is_file() and AUTHORIZER.is_file() and protocol_path.is_file(),
         "formal V4 guidance authorization runtime is absent",
     )
     require(
@@ -161,32 +191,31 @@ def run(head: str) -> dict[str, Any]:
         not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 worktree is dirty",
     )
-    runtime_root = ROOT / f"experiments/xedit_v4/guidance_authorization_{head}"
-    require(not runtime_root.exists(), "V4 guidance authorization decision exists")
-    protocol = read_json(GUIDANCE_PROTOCOL)
+    require(
+        not decision_output.exists()
+        and not decision_output.with_suffix(decision_output.suffix + ".partial").exists(),
+        "V4 guidance authorization decision exists",
+    )
+    protocol = read_json(protocol_path)
     require(
         protocol.get("schema_version")
         == "route_a_v3_route2_xeditflow_v4_guidance_protocol.v1",
         "V4 guidance protocol changed",
     )
 
-    critic_runtime = read_json(
-        ROOT / f"experiments/xedit_v4/loso_execution_{head}/runtime.json"
-    )
+    critic_runtime = read_json(critic_runtime_path)
     critic_readiness_path = Path(protocol["critic_readiness_path"])
     critic_readiness = (
         read_json(critic_readiness_path) if critic_readiness_path.is_file() else None
     )
-    setflow_runtime = read_json(
-        ROOT / f"experiments/xedit_v4/confirmation_posttraining_{head}/runtime.json"
-    )
+    setflow_runtime = read_json(setflow_runtime_path)
     setflow_gate_path = Path(protocol["setflow_confirmation_path"])
     setflow_gate = read_json(setflow_gate_path) if setflow_gate_path.is_file() else None
     critic_state = critic_readiness_state(
-        critic_runtime, critic_readiness, head=head
+        critic_runtime, critic_readiness, head=critic_runtime_head
     )
     setflow_state = setflow_readiness_state(
-        setflow_runtime, setflow_gate, head=head
+        setflow_runtime, setflow_gate, head=setflow_runtime_head
     )
     decision = guidance_authorization_decision(critic_state, setflow_state)
     result: dict[str, Any] = {
@@ -204,14 +233,13 @@ def run(head: str) -> dict[str, Any]:
         "new_final_evaluation_outcome_reads": 0,
     }
     if decision != "AUTHORIZE_EXACT_V4_GUIDANCE":
-        runtime_root.mkdir(parents=True)
-        write_atomic(runtime_root / "decision.json", result)
+        write_atomic(decision_output, result)
         return result
 
     authorization_output = Path(protocol["authorization_output"])
     require(not authorization_output.exists(), "V4 guidance was already authorized")
     completed = command(
-        [str(PYTHON), str(AUTHORIZER), "--protocol", str(GUIDANCE_PROTOCOL)],
+        [str(PYTHON), str(AUTHORIZER), "--protocol", str(protocol_path)],
         check=False,
     )
     require(
@@ -233,7 +261,6 @@ def run(head: str) -> dict[str, Any]:
         and int(authorization.get("new_final_evaluation_outcome_reads", -1)) == 0,
         "V4 joint guidance authorization changed",
     )
-    runtime_root.mkdir(parents=True)
     result.update(
         {
             "status": "XEDITFLOW_V4_GUIDANCE_AUTHORIZED",
@@ -242,15 +269,35 @@ def run(head: str) -> dict[str, Any]:
             "authorization_output": str(authorization_output),
         }
     )
-    write_atomic(runtime_root / "decision.json", result)
+    write_atomic(decision_output, result)
     return result
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--protocol", type=Path, default=GUIDANCE_PROTOCOL)
+    parser.add_argument("--critic-runtime", type=Path)
+    parser.add_argument("--critic-runtime-head")
+    parser.add_argument("--setflow-runtime", type=Path)
+    parser.add_argument("--setflow-runtime-head")
+    parser.add_argument("--decision-output", type=Path)
     arguments = parser.parse_args()
-    print(json.dumps(run(arguments.expected_head), indent=2, sort_keys=True))
+    print(
+        json.dumps(
+            run(
+                arguments.expected_head,
+                protocol_path=arguments.protocol,
+                critic_runtime_path=arguments.critic_runtime,
+                critic_runtime_head=arguments.critic_runtime_head,
+                setflow_runtime_path=arguments.setflow_runtime,
+                setflow_runtime_head=arguments.setflow_runtime_head,
+                decision_output=arguments.decision_output,
+            ),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -19,6 +19,16 @@ ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 PROTOCOL = WORKTREE / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json"
 PREPARER = WORKTREE / "scripts/route_a_v3/prepare_route2_xeditflow_final_generation_configs_v4.py"
 SCHEDULER = WORKTREE / "scripts/route_a_v3/run_route2_xeditflow_v4_final_scheduler.py"
+CRITIC_PREFLIGHT = (
+    ROOT
+    / "experiments/xeditcritic_v4/screen_seed_20260907/"
+    "preflight_attempt_5/preflight.json"
+)
+SETFLOW_PREFLIGHT = (
+    ROOT
+    / "experiments/xeditsetflow_v4/screen_seed_20260911/"
+    "preflight_attempt_5/preflight.json"
+)
 SEEDS = (20260912, 20260913, 20260914)
 METHODS = (
     "full_soft_value_smc",
@@ -171,6 +181,11 @@ def build_schedule(
     guidance_runner_head: str,
     diagnostic_peak_plus_two_gib_mib: int,
     free_memory_mib: Mapping[int, int],
+    guidance_protocol_path: Path | None = None,
+    critic_preflight_path: Path | None = None,
+    critic_preflight_head: str | None = None,
+    setflow_preflight_path: Path | None = None,
+    setflow_preflight_head: str | None = None,
 ) -> dict[str, Any]:
     validate_manifest(manifest, config_root)
 
@@ -439,7 +454,7 @@ def build_schedule(
             "log_path": str(log_root / "adjudicate_final_comparison.log"),
         },
     ]
-    return {
+    schedule = {
         "schema_version": "route_a_v3_route2_xeditflow_v4_final_schedule.v1",
         "status": "FROZEN_THREE_SEED_MATCHED_COMPUTE_SCHEDULE",
         "git_head": current_head,
@@ -463,6 +478,17 @@ def build_schedule(
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcome_reads": 0,
     }
+    if guidance_protocol_path is not None:
+        schedule.update(
+            {
+                "guidance_protocol_path": str(guidance_protocol_path),
+                "critic_preflight_path": str(critic_preflight_path),
+                "critic_preflight_runner_git_head": critic_preflight_head,
+                "setflow_preflight_path": str(setflow_preflight_path),
+                "setflow_preflight_runner_git_head": setflow_preflight_head,
+            }
+        )
+    return schedule
 
 
 def run(
@@ -470,15 +496,28 @@ def run(
     experiment_head: str,
     guidance_runner_head: str,
     strongest_closed_score_table: Path,
+    *,
+    protocol_path: Path = PROTOCOL,
+    guidance_runtime_path: Path | None = None,
+    critic_preflight_path: Path = CRITIC_PREFLIGHT,
+    critic_preflight_head: str | None = None,
+    setflow_preflight_path: Path = SETFLOW_PREFLIGHT,
+    setflow_preflight_head: str | None = None,
+    execution_runtime_root: Path | None = None,
+    execution_log_root: Path | None = None,
 ) -> dict[str, Any]:
+    critic_preflight_head = critic_preflight_head or experiment_head
+    setflow_preflight_head = setflow_preflight_head or experiment_head
     for value, label in (
         (current_head, "current"),
         (experiment_head, "experiment"),
         (guidance_runner_head, "guidance runner"),
+        (critic_preflight_head, "Critic preflight"),
+        (setflow_preflight_head, "SetFlow preflight"),
     ):
         require(re.fullmatch(r"[0-9a-f]{40}", value) is not None, f"{label} Git HEAD is invalid")
     require(
-        all(path.is_file() for path in (PYTHON, PROTOCOL, PREPARER, SCHEDULER)),
+        all(path.is_file() for path in (PYTHON, protocol_path, PREPARER, SCHEDULER)),
         "formal V4 final runtime is absent",
     )
     require(
@@ -486,7 +525,7 @@ def run(
         and not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 worktree is not clean at expected current HEAD",
     )
-    protocol = read_json(PROTOCOL)
+    protocol = read_json(protocol_path)
     gate_path = Path(str(protocol["guidance_screen_output_root"])) / "guidance_screen_gate.json"
     gate = read_json(gate_path)
     require(
@@ -497,12 +536,13 @@ def run(
         and int(gate.get("combination_count", -1)) == 18,
         "V4 guidance screen is not terminal and frozen",
     )
-    guidance_runtime = read_json(
+    guidance_runtime_path = guidance_runtime_path or (
         ROOT
         / "experiments/xedit_v4"
         / f"guidance_screen_execution_{experiment_head}_runner_{guidance_runner_head}"
         / "runtime.json"
     )
+    guidance_runtime = read_json(guidance_runtime_path)
     require(
         guidance_runtime.get("status") == "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN"
         and guidance_runtime.get("git_head") == guidance_runner_head
@@ -513,17 +553,13 @@ def run(
         and int(guidance_runtime.get("new_final_evaluation_outcome_reads", -1)) == 0,
         "V4 guidance screen runtime identity or protected-read boundary differs",
     )
-    critic_preflight = read_json(
-        ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/preflight_attempt_5/preflight.json"
-    )
-    setflow_preflight = read_json(
-        ROOT / "experiments/xeditsetflow_v4/screen_seed_20260911/preflight_attempt_5/preflight.json"
-    )
+    critic_preflight = read_json(critic_preflight_path)
+    setflow_preflight = read_json(setflow_preflight_path)
     require(
         critic_preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
-        and critic_preflight.get("git_head") == experiment_head
+        and critic_preflight.get("git_head") == critic_preflight_head
         and setflow_preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
-        and setflow_preflight.get("git_head") == experiment_head,
+        and setflow_preflight.get("git_head") == setflow_preflight_head,
         "V4 final preflight identities changed",
     )
     required_mib = math.ceil(
@@ -540,7 +576,7 @@ def run(
     require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0-5 is incomplete")
     config_root = Path(str(protocol["runtime_config_root"])).parent / "final_three_seed_v1"
     output_root = Path(str(protocol["guidance_screen_output_root"])).parent / "final_three_seed"
-    runtime_root = (
+    runtime_root = execution_runtime_root or (
         ROOT
         / "experiments/xedit_v4"
         / f"final_execution_{experiment_head}_guidance_{guidance_runner_head}_runner_{current_head}"
@@ -559,7 +595,7 @@ def run(
             str(PYTHON),
             str(PREPARER),
             "--protocol",
-            str(PROTOCOL),
+            str(protocol_path),
             "--critic-readiness",
             str(protocol["critic_readiness_path"]),
             "--setflow-confirmation",
@@ -591,7 +627,7 @@ def run(
     )
     manifest = read_json(config_root / "manifest.json")
     validate_manifest(manifest, config_root)
-    log_root = (
+    log_root = execution_log_root or (
         ROOT
         / "logs/xedit_v4"
         / f"final_execution_{experiment_head}_guidance_{guidance_runner_head}_runner_{current_head}"
@@ -611,6 +647,11 @@ def run(
         guidance_runner_head=guidance_runner_head,
         diagnostic_peak_plus_two_gib_mib=required_mib,
         free_memory_mib=free_memory,
+        guidance_protocol_path=protocol_path,
+        critic_preflight_path=critic_preflight_path,
+        critic_preflight_head=critic_preflight_head,
+        setflow_preflight_path=setflow_preflight_path,
+        setflow_preflight_head=setflow_preflight_head,
     )
     schedule_path = runtime_root / "schedule.json"
     write_atomic(schedule_path, schedule)
@@ -634,6 +675,12 @@ def run(
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
         "final_adjudication_path": str(manifest["final_adjudication_output_path"]),
+        "guidance_protocol_path": str(protocol_path),
+        "guidance_runtime_path": str(guidance_runtime_path),
+        "critic_preflight_path": str(critic_preflight_path),
+        "critic_preflight_runner_git_head": critic_preflight_head,
+        "setflow_preflight_path": str(setflow_preflight_path),
+        "setflow_preflight_runner_git_head": setflow_preflight_head,
         "development_test_reopened": False,
         "new_final_evaluation_outcome_reads": 0,
     }
@@ -647,6 +694,14 @@ def main() -> None:
     parser.add_argument("--experiment-head", required=True)
     parser.add_argument("--guidance-runner-head", required=True)
     parser.add_argument("--strongest-closed-score-table", required=True, type=Path)
+    parser.add_argument("--protocol", type=Path, default=PROTOCOL)
+    parser.add_argument("--guidance-runtime", type=Path)
+    parser.add_argument("--critic-preflight", type=Path, default=CRITIC_PREFLIGHT)
+    parser.add_argument("--critic-preflight-head")
+    parser.add_argument("--setflow-preflight", type=Path, default=SETFLOW_PREFLIGHT)
+    parser.add_argument("--setflow-preflight-head")
+    parser.add_argument("--execution-runtime-root", type=Path)
+    parser.add_argument("--execution-log-root", type=Path)
     arguments = parser.parse_args()
     print(
         json.dumps(
@@ -655,6 +710,14 @@ def main() -> None:
                 arguments.experiment_head,
                 arguments.guidance_runner_head,
                 arguments.strongest_closed_score_table,
+                protocol_path=arguments.protocol,
+                guidance_runtime_path=arguments.guidance_runtime,
+                critic_preflight_path=arguments.critic_preflight,
+                critic_preflight_head=arguments.critic_preflight_head,
+                setflow_preflight_path=arguments.setflow_preflight,
+                setflow_preflight_head=arguments.setflow_preflight_head,
+                execution_runtime_root=arguments.execution_runtime_root,
+                execution_log_root=arguments.execution_log_root,
             ),
             indent=2,
             sort_keys=True,
