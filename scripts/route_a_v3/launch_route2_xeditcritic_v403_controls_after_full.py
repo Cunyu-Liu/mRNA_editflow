@@ -395,11 +395,13 @@ def exact_terminal_kind(output_directory: Path) -> str | None:
 
 
 def validate_current_full_terminal(
-    output_root: Path = CURRENT_FULL_OUTPUT_ROOT,
-    runtime_path: Path = CURRENT_FULL_RUNTIME,
+    output_root: Path | None = None,
+    runtime_path: Path | None = None,
 ) -> dict[str, Any]:
     """Read full only after its directory is exactly one terminal SUMMARY."""
 
+    output_root = CURRENT_FULL_OUTPUT_ROOT if output_root is None else output_root
+    runtime_path = CURRENT_FULL_RUNTIME if runtime_path is None else runtime_path
     output = output_root / "v4_full"
     kind = exact_terminal_kind(output)
     require(
@@ -487,8 +489,9 @@ def validate_current_full_terminal(
 
 
 def validate_historical_c0_terminal(
-    output_root: Path = HISTORICAL_C0_OUTPUT_ROOT,
+    output_root: Path | None = None,
 ) -> dict[str, Any]:
+    output_root = HISTORICAL_C0_OUTPUT_ROOT if output_root is None else output_root
     output = output_root / "c0_v4"
     require(
         exact_terminal_kind(output) == "SUMMARY",

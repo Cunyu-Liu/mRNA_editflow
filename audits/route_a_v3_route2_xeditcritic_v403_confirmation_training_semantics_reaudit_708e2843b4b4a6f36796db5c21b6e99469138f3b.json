@@ -1,0 +1,26 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v403_confirmation_training_semantics_reaudit.v1",
+  "status": "XEDITCRITIC_V403_CONFIRMATION_TRAINING_SEMANTICS_REAUDIT_PASS",
+  "previous_baseline_git_head": "a305d332c7cbde8066c57c30a330a1e63a0d3d0d",
+  "audited_baseline_git_head": "708e2843b4b4a6f36796db5c21b6e99469138f3b",
+  "changed_training_semantic_paths": [
+    "core/route2_xedit_v4_interfaces.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+    "core/route2_xeditsetflow_s1.py",
+    "core/route2_xeditsetflow_training_v4.py"
+  ],
+  "path_classification": {
+    "core/route2_xedit_v4_interfaces.py": "SETFLOW_BATCH_TYPED_FIELDS_ONLY",
+    "core/route2_xeditsetflow_gate_s1.py": "NEW_SETFLOW_S1_ONLY",
+    "core/route2_xeditsetflow_s1.py": "NEW_SETFLOW_S1_ONLY",
+    "core/route2_xeditsetflow_training_v4.py": "SETFLOW_STATE_IDENTITY_AND_COLLATION_ONLY"
+  },
+  "critic_training_config_or_trainer_changed": false,
+  "critic_confirmation_training_semantics_changed": false,
+  "setflow_only_changes_accepted_as_critic_neutral": true,
+  "critic_repaired_screen_provenance_git_head": "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea",
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "model_result_claimed": false,
+  "submission_ready": false
+}

@@ -393,6 +393,17 @@ def test_committed_successor_head_preserves_audited_training_semantics(
     )
     assert receipt["training_semantic_diff_paths"] == []
     assert receipt["training_semantics_unchanged"] is True
+    assert receipt["training_semantics_baseline_audit"] == str(
+        launcher.TRAINING_SEMANTICS_BASELINE_AUDIT
+    )
+
+
+def test_training_semantics_reaudit_rejects_changed_critic_classification() -> None:
+    audit = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
+    launcher.validate_training_semantics_baseline_audit(audit)
+    audit["critic_confirmation_training_semantics_changed"] = True
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(audit)
 
 
 @pytest.mark.parametrize(

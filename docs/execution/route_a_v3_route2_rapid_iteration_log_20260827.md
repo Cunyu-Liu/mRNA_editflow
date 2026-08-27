@@ -640,3 +640,33 @@ or terminal artifacts.
   `audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`,
   `audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`, and
   `audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json`.
+
+## Iteration 12 — Reject the first S1 exact-HEAD cohort and renew the Critic-neutral baseline
+
+- Rejected cohort: the first committed S1 candidate HEAD
+  `708e2843b4b4a6f36796db5c21b6e99469138f3b` did not receive a runner receipt.
+  Focused group 1 reported 122 passes and one failure because the existing
+  Critic confirmation guard correctly detected four changed paths under its
+  broad `core` semantic scope. Group 7 reported 95 passes and one failure
+  because a controls test captured old module constants as function defaults;
+  after the real `v4_full` became terminal, its monkeypatched paths no longer
+  stopped the test before process creation. Groups 2/3/4/5/6/8 reported
+  14/61/26/14/8/58 passes, and the independent V3.3.2 cohort reported 96/96.
+  Mixed results are not combined, no receipt is materialized, and no GPU family
+  is launched from this commit.
+- Critic-neutral re-audit: the four semantic-scope changes since the prior
+  baseline are the SetFlow batch typed fields, SetFlow V4 state identity and
+  collation, and the two new S1-only modules. No Critic config, trainer,
+  preflight, objective, sampler, or confirmation derivation changed. HEAD
+  `708e2843b4b4a6f36796db5c21b6e99469138f3b` is therefore recorded as the new
+  Critic-neutral safety baseline by
+  `audits/route_a_v3_route2_xeditcritic_v403_confirmation_training_semantics_reaudit_708e2843b4b4a6f36796db5c21b6e99469138f3b.json`;
+  the real confirmation consumer validates this audit before comparing future
+  semantic paths.
+- Controls test repair: full and historical-C0 validators now resolve their
+  default artifact paths at call time. Synthetic tests can therefore substitute
+  isolated paths even after the real full becomes terminal; production paths
+  and scientific behavior are unchanged.
+- Next gate: the containing repair commit must rerun all eight isolated focused
+  groups and the exact 96 V3.3.2 tests. Only a wholly passing new HEAD may create
+  the two receipts, be pushed, or launch S1.

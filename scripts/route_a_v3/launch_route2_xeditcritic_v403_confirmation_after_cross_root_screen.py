@@ -25,8 +25,22 @@ from scripts.route_a_v3.prepare_route2_xeditcritic_v4_confirmation_configs impor
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 TRAINING_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
-TRAINING_SEMANTICS_BASELINE_HEAD = (
+TRAINING_SEMANTICS_PREVIOUS_BASELINE_HEAD = (
     "a305d332c7cbde8066c57c30a330a1e63a0d3d0d"
+)
+TRAINING_SEMANTICS_BASELINE_HEAD = (
+    "708e2843b4b4a6f36796db5c21b6e99469138f3b"
+)
+TRAINING_SEMANTICS_BASELINE_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
+    "training_semantics_reaudit_708e2843b4b4a6f36796db5c21b6e99469138f3b.json"
+)
+TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
+    "core/route2_xedit_v4_interfaces.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+    "core/route2_xeditsetflow_s1.py",
+    "core/route2_xeditsetflow_training_v4.py",
 )
 C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 TRAINING_WORKTREE = Path(
@@ -530,7 +544,33 @@ def validate_runner_verification_receipt(
     )
 
 
+def validate_training_semantics_baseline_audit(
+    audit: Mapping[str, Any],
+) -> None:
+    require(
+        audit.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v403_confirmation_training_semantics_reaudit.v1"
+        and audit.get("status")
+        == "XEDITCRITIC_V403_CONFIRMATION_TRAINING_SEMANTICS_REAUDIT_PASS"
+        and audit.get("previous_baseline_git_head")
+        == TRAINING_SEMANTICS_PREVIOUS_BASELINE_HEAD
+        and audit.get("audited_baseline_git_head")
+        == TRAINING_SEMANTICS_BASELINE_HEAD
+        and tuple(audit.get("changed_training_semantic_paths", []))
+        == TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+        and audit.get("critic_training_config_or_trainer_changed") is False
+        and audit.get("critic_confirmation_training_semantics_changed") is False
+        and audit.get("setflow_only_changes_accepted_as_critic_neutral") is True,
+        "Critic confirmation training-semantics re-audit is absent or invalid",
+    )
+    require_zero_protected_reads(
+        audit, label="Critic confirmation training-semantics re-audit"
+    )
+
+
 def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
+    baseline_audit = read_json(TRAINING_SEMANTICS_BASELINE_AUDIT)
+    validate_training_semantics_baseline_audit(baseline_audit)
     changed = command(
         [
             "git",
@@ -552,6 +592,10 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "training_semantics_baseline_git_head": (
             TRAINING_SEMANTICS_BASELINE_HEAD
         ),
+        "training_semantics_baseline_audit": str(
+            TRAINING_SEMANTICS_BASELINE_AUDIT
+        ),
+        "training_semantics_baseline_audit_status": baseline_audit["status"],
         "runner_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
         "training_semantic_diff_paths": changed,
