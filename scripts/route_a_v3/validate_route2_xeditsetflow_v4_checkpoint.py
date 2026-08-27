@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 import time
 from collections import Counter, defaultdict
@@ -175,6 +176,41 @@ def require_training_package_terminal_v4(
         )
         summaries[required_run] = summary
     return summaries
+
+
+def require_training_package_provenance_v4(
+    config: Mapping[str, Any],
+) -> dict[str, str]:
+    """Return the Git HEAD that produced each terminal training package.
+
+    Checkpoint validation can legitimately run from a later Git revision than
+    training.  The launch authorization therefore binds the code that produced
+    the checkpoint, while the validation result records its own Git revision
+    separately.
+    """
+
+    summaries = require_training_package_terminal_v4(config)
+    heads: dict[str, str] = {}
+    for run_id in summaries:
+        directory = Path(config["output_root"]) / run_id
+        training_config = _read_json(directory / "training_config.json")
+        training_attempt = _read_json(directory / "training_attempt.json")
+        config_head = str(training_config.get("authorized_git_head", ""))
+        attempt_head = str(training_attempt.get("code_commit", ""))
+        _require(
+            re.fullmatch(r"[0-9a-f]{40}", config_head) is not None,
+            f"SetFlow V4 training Git provenance is invalid: {run_id}",
+        )
+        _require(
+            attempt_head == config_head,
+            f"SetFlow V4 training config and attempt disagree on Git HEAD: {run_id}",
+        )
+        heads[run_id] = config_head
+    _require(
+        len(set(heads.values())) == 1,
+        "SetFlow V4 screen arms were trained from different Git HEADs",
+    )
+    return heads
 
 
 def load_checkpoint_v4(
@@ -409,7 +445,9 @@ def validate_checkpoint(
     authorization = _read_json(authorization_path)
     preflight = _read_json(Path(config["preflight_output_path"]))
     source_data_audit = _read_json(Path(config["source_level_data_audit_path"]))
-    current_head = _git_head()
+    validation_git_head = _git_head()
+    training_git_heads = require_training_package_provenance_v4(config)
+    training_git_head = training_git_heads[run_id]
     if run_stage == "SCREEN":
         require_setflow_v4_screen_launch_authorization(
             config,
@@ -417,7 +455,7 @@ def validate_checkpoint(
             preflight,
             source_data_audit,
             run_id=run_id,
-            current_git_head=current_head,
+            current_git_head=training_git_head,
         )
     else:
         screen_gate = _read_json(Path(config["screen_gate_path"]))
@@ -428,7 +466,7 @@ def validate_checkpoint(
             source_data_audit,
             screen_gate,
             run_id=run_id,
-            current_git_head=current_head,
+            current_git_head=training_git_head,
         )
     _require(not output_directory.exists(), "SetFlow V4 checkpoint validation already exists")
     _require(
@@ -659,6 +697,11 @@ def validate_checkpoint(
         "mode_count": spec.mode_count,
         "seed": training_seed,
         "checkpoint_pass": checkpoint_pass,
+        "training_git_head": training_git_head,
+        "validation_git_head": validation_git_head,
+        "training_and_validation_git_heads_differ": (
+            training_git_head != validation_git_head
+        ),
         "training_summary_status": training_summary["status"],
         "common_validation_set_marginal_nll": common_nll[
             "common_validation_set_marginal_nll"
