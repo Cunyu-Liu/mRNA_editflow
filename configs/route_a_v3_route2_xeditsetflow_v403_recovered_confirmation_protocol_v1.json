@@ -1,0 +1,83 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_SCREEN_OR_CONFIRMATION_RESULT",
+  "base_screen_config": "configs/route_a_v3_route2_xeditsetflow_v4_screen_v1.json",
+  "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/screen_gate.json",
+  "required_seeds": [20260912, 20260913, 20260914],
+  "additional_seed_authorized": false,
+  "selected_model": "v4_full",
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v403_recovered_v1",
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_v1",
+  "confirmation_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_v1/confirmation_gate.json",
+  "training_policy": {
+    "passes": 10,
+    "physical_and_effective_state_batch": 32,
+    "source_repeat_cap": 4,
+    "learning_rate": 0.0002,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "warmup_fraction": 0.05,
+    "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "checkpoint_selection_after_terminal_training_only": true,
+    "validation_generation_during_training": false
+  },
+  "checkpoint_gate": {
+    "maximum_common_validation_nll": 2.06809,
+    "minimum_source_macro_recovery": 0.35,
+    "minimum_source_macro_top_k_recovery": 0.2,
+    "minimum_source_macro_unique_candidate_rate": 0.9,
+    "minimum_recovery_margin_over_terminal_f2": 0.05,
+    "minimum_top_k_margin_over_terminal_f2": 0.03,
+    "minimum_unique_margin_over_terminal_f2": 0.15,
+    "all_g0_correctness_required": true
+  },
+  "paired_bootstrap": {
+    "statistic": "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_MINUS_TERMINAL_F2",
+    "source_pairing": "EXACT_SOURCE_KEY_INTERSECTION_MUST_EQUAL_891",
+    "replicates": 10000,
+    "confidence_level": 0.95,
+    "interval": "PERCENTILE_TWO_SIDED",
+    "seed": 2026091102,
+    "required_lower_bound_strictly_greater_than_zero": true
+  },
+  "terminal_f2_validation_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f2/validation_summary.json",
+  "development_test_authorized": false,
+  "guidance_authorized": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "validation_recovery_provenance": {
+    "schema_version": "route_a_v3_route2_xeditsetflow_v403_confirmation_derivation.v1",
+    "derivation": "VALIDATION_ONLY_RECOVERY_FROM_TERMINAL_V4_CHECKPOINTS",
+    "training_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+    "validation_git_head": "37c5901000cf6bef1606f05af242512f1342ceb6",
+    "screen_experiment_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+    "runner_git_head_policy": "EXACT_CURRENT_WORKTREE_HEAD_AT_AUTHORIZATION_AND_LAUNCH",
+    "original_screen_authorization": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xedit_v4/screen_a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d_runner_edad89392077a0cf56e84dfcf94335606dd2b05a/setflow.json",
+    "recovery_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6.json",
+    "recovery_runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/runtime.json",
+    "recovered_screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/screen_gate.json",
+    "original_technical_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/screen_gate.json",
+    "training_reused": true,
+    "parameter_update_count": 0,
+    "scientific_thresholds_changed": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "runner_outputs": {
+    "authorization_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/confirmation_v403_recovered_{runner_git_head}.json",
+    "cuda_failure_evidence_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/confirmation_v403_recovered_cuda_failure_{runner_git_head}.json",
+    "training_runtime_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_training_{runner_git_head}",
+    "training_log_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/confirmation_v403_recovered_training_{runner_git_head}",
+    "posttraining_runtime_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_posttraining_{runner_git_head}",
+    "posttraining_log_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/confirmation_v403_recovered_posttraining_{runner_git_head}"
+  },
+  "posttraining_binding": {
+    "protocol_path": "configs/route_a_v3_route2_xeditsetflow_v403_recovered_confirmation_protocol_v1.json",
+    "config_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/confirmation_v403_recovered_v1/manifest.json",
+    "recovery_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6.json",
+    "recovered_screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/screen_gate.json",
+    "confirmation_authorization_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/confirmation_v403_recovered_{runner_git_head}.json",
+    "confirmation_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_v1/confirmation_gate.json"
+  }
+}
