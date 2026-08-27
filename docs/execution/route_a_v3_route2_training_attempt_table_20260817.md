@@ -4193,3 +4193,12 @@ recovery source-only PID `1766545`继续在GPU5存活并注册CUDA 15,270MiB；C
 均未读，后五项PENDING。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH
 不早于本地09:47:43。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_084743.json`。
+
+### V4 dual-package hourly health window（2026-08-27 09:49:12 +08:00）
+
+远端09:51:30（偏移约+138秒）状态相对上一窗口未变。SetFlow single-mode保持SUMMARY terminal且payload
+0 read；full PID `2218814`继续在GPU1存活并注册CUDA 2,912MiB，package尚未达到双臂terminal。Critic
+recovery source-only PID `1766545`继续在GPU5存活并注册CUDA 15,270MiB；C0 summary/full failure payload
+均未读，后五项PENDING。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH
+不早于本地10:49:12。审计：
+`audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_094912.json`。
