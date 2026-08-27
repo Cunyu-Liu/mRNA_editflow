@@ -218,7 +218,9 @@ def _ephemeral_bottom_six_view(
     del encoder, encoded
     torch.cuda.empty_cache()
     return FrozenBottomEncoderChunkCacheViewV4(
-        payload, {str(row["canonical_record_id"]) for row in rows}
+        payload,
+        {str(row["canonical_record_id"]) for row in rows},
+        validate_payload=False,
     )
 
 

@@ -281,6 +281,13 @@ class ReplayRNGStateV4:
     cuda_state: torch.Tensor | None
 
 
+@dataclass(frozen=True)
+class RetainedEffectiveBatchGraphV4:
+    objective_predictions: torch.Tensor
+    prediction: torch.Tensor
+    router_balance_loss: torch.Tensor
+
+
 def capture_replay_rng_state_v4(device: torch.device) -> ReplayRNGStateV4:
     """Capture the stochastic state immediately before one physical forward."""
 
@@ -344,6 +351,79 @@ def collect_replayable_predictions_v4(
     combined = torch.cat(predictions)
     _require(combined.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 replay did not collect 32 predictions")
     return combined, states, first_pass_predictions
+
+
+def forward_retained_effective_batch_v4(
+    physical_batches: Sequence[Mapping[str, torch.Tensor]],
+    *,
+    forward: Callable[[Mapping[str, torch.Tensor]], Mapping[str, torch.Tensor]],
+) -> RetainedEffectiveBatchGraphV4:
+    """Keep the single formal batch graph for its later 32-vector VJP."""
+
+    _require(
+        len(physical_batches) == 1,
+        "Critic V4 retained-graph path requires one physical batch",
+    )
+    batch = physical_batches[0]
+    batch_size = (
+        int(batch["source_tokens"].shape[0])
+        if "source_tokens" in batch
+        else int(next(iter(batch.values())).shape[0])
+    )
+    _require(
+        batch_size == EFFECTIVE_BATCH_V4,
+        "Critic V4 retained-graph batch is not the effective batch of 32",
+    )
+    with torch.enable_grad():
+        output = forward(batch)
+        prediction = output["mean"]
+        router_balance_loss = output["router_balance_loss"]
+        _require(
+            prediction.shape == (EFFECTIVE_BATCH_V4,),
+            "Critic V4 retained prediction geometry changed",
+        )
+        _require(
+            torch.isfinite(prediction).all().item(),
+            "Critic V4 retained prediction is nonfinite",
+        )
+        _require(
+            router_balance_loss.numel() == 1
+            and torch.isfinite(router_balance_loss).all().item(),
+            "Critic V4 retained router balance is invalid",
+        )
+    return RetainedEffectiveBatchGraphV4(
+        objective_predictions=prediction.detach().float(),
+        prediction=prediction,
+        router_balance_loss=router_balance_loss,
+    )
+
+
+def backward_retained_effective_batch_v4(
+    graph: RetainedEffectiveBatchGraphV4,
+    prediction_gradient: torch.Tensor,
+    *,
+    router_balance_weight: float,
+) -> None:
+    """Backpropagate the objective through the retained batch-32 graph."""
+
+    _require(
+        prediction_gradient.shape == (EFFECTIVE_BATCH_V4,),
+        "Critic V4 retained gradient is not length 32",
+    )
+    _require(
+        router_balance_weight >= 0,
+        "Critic V4 retained router-balance weight is negative",
+    )
+    if router_balance_weight > 0:
+        torch.autograd.backward(
+            (graph.prediction, graph.router_balance_loss),
+            (
+                prediction_gradient,
+                graph.prediction.new_tensor(router_balance_weight),
+            ),
+        )
+    else:
+        graph.prediction.backward(prediction_gradient)
 
 
 def backward_replayed_prediction_gradient_v4(

@@ -238,6 +238,14 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         smoke.get("status") == "XEDITCRITIC_V403_FULL_MODEL_RNG_REPLAY_SMOKE_PASS"
         and str(smoke.get("git_head")) == expected_head
         and smoke.get("strict_replay_prediction_equal") is True
+        and smoke.get("retained_graph_prediction_equal_to_replay") is True
+        and smoke.get("retained_graph_parameter_gradients_equal_to_replay") is True
+        and smoke.get("retained_graph_gradient_norm_equal_to_replay") is True
+        and smoke.get("retained_graph_rng_terminal_state_equal_to_replay") is True
+        and float(smoke.get("router_balance_weight_exercised", 0.0)) > 0
+        and int(smoke.get("formal_training_forward_count_per_update", -1)) == 1
+        and int(smoke.get("full_cache_validation_count_before_batching", -1)) == 1
+        and smoke.get("full_cache_validation_per_batch") is False
         and smoke.get("optimizer_state_materialized") is True
         and smoke.get("target_value_accessed") is False
         and smoke.get("validation_metric_read") is False
@@ -328,6 +336,11 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
             str(physical_gpu_index),
             "--launch-authorization",
             str(authorization_path),
+            "--training-attempt-id",
+            (
+                "xeditcritic_v4_screen_seed20260907::v4_full::"
+                f"v403_rng_replay_fix_{expected_head}"
+            ),
         ],
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,

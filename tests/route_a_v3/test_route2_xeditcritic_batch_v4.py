@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 import torch
 
+import core.route2_xeditcritic_batch_v4 as batch_module
 from core.route2_bottom_encoder_chunk_cache_v4 import (
     BottomEncodedChunkV4,
     BottomEncodedSequenceV4,
@@ -137,3 +138,32 @@ def test_v4_collator_allows_repeat_cap_rows_while_deduplicating_chunks() -> None
 def test_v4_cache_view_requires_exact_projection_coverage() -> None:
     with pytest.raises(XEditCriticBatchV4Error, match="exactly cover"):
         FrozenBottomEncoderChunkCacheViewV4(_payload(), {"record-0"})
+
+
+def test_validated_cache_view_does_not_rescan_full_payload_per_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = _payload()
+    view = FrozenBottomEncoderChunkCacheViewV4(
+        payload, {f"record-{index}" for index in range(4)}
+    )
+    original = batch_module.materialize_bottom_chunk_batch_v4
+    validation_flags: list[bool] = []
+
+    def observed_materialize(payload, indices, *, validate_payload=True):
+        validation_flags.append(bool(validate_payload))
+        return original(
+            payload,
+            indices,
+            validate_payload=validate_payload,
+        )
+
+    monkeypatch.setattr(
+        batch_module,
+        "materialize_bottom_chunk_batch_v4",
+        observed_materialize,
+    )
+
+    view.materialize(["record-0", "record-1", "record-2", "record-3"])
+
+    assert validation_flags == [False]

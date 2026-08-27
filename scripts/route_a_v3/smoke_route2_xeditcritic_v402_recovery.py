@@ -165,7 +165,9 @@ def run(
         Path(config["bottom_six_cache"])
     )
     cache = FrozenBottomEncoderChunkCacheViewV4(
-        cache_payload, set(str(value) for value in cache_payload["record_ids"])
+        cache_payload,
+        set(str(value) for value in cache_payload["record_ids"]),
+        validate_payload=False,
     )
     collator = XEditCriticCollatorV4(cache, minimum_physical_batch=4)
     examples = [preflight_example_v4(row, vocabs) for row in selected_rows]

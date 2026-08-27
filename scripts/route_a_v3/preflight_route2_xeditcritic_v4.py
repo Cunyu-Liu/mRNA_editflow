@@ -490,6 +490,7 @@ def run(
         expected_record_count=int(config["data_geometry"]["expected_record_count"]),
         expected_unique_sequence_count=43730,
         expected_embedding_width=int(config["architecture"]["pretrained_width"]),
+        validate_payload=False,
     )
     cache_online_alignment = run_cache_online_alignment_v4(
         config,
@@ -524,7 +525,9 @@ def run(
         os.replace(partial_output, output_path)
         return summary
     cache = FrozenBottomEncoderChunkCacheViewV4(
-        cache_payload, set(str(value) for value in cache_payload["record_ids"])
+        cache_payload,
+        set(str(value) for value in cache_payload["record_ids"]),
+        validate_payload=False,
     )
     collator = XEditCriticCollatorV4(cache, minimum_physical_batch=4)
     examples = [preflight_example_v4(row, vocabs) for row in selected_rows]

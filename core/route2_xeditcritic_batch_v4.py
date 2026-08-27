@@ -27,8 +27,15 @@ def _require(condition: bool, message: str) -> None:
 class FrozenBottomEncoderChunkCacheViewV4:
     """Record-id view over a validated outcome-free V4 cache."""
 
-    def __init__(self, payload: Mapping[str, Any], expected_record_ids: set[str]) -> None:
-        validate_frozen_bottom_encoder_chunk_cache_v4(payload)
+    def __init__(
+        self,
+        payload: Mapping[str, Any],
+        expected_record_ids: set[str],
+        *,
+        validate_payload: bool = True,
+    ) -> None:
+        if validate_payload:
+            validate_frozen_bottom_encoder_chunk_cache_v4(payload)
         record_ids = [str(value) for value in payload["record_ids"]]
         _require(set(record_ids) == expected_record_ids, "V4 bottom-six cache does not exactly cover the projection")
         self.payload = payload
@@ -43,7 +50,15 @@ class FrozenBottomEncoderChunkCacheViewV4:
             indices = [self.record_index[str(record_id)] for record_id in record_ids]
         except KeyError as exc:
             raise XEditCriticBatchV4Error("V4 cache donor record is absent") from exc
-        return materialize_bottom_chunk_batch_v4(self.payload, indices)
+        # The immutable payload was validated when this view was constructed.
+        # Repeating the full 9.65 GB tensor/ragged-reference scan for every
+        # training batch dominated the formal Critic runtime.  Materialization
+        # still performs all batch-local index and mapping checks below.
+        return materialize_bottom_chunk_batch_v4(
+            self.payload,
+            indices,
+            validate_payload=False,
+        )
 
 
 class XEditCriticDatasetV4(XEditCriticDatasetV3):

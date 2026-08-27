@@ -31,6 +31,7 @@ def critic_v4_attempt_config(
     run_id: str,
     physical_gpu_index: int,
     physical_batch_size: int,
+    training_attempt_id: str | None = None,
 ) -> dict[str, Any]:
     run = _screen_run(config, run_id)
     run_stage = str(config.get("run_stage", "SCREEN"))
@@ -75,6 +76,12 @@ def critic_v4_attempt_config(
         held_out = str(config.get("held_out_study", ""))
         _require(bool(held_out), "Critic V4 LOSO held-out study is absent")
         attempt_label += f"_{held_out.lower()}"
+    attempt_id = (
+        f"{attempt_label}::{run_id}"
+        if training_attempt_id is None
+        else str(training_attempt_id).strip()
+    )
+    _require(bool(attempt_id), "Critic V4 training attempt id is empty")
     result_stage = {
         "SCREEN": "DEVELOPMENT_VALIDATION",
         "CONFIRMATION": "DEVELOPMENT_VALIDATION",
@@ -83,7 +90,7 @@ def critic_v4_attempt_config(
     }[run_stage]
     return {
         **dict(config),
-        "attempt_id": f"{attempt_label}::{run_id}",
+        "attempt_id": attempt_id,
         "baseline_id": f"xeditcritic_v4_{run_id}_seed{seed}",
         "attempt_purpose": f"XEDITCRITIC_V4_{run_stage}",
         "scientific_role": f"XEDITCRITIC_V4_{run_stage}_{run['model']}_{control}_{mechanism}",

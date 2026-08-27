@@ -51,11 +51,13 @@ from core.route2_xeditcritic_training_data_v3 import (
 from core.route2_xeditcritic_training_v4 import (
     FixedEffectiveTaskBatchSamplerV4,
     backward_replayed_prediction_gradient_v4,
+    backward_retained_effective_batch_v4,
     collect_replayable_predictions_v4,
     critic_v4_learning_rate_factor,
     critic_v4_loss_weights,
     critic_v4_optimizer_parameter_groups,
     effective_prediction_objective_v4,
+    forward_retained_effective_batch_v4,
     physical_microbatch_partitions_v4,
     require_physical_gpu_scope_v4,
 )
@@ -487,10 +489,29 @@ def _set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+CPU_RAGGED_STRUCTURE_KEYS_V4 = frozenset(
+    {
+        "cache_record_indices",
+        "cache_chunk_indices",
+        "record_edit_offsets",
+        "edit_positions",
+        "edit_source_chunk_indices",
+        "edit_candidate_chunk_indices",
+        "edit_source_token_centers",
+        "edit_candidate_token_centers",
+        "edit_source_window_starts",
+        "edit_source_window_ends",
+        "edit_candidate_window_starts",
+        "edit_candidate_window_ends",
+    }
+)
+
+
 def _move(batch: Mapping[str, Any], device: torch.device) -> dict[str, Any]:
     return {
         key: value.to(device, non_blocking=True)
         if isinstance(value, torch.Tensor)
+        and key not in CPU_RAGGED_STRUCTURE_KEYS_V4
         else value
         for key, value in batch.items()
     }
@@ -559,10 +580,14 @@ def _evaluate(
             prediction = scaled_prediction * batch["target_scale"][:valid_count]
             batch_targets = batch["target"].float()[:valid_count]
             batch_scaled_targets = batch["scaled_target"].float()[:valid_count]
-            targets.extend(batch_targets.cpu().tolist())
-            predictions.extend(prediction.cpu().tolist())
-            scaled_targets.extend(batch_scaled_targets.cpu().tolist())
-            scaled_predictions.extend(scaled_prediction.cpu().tolist())
+            batch_target_values = batch_targets.cpu().tolist()
+            batch_prediction_values = prediction.cpu().tolist()
+            batch_scaled_target_values = batch_scaled_targets.cpu().tolist()
+            batch_scaled_prediction_values = scaled_prediction.cpu().tolist()
+            targets.extend(batch_target_values)
+            predictions.extend(batch_prediction_values)
+            scaled_targets.extend(batch_scaled_target_values)
+            scaled_predictions.extend(batch_scaled_prediction_values)
             tasks.extend(batch["task_ids"][:valid_count])
             for index in range(valid_count):
                 rows.append(
@@ -570,10 +595,12 @@ def _evaluate(
                         "record_id": batch["record_ids"][index],
                         "source_group_id": batch["source_groups"][index],
                         "task_id": batch["task_ids"][index],
-                        "target": float(batch_targets[index].cpu()),
-                        "prediction": float(prediction[index].cpu()),
-                        "scaled_target": float(batch_scaled_targets[index].cpu()),
-                        "scaled_prediction": float(scaled_prediction[index].cpu()),
+                        "target": float(batch_target_values[index]),
+                        "prediction": float(batch_prediction_values[index]),
+                        "scaled_target": float(batch_scaled_target_values[index]),
+                        "scaled_prediction": float(
+                            batch_scaled_prediction_values[index]
+                        ),
                     }
                 )
     _require(len(rows) == len(dataset), "Validation padded rows entered the measured cohort")
@@ -730,6 +757,7 @@ def run(
     run_id: str,
     physical_gpu_index: int,
     launch_authorization_path: Path,
+    training_attempt_id: str | None = None,
 ) -> dict[str, Any]:
     spec = screen_run_spec_v4(config, run_id)
     run_stage, training_seed = critic_v4_run_stage_seed(config, run_id)
@@ -780,6 +808,7 @@ def run(
         run_id=run_id,
         physical_gpu_index=physical_gpu_index,
         physical_batch_size=physical_batch_size,
+        training_attempt_id=training_attempt_id,
     )
     ledger_path, attempt_path = critic_v4_ledger_paths(config, output_directory)
     attempt_details = critic_v4_attempt_details(
@@ -867,10 +896,13 @@ def run(
                     expected_embedding_width=int(
                         config["architecture"]["pretrained_width"]
                     ),
+                    validate_payload=False,
                 )
             )
             cache = FrozenBottomEncoderChunkCacheViewV4(
-                cache_payload, set(record_by_id)
+                cache_payload,
+                set(record_by_id),
+                validate_payload=False,
             )
             train_dataset = XEditCriticDatasetV4(
                 train_records,
@@ -953,11 +985,19 @@ def run(
                     physical_batch_size=physical_batch_size,
                     device=device,
                 )
-                predictions, states, first_pass_predictions = collect_replayable_predictions_v4(
-                    physical_batches,
-                    device=device,
-                    forward=lambda batch: _forward_bf16(model, batch),
-                )
+                retained_graph = None
+                if len(physical_batches) == 1:
+                    retained_graph = forward_retained_effective_batch_v4(
+                        physical_batches,
+                        forward=lambda batch: _forward_bf16(model, batch),
+                    )
+                    predictions = retained_graph.objective_predictions
+                else:
+                    predictions, states, first_pass_predictions = collect_replayable_predictions_v4(
+                        physical_batches,
+                        device=device,
+                        forward=lambda batch: _forward_bf16(model, batch),
+                    )
                 targets = torch.cat(
                     [batch["scaled_target"].float() for batch in physical_batches]
                 )
@@ -985,17 +1025,25 @@ def run(
                     soft_rank_temperature=float(config["training"]["soft_rank_temperature"]),
                 )
                 optimizer.zero_grad(set_to_none=True)
-                backward_replayed_prediction_gradient_v4(
-                    physical_batches,
-                    states,
-                    first_pass_predictions,
-                    objective.prediction_gradient,
-                    device=device,
-                    forward=lambda batch: _forward_bf16(model, batch),
-                    router_balance_weight=float(
-                        critic_v4_loss_weights(pass_number)["router_balance"]
-                    ),
+                router_balance_weight = float(
+                    critic_v4_loss_weights(pass_number)["router_balance"]
                 )
+                if retained_graph is not None:
+                    backward_retained_effective_batch_v4(
+                        retained_graph,
+                        objective.prediction_gradient,
+                        router_balance_weight=router_balance_weight,
+                    )
+                else:
+                    backward_replayed_prediction_gradient_v4(
+                        physical_batches,
+                        states,
+                        first_pass_predictions,
+                        objective.prediction_gradient,
+                        device=device,
+                        forward=lambda batch: _forward_bf16(model, batch),
+                        router_balance_weight=router_balance_weight,
+                    )
                 gradient_norm = torch.nn.utils.clip_grad_norm_(
                     model.parameters(),
                     float(config["training"]["gradient_clip_norm"]),
@@ -1085,6 +1133,8 @@ def run(
                 "capacity": capacity,
                 "physical_batch_size": physical_batch_size,
                 "effective_batch_size": 32,
+                "retained_graph_fast_path": physical_batch_size == 32,
+                "full_cache_validation_per_batch": False,
                 "validation_metrics": final_metrics,
                 "development_test_outcome_reads": 0,
                 "new_final_evaluation_outcome_reads": 0,
@@ -1119,6 +1169,14 @@ def run(
             "update_count": update_count,
             "physical_batch_size": physical_batch_size,
             "effective_batch_size": 32,
+            "training_forward_count_per_update": (
+                1 if physical_batch_size == 32 else 2 * math.ceil(32 / physical_batch_size)
+            ),
+            "retained_graph_fast_path": physical_batch_size == 32,
+            "full_cache_validation_count_before_batching": (
+                0 if spec.model_kind == "C0-V4" else 1
+            ),
+            "full_cache_validation_per_batch": False,
             "parameter_changed": parameter_changed,
             "singleton_forward_count": 0,
             "cpu_fallback_used": False,
@@ -1207,6 +1265,7 @@ def main() -> None:
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--physical-gpu-index", required=True, type=int)
     parser.add_argument("--launch-authorization", required=True, type=Path)
+    parser.add_argument("--training-attempt-id")
     arguments = parser.parse_args()
     config = _load_json(arguments.config)
     print(
@@ -1216,6 +1275,7 @@ def main() -> None:
                 run_id=arguments.run_id,
                 physical_gpu_index=arguments.physical_gpu_index,
                 launch_authorization_path=arguments.launch_authorization,
+                training_attempt_id=arguments.training_attempt_id,
             ),
             indent=2,
             sort_keys=True,

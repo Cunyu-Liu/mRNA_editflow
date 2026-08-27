@@ -10,11 +10,13 @@ from core.route2_xeditcritic_training_v4 import (
     FixedEffectiveTaskBatchSamplerV4,
     XEditCriticTrainingV4Error,
     backward_replayed_prediction_gradient_v4,
+    backward_retained_effective_batch_v4,
     collect_replayable_predictions_v4,
     critic_v4_learning_rate_factor,
     critic_v4_loss_weights,
     critic_v4_optimizer_parameter_groups,
     effective_prediction_objective_v4,
+    forward_retained_effective_batch_v4,
     pairwise_sigmoid_soft_ranks_v4,
     physical_microbatch_partitions_v4,
     quantized_sqrt_task_batch_allocations_v4,
@@ -344,6 +346,85 @@ def test_rng_replay_uses_the_same_grad_enabled_full_model_path_twice() -> None:
     assert torch.equal(torch.cat(replayed), predictions)
     assert all(model.grad_modes)
     assert model.scale.grad is not None and torch.isfinite(model.scale.grad)
+
+
+def test_batch_32_retained_graph_matches_replay_gradient_and_rng_state() -> None:
+    from torch.utils.checkpoint import checkpoint
+
+    class CheckpointedDropoutModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.linear = torch.nn.Linear(3, 4)
+            self.readout = torch.nn.Linear(4, 1)
+
+        def forward(self, batch):
+            def block(values):
+                hidden = self.linear(values).tanh()
+                return torch.nn.functional.dropout(
+                    hidden, p=0.3, training=True
+                )
+
+            hidden = checkpoint(
+                block,
+                batch["values"],
+                use_reentrant=False,
+                preserve_rng_state=True,
+            )
+            shared = self.readout(hidden)
+            return {
+                "mean": shared.squeeze(-1),
+                "router_balance_loss": hidden.square().mean(),
+            }
+
+    torch.manual_seed(313)
+    replay_model = CheckpointedDropoutModel()
+    retained_model = CheckpointedDropoutModel()
+    retained_model.load_state_dict(replay_model.state_dict())
+    batch = {
+        "source_tokens": torch.zeros((32, 1), dtype=torch.long),
+        "values": torch.randn(32, 3),
+    }
+    gradient = torch.linspace(-0.5, 0.5, 32)
+
+    torch.manual_seed(911)
+    predictions, states, first = collect_replayable_predictions_v4(
+        [batch],
+        device=torch.device("cpu"),
+        forward=replay_model,
+    )
+    backward_replayed_prediction_gradient_v4(
+        [batch],
+        states,
+        first,
+        gradient,
+        device=torch.device("cpu"),
+        forward=replay_model,
+        router_balance_weight=0.01,
+    )
+    replay_rng_state = torch.random.get_rng_state().clone()
+
+    torch.manual_seed(911)
+    retained = forward_retained_effective_batch_v4(
+        [batch],
+        forward=retained_model,
+    )
+    backward_retained_effective_batch_v4(
+        retained,
+        gradient,
+        router_balance_weight=0.01,
+    )
+    retained_rng_state = torch.random.get_rng_state().clone()
+
+    assert torch.equal(retained.objective_predictions, predictions)
+    assert torch.equal(retained_rng_state, replay_rng_state)
+    for replay_parameter, retained_parameter in zip(
+        replay_model.parameters(),
+        retained_model.parameters(),
+        strict=True,
+    ):
+        assert replay_parameter.grad is not None
+        assert retained_parameter.grad is not None
+        assert torch.equal(replay_parameter.grad, retained_parameter.grad)
 
 
 def test_effective_objective_predictions_are_promoted_from_half_to_float32() -> None:

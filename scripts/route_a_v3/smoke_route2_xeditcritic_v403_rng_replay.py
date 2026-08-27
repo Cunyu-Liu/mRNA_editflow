@@ -30,11 +30,15 @@ from core.route2_xeditcritic_training_v4 import (
     EFFECTIVE_BATCH_V4,
     FixedEffectiveTaskBatchSamplerV4,
     backward_replayed_prediction_gradient_v4,
+    backward_retained_effective_batch_v4,
+    capture_replay_rng_state_v4,
     collect_replayable_predictions_v4,
     critic_v4_loss_weights,
     critic_v4_optimizer_parameter_groups,
+    forward_retained_effective_batch_v4,
     physical_microbatch_partitions_v4,
     require_physical_gpu_scope_v4,
+    restore_replay_rng_state_v4,
 )
 from scripts.route_a_v3.preflight_route2_xeditcritic_v4 import (
     _build_model,
@@ -46,6 +50,7 @@ from scripts.route_a_v3.smoke_route2_xeditcritic_v402_recovery import (
     sampler_records_without_targets_v402,
 )
 from scripts.route_a_v3.train_route2_xeditcritic_v3 import require_cuda
+from scripts.route_a_v3.train_route2_xeditcritic_v4 import _forward_bf16, _move
 
 
 class XEditCriticV403RNGReplaySmokeError(RuntimeError):
@@ -71,29 +76,6 @@ def _git_head() -> str:
         capture_output=True,
         check=True,
     ).stdout.strip()
-
-
-def _move(
-    batch: Mapping[str, Any], device: torch.device
-) -> dict[str, Any]:
-    return {
-        key: value.to(device, non_blocking=True)
-        if isinstance(value, torch.Tensor)
-        else value
-        for key, value in batch.items()
-    }
-
-
-def _forward_bf16(
-    model: torch.nn.Module,
-    batch: Mapping[str, torch.Tensor],
-) -> dict[str, torch.Tensor]:
-    with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-        output = model(batch)
-    return {
-        "mean": output["mean"],
-        "router_balance_loss": output["router_balance_loss"],
-    }
 
 
 def run(
@@ -162,6 +144,7 @@ def run(
     cache = FrozenBottomEncoderChunkCacheViewV4(
         cache_payload,
         set(str(value) for value in cache_payload["record_ids"]),
+        validate_payload=False,
     )
     collator = XEditCriticCollatorV4(cache, minimum_physical_batch=4)
     examples = [preflight_example_v4(row, vocabs) for row in selected_rows]
@@ -200,6 +183,7 @@ def run(
     optimizer.zero_grad(set_to_none=True)
     model.train()
     torch.cuda.reset_peak_memory_stats(device)
+    initial_rng_state = capture_replay_rng_state_v4(device)
     predictions, states, first_pass_predictions = collect_replayable_predictions_v4(
         physical_batches,
         device=device,
@@ -216,6 +200,13 @@ def run(
         device=device,
         dtype=predictions.dtype,
     )
+    router_balance_weight = float(
+        critic_v4_loss_weights(3)["router_balance"]
+    )
+    _require(
+        router_balance_weight > 0,
+        "full-model smoke did not exercise router-balance backward",
+    )
     replayed = backward_replayed_prediction_gradient_v4(
         physical_batches,
         states,
@@ -223,11 +214,75 @@ def run(
         prediction_gradient,
         device=device,
         forward=lambda batch: _forward_bf16(model, batch),
-        router_balance_weight=float(critic_v4_loss_weights(1)["router_balance"]),
+        router_balance_weight=router_balance_weight,
     )
     _require(
         torch.equal(torch.cat(replayed).float(), predictions),
         "full-model replay predictions changed",
+    )
+    replay_gradients = {
+        name: None if parameter.grad is None else parameter.grad.detach().clone()
+        for name, parameter in model.named_parameters()
+    }
+    replay_gradient_norm = torch.nn.utils.clip_grad_norm_(
+        model.parameters(),
+        math.inf,
+    )
+    _require(
+        torch.isfinite(replay_gradient_norm).item()
+        and float(replay_gradient_norm) > 0,
+        "full-model replay gradient norm is invalid",
+    )
+    replay_terminal_rng_state = capture_replay_rng_state_v4(device)
+
+    optimizer.zero_grad(set_to_none=True)
+    restore_replay_rng_state_v4(initial_rng_state, device)
+    retained_graph = forward_retained_effective_batch_v4(
+        physical_batches,
+        forward=lambda batch: _forward_bf16(model, batch),
+    )
+    _require(
+        torch.equal(retained_graph.objective_predictions, predictions),
+        "retained-graph prediction differs from strict replay",
+    )
+    backward_retained_effective_batch_v4(
+        retained_graph,
+        prediction_gradient,
+        router_balance_weight=router_balance_weight,
+    )
+    for name, parameter in model.named_parameters():
+        replay_gradient = replay_gradients[name]
+        _require(
+            (parameter.grad is None) == (replay_gradient is None),
+            f"retained-graph gradient presence differs for {name}",
+        )
+        if replay_gradient is not None:
+            _require(
+                torch.equal(parameter.grad, replay_gradient),
+                f"retained-graph parameter gradient differs for {name}",
+            )
+    del replay_gradients
+    retained_gradient_norm = torch.nn.utils.clip_grad_norm_(
+        model.parameters(),
+        math.inf,
+    )
+    _require(
+        torch.equal(retained_gradient_norm, replay_gradient_norm),
+        "retained-graph gradient norm differs from strict replay",
+    )
+    retained_terminal_rng_state = capture_replay_rng_state_v4(device)
+    _require(
+        torch.equal(
+            retained_terminal_rng_state.cpu_state,
+            replay_terminal_rng_state.cpu_state,
+        )
+        and retained_terminal_rng_state.cuda_state is not None
+        and replay_terminal_rng_state.cuda_state is not None
+        and torch.equal(
+            retained_terminal_rng_state.cuda_state,
+            replay_terminal_rng_state.cuda_state,
+        ),
+        "retained-graph RNG terminal state differs from strict replay",
     )
     gradient_norm = torch.nn.utils.clip_grad_norm_(
         model.parameters(),
@@ -251,10 +306,18 @@ def run(
         "effective_batch_size": EFFECTIVE_BATCH_V4,
         "physical_batch_size": physical_batch_size,
         "physical_batch_count": len(physical_batches),
+        "formal_training_forward_count_per_update": 1,
+        "full_cache_validation_count_before_batching": 1,
+        "full_cache_validation_per_batch": False,
         "trainable_parameter_count": trainable_parameter_count,
         "forward_precision": "BF16",
         "activation_checkpointing": True,
         "strict_replay_prediction_equal": True,
+        "retained_graph_prediction_equal_to_replay": True,
+        "retained_graph_parameter_gradients_equal_to_replay": True,
+        "retained_graph_gradient_norm_equal_to_replay": True,
+        "retained_graph_rng_terminal_state_equal_to_replay": True,
+        "router_balance_weight_exercised": router_balance_weight,
         "gradient_norm_before_clipping": float(gradient_norm),
         "optimizer_state_materialized": True,
         "peak_allocated_bytes": peak_bytes,

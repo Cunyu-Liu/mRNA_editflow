@@ -4,9 +4,11 @@ import json
 from pathlib import Path
 
 import pytest
+import torch
 
 from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     XEditCriticTrainingV4RunnerError,
+    _move,
     _write_atomic_terminal_v4,
     critic_v4_run_stage_seed,
     evaluation_index_batches_v4,
@@ -102,6 +104,23 @@ def test_all_training_stages_bind_frozen_physical_gpu_scope_before_cuda() -> Non
     assert source.index(
         "require_physical_gpu_scope_v4(config, physical_gpu_index)"
     ) < source.index("device = require_cuda(physical_gpu_index)")
+
+
+def test_ragged_structure_stays_on_cpu_while_model_tensors_move() -> None:
+    moved = _move(
+        {
+            "source_tokens": torch.tensor([[1, 2]]),
+            "record_edit_offsets": torch.tensor([0, 1]),
+            "edit_source_chunk_indices": torch.tensor([0]),
+            "edit_candidate_window_ends": torch.tensor([4]),
+        },
+        torch.device("meta"),
+    )
+
+    assert moved["source_tokens"].device.type == "meta"
+    assert moved["record_edit_offsets"].device.type == "cpu"
+    assert moved["edit_source_chunk_indices"].device.type == "cpu"
+    assert moved["edit_candidate_window_ends"].device.type == "cpu"
 
 
 def test_screen_run_specs_bind_all_exact_frozen_controls_and_ablations() -> None:

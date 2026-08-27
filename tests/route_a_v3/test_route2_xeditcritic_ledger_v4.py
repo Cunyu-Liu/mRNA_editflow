@@ -49,6 +49,23 @@ def test_v4_raw_baseline_has_same_information_but_no_pretrained_cache_identity()
     assert attempt["critic_position_features"] == "RAW_FULL_CONTEXT"
 
 
+def test_v4_recovery_can_use_a_unique_administrative_attempt_id() -> None:
+    recovery_id = (
+        "xeditcritic_v4_screen_seed20260907::v4_full::"
+        "v403_rng_replay_fix_deadbeef"
+    )
+    attempt = critic_v4_attempt_config(
+        _config(),
+        run_id="v4_full",
+        physical_gpu_index=3,
+        physical_batch_size=32,
+        training_attempt_id=recovery_id,
+    )
+
+    assert attempt["attempt_id"] == recovery_id
+    assert attempt["baseline_id"] == "xeditcritic_v4_v4_full_seed20260907"
+
+
 def test_v4_attempt_rejects_unknown_run_gpu_or_batch() -> None:
     with pytest.raises(XEditCriticLedgerV4Error, match="exact frozen"):
         critic_v4_attempt_config(

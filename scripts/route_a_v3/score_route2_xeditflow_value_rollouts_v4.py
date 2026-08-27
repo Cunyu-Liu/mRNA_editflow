@@ -246,7 +246,9 @@ def _ephemeral_cache_view_v4(
         attention_backend=encoder.attention_backend,
     )
     return FrozenBottomEncoderChunkCacheViewV4(
-        payload, {str(row["canonical_record_id"]) for row in rows}
+        payload,
+        {str(row["canonical_record_id"]) for row in rows},
+        validate_payload=False,
     )
 
 

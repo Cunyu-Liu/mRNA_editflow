@@ -356,10 +356,12 @@ def require_frozen_bottom_encoder_chunk_cache_identity_v4(
     expected_record_count: int,
     expected_unique_sequence_count: int,
     expected_embedding_width: int = 768,
+    validate_payload: bool = True,
 ) -> dict[str, Any]:
     """Bind a valid tensor cache to the frozen V4 encoder and chunk policy."""
 
-    validate_frozen_bottom_encoder_chunk_cache_v4(payload)
+    if validate_payload:
+        validate_frozen_bottom_encoder_chunk_cache_v4(payload)
     _require(str(payload.get("model_id")) == str(expected_model_id), "bottom-six cache mRNABERT revision changed")
     _require(len(payload["record_ids"]) == int(expected_record_count), "bottom-six cache record count changed")
     _require(
@@ -429,11 +431,15 @@ def require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
 
 
 def materialize_bottom_chunk_batch_v4(
-    payload: Mapping[str, Any], record_indices: Sequence[int]
+    payload: Mapping[str, Any],
+    record_indices: Sequence[int],
+    *,
+    validate_payload: bool = True,
 ) -> dict[str, torch.Tensor]:
     """Materialize each required source/candidate chunk exactly once per batch."""
 
-    validate_frozen_bottom_encoder_chunk_cache_v4(payload)
+    if validate_payload:
+        validate_frozen_bottom_encoder_chunk_cache_v4(payload)
     _require(bool(record_indices), "physical batch is empty")
     record_count = len(payload["record_ids"])
     ordered_record_indices = [int(index) for index in record_indices]
