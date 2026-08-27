@@ -293,6 +293,59 @@ def test_rng_replay_reproduces_dropout_predictions_and_backpropagates_full_gradi
     assert all(torch.isfinite(parameter.grad).all() for parameter in model.parameters())
 
 
+def test_rng_replay_uses_the_same_grad_enabled_full_model_path_twice() -> None:
+    class GradModeSensitiveDropoutModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.scale = torch.nn.Parameter(torch.tensor(1.0))
+            self.grad_modes: list[bool] = []
+
+        def forward(self, batch):
+            grad_enabled = torch.is_grad_enabled()
+            self.grad_modes.append(grad_enabled)
+            hidden = torch.nn.functional.dropout(
+                batch["values"], p=0.25, training=True
+            )
+            # XEditCriticV4 activates checkpointed attention only on the
+            # grad-enabled path.  This offset makes a path mismatch visible in
+            # a small unit test without constructing the 170M model.
+            path_offset = 0.0 if grad_enabled else 1.0
+            mean = hidden.sum(dim=1) * self.scale + path_offset
+            return {
+                "mean": mean,
+                "router_balance_loss": mean.square().mean(),
+            }
+
+    torch.manual_seed(137)
+    model = GradModeSensitiveDropoutModel()
+    batches = [
+        {
+            "source_tokens": torch.zeros((8, 1), dtype=torch.long),
+            "values": torch.randn(8, 3),
+        }
+        for _ in range(4)
+    ]
+    predictions, states, first = collect_replayable_predictions_v4(
+        batches,
+        device=torch.device("cpu"),
+        forward=model,
+    )
+    assert all(model.grad_modes)
+    replayed = backward_replayed_prediction_gradient_v4(
+        batches,
+        states,
+        first,
+        torch.linspace(-0.5, 0.5, 32),
+        device=torch.device("cpu"),
+        forward=model,
+        router_balance_weight=0.01,
+    )
+
+    assert torch.equal(torch.cat(replayed), predictions)
+    assert all(model.grad_modes)
+    assert model.scale.grad is not None and torch.isfinite(model.scale.grad)
+
+
 def test_effective_objective_predictions_are_promoted_from_half_to_float32() -> None:
     class HalfOutputModel(torch.nn.Module):
         def __init__(self) -> None:

@@ -313,26 +313,34 @@ def collect_replayable_predictions_v4(
     device: torch.device,
     forward: Callable[[Mapping[str, torch.Tensor]], Mapping[str, torch.Tensor]],
 ) -> tuple[torch.Tensor, list[ReplayRNGStateV4], list[torch.Tensor]]:
-    """Collect detached predictions and states without retaining activations."""
+    """Collect detached predictions through the same path used by replay.
+
+    The formal V4 model enables activation-checkpointed blocks only while
+    gradients are enabled.  Its collection and replay forwards must therefore
+    both run with gradients enabled; otherwise they execute different model
+    paths and need not produce bit-identical predictions.  Each collection
+    graph is released as soon as its detached prediction has been saved.
+    """
 
     _require(bool(physical_batches), "Critic V4 has no physical batches to replay")
     predictions: list[torch.Tensor] = []
     states: list[ReplayRNGStateV4] = []
     first_pass_predictions: list[torch.Tensor] = []
-    with torch.no_grad():
-        for batch in physical_batches:
-            batch_size = int(batch["source_tokens"].shape[0]) if "source_tokens" in batch else int(next(iter(batch.values())).shape[0])
-            _require(batch_size >= 4, "Critic V4 replay path received a sub-four physical batch")
-            states.append(capture_replay_rng_state_v4(device))
+    for batch in physical_batches:
+        batch_size = int(batch["source_tokens"].shape[0]) if "source_tokens" in batch else int(next(iter(batch.values())).shape[0])
+        _require(batch_size >= 4, "Critic V4 replay path received a sub-four physical batch")
+        states.append(capture_replay_rng_state_v4(device))
+        with torch.enable_grad():
             output = forward(batch)
             prediction = output["mean"]
             _require(prediction.shape == (batch_size,), "Critic V4 replay prediction geometry changed")
             _require(torch.isfinite(prediction).all().item(), "Critic V4 replay prediction is nonfinite")
             detached = prediction.detach()
-            # Cross-record Huber/ranking/soft-rank arithmetic is deliberately
-            # FP32 even though each formal forward runs under BF16 autocast.
-            predictions.append(detached.float())
-            first_pass_predictions.append(detached.clone())
+        # Cross-record Huber/ranking/soft-rank arithmetic is deliberately
+        # FP32 even though each formal forward runs under BF16 autocast.
+        predictions.append(detached.float())
+        first_pass_predictions.append(detached.clone())
+        del output, prediction
     combined = torch.cat(predictions)
     _require(combined.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 replay did not collect 32 predictions")
     return combined, states, first_pass_predictions
