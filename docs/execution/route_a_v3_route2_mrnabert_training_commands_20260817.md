@@ -4807,3 +4807,9 @@ SetFlow gate，明确不调用Critic adjudicator、不重读旧Critic failure。
 recovery；Validation科学协议未改变。本地new focused 3/3、SetFlow focused 50/50、V3.3.2 96/96、compile/JSON/
 diff-check PASS。当前仅完成实现，远端validation与gate尚未启动。审计：
 `audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_integration_v1.json`。
+
+SetFlow-only Validation已从精确runner HEAD `bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5`启动；A100同步前后
+HEAD为`edad893`→`bcf1ae9`，现场SetFlow focused 50/50、V3.3.2 96/96。scheduler PID `881249`，8项
+checkpoint验证使用GPU0–4，GPU5继续承载Critic recovery。首次合规检查`>=2026-08-27 11:04:31`，只看
+terminal/failure/alive/CUDA，不读active metric。审计：
+`audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_launch_v1.json`。

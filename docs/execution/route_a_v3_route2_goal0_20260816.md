@@ -55,3 +55,9 @@ continues the independent Critic recovery. It reuses the frozen validator and
 atomic SetFlow gate and does not reopen the already consumed historical Critic
 failures. This is execution plumbing only; no recovery, diversity, NLL, model-
 advantage, or publication-readiness claim has yet been established.
+
+That SetFlow-only package has now launched after exact-head A100 tests. It uses
+GPUs 0–4 for the eight frozen checkpoint evaluations while GPU5 remains assigned
+to Critic recovery. No active metric or protected outcome was read at launch;
+therefore the scientific and publication-readiness status remains unchanged
+until the terminal SetFlow gate is published.

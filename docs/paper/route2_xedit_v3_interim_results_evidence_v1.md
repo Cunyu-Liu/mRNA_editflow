@@ -292,3 +292,8 @@ the active Critic recovery and reuses the frozen validator, cohort, decoder
 streams, trajectory budget, metrics, and gate. Until that gate is published,
 there is no evidence for improved recovery, diversity, NLL, or a generator
 advantage, and the manuscript remains unready for submission.
+
+The eight-checkpoint SetFlow Validation package has now launched from its exact
+A100-tested revision without reading active metrics or protected outcomes. This
+updates only execution status: no recovery, diversity, NLL, or generator-
+advantage result is available until the terminal atomic gate is published.

@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v402_terminal_validation_launch.v1",
+  "status": "XEDITSETFLOW_V402_TERMINAL_VALIDATION_LAUNCHED",
+  "local_launch_command_started": "2026-08-27 10:59:31 +0800",
+  "runner_git_head": "bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5",
+  "source_screen_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "experiment_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "a100_worktree_before_sync": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "a100_worktree_after_sync": "bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5",
+  "a100_tests": {
+    "setflow_v4_focused_passed": 50,
+    "setflow_v4_focused_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0
+  },
+  "scheduler_pid": 881249,
+  "runtime_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v402_terminal_validation_runner_bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5/runtime.json",
+  "schedule_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v402_terminal_validation_runner_bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5/schedule.json",
+  "scheduler_log": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/v402_terminal_validation_runner_bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5/scheduler.log",
+  "validation_job_count": 8,
+  "physical_gpu_scope": [0, 1, 2, 3, 4],
+  "gpu5_reserved_for_active_critic_recovery": true,
+  "critic_failure_payload_reads": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "first_check_not_before_local": "2026-08-27 11:04:31 +0800",
+  "active_curve_or_metric_read_at_launch": false,
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

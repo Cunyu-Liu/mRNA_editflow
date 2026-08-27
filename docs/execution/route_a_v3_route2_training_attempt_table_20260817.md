@@ -4215,3 +4215,14 @@ Validation job，然后调用既有SetFlow V4原子adjudicator。GPU5继续保�
 远端尚未同步或启动validation，训练summary、Validation metric、旧Critic failure payload、Development TEST与new
 Evaluation均未读取。本项不构成recovery/diversity/NLL或论文优势证据。审计：
 `audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_integration_v1.json`。
+
+### SetFlow V4.0.2 eight-checkpoint Validation launched（2026-08-27 10:59:31 +08:00）
+
+原SetFlow training package已双臂terminal，因此其A100 worktree从历史screen HEAD `edad893`安全快进到精确
+runner HEAD `bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5`；独立Critic recovery worktree仍保持`93703a`未移动。
+A100现场SetFlow V4 focused 50/50、精确V3.3.2 96/96通过后，消费唯一launch marker并启动scheduler PID
+`881249`。八个固定checkpoint Validation只使用GPU0–4，GPU5继续留给Critic source-only；既有SetFlow
+adjudicator将在八项全部terminal后自动原子发布PASS或NO-GO gate。启动未读取训练summary payload、active
+Validation性能、旧Critic failure、Development TEST或new Evaluation。首次alive/CUDA/terminal检查不早于本地
+11:04:31。审计：
+`audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_launch_v1.json`。
