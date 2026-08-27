@@ -283,3 +283,12 @@ summary, whereas C0 produced a summary and the remaining controls continue. No
 payload or performance metric has been read. Thus this recovery can no longer
 establish a Critic screen PASS, although the formal technical classification and
 NO-GO evidence await complete-package read-once adjudication.
+
+The two SetFlow V4 screen training arms have completed, but their terminal
+performance payloads are not yet part of the evidence record. The next authorized
+operation is the unchanged eight-checkpoint outcome-free Validation package and
+strict SetFlow screen adjudication. Its V4.0.2 SetFlow-only coordinator excludes
+the active Critic recovery and reuses the frozen validator, cohort, decoder
+streams, trajectory budget, metrics, and gate. Until that gate is published,
+there is no evidence for improved recovery, diversity, NLL, or a generator
+advantage, and the manuscript remains unready for submission.

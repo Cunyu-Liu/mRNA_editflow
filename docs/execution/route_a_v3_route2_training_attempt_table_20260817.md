@@ -4202,3 +4202,16 @@ recovery source-only PID `1766545`继续在GPU5存活并注册CUDA 15,270MiB；C
 均未读，后五项PENDING。没有读取active性能输出或protected outcome，没有停止、修改或重启作业。下一SSH
 不早于本地10:49:12。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_094912.json`。
+
+## SetFlow V4.0.2 terminal-validation isolation integration（2026-08-27）
+
+SetFlow full与single-mode训练均已自然发布SUMMARY terminal，原screen scheduler亦已退出；两份训练payload在
+存在性窗口中保持0 read。由于既有combined post-screen coordinator会再次调用已消费旧failure的Critic adjudicator，
+本项新增SetFlow-only正式launcher/scheduler：它只运行冻结的full/single × pass4/6/8/10共8个outcome-free
+Validation job，然后调用既有SetFlow V4原子adjudicator。GPU5继续保留给active Critic recovery，八项验证固定
+排入GPU0–4；模型、checkpoint、891×32 cohort、decoder seeds、trajectory cap、metrics和gate均未改变。
+
+本地新增focused 3/3、SetFlow V4 focused 50/50、精确V3.3.2 96/96、py_compile/JSON/diff-check PASS。
+远端尚未同步或启动validation，训练summary、Validation metric、旧Critic failure payload、Development TEST与new
+Evaluation均未读取。本项不构成recovery/diversity/NLL或论文优势证据。审计：
+`audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_integration_v1.json`。

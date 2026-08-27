@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v402_terminal_validation_integration.v1",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_BEFORE_REMOTE_VALIDATION_LAUNCH",
+  "trigger": "BOTH_SETFLOW_V4_SCREEN_TRAINING_ARMS_SUMMARY_TERMINAL",
+  "terminal_observation": {
+    "local_time": "2026-08-27 10:51:15 +0800",
+    "remote_time": "2026-08-27T10:53:34+08:00",
+    "remote_clock_offset_seconds": 139,
+    "screen_scheduler_alive": false,
+    "full_terminal_kind": "SUMMARY",
+    "single_mode_terminal_kind": "SUMMARY",
+    "training_terminal_payloads_read": 0
+  },
+  "source_screen_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "experiment_head": "a7ef72fac23cd5b25dcc6c8d560236b97fa8b09d",
+  "integration": {
+    "launcher": "scripts/route_a_v3/launch_route2_xeditsetflow_v402_terminal_validation.py",
+    "scheduler": "scripts/route_a_v3/run_route2_xeditsetflow_v402_terminal_validation_scheduler.py",
+    "validation_job_count": 8,
+    "checkpoint_passes": [4, 6, 8, 10],
+    "run_ids": ["v4_full", "v4_single_mode"],
+    "physical_gpu_scope": [0, 1, 2, 3, 4],
+    "gpu5_excluded_for_active_critic_recovery": true,
+    "existing_validator_reused": true,
+    "existing_setflow_adjudicator_reused": true,
+    "critic_adjudicator_invoked": false,
+    "critic_failure_payload_reads": 0
+  },
+  "scientific_contract_changes": {
+    "model": false,
+    "checkpoint": false,
+    "validation_cohort": false,
+    "trajectory_budget": false,
+    "decoder_seed": false,
+    "metric": false,
+    "gate": false
+  },
+  "local_verification": {
+    "new_focused_tests_passed": 3,
+    "setflow_v4_focused_tests_passed": 50,
+    "exact_v332_tests_passed": 96,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

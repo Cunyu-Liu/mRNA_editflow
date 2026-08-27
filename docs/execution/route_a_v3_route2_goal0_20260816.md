@@ -46,3 +46,12 @@ The validator checks only execution-changing boundaries: the frozen current
 facts, exact 14-study roles, Development/Evaluation isolation, GPU-only training,
 the removal of obsolete development prerequisites, generated-candidate credit,
 and the two-readiness guided-generation dependency.
+
+Both SetFlow V4 screen training arms have now terminated with summary artifacts,
+but their performance payloads remain unread pending the frozen post-training
+Validation package. A SetFlow-only V4.0.2 terminal coordinator has been added so
+the eight preregistered checkpoint evaluations can run on GPUs 0–4 while GPU5
+continues the independent Critic recovery. It reuses the frozen validator and
+atomic SetFlow gate and does not reopen the already consumed historical Critic
+failures. This is execution plumbing only; no recovery, diversity, NLL, model-
+advantage, or publication-readiness claim has yet been established.

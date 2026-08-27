@@ -4797,3 +4797,13 @@ payload也未读。未读active curve/metric/TEST/Evaluation；下一检查`>=07
 仍GPU1 alive+CUDA 2,912MiB；Critic source-only仍GPU5 alive+CUDA 15,270MiB，既有terminal payload未读。
 未读active curve/metric/TEST/Evaluation；下一检查`>=10:49:12`。审计：
 `audits/route_a_v3_route2_xedit_v4_dual_package_health_20260827_094912.json`。
+
+## SetFlow V4.0.2 SetFlow-only terminal validation focused record（2026-08-27）
+
+原SetFlow full/single-mode均已SUMMARY terminal。新增
+`launch_route2_xeditsetflow_v402_terminal_validation.py`与
+`run_route2_xeditsetflow_v402_terminal_validation_scheduler.py`，只调度冻结的8个checkpoint Validation及既有
+SetFlow gate，明确不调用Critic adjudicator、不重读旧Critic failure。GPU0–4承载8项验证，GPU5留给active Critic
+recovery；Validation科学协议未改变。本地new focused 3/3、SetFlow focused 50/50、V3.3.2 96/96、compile/JSON/
+diff-check PASS。当前仅完成实现，远端validation与gate尚未启动。审计：
+`audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_integration_v1.json`。
