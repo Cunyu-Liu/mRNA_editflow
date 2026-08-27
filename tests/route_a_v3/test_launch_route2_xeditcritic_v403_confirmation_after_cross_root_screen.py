@@ -136,6 +136,51 @@ def _probes() -> dict[int, dict]:
     }
 
 
+def _focused_test_commands() -> list[str]:
+    return [
+        "python -m pytest -q "
+        "test_score_route2_xeditflow_closed_frozen_methods_v3.py "
+        "test_launch_route2_xeditflow_v403_guidance_after_dual_readiness.py "
+        "test_launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness.py "
+        "test_launch_route2_xeditflow_v4_guidance_screen_after_authorization.py "
+        "test_launch_route2_xeditflow_v4_final_after_guidance_screen.py "
+        "test_launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py "
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py "
+        "test_authorize_route2_xeditsetflow_v403_recovered_confirmation.py",
+        "python -m pytest -q "
+        "test_transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py "
+        "test_prepare_route2_xeditcritic_v4_confirmation_configs.py "
+        "test_route2_xeditcritic_v4_confirmation_runtime.py",
+        "python -m pytest -q "
+        "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py "
+        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+        "python -m pytest -q "
+        "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
+        "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
+        "test_route2_xeditflow_guidance_v4.py",
+        "python -m pytest -q "
+        "test_train_route2_xeditcritic_v4.py "
+        "test_run_route2_xeditcritic_v4_loso_scheduler.py",
+        "python -m pytest -q "
+        "test_run_route2_xedit_v4_confirmation_training_scheduler.py "
+        "test_run_route2_xedit_v4_confirmation_posttraining_scheduler.py",
+        "python -m pytest -q "
+        "test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py "
+        "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py "
+        "test_launch_route2_xeditcritic_v403_controls_after_full.py "
+        "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py "
+        "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py "
+        "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
+        "python -m pytest -q "
+        "test_prepare_route2_xeditflow_final_generation_configs_v4.py "
+        "test_evaluate_route2_xeditflow_closed_scores_v4.py "
+        "test_compare_route2_xeditflow_independent_evaluator_v4.py "
+        "test_xeditflow_v4_final_evidence_chain.py "
+        "test_run_route2_xeditflow_strongest_timing_v4.py",
+    ]
+
+
 def _runner_receipt(runner_head: str) -> dict:
     return {
         "schema_version": launcher.RUNNER_VERIFICATION_RECEIPT_SCHEMA,
@@ -143,13 +188,15 @@ def _runner_receipt(runner_head: str) -> dict:
         "runner_git_head": runner_head,
         "worktree_clean": True,
         "focused_tests": {
-            "command": ["python", "-m", "pytest", "focused"],
+            "command": _focused_test_commands(),
             "passed": True,
-            "passed_count": 15,
+            "passed_count": 203,
             "failed_count": 0,
+            "isolated_process_groups": True,
+            "group_passed_counts": [75, 14, 4, 26, 14, 8, 36, 26],
         },
         "v332_tests": {
-            "command": ["python", "-m", "pytest", "v332"],
+            "command": ["python", "-m", "pytest", "tests/*v332*.py"],
             "passed": True,
             "passed_count": 96,
             "failed_count": 0,
@@ -373,6 +420,88 @@ def test_runner_receipt_fails_closed_on_wrong_head_dirty_or_failed_tests(
     runner_head = "c" * 40
     receipt = _runner_receipt(runner_head)
     mutation(receipt)
+    with pytest.raises(Exception, match=error):
+        launcher.validate_runner_verification_receipt(
+            receipt,
+            runner_head=runner_head,
+            receipt_path=launcher.runner_verification_receipt_path(
+                runner_head
+            ),
+        )
+
+
+def test_runner_receipt_accepts_complete_eight_group_coverage() -> None:
+    runner_head = "c" * 40
+    launcher.validate_runner_verification_receipt(
+        _runner_receipt(runner_head),
+        runner_head=runner_head,
+        receipt_path=launcher.runner_verification_receipt_path(runner_head),
+    )
+
+
+@pytest.mark.parametrize(
+    ("case", "error"),
+    [
+        ("six_groups", "focused tests"),
+        (
+            "c5db_group7_missing_new_markers",
+            "lacks required test-module coverage",
+        ),
+        (
+            "missing_setflow_authorization_marker",
+            "lacks required test-module coverage",
+        ),
+        ("group_sum_mismatch", "focused tests"),
+        ("focused_below_c5db_floor", "focused tests"),
+        ("not_isolated", "focused tests"),
+        ("nonpositive_group", "focused tests"),
+        ("v332_not_96", "V3.3.2 tests"),
+        ("v332_glob_absent", "V3.3.2 tests"),
+    ],
+)
+def test_runner_receipt_coverage_fails_closed(
+    case: str, error: str
+) -> None:
+    runner_head = "c" * 40
+    receipt = _runner_receipt(runner_head)
+    focused = receipt["focused_tests"]
+    if case == "six_groups":
+        focused["command"] = focused["command"][:6]
+        focused["group_passed_counts"] = focused[
+            "group_passed_counts"
+        ][:6]
+        focused["passed_count"] = sum(focused["group_passed_counts"])
+    elif case == "c5db_group7_missing_new_markers":
+        focused["command"][6] = (
+            "python -m pytest -q "
+            "test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py "
+            "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
+            "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py"
+        )
+    elif case == "missing_setflow_authorization_marker":
+        focused["command"][0] = focused["command"][0].replace(
+            "test_authorize_route2_xeditsetflow_v403_recovered_confirmation.py",
+            "",
+        )
+    elif case == "group_sum_mismatch":
+        focused["group_passed_counts"][0] += 1
+    elif case == "focused_below_c5db_floor":
+        focused["group_passed_counts"][0] -= 1
+        focused["passed_count"] = 202
+    elif case == "not_isolated":
+        focused["isolated_process_groups"] = False
+    elif case == "nonpositive_group":
+        focused["group_passed_counts"][1] += focused[
+            "group_passed_counts"
+        ][0]
+        focused["group_passed_counts"][0] = 0
+    elif case == "v332_not_96":
+        receipt["v332_tests"]["passed_count"] = 95
+    elif case == "v332_glob_absent":
+        receipt["v332_tests"]["command"][-1] = "tests/v332.py"
+    else:  # pragma: no cover - parametrization is exhaustive
+        raise AssertionError(case)
+
     with pytest.raises(Exception, match=error):
         launcher.validate_runner_verification_receipt(
             receipt,

@@ -11,11 +11,12 @@
 
 发生冲突时按以下顺序处理：
 
-1. 冻结的主科学合同、数据角色和 protected-read 约束；
-2. XEditFlow V4.0.3 冻结协议与配置；
-3. 本文件；
-4. `route_a_v3_route2_rapid_iteration_log_20260827.md` 与对应 HEAD 的 runner verification receipts；
-5. 其他日期化记录和历史交接文档。
+1. 主科学合同（外部 canonical locator，不在本文件复制内容）：`/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md`；
+2. repo 内 V4 总协议：`docs/paper/route2_xedit_v4_prospective_experiments_protocol_v1.md`；
+3. frozen guidance protocol config：`configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json`；
+4. 本文件；
+5. `route_a_v3_route2_rapid_iteration_log_20260827.md` 与对应 HEAD 的 runner verification receipts；
+6. 其他日期化记录和历史交接文档。
 
 历史文件 `route_a_v3_route2_next_goal_todo_handoff_20260820.md` 已明确降级为只读历史快照，不是执行入口。
 
@@ -117,11 +118,13 @@ Confirmation training、confirmation posttraining、guidance screen 和 final co
 任何代码或当前执行文档修改后，下一条新实验启动前必须完成：
 
 1. 提交并推送到当前 GitHub 分支；
-2. 以六个隔离 Python 进程运行 successor focused tests；
-3. 运行 96 项 V3.3.2 回归；
-4. 在 `/mnt/cunyuliu` 生成与新 HEAD 对应的 shared runner receipt 和 SetFlow receipt；
+2. 以八个隔离 Python 进程运行 successor focused tests；
+3. 运行恰好 96 项 V3.3.2 回归，命令必须保留 `*v332*.py` glob；
+4. 在 `/mnt/cunyuliu` 生成与新 HEAD 对应的 shared runner receipt 和 SetFlow receipt，并写入八组各自的实际通过数及其总和；
 5. 用两类实际消费者分别接受 receipt；
 6. 把两小时 heartbeat 的 exact HEAD 与 receipt 路径原子更新到新提交。
+
+`c5db9a3617f1798742566ffe23b8e9faa750e7a5` 已验证覆盖给出的 focused 准入下限是 203 项；203 是覆盖下限，不是永久锁死的精确总数。后续新增测试时，八组实际通过数和更高的实际总数必须写入对应 exact-HEAD receipt，且分组之和必须等于总数。
 
 Receipt 路径模板：
 

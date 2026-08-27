@@ -98,6 +98,37 @@ ALL_RUN_IDS = (
 )
 CONTROL_RUN_IDS = ALL_RUN_IDS[2:]
 PHYSICAL_GPU_INDICES = (0, 1, 2, 3, 4, 5)
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index",
+    "--format=csv,noheader,nounits",
+)
+CUDA_BF16_PROBE_SOURCE = """
+import json
+import sys
+import torch
+
+indices = [int(value) for value in sys.argv[1:]]
+if not torch.cuda.is_available():
+    raise RuntimeError("CUDA is unavailable; CPU fallback is forbidden")
+if torch.cuda.device_count() <= max(indices):
+    raise RuntimeError("physical CUDA inventory is incomplete")
+rows = []
+for index in indices:
+    device = torch.device(f"cuda:{index}")
+    torch.cuda.set_device(device)
+    name = torch.cuda.get_device_name(device)
+    if "A100" not in name:
+        raise RuntimeError(f"physical GPU {index} is not A100: {name}")
+    if not torch.cuda.is_bf16_supported():
+        raise RuntimeError(f"physical GPU {index} lacks BF16 support")
+    value = (torch.ones(1, device=device, dtype=torch.bfloat16) * 2).item()
+    if value != 2.0:
+        raise RuntimeError(f"physical GPU {index} BF16 tensor probe failed")
+    rows.append({"physical_gpu_index": index, "device_name": name,
+                 "bf16_supported": True, "bf16_tensor_probe": True})
+print(json.dumps(rows, sort_keys=True))
+"""
 FROZEN_FULL_SUMMARY_IDENTITY = {
     "seed": 20260907,
     "pass_count": 8,
@@ -113,6 +144,38 @@ FROZEN_FULL_SUMMARY_IDENTITY = {
 
 class XEditCriticV403ControlRecoveryLaunchError(RuntimeError):
     pass
+
+
+class XEditCriticV403GpuInventoryError(
+    XEditCriticV403ControlRecoveryLaunchError
+):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
+
+
+class XEditCriticV403CudaBf16ProbeError(
+    XEditCriticV403ControlRecoveryLaunchError
+):
+    def __init__(
+        self, message: str, *, cpu_fallback_used: bool = False
+    ) -> None:
+        super().__init__(message)
+        self.cpu_fallback_used = cpu_fallback_used
 
 
 def require(condition: bool, message: str) -> None:
@@ -154,6 +217,161 @@ def command(
         text=True,
         capture_output=True,
         check=True,
+    )
+
+
+def sibling_failure_path(runtime_root: Path) -> Path:
+    return runtime_root.with_name(runtime_root.name + ".failed.json")
+
+
+def require_fresh_prelaunch_family(runtime_root: Path) -> Path:
+    failure = sibling_failure_path(runtime_root)
+    partial = failure.with_suffix(failure.suffix + ".partial")
+    require(
+        not failure.exists() and not partial.exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
+    )
+    return failure
+
+
+def physical_gpu_inventory(
+    required_physical_gpus: Sequence[int] = PHYSICAL_GPU_INDICES,
+) -> tuple[int, ...]:
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=TRAINING_WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise XEditCriticV403GpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditCriticV403GpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
+    try:
+        values = tuple(int(line.strip()) for line in result.stdout.splitlines())
+    except (TypeError, ValueError) as error:
+        raise XEditCriticV403GpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    required = tuple(int(gpu) for gpu in required_physical_gpus)
+    missing = tuple(sorted(set(required) - set(values)))
+    if missing:
+        raise XEditCriticV403GpuInventoryError(
+            f"configured physical GPU inventory is incomplete; missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
+    return values
+
+
+def failure_process_details(
+    error: Exception, *, command_line: Sequence[str]
+) -> dict[str, Any]:
+    if isinstance(error, XEditCriticV403GpuInventoryError):
+        return {
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+        }
+    if isinstance(error, subprocess.CalledProcessError):
+        raw_command = error.cmd
+        recorded_command = (
+            list(raw_command)
+            if isinstance(raw_command, (list, tuple))
+            else [str(raw_command)]
+        )
+        return {
+            "command": recorded_command,
+            "return_code": error.returncode,
+            "stdout": error.stdout or "",
+            "stderr": error.stderr or "",
+            "reason": "CUDA_BF16_PROBE_CHILD_FAILED",
+            "missing_physical_gpus": [],
+        }
+    return {
+        "command": list(command_line),
+        "return_code": None,
+        "stdout": "",
+        "stderr": "",
+        "reason": (
+            "COMMAND_EXECUTION_FAILED"
+            if isinstance(error, OSError)
+            else "CUDA_BF16_PROBE_OUTPUT_INVALID"
+        ),
+        "missing_physical_gpus": [],
+    }
+
+
+def write_prelaunch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    failure_stage: str,
+    runtime_root: Path,
+    command_line: Sequence[str],
+    error: Exception,
+) -> None:
+    require(
+        failure_stage in {"INVENTORY", "CUDA_BF16_PROBE"},
+        "unknown Critic controls prelaunch failure stage",
+    )
+    require(
+        not runtime_root.exists(),
+        "Critic controls runtime root exists before prelaunch failure evidence",
+    )
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
+    )
+    details = failure_process_details(error, command_line=command_line)
+    cpu_fallback_used = getattr(error, "cpu_fallback_used", False)
+    require(
+        type(cpu_fallback_used) is bool,
+        "CUDA/BF16 probe CPU-fallback observation is not boolean",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_prelaunch_failure.v1",
+            "status": "XEDITCRITIC_PRELAUNCH_GPU_OR_CUDA_FAILURE",
+            "launcher": "controls",
+            "failure_stage": failure_stage,
+            "expected_head": expected_head,
+            "training_git_head": TRAINING_GIT_HEAD,
+            **details,
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "intended_runtime_root": str(runtime_root),
+            "runtime_root_created": False,
+            "jobs_started": 0,
+            "cpu_fallback_used": cpu_fallback_used,
+            "free_memory_gate_applied": False,
+            "automatic_retry_attempted": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
     )
 
 
@@ -354,50 +572,45 @@ def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]
     return {"preflight": preflight, "smoke": smoke}
 
 
-def probe_cuda_bf16(
+def cuda_bf16_probe_command(
     physical_gpu_indices: Sequence[int] = PHYSICAL_GPU_INDICES,
-) -> list[dict[str, Any]]:
+) -> list[str]:
     indices = [int(index) for index in physical_gpu_indices]
     require(
         indices == list(PHYSICAL_GPU_INDICES),
         "control recovery requires the frozen physical GPU inventory 0-5",
     )
-    source = """
-import json
-import sys
-import torch
+    return [
+        str(PYTHON),
+        "-c",
+        CUDA_BF16_PROBE_SOURCE,
+        *[str(index) for index in indices],
+    ]
 
-indices = [int(value) for value in sys.argv[1:]]
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA is unavailable; CPU fallback is forbidden")
-if torch.cuda.device_count() <= max(indices):
-    raise RuntimeError("physical CUDA inventory is incomplete")
-rows = []
-for index in indices:
-    device = torch.device(f"cuda:{index}")
-    torch.cuda.set_device(device)
-    name = torch.cuda.get_device_name(device)
-    if "A100" not in name:
-        raise RuntimeError(f"physical GPU {index} is not A100: {name}")
-    if not torch.cuda.is_bf16_supported():
-        raise RuntimeError(f"physical GPU {index} lacks BF16 support")
-    value = (torch.ones(1, device=device, dtype=torch.bfloat16) * 2).item()
-    if value != 2.0:
-        raise RuntimeError(f"physical GPU {index} BF16 tensor probe failed")
-    rows.append({"physical_gpu_index": index, "device_name": name,
-                 "bf16_supported": True, "bf16_tensor_probe": True})
-print(json.dumps(rows, sort_keys=True))
-"""
+
+def probe_cuda_bf16(
+    physical_gpu_indices: Sequence[int] = PHYSICAL_GPU_INDICES,
+) -> list[dict[str, Any]]:
+    indices = [int(index) for index in physical_gpu_indices]
     result = command(
-        [str(PYTHON), "-c", source, *[str(index) for index in indices]],
+        cuda_bf16_probe_command(indices),
         cwd=TRAINING_WORKTREE,
     )
     rows = json.loads(result.stdout)
+    if isinstance(rows, list) and any(
+        isinstance(row, Mapping) and row.get("cpu_fallback_used") is True
+        for row in rows
+    ):
+        raise XEditCriticV403CudaBf16ProbeError(
+            "CUDA/BF16 probe observed CPU fallback",
+            cpu_fallback_used=True,
+        )
     require(
         isinstance(rows, list)
         and [row.get("physical_gpu_index") for row in rows] == indices
         and all(row.get("bf16_supported") is True for row in rows)
-        and all(row.get("bf16_tensor_probe") is True for row in rows),
+        and all(row.get("bf16_tensor_probe") is True for row in rows)
+        and all(row.get("cpu_fallback_used", False) is False for row in rows),
         "CUDA/BF16 inventory probe is incomplete",
     )
     return rows
@@ -553,8 +766,33 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
         (TRANSITION_GATE.parent, "cross-root gate root"),
     ):
         require(not path.exists(), f"{label} already exists")
+    prelaunch_failure_path = require_fresh_prelaunch_family(RUNTIME_ROOT)
     source = validate_training_source(expected_orchestration_head)
-    inventory = probe_cuda_bf16()
+    try:
+        physical_gpu_inventory()
+    except XEditCriticV403GpuInventoryError as error:
+        write_prelaunch_failure_evidence(
+            prelaunch_failure_path,
+            expected_head=expected_orchestration_head,
+            failure_stage="INVENTORY",
+            runtime_root=RUNTIME_ROOT,
+            command_line=GPU_INVENTORY_COMMAND,
+            error=error,
+        )
+        raise
+    probe_command = cuda_bf16_probe_command()
+    try:
+        inventory = probe_cuda_bf16()
+    except Exception as error:
+        write_prelaunch_failure_evidence(
+            prelaunch_failure_path,
+            expected_head=expected_orchestration_head,
+            failure_stage="CUDA_BF16_PROBE",
+            runtime_root=RUNTIME_ROOT,
+            command_line=probe_command,
+            error=error,
+        )
+        raise
     config = build_recovery_config(read_json(BASE_CONFIG))
     authorization = build_launch_authorization(
         source["preflight"],

@@ -74,6 +74,59 @@ RUNNER_VERIFICATION_RECEIPT_SCHEMA = (
 RUNNER_VERIFICATION_RECEIPT_PASS = (
     "XEDIT_V403_SUCCESSOR_RUNNER_VERIFICATION_PASS"
 )
+MIN_FOCUSED_TESTS = 203
+FOCUSED_PROCESS_GROUP_COUNT = 8
+FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
+    (
+        "test_score_route2_xeditflow_closed_frozen_methods_v3.py",
+        "test_launch_route2_xeditflow_v403_guidance_after_dual_readiness.py",
+        "test_launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness.py",
+        "test_launch_route2_xeditflow_v4_guidance_screen_after_authorization.py",
+        "test_launch_route2_xeditflow_v4_final_after_guidance_screen.py",
+        "test_launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py",
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py",
+        "test_authorize_route2_xeditsetflow_v403_recovered_confirmation.py",
+    ),
+    (
+        "test_transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py",
+        "test_prepare_route2_xeditcritic_v4_confirmation_configs.py",
+        "test_route2_xeditcritic_v4_confirmation_runtime.py",
+    ),
+    (
+        "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py",
+        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+    ),
+    (
+        "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py",
+        "test_adjudicate_route2_xeditflow_guidance_screen_v4.py",
+        "test_route2_xeditflow_guidance_v4.py",
+    ),
+    (
+        "test_train_route2_xeditcritic_v4.py",
+        "test_run_route2_xeditcritic_v4_loso_scheduler.py",
+    ),
+    (
+        "test_run_route2_xedit_v4_confirmation_training_scheduler.py",
+        "test_run_route2_xedit_v4_confirmation_posttraining_scheduler.py",
+    ),
+    (
+        "test_launch_route2_xedit_v4_confirmation_training_after_screen_pass.py",
+        "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py",
+        "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py",
+        "test_launch_route2_xeditcritic_v403_controls_after_full.py",
+        "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py",
+        "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py",
+        "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
+    ),
+    (
+        "test_prepare_route2_xeditflow_final_generation_configs_v4.py",
+        "test_evaluate_route2_xeditflow_closed_scores_v4.py",
+        "test_compare_route2_xeditflow_independent_evaluator_v4.py",
+        "test_xeditflow_v4_final_evidence_chain.py",
+        "test_run_route2_xeditflow_strongest_timing_v4.py",
+    ),
+)
+V332_TEST_GLOB_MARKER = "*v332*.py"
 CONFIRMATION_SEEDS = (20260908, 20260909, 20260910)
 PHYSICAL_GPUS = (0, 1, 2, 3, 4, 5)
 ARM_ORDER = (
@@ -391,28 +444,77 @@ def validate_runner_verification_receipt(
         and receipt.get("worktree_clean") is True,
         "Critic successor runner verification is not exact-HEAD clean PASS",
     )
-    for field, label in (
-        ("focused_tests", "focused tests"),
-        ("v332_tests", "V3.3.2 tests"),
-    ):
-        record = receipt.get(field)
-        require(
-            isinstance(record, Mapping)
-            and isinstance(record.get("command"), list)
-            and bool(record["command"])
-            and all(
-                isinstance(value, str) and bool(value)
-                for value in record["command"]
-            )
-            and record.get("passed") is True
-            and isinstance(record.get("passed_count"), int)
-            and not isinstance(record.get("passed_count"), bool)
-            and int(record["passed_count"]) > 0
-            and isinstance(record.get("failed_count"), int)
-            and not isinstance(record.get("failed_count"), bool)
-            and int(record["failed_count"]) == 0,
-            f"Critic successor runner receipt reports failed or incomplete {label}",
+    focused = receipt.get("focused_tests")
+    require(
+        isinstance(focused, Mapping),
+        "Critic successor runner receipt lacks focused tests",
+    )
+    focused_commands = focused.get("command")
+    group_passed_counts = focused.get("group_passed_counts")
+    focused_passed_count = focused.get("passed_count")
+    focused_failed_count = focused.get("failed_count")
+    require(
+        focused.get("isolated_process_groups") is True
+        and isinstance(focused_commands, list)
+        and len(focused_commands) == FOCUSED_PROCESS_GROUP_COUNT
+        and all(
+            isinstance(value, str) and bool(value)
+            for value in focused_commands
         )
+        and isinstance(group_passed_counts, list)
+        and len(group_passed_counts) == FOCUSED_PROCESS_GROUP_COUNT
+        and all(
+            isinstance(value, int)
+            and not isinstance(value, bool)
+            and value > 0
+            for value in group_passed_counts
+        )
+        and focused.get("passed") is True
+        and isinstance(focused_passed_count, int)
+        and not isinstance(focused_passed_count, bool)
+        and focused_passed_count >= MIN_FOCUSED_TESTS
+        and sum(group_passed_counts) == focused_passed_count
+        and isinstance(focused_failed_count, int)
+        and not isinstance(focused_failed_count, bool)
+        and focused_failed_count == 0,
+        "Critic successor runner receipt reports failed or incomplete focused tests",
+    )
+    for group_index, required_markers in enumerate(
+        FOCUSED_GROUP_REQUIRED_TEST_MARKERS
+    ):
+        require(
+            all(
+                marker in focused_commands[group_index]
+                for marker in required_markers
+            ),
+            "Critic successor runner receipt focused test group "
+            f"{group_index + 1} lacks required test-module coverage",
+        )
+
+    v332 = receipt.get("v332_tests")
+    require(
+        isinstance(v332, Mapping),
+        "Critic successor runner receipt lacks V3.3.2 tests",
+    )
+    v332_command = v332.get("command")
+    v332_passed_count = v332.get("passed_count")
+    v332_failed_count = v332.get("failed_count")
+    require(
+        isinstance(v332_command, list)
+        and bool(v332_command)
+        and all(
+            isinstance(value, str) and bool(value) for value in v332_command
+        )
+        and any(V332_TEST_GLOB_MARKER in value for value in v332_command)
+        and v332.get("passed") is True
+        and isinstance(v332_passed_count, int)
+        and not isinstance(v332_passed_count, bool)
+        and v332_passed_count == 96
+        and isinstance(v332_failed_count, int)
+        and not isinstance(v332_failed_count, bool)
+        and v332_failed_count == 0,
+        "Critic successor runner receipt reports failed or incomplete V3.3.2 tests",
+    )
     require_zero_protected_reads(
         receipt, label="successor runner verification receipt"
     )

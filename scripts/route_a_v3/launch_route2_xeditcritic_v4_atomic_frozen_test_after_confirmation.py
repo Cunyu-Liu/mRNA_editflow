@@ -10,7 +10,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
 WORKTREE = Path(__file__).resolve().parents[2]
@@ -23,10 +23,37 @@ JOB_RUNNER = (
 ATOMIC_TEST_RUNNER = (
     WORKTREE / "scripts/route_a_v3/run_route2_xeditcritic_v4_atomic_frozen_test.py"
 )
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,memory.free",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditCriticV4AtomicTestLaunchError(RuntimeError):
     pass
+
+
+class XEditCriticV4AtomicTestGpuInventoryError(
+    XEditCriticV4AtomicTestLaunchError
+):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
 
 
 def require(condition: bool, message: str) -> None:
@@ -53,19 +80,113 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
-def gpu_free_memory_mib() -> dict[int, int]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free",
-            "--format=csv,noheader,nounits",
-        ]
+def sibling_failure_path(runtime_root: Path) -> Path:
+    return runtime_root.with_name(runtime_root.name + ".failed.json")
+
+
+def require_fresh_prelaunch_family(runtime_root: Path) -> Path:
+    failure = sibling_failure_path(runtime_root)
+    partial = failure.with_suffix(failure.suffix + ".partial")
+    require(
+        not failure.exists() and not partial.exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
     )
+    return failure
+
+
+def gpu_free_memory_mib(
+    required_physical_gpus: Sequence[int],
+) -> dict[int, int]:
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise XEditCriticV4AtomicTestGpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditCriticV4AtomicTestGpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     values: dict[int, int] = {}
-    for line in result.stdout.splitlines():
-        index, free = (part.strip() for part in line.split(",", maxsplit=1))
-        values[int(index)] = int(free)
+    try:
+        for line in result.stdout.splitlines():
+            index, free = (part.strip() for part in line.split(",", maxsplit=1))
+            values[int(index)] = int(free)
+    except (TypeError, ValueError) as error:
+        raise XEditCriticV4AtomicTestGpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    required = tuple(int(gpu) for gpu in required_physical_gpus)
+    missing = tuple(sorted(set(required) - set(values)))
+    if missing:
+        raise XEditCriticV4AtomicTestGpuInventoryError(
+            f"configured physical GPU inventory is incomplete; missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
     return values
+
+
+def write_prelaunch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    runtime_root: Path,
+    error: XEditCriticV4AtomicTestGpuInventoryError,
+) -> None:
+    require(
+        not runtime_root.exists(),
+        "Critic atomic TEST runtime root exists before prelaunch failure evidence",
+    )
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_prelaunch_failure.v1",
+            "status": "XEDITCRITIC_PRELAUNCH_GPU_OR_CUDA_FAILURE",
+            "launcher": "atomic",
+            "failure_stage": "INVENTORY",
+            "expected_head": expected_head,
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "intended_runtime_root": str(runtime_root),
+            "runtime_root_created": False,
+            "jobs_started": 0,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "automatic_retry_attempted": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def atomic_test_decision(
@@ -132,6 +253,7 @@ def run(head: str) -> dict[str, Any]:
     decision = atomic_test_decision(posttraining, gate)
     runtime_root = ROOT / f"experiments/xedit_v4/atomic_test_launch_{head}"
     require(not runtime_root.exists(), "Critic V4 atomic TEST launch runtime exists")
+    prelaunch_failure_path = require_fresh_prelaunch_family(runtime_root)
     if decision != "LAUNCH_EXACT_ATOMIC_TEST":
         runtime_root.mkdir(parents=True)
         decision_path = runtime_root / "decision.json"
@@ -154,11 +276,18 @@ def run(head: str) -> dict[str, Any]:
     required_mib = math.ceil(
         (float(preflight["selected_peak_allocated_gib"]) + 2.0) * 1024
     )
-    free_memory = gpu_free_memory_mib()
-    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
-    physical_gpu_index = select_gpu(
-        int(frozen_protocol["physical_gpu_index"]), free_memory
-    )
+    configured_gpu = int(frozen_protocol["physical_gpu_index"])
+    try:
+        free_memory = gpu_free_memory_mib((configured_gpu,))
+    except XEditCriticV4AtomicTestGpuInventoryError as error:
+        write_prelaunch_failure_evidence(
+            prelaunch_failure_path,
+            expected_head=head,
+            runtime_root=runtime_root,
+            error=error,
+        )
+        raise
+    physical_gpu_index = select_gpu(configured_gpu, free_memory)
     runtime_root.mkdir(parents=True)
     decision_path = runtime_root / "decision.json"
     runtime_protocol = {

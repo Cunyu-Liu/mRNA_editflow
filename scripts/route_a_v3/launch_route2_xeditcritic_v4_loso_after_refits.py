@@ -29,10 +29,35 @@ STUDIES = (
     "GSE256185",
     "GSE269595",
 )
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,memory.free",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditCriticV4LosoLaunchError(RuntimeError):
     pass
+
+
+class XEditCriticV4LosoGpuInventoryError(XEditCriticV4LosoLaunchError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
 
 
 def require(condition: bool, message: str) -> None:
@@ -59,19 +84,113 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
-def gpu_free_memory_mib() -> dict[int, int]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free",
-            "--format=csv,noheader,nounits",
-        ]
+def sibling_failure_path(runtime_root: Path) -> Path:
+    return runtime_root.with_name(runtime_root.name + ".failed.json")
+
+
+def require_fresh_prelaunch_family(runtime_root: Path) -> Path:
+    failure = sibling_failure_path(runtime_root)
+    partial = failure.with_suffix(failure.suffix + ".partial")
+    require(
+        not failure.exists() and not partial.exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
     )
+    return failure
+
+
+def gpu_free_memory_mib(
+    required_physical_gpus: Sequence[int],
+) -> dict[int, int]:
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise XEditCriticV4LosoGpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditCriticV4LosoGpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     values: dict[int, int] = {}
-    for line in result.stdout.splitlines():
-        index, free = (part.strip() for part in line.split(",", maxsplit=1))
-        values[int(index)] = int(free)
+    try:
+        for line in result.stdout.splitlines():
+            index, free = (part.strip() for part in line.split(",", maxsplit=1))
+            values[int(index)] = int(free)
+    except (TypeError, ValueError) as error:
+        raise XEditCriticV4LosoGpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    required = tuple(int(gpu) for gpu in required_physical_gpus)
+    missing = tuple(sorted(set(required) - set(values)))
+    if missing:
+        raise XEditCriticV4LosoGpuInventoryError(
+            f"configured physical GPU inventory is incomplete; missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
     return values
+
+
+def write_prelaunch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    runtime_root: Path,
+    error: XEditCriticV4LosoGpuInventoryError,
+) -> None:
+    require(
+        not runtime_root.exists(),
+        "Critic LOSO runtime root exists before prelaunch failure evidence",
+    )
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "Critic prelaunch failure evidence already exists; use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": "route_a_v3_route2_xeditcritic_prelaunch_failure.v1",
+            "status": "XEDITCRITIC_PRELAUNCH_GPU_OR_CUDA_FAILURE",
+            "launcher": "loso",
+            "failure_stage": "INVENTORY",
+            "expected_head": expected_head,
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "intended_runtime_root": str(runtime_root),
+            "runtime_root_created": False,
+            "jobs_started": 0,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "automatic_retry_attempted": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def eligible_loso_gpus(
@@ -154,6 +273,7 @@ def run(head: str) -> dict[str, Any]:
     )
     runtime_root = ROOT / f"experiments/xedit_v4/loso_execution_{head}"
     require(not runtime_root.exists(), "Critic V4 LOSO execution runtime exists")
+    prelaunch_failure_path = require_fresh_prelaunch_family(runtime_root)
     loso_config_root = Path(
         protocol_payload["test_preserving_loso"]["runtime_config_root"]
     )
@@ -168,10 +288,19 @@ def run(head: str) -> dict[str, Any]:
     required_mib = math.ceil(
         (float(preflight["selected_peak_allocated_gib"]) + 2.0) * 1024
     )
-    free_memory = gpu_free_memory_mib()
-    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
+    configured_gpus = tuple(int(gpu) for gpu in protocol_payload["physical_gpu_indices"])
+    try:
+        free_memory = gpu_free_memory_mib(configured_gpus)
+    except XEditCriticV4LosoGpuInventoryError as error:
+        write_prelaunch_failure_evidence(
+            prelaunch_failure_path,
+            expected_head=head,
+            runtime_root=runtime_root,
+            error=error,
+        )
+        raise
     selected_gpus = eligible_loso_gpus(
-        protocol_payload["physical_gpu_indices"], free_memory
+        configured_gpus, free_memory
     )
     prepare = WORKTREE / "scripts/route_a_v3/prepare_route2_xeditcritic_v4_posttest_configs.py"
     authorize = WORKTREE / "scripts/route_a_v3/authorize_route2_xeditcritic_v4_posttest.py"

@@ -439,3 +439,57 @@ or terminal artifacts.
   `XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL` together with `XEDITFLOW_V4_PASS` on
   all frozen final evidence. External scientific confirmation remains locked
   until a genuinely new outcome-unexposed Evaluation cohort is available.
+
+## Iteration 8 — Make the next exact-HEAD handoff receipt and active cursor durable
+
+- Objective: close only the remaining reachable handoff and successor-monitor
+  gaps found while the two-hour heartbeat continues to own all active training
+  reads. No active V4.0.3 runtime, metric, curve, log, protected outcome, frozen
+  threshold, seed, budget, precision mode, or current artifact family is changed.
+- Receipt-coverage correction: the repository current index now requires eight
+  isolated focused-test processes rather than the obsolete six-process layout.
+  Both Critic and SetFlow receipt consumers require an internally consistent
+  eight-group record, the complete set of current group-defining test modules,
+  at least the c5db 203-test coverage floor, and exactly 96 V3.3.2 tests. A
+  positive count alone can no longer authorize a future runner, while additional
+  tests can still increase the exact-HEAD receipt count without weakening the
+  frozen minimum coverage.
+- Critic GPU prelaunch evidence: controls, atomic frozen TEST, three-refit, and
+  LOSO now reserve deterministic `<runtime_root>.failed.json` sibling evidence
+  before inventory or CUDA/BF16 probing. Inventory execution, return-code,
+  parsing, configured-device absence, and controls child-probe failures stop
+  before runtime creation or job launch and retain command/output/device/code
+  identity. Existing failure or partial evidence closes the family; a retry
+  requires a distinct family. No free- or estimated-memory gate or GPU sorting
+  was introduced.
+- Active-cursor correction: the two runtimes named when the heartbeat was first
+  deployed are explicitly initial cursors, not a permanent active set. Every
+  successful successor launch must promote its returned `runtime_manifest`,
+  atomic `job_runtime`, or guidance `guidance_screen_runtime_path` into the next
+  wake's active-cursor set until exact terminal state. Existing runtime, launch,
+  decision, failure, or partial evidence forbids relaunching the same family.
+- Handover locator: the repository current index now names the canonical main
+  contract, V4 prospective protocol, and frozen guidance config. The original
+  2026-08-26 handover package receives one current-status addendum and a README
+  link; its older audit files remain immutable historical snapshots.
+- Remaining handover evidence: independent frozen Validation reproduction and a
+  narrow critical-run ledger export remain intentionally deferred until Final
+  Development terminal, when they can use terminal read-only evidence without
+  competing with or snapshotting the active package. Any model forward in that
+  reproduction must use real CUDA and stop on CPU fallback.
+- External Evaluation metadata: no registered study is presently both
+  outcome-unexposed, convertible, independent, and rights-cleared. GSE232572 is
+  exposed, E-MTAB-10902 is currently unconvertible, and GSE246381 remains sealed.
+  GSE113849 is only a possible metadata-admission subject; historical exposure,
+  provenance independence, and study-specific rights must close before any
+  outcome read. This does not gate Development PASS and continues to keep
+  `submission_ready=false`.
+- Verification discipline: the directly affected receipt and Critic launcher
+  tests are run before commit. After the containing commit, the complete focused
+  cohort is rerun in eight isolated Python processes together with the 96-test
+  V3.3.2 cohort; only those committed results may create the next two receipts.
+  These are orchestration tests, not GPU validation or scientific evidence.
+- Conclusion: the current Development result remains scientifically pending.
+  The only excellent-result criterion is still terminal Final adjudication plus
+  frozen `XEDITFLOW_V4_PASS`; none of the handoff or orchestration evidence in
+  this iteration substitutes for that result.
