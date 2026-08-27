@@ -315,3 +315,12 @@ recovery has already lost its selectable full arm and remains incomplete. Thus
 no confirmation, frozen TEST, readiness, joint guidance, SMC comparison, or new
 external Evaluation is authorized. The current manuscript cannot support the
 planned model-plus-benchmark advantage claim.
+
+The project handover package has been updated to preserve this distinction at
+the transfer boundary. Its dated root-cause note records the parameter/cohort,
+BF16 router, atomic-publication, resource-floor, Critic sampler, and SetFlow Git-
+authorization failures separately. It explicitly does not infer the unread
+Critic recovery full failure cause and does not reinterpret the SetFlow technical
+gate as poor NLL, recovery, top-k recovery, or diversity. This is documentation
+and provenance work only; it adds no performance evidence and leaves protected
+outcome reads at zero.

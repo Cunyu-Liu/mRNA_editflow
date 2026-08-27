@@ -4259,3 +4259,16 @@ confirmation/TEST/refit/LOSO未授权，joint guidance/SMC/matched generation及
 当前唯一合法动作仍是等待Critic完整八臂terminal后执行一次原子adjudication。任何SetFlow重跑、authorization
 重写、第二次Critic recovery、额外seed、降gate、TEST/Evaluation读取或guidance launch均未授权。审计：
 `audits/route_a_v3_route2_xedit_v4_protocol_completion_gap_20260827.json`。
+
+## V4 failure root-cause handover update（2026-08-27）
+
+用户指定的科研项目交接审计包已增量更新，新建`V4_FAILURE_ROOT_CAUSE_UPDATE_20260827.md`，并同步修订summary、
+status matrix、experiment registry、failures、next-stage plan、checklist、evidence index、reproduction guide与README。
+文档明确区分：preflight 1–4工程失败、原始Critic八臂sampler技术失败、SetFlow post-training exact-HEAD
+integration technical NO-GO，以及当前Critic recovery full failure“存在但根因仍未获授权读取”。`00_INITIAL_AUDIT.md`
+保持2026-08-26历史快照不改写。
+
+本地11:52:07到窗后的Critic status SSH因多行Python参数被远端shell拆开而未取得可用状态；没有立即补查，下一
+Critic窗口顺延至本地12:52:07之后。该无效检查没有读取runtime状态、terminal payload、active log/curve/metric、
+Development TEST或new Evaluation。审计：
+`audits/route_a_v3_route2_handover_v4_failure_update_20260827.json`。

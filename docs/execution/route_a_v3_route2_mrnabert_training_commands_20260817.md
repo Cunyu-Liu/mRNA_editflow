@@ -4828,3 +4828,9 @@ V4 protocol completion-gap审计已逐项冻结当前事实：工程前置完成
 active且full failure使performance PASS不可能；全部confirmation/TEST/guidance/external链按gate关闭。唯一下一动作是
 Critic八臂terminal后的单次原子adjudication。审计：
 `audits/route_a_v3_route2_xedit_v4_protocol_completion_gap_20260827.json`。
+
+交接审计目录已在2026-08-27增量更新，新增一份逐attempt V4 failure root-cause报告，并把所有当前状态表中的
+SetFlow“active”改为terminal technical NO-GO。文档不把8项checkpoint Validation的authorization-HEAD mismatch
+解释成NLL/recovery/diversity失败，也不猜测尚未read-once的Critic recovery full根因。11:52:07窗口的窄SSH命令
+因远端shell拆分多行参数而失败，未取得新训练快照且没有立即补查；下一窗口`>=12:52:07`。审计：
+`audits/route_a_v3_route2_handover_v4_failure_update_20260827.json`。

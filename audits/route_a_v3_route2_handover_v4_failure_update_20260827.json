@@ -1,0 +1,74 @@
+{
+  "schema_version": "route_a_v3_route2_handover_v4_failure_update_20260827.v1",
+  "status": "HANDOVER_V4_FAILURE_ROOT_CAUSE_UPDATE_COMPLETE",
+  "handover_root": "/Users/liucunyu/Documents/课题idea 数据 结论/浙江大学/RNA 相关模型/mRNAflow/mRNA_EditFlow_科研项目交接审计_20260826",
+  "new_handover_document": "V4_FAILURE_ROOT_CAUSE_UPDATE_20260827.md",
+  "updated_handover_documents": [
+    "README.md",
+    "PROJECT_HANDOVER_SUMMARY.md",
+    "PROJECT_STATUS_MATRIX.md",
+    "EXPERIMENT_REGISTRY.md",
+    "FAILURE_AND_PITFALLS.md",
+    "NEXT_STAGE_PLAN.md",
+    "HANDOVER_CHECKLIST.md",
+    "EVIDENCE_INDEX.md",
+    "REPRODUCTION_GUIDE.md"
+  ],
+  "initial_audit_preserved_as_historical_snapshot": true,
+  "failure_classification": {
+    "v4_preflight_attempt_1": "FORMAL_PARAMETER_AND_VALIDATION_COHORT_ROLE_GEOMETRY_ERROR_NO_PERFORMANCE_RESULT",
+    "v4_preflight_attempt_2": "BF16_ROUTER_SCATTER_DTYPE_MISMATCH_NO_PERFORMANCE_RESULT",
+    "v4_preflight_attempt_3": "MISSING_OS_IMPORT_AT_ATOMIC_PUBLICATION_NO_PERFORMANCE_RESULT",
+    "v4_preflight_attempt_4": "PROSPECTIVE_RESOURCE_FLOOR_PAUSE_NOT_MODEL_FAILURE",
+    "original_critic_v4_screen": "EIGHT_ARM_TASK_TAIL_PADDING_AFTER_REPEAT_CAP_SATURATION_NO_PERFORMANCE_SUMMARY",
+    "setflow_v4_screen": "POST_TRAINING_AUTHORIZATION_HEAD_MISMATCH_TECHNICAL_NO_GO_NO_PERFORMANCE_METRICS",
+    "critic_v402_full_recovery": "FAILURE_ARTIFACT_EXISTS_CAUSE_NOT_YET_AUTHORIZED_FOR_READ"
+  },
+  "setflow_terminal_gate": {
+    "status": "XEDITSETFLOW_V4_SCREEN_NO_GO",
+    "classification": "POST_TRAINING_INTEGRATION_ERROR_NOT_MODEL_PERFORMANCE_FAILURE",
+    "training_authorization_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+    "validation_runner_head": "bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5",
+    "performance_metrics_produced": false,
+    "confirmation_authorized": false,
+    "guidance_authorized": false
+  },
+  "critic_evidence_cutoff": {
+    "last_valid_local_observation": "2026-08-27 10:51:15 +0800",
+    "last_valid_remote_observation": "2026-08-27T10:53:34+08:00",
+    "c0_terminal_kind": "SUMMARY",
+    "v4_full_terminal_kind": "FAILURE",
+    "v4_full_failure_payload_read": false,
+    "performance_screen_pass_possible": false,
+    "formal_adjudication_waits_for_all_eight_terminal": true
+  },
+  "monitoring_window_20260827_115207": {
+    "usable_remote_status_obtained": false,
+    "failure": "REMOTE_MULTILINE_PYTHON_ARGUMENT_WAS_SPLIT_BY_SHELL_AND_RAISED_SYNTAX_ERROR",
+    "immediate_supplementary_check_performed": false,
+    "next_check_not_before_local": "2026-08-27 12:52:07 +0800",
+    "terminal_payload_read": false,
+    "active_log_curve_or_metric_read": false
+  },
+  "handover_validation": {
+    "all_ten_current_documents_nonempty": true,
+    "stale_setflow_active_phrases_found": 0,
+    "new_root_cause_document_contains_protected_read_accounting": true,
+    "new_root_cause_document_separates_technical_failure_from_scientific_no_go": true
+  },
+  "source_audits": [
+    "audits/route_a_v3_route2_xedit_v4_preflight_attempt1_technical_failure_geometry_fix_v1.json",
+    "audits/route_a_v3_route2_xedit_v4_preflight_attempt2_terminal_bf16_router_fix_v1.json",
+    "audits/route_a_v3_route2_xedit_v4_preflight_attempt3_terminal_atomic_publish_fix_v1.json",
+    "audits/route_a_v3_route2_xedit_v4_preflight_attempt4_terminal_pause_v1.json",
+    "audits/route_a_v3_route2_xedit_v4_preflight_attempt5_terminal_dual_pass_v1.json",
+    "audits/route_a_v3_route2_xeditcritic_v402_terminal_diagnosis_sampler_fix_v1.json",
+    "audits/route_a_v3_route2_xeditsetflow_v4_screen_terminal_nogo_v1.json",
+    "audits/route_a_v3_route2_xeditcritic_v402_terminal_adjudicator_readiness_v1.json"
+  ],
+  "training_or_evaluation_launched": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

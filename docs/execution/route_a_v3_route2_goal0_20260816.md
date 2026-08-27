@@ -70,3 +70,11 @@ with confirmation, Development TEST, and guidance all unauthorized. This is an
 integration failure rather than a negative recovery or diversity estimate, but
 it still leaves SetFlow V4 not ready and the manuscript below the stated model-
 advantage publication threshold.
+
+The external handover audit package now contains a dated, evidence-linked V4
+failure root-cause update. It preserves the original 2026-08-26 audit snapshot,
+separates technical failures from scientific NO-GO decisions, and marks the
+Critic V4.0.2 full recovery cause as unread rather than inferred. The SetFlow
+technical terminal closes its confirmation and guidance path; the only active
+execution dependency is the remaining Critic eight-arm recovery and its one-shot
+atomic adjudication. Protected outcome reads remain zero.
