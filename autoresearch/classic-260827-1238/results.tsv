@@ -1,0 +1,3 @@
+iteration	change	training_updates	status	task_macro_spearman	standardized_mae	positive_tasks	tasks_won_vs_c0	gate	conclusion
+0	align collection and replay grad-enabled checkpoint paths	0	SMOKE_PENDING						root cause repaired; A100 tests pass; waiting for an in-scope GPU
+

@@ -1,0 +1,13 @@
+{
+  "mode": "classic",
+  "status": "CUDA_REPLAY_SMOKE_PENDING_GPU",
+  "current_incumbent": null,
+  "iteration": 0,
+  "repair_git_head": "a3dd9a9bd3ca727b88c0a053c4dd06fa959cf001",
+  "launch_git_head": "7d7b7b9a8edc7cbc29590a096d13d8b494ef2909",
+  "parameter_updates": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "remote_worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_v403_critic_rng_replay_20260827",
+  "next_action": "run exact-head full-model RNG replay smoke on the first free physical GPU 0-5, then launch repaired v4_full"
+}
