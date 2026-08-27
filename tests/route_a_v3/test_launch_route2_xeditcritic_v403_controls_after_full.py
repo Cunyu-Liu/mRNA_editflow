@@ -14,8 +14,13 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
 
-def _full_summary(authorization_path: Path, *, protected_reads: int = 0) -> dict:
-    return {
+def _full_summary(
+    authorization_path: Path,
+    *,
+    physical_gpu_index: int = 3,
+    protected_reads: int = 0,
+) -> dict:
+    summary = {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
         "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
         "run_id": "v4_full",
@@ -23,13 +28,16 @@ def _full_summary(authorization_path: Path, *, protected_reads: int = 0) -> dict
         "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
         "cpu_fallback_used": False,
         "parameter_changed": True,
+        "physical_gpu_index": physical_gpu_index,
         "launch_authorization_path": str(authorization_path),
         "development_test_outcome_reads": protected_reads,
         "new_final_evaluation_outcome_reads": 0,
     }
+    summary.update(launcher.FROZEN_FULL_SUMMARY_IDENTITY)
+    return summary
 
 
-def _full_runtime() -> dict:
+def _full_runtime(*, physical_gpu_index: int = 3) -> dict:
     return {
         "schema_version": (
             "route_a_v3_route2_xeditcritic_v403_full_recovery_runtime.v1"
@@ -39,7 +47,27 @@ def _full_runtime() -> dict:
         "return_code": 0,
         "run_id": "v4_full",
         "git_head": launcher.TRAINING_GIT_HEAD,
+        "physical_gpu_index": physical_gpu_index,
         "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _full_authorization(
+    *, physical_gpu_index: int = 3, protected_reads: int = 0
+) -> dict:
+    return {
+        "schema_version": (
+            "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
+        ),
+        "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
+        "authorized_git_head": launcher.TRAINING_GIT_HEAD,
+        "authorized_run_ids": list(launcher.ALL_RUN_IDS),
+        "v403_rng_replay_recovery": {
+            "run_id": "v4_full",
+            "physical_gpu_index": physical_gpu_index,
+        },
+        "development_test_outcome_reads": protected_reads,
         "new_final_evaluation_outcome_reads": 0,
     }
 
@@ -94,11 +122,7 @@ def test_full_terminal_requires_zero_protected_reads(tmp_path: Path) -> None:
     authorization = tmp_path / "authorization.json"
     _write_json(
         authorization,
-        {
-            "authorized_git_head": launcher.TRAINING_GIT_HEAD,
-            "development_test_outcome_reads": 0,
-            "new_final_evaluation_outcome_reads": 0,
-        },
+        _full_authorization(),
     )
     _write_json(
         output_root / "v4_full/run_summary.json",
@@ -109,6 +133,80 @@ def test_full_terminal_requires_zero_protected_reads(tmp_path: Path) -> None:
 
     with pytest.raises(Exception, match="Development TEST read"):
         launcher.validate_current_full_terminal(output_root, runtime)
+
+
+def test_full_terminal_accepts_consistent_non_gpu5_frozen_identity(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "full"
+    authorization_path = tmp_path / "authorization.json"
+    _write_json(
+        authorization_path,
+        _full_authorization(physical_gpu_index=3),
+    )
+    _write_json(
+        output_root / "v4_full/run_summary.json",
+        _full_summary(authorization_path, physical_gpu_index=3),
+    )
+    runtime_path = tmp_path / "runtime.json"
+    _write_json(runtime_path, _full_runtime(physical_gpu_index=3))
+
+    result = launcher.validate_current_full_terminal(output_root, runtime_path)
+
+    assert result["physical_gpu_index"] == 3
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("seed", 20260908),
+        ("pass_count", 7),
+        ("selected_pass", 7),
+        ("update_count", 22415),
+        ("selection_policy", "VALIDATION_PEAK_RESELECTION"),
+        ("train_record_count", 89579),
+        ("validation_record_count", 18292),
+        ("effective_batch_size", 16),
+        ("physical_batch_size", 16),
+    ],
+)
+def test_full_terminal_rejects_non_frozen_training_identity(
+    tmp_path: Path, field: str, invalid_value: object
+) -> None:
+    output_root = tmp_path / "full"
+    authorization_path = tmp_path / "authorization.json"
+    _write_json(authorization_path, _full_authorization())
+    summary = _full_summary(authorization_path)
+    summary[field] = invalid_value
+    _write_json(output_root / "v4_full/run_summary.json", summary)
+    runtime_path = tmp_path / "runtime.json"
+    _write_json(runtime_path, _full_runtime())
+
+    with pytest.raises(Exception, match="frozen training identity"):
+        launcher.validate_current_full_terminal(output_root, runtime_path)
+
+
+def test_full_terminal_rejects_gpu_disagreement_or_unauthorized_run(
+    tmp_path: Path,
+) -> None:
+    output_root = tmp_path / "full"
+    authorization_path = tmp_path / "authorization.json"
+    authorization = _full_authorization(physical_gpu_index=4)
+    _write_json(authorization_path, authorization)
+    _write_json(
+        output_root / "v4_full/run_summary.json",
+        _full_summary(authorization_path, physical_gpu_index=3),
+    )
+    runtime_path = tmp_path / "runtime.json"
+    _write_json(runtime_path, _full_runtime(physical_gpu_index=3))
+    with pytest.raises(Exception, match="physical GPUs disagree"):
+        launcher.validate_current_full_terminal(output_root, runtime_path)
+
+    authorization["v403_rng_replay_recovery"]["physical_gpu_index"] = 3
+    authorization["authorized_run_ids"].remove("v4_full")
+    _write_json(authorization_path, authorization)
+    with pytest.raises(Exception, match="launch authorization identity"):
+        launcher.validate_current_full_terminal(output_root, runtime_path)
 
 
 def test_schedule_is_exactly_six_fresh_controls_from_f34(tmp_path: Path) -> None:

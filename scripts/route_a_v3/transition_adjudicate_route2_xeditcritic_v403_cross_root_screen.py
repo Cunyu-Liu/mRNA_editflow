@@ -80,7 +80,6 @@ CONTROL_RUN_IDS = ARM_ORDER[2:]
 @dataclass(frozen=True)
 class ArmSource:
     summary_path: Path
-    training_git_head: str
     source_role: str
 
 
@@ -88,12 +87,10 @@ def default_arm_sources() -> dict[str, ArmSource]:
     result = {
         "c0_v4": ArmSource(
             HISTORICAL_C0_OUTPUT_ROOT / "c0_v4/run_summary.json",
-            C0_GIT_HEAD,
             "HISTORICAL_MATCHED_C0_TERMINAL_SUMMARY",
         ),
         "v4_full": ArmSource(
             CURRENT_FULL_OUTPUT_ROOT / "v4_full/run_summary.json",
-            TRAINING_GIT_HEAD,
             "CURRENT_V403_REPAIRED_FULL_TERMINAL_SUMMARY",
         ),
     }
@@ -101,7 +98,6 @@ def default_arm_sources() -> dict[str, ArmSource]:
         {
             run_id: ArmSource(
                 CONTROL_OUTPUT_ROOT / run_id / "run_summary.json",
-                TRAINING_GIT_HEAD,
                 "V403_REPAIRED_CONTROL_TERMINAL_SUMMARY",
             )
             for run_id in CONTROL_RUN_IDS
@@ -210,7 +206,7 @@ def validate_control_runtime(path: Path = CONTROL_RUNTIME) -> dict[str, Any]:
 def collect_arm_summaries(
     config: Mapping[str, Any],
     arm_sources: Mapping[str, ArmSource],
-) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, str]]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     frozen_order = tuple(
         str(row["run_id"]) for row in config["required_screen_runs"]
     )
@@ -220,7 +216,7 @@ def collect_arm_summaries(
         "cross-root source map is not the exact ordered eight-arm package",
     )
     summaries: dict[str, dict[str, Any]] = {}
-    provenance: dict[str, dict[str, str]] = {}
+    provenance: dict[str, dict[str, Any]] = {}
     for run_id in ARM_ORDER:
         source = arm_sources[run_id]
         summary_path = source.summary_path
@@ -239,16 +235,47 @@ def collect_arm_summaries(
             f"{run_id} terminal summary identity is invalid",
         )
         require_zero_protected_reads(summary, f"{run_id} terminal summary")
-        expected_head = C0_GIT_HEAD if run_id == "c0_v4" else TRAINING_GIT_HEAD
+        authorization_path_value = summary.get("launch_authorization_path")
         require(
-            source.training_git_head == expected_head,
-            f"{run_id} source HEAD is ambiguous",
+            isinstance(authorization_path_value, str)
+            and bool(authorization_path_value.strip()),
+            f"{run_id} launch authorization path is absent",
         )
+        authorization_path = Path(authorization_path_value)
+        require(
+            authorization_path.is_file(),
+            f"{run_id} launch authorization is absent",
+        )
+        authorization = read_json(authorization_path)
+        expected_head = C0_GIT_HEAD if run_id == "c0_v4" else TRAINING_GIT_HEAD
+        authorized_run_ids = authorization.get("authorized_run_ids")
+        require(
+            authorization.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
+            and authorization.get("status")
+            == "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"
+            and authorization.get("authorized_git_head") == expected_head
+            and isinstance(authorized_run_ids, list)
+            and run_id in authorized_run_ids,
+            f"{run_id} launch authorization identity is invalid",
+        )
+        require_zero_protected_reads(
+            authorization, f"{run_id} launch authorization"
+        )
+        verified_head = str(authorization["authorized_git_head"])
         summaries[run_id] = summary
         provenance[run_id] = {
             "summary_path": str(summary_path),
-            "training_git_head": source.training_git_head,
+            "training_git_head": verified_head,
             "source_role": source.source_role,
+            "launch_authorization_path": str(authorization_path),
+            "launch_authorization_schema_version": str(
+                authorization["schema_version"]
+            ),
+            "launch_authorization_status": str(authorization["status"]),
+            "authorized_git_head": verified_head,
+            "run_id_authorization_verified": True,
+            "authorization_protected_outcome_reads_verified_zero": True,
         }
     return summaries, provenance
 

@@ -98,6 +98,17 @@ ALL_RUN_IDS = (
 )
 CONTROL_RUN_IDS = ALL_RUN_IDS[2:]
 PHYSICAL_GPU_INDICES = (0, 1, 2, 3, 4, 5)
+FROZEN_FULL_SUMMARY_IDENTITY = {
+    "seed": 20260907,
+    "pass_count": 8,
+    "selected_pass": 8,
+    "update_count": 22416,
+    "selection_policy": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
+    "train_record_count": 89580,
+    "validation_record_count": 18293,
+    "effective_batch_size": 32,
+    "physical_batch_size": 32,
+}
 
 
 class XEditCriticV403ControlRecoveryLaunchError(RuntimeError):
@@ -107,6 +118,14 @@ class XEditCriticV403ControlRecoveryLaunchError(RuntimeError):
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise XEditCriticV403ControlRecoveryLaunchError(message)
+
+
+def validated_physical_gpu_index(value: Any, label: str) -> int:
+    require(
+        type(value) is int and value in PHYSICAL_GPU_INDICES,
+        f"{label} physical GPU is outside the frozen 0-5 scope",
+    )
+    return value
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -182,6 +201,9 @@ def validate_current_full_terminal(
         "current V4.0.3 full runtime is not exact successful terminal",
     )
     require_zero_protected_reads(runtime, "current full runtime")
+    runtime_gpu_index = validated_physical_gpu_index(
+        runtime.get("physical_gpu_index"), "current full runtime"
+    )
     summary = read_json(output / "run_summary.json")
     require(
         summary.get("schema_version")
@@ -196,19 +218,53 @@ def validate_current_full_terminal(
         and summary.get("parameter_changed") is True,
         "current V4.0.3 full summary identity is invalid",
     )
+    require(
+        all(
+            summary.get(key) == expected
+            for key, expected in FROZEN_FULL_SUMMARY_IDENTITY.items()
+        ),
+        "current V4.0.3 full summary does not match frozen training identity",
+    )
+    summary_gpu_index = validated_physical_gpu_index(
+        summary.get("physical_gpu_index"), "current full summary"
+    )
+    require(
+        summary_gpu_index == runtime_gpu_index,
+        "current full runtime and summary physical GPUs disagree",
+    )
     require_zero_protected_reads(summary, "current full summary")
     authorization_path = Path(str(summary.get("launch_authorization_path", "")))
     require(authorization_path.is_file(), "current full authorization is absent")
     authorization = read_json(authorization_path)
+    authorized_run_ids = authorization.get("authorized_run_ids")
     require(
-        authorization.get("authorized_git_head") == TRAINING_GIT_HEAD,
-        "current full authorization is bound to another training HEAD",
+        authorization.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
+        and authorization.get("status")
+        == "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"
+        and authorization.get("authorized_git_head") == TRAINING_GIT_HEAD
+        and isinstance(authorized_run_ids, list)
+        and "v4_full" in authorized_run_ids,
+        "current full launch authorization identity is invalid",
     )
     require_zero_protected_reads(authorization, "current full authorization")
+    recovery = authorization.get("v403_rng_replay_recovery")
+    require(
+        isinstance(recovery, Mapping) and recovery.get("run_id") == "v4_full",
+        "current full launch authorization lacks its V4.0.3 recovery identity",
+    )
+    authorization_gpu_index = validated_physical_gpu_index(
+        recovery.get("physical_gpu_index"), "current full authorization"
+    )
+    require(
+        authorization_gpu_index == runtime_gpu_index == summary_gpu_index,
+        "current full runtime, summary, and authorization physical GPUs disagree",
+    )
     return {
         "summary": summary,
         "runtime": runtime,
         "authorization_path": str(authorization_path),
+        "physical_gpu_index": summary_gpu_index,
     }
 
 

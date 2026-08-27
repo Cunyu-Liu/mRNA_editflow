@@ -13,12 +13,28 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
 
-def _summary(run_id: str, *, protected_reads: int = 0) -> dict:
+def _summary(
+    run_id: str, authorization_path: Path, *, protected_reads: int = 0
+) -> dict:
     return {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
         "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
         "run_id": run_id,
+        "launch_authorization_path": str(authorization_path),
         "development_test_outcome_reads": protected_reads,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _authorization(run_id: str, authorized_git_head: str) -> dict:
+    return {
+        "schema_version": (
+            "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
+        ),
+        "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
+        "authorized_git_head": authorized_git_head,
+        "authorized_run_ids": list(transition.ARM_ORDER),
+        "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
 
@@ -78,10 +94,33 @@ def _arm_sources(tmp_path: Path) -> dict[str, transition.ArmSource]:
         )
         sources[run_id] = transition.ArmSource(
             tmp_path / "arms" / run_id / "run_summary.json",
-            head,
             role,
         )
+        _write_json(
+            tmp_path / "authorizations" / run_id / "launch_authorization.json",
+            _authorization(run_id, head),
+        )
     return sources
+
+
+def _write_arm_summary(
+    source: transition.ArmSource,
+    run_id: str,
+    *,
+    protected_reads: int = 0,
+) -> None:
+    root = source.summary_path.parents[2]
+    authorization_path = (
+        root / "authorizations" / run_id / "launch_authorization.json"
+    )
+    _write_json(
+        source.summary_path,
+        _summary(
+            run_id,
+            authorization_path,
+            protected_reads=protected_reads,
+        ),
+    )
 
 
 def _write_runtimes(tmp_path: Path) -> tuple[Path, Path]:
@@ -142,7 +181,7 @@ def test_gate_is_not_called_until_all_eight_exact_summaries_exist(
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
         if run_id != "v4_no_moe":
-            _write_json(source.summary_path, _summary(run_id))
+            _write_arm_summary(source, run_id)
     full_runtime, control_runtime = _write_runtimes(tmp_path)
     calls: list[object] = []
 
@@ -173,7 +212,7 @@ def test_complete_cross_root_package_calls_frozen_gate_once_and_preserves_old_ga
     config_path, config = _config(tmp_path)
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
-        _write_json(source.summary_path, _summary(run_id))
+        _write_arm_summary(source, run_id)
     full_runtime, control_runtime = _write_runtimes(tmp_path)
     legacy_gate = tmp_path / "legacy_gate.json"
     legacy_payload = '{"status":"LEGACY_NO_GO"}\n'
@@ -226,6 +265,20 @@ def test_complete_cross_root_package_calls_frozen_gate_once_and_preserves_old_ga
     assert set(result["cross_root_transition"]["arm_sources"]) == set(
         transition.ARM_ORDER
     )
+    provenance = result["cross_root_transition"]["arm_sources"]
+    assert provenance["c0_v4"]["authorized_git_head"] == transition.C0_GIT_HEAD
+    assert all(
+        provenance[run_id]["authorized_git_head"]
+        == transition.TRAINING_GIT_HEAD
+        for run_id in transition.ARM_ORDER[1:]
+    )
+    assert all(
+        row["run_id_authorization_verified"] is True
+        and row["authorization_protected_outcome_reads_verified_zero"] is True
+        and row["launch_authorization_status"]
+        == "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"
+        for row in provenance.values()
+    )
     assert result["cross_root_transition"]["terminal_summary_payloads_read"] == 8
     assert result["cross_root_transition"]["scientific_thresholds_changed"] is False
     assert result["development_test_outcome_reads"] == 0
@@ -240,9 +293,10 @@ def test_protected_read_or_ambiguous_arm_map_prevents_gate(
     config_path, _ = _config(tmp_path)
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
-        _write_json(
-            source.summary_path,
-            _summary(run_id, protected_reads=1 if run_id == "v4_no_cross" else 0),
+        _write_arm_summary(
+            source,
+            run_id,
+            protected_reads=1 if run_id == "v4_no_cross" else 0,
         )
     full_runtime, control_runtime = _write_runtimes(tmp_path)
     calls: list[object] = []
@@ -264,14 +318,78 @@ def test_protected_read_or_ambiguous_arm_map_prevents_gate(
 
     clean_sources = _arm_sources(tmp_path / "clean")
     for run_id, source in clean_sources.items():
-        _write_json(source.summary_path, _summary(run_id))
+        _write_arm_summary(source, run_id)
     ambiguous = dict(clean_sources)
     ambiguous["unexpected_arm"] = transition.ArmSource(
         tmp_path / "unexpected/run_summary.json",
-        transition.TRAINING_GIT_HEAD,
         "UNEXPECTED",
     )
     with pytest.raises(Exception, match="exact ordered eight-arm package"):
         transition.collect_arm_summaries(
             json.loads(config_path.read_text(encoding="utf-8")), ambiguous
         )
+
+
+@pytest.mark.parametrize(
+    ("run_id", "field", "invalid_value", "error"),
+    [
+        (
+            "v4_no_cross",
+            "schema_version",
+            "wrong.schema",
+            "launch authorization identity",
+        ),
+        (
+            "v4_no_cross",
+            "status",
+            "NOT_AUTHORIZED",
+            "launch authorization identity",
+        ),
+        (
+            "c0_v4",
+            "authorized_git_head",
+            transition.TRAINING_GIT_HEAD,
+            "launch authorization identity",
+        ),
+        (
+            "v4_no_cross",
+            "authorized_git_head",
+            transition.C0_GIT_HEAD,
+            "launch authorization identity",
+        ),
+        (
+            "v4_no_cross",
+            "authorized_run_ids",
+            [run_id for run_id in transition.ARM_ORDER if run_id != "v4_no_cross"],
+            "launch authorization identity",
+        ),
+        (
+            "v4_no_cross",
+            "development_test_outcome_reads",
+            1,
+            "Development TEST read",
+        ),
+    ],
+)
+def test_each_arm_requires_authoritative_launch_authorization(
+    tmp_path: Path,
+    run_id: str,
+    field: str,
+    invalid_value: object,
+    error: str,
+) -> None:
+    _, config = _config(tmp_path)
+    sources = _arm_sources(tmp_path)
+    for current_run_id, source in sources.items():
+        _write_arm_summary(source, current_run_id)
+    authorization_path = Path(
+        json.loads(sources[run_id].summary_path.read_text(encoding="utf-8"))[
+            "launch_authorization_path"
+        ]
+    )
+    authorization = json.loads(authorization_path.read_text(encoding="utf-8"))
+    authorization[field] = invalid_value
+    _write_json(authorization_path, authorization)
+
+    with pytest.raises(Exception, match=error):
+        transition.collect_arm_summaries(config, sources)
