@@ -18,6 +18,21 @@ PROTOCOL = ROOT / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.j
 ROUTE2 = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2"
 
 
+def _protocol() -> dict:
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    protocol.update(
+        {
+            "strongest_closed_score_table_path": (
+                f"{ROUTE2}/baselines/strongest_closed_scores.private.jsonl"
+            ),
+            "strongest_closed_score_summary_path": (
+                f"{ROUTE2}/baselines/strongest_closed_scores.summary.json"
+            ),
+        }
+    )
+    return protocol
+
+
 def _critic_ready() -> dict:
     return {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_guidance_readiness.v1",
@@ -105,7 +120,9 @@ def _strongest() -> dict:
         "forward_equivalent_budget_per_source": 320,
         "critic_forward_budget_per_source": 320,
         "guiding_checkpoint_path": f"{ROUTE2}/baselines/guiding.pt",
-        "independent_evaluator_checkpoint_path": f"{ROUTE2}/baselines/evaluator.pt",
+        "independent_evaluator_checkpoint_path": _protocol()[
+            "independent_evaluator_checkpoint_path"
+        ],
     }
 
 
@@ -118,7 +135,7 @@ def _baseline_selection() -> dict:
 
 def _payload() -> dict:
     return build_final_generation_configs_v4(
-        json.loads(PROTOCOL.read_text(encoding="utf-8")),
+        _protocol(),
         _critic_ready(),
         _setflow_ready(),
         _refit(),
@@ -220,8 +237,14 @@ def test_v4_final_configs_close_exact_and_frozen_score_benchmarks() -> None:
         }
         strongest = job["closed_metric_configs"]["strongest_matched_baseline"]
         strongest_paths.add(strongest["score_table_path"])
+        assert strongest["score_summary_path"] == (
+            f"{ROUTE2}/baselines/strongest_closed_scores.summary.json"
+        )
         assert strongest["strongest_baseline_frozen_before_v4_candidate_generation"]
         assert strongest["baseline_reselected_for_v4"] is False
+        assert job["independent_evaluator_config"][
+            "evaluator_checkpoint_path"
+        ] == _strongest()["independent_evaluator_checkpoint_path"]
         assert job["equal_wall_time_config"]["methods"][
             "full_soft_value_smc"
         ]["timing_path"].endswith("terminal_critic/matched_compute.scored.jsonl")
@@ -252,7 +275,7 @@ def test_v4_final_config_writer_emits_exact_non_overwriting_inventory(
 
 def test_v4_final_configs_reject_gate_or_seed_inventory_drift() -> None:
     arguments = {
-        "protocol": json.loads(PROTOCOL.read_text(encoding="utf-8")),
+        "protocol": _protocol(),
         "critic_readiness": _critic_ready(),
         "setflow_confirmation": _setflow_ready(),
         "critic_refit_manifest": _refit(),
@@ -275,4 +298,19 @@ def test_v4_final_configs_reject_gate_or_seed_inventory_drift() -> None:
     arguments["guidance_gate"] = _gate()
     arguments["value_gpus"] = {20260913: 0}
     with pytest.raises(Exception, match="seed inventory"):
+        build_final_generation_configs_v4(**arguments)
+    arguments["value_gpus"] = {20260913: 0, 20260914: 1}
+    arguments["strongest_closed_score_table_path"] = (
+        f"{ROUTE2}/baselines/different_scores.private.jsonl"
+    )
+    with pytest.raises(Exception, match="differs from the frozen protocol"):
+        build_final_generation_configs_v4(**arguments)
+    arguments["strongest_closed_score_table_path"] = arguments["protocol"][
+        "strongest_closed_score_table_path"
+    ]
+    arguments["strongest_generation_baseline"] = _strongest()
+    arguments["strongest_generation_baseline"][
+        "independent_evaluator_checkpoint_path"
+    ] = f"{ROUTE2}/baselines/different_evaluator.pt"
+    with pytest.raises(Exception, match="strongest baseline inputs differ"):
         build_final_generation_configs_v4(**arguments)

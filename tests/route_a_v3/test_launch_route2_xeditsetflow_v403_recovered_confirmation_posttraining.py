@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -413,3 +414,87 @@ def test_successor_reuses_generic_scheduler_and_fails_closed_on_cuda() -> None:
     assert "validate_authorization_v403(" in source
     assert "require_runner_verification_receipt_v403(" in source
     assert "subprocess.Popen(" in source
+
+
+def test_posttraining_inventory_failure_is_prelaunch_and_non_overwriting(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "posttraining_cuda_failure.json"
+    error = launcher.XEditSetFlowV403GpuInventoryError(
+        "missing physical GPU 5",
+        reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+        return_code=0,
+        stdout="0, A100, 1, 40960\n",
+        missing_physical_gpus=(5,),
+    )
+    kwargs = {
+        "orchestration_head": ORCHESTRATION_HEAD,
+        "training_runner_head": TRAINING_RUNNER_HEAD,
+        "physical_gpus": (0, 1, 2, 3, 4, 5),
+        "diagnostics": {},
+        "runtime_root": tmp_path / "runtime",
+        "log_root": tmp_path / "logs",
+        "confirmation_gate": tmp_path / "gate.json",
+        "error": error,
+    }
+    launcher.write_posttraining_cuda_failure_evidence_v403(path, **kwargs)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["failure_stage"] == (
+        "GPU_INVENTORY_BEFORE_CONFIRMATION_VALIDATION_RUNTIME_CREATION"
+    )
+    assert payload["command"] == list(launcher.GPU_INVENTORY_COMMAND)
+    assert payload["missing_physical_gpus"] == [5]
+    assert payload["runtime_root_created"] is False
+    assert payload["scheduler_started"] is False
+    assert payload["validation_jobs_launched"] == 0
+    assert payload["cpu_fallback_used"] is False
+    assert payload["free_memory_gate_applied"] is False
+    with pytest.raises(Exception, match="artifact already exists"):
+        launcher.write_posttraining_cuda_failure_evidence_v403(path, **kwargs)
+
+
+def test_posttraining_probe_failure_records_failed_probe_command(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "posttraining_cuda_failure.json"
+    error = subprocess.CalledProcessError(
+        4,
+        ["python", "-c", "probe", "5"],
+        output="probe stdout",
+        stderr="CUDA unavailable",
+    )
+    launcher.write_posttraining_cuda_failure_evidence_v403(
+        path,
+        orchestration_head=ORCHESTRATION_HEAD,
+        training_runner_head=TRAINING_RUNNER_HEAD,
+        physical_gpus=(0, 1, 2, 3, 4, 5),
+        diagnostics={
+            gpu: {
+                "name": "A100",
+                "free_memory_mib": 1,
+                "total_memory_mib": 40960,
+            }
+            for gpu in range(6)
+        },
+        runtime_root=tmp_path / "runtime",
+        log_root=tmp_path / "logs",
+        confirmation_gate=tmp_path / "gate.json",
+        error=error,
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["failure_stage"] == (
+        "CUDA_BF16_PROBE_BEFORE_CONFIRMATION_VALIDATION_RUNTIME_CREATION"
+    )
+    assert payload["command"] == ["python", "-c", "probe", "5"]
+    assert payload["return_code"] == 4
+    assert payload["stderr"] == "CUDA unavailable"
+
+
+def test_posttraining_failure_path_guard_precedes_inventory_and_probe() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    run_source = source[source.index("def run(\n") :]
+    failure_guard = run_source.index("not cuda_failure_path.exists()")
+    inventory = run_source.index("diagnostics = gpu_diagnostics(physical_gpus)")
+    probe = run_source.index("cuda_bf16_probe(gpu)")
+    runtime_creation = run_source.index("runtime_root.mkdir(parents=True)")
+    assert failure_guard < inventory < probe < runtime_creation

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -158,3 +159,118 @@ def test_schedule_requires_three_distinct_gpus_without_memory_threshold(
             runtime_manifest=tmp_path / "runtime.json",
             log_root=tmp_path / "logs",
         )
+
+
+@pytest.mark.parametrize(
+    ("result", "reason", "missing"),
+    [
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND, 5, stdout="partial", stderr="driver"
+            ),
+            "NONZERO_RETURN_CODE",
+            (),
+        ),
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND,
+                0,
+                stdout="0, A100, malformed\n",
+                stderr="",
+            ),
+            "OUTPUT_PARSE_FAILED",
+            (),
+        ),
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND,
+                0,
+                stdout=(
+                    "0, A100, 1, 40960\n"
+                    "1, A100, 1, 40960\n"
+                    "2, A100, 1, 40960\n"
+                    "3, A100, 1, 40960\n"
+                    "4, A100, 1, 40960\n"
+                ),
+                stderr="",
+            ),
+            "PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            (5,),
+        ),
+    ],
+)
+def test_recovered_confirmation_inventory_failures_are_structured(
+    monkeypatch: pytest.MonkeyPatch,
+    result: subprocess.CompletedProcess[str],
+    reason: str,
+    missing: tuple[int, ...],
+) -> None:
+    monkeypatch.setattr(launcher.subprocess, "run", lambda *args, **kwargs: result)
+    with pytest.raises(launcher.XEditSetFlowV403GpuInventoryError) as captured:
+        launcher.gpu_diagnostics((0, 1, 2, 3, 4, 5))
+    assert captured.value.reason == reason
+    assert captured.value.return_code == result.returncode
+    assert captured.value.stdout == result.stdout
+    assert captured.value.stderr == result.stderr
+    assert captured.value.missing_physical_gpus == missing
+
+
+def test_recovered_confirmation_inventory_execution_failure_is_structured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail(*args, **kwargs):
+        raise OSError("nvidia-smi absent")
+
+    monkeypatch.setattr(launcher.subprocess, "run", fail)
+    with pytest.raises(launcher.XEditSetFlowV403GpuInventoryError) as captured:
+        launcher.gpu_diagnostics((0, 1, 2))
+    assert captured.value.reason == "COMMAND_EXECUTION_FAILED"
+    assert captured.value.return_code is None
+
+
+def test_recovered_confirmation_inventory_failure_is_prelaunch_and_non_overwriting(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "cuda_failure.json"
+    error = launcher.XEditSetFlowV403GpuInventoryError(
+        "missing physical GPUs",
+        reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+        return_code=0,
+        stdout="0, A100, 1, 40960\n",
+        missing_physical_gpus=(1, 2),
+    )
+    kwargs = {
+        "current_head": "c" * 40,
+        "configured_gpus": (0, 1, 2),
+        "selected_gpus": (0, 1, 2),
+        "diagnostics": {},
+        "authorization_path": tmp_path / "authorization.json",
+        "config_root": tmp_path / "configs",
+        "run_root": tmp_path / "runs",
+        "runtime_root": tmp_path / "runtime",
+        "error": error,
+    }
+    launcher.write_prelaunch_cuda_failure_evidence_v403(path, **kwargs)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["failure_stage"] == (
+        "GPU_INVENTORY_BEFORE_CONFIRMATION_FAMILY_MATERIALIZATION"
+    )
+    assert payload["missing_physical_gpus"] == [1, 2]
+    assert payload["authorization_materialized"] is False
+    assert payload["scheduler_started"] is False
+    assert payload["cpu_fallback_used"] is False
+    assert payload["free_memory_gate_applied"] is False
+    with pytest.raises(Exception, match="artifact already exists"):
+        launcher.write_prelaunch_cuda_failure_evidence_v403(path, **kwargs)
+
+
+def test_recovered_confirmation_inventory_precedes_config_authorization_and_runtime() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    run_source = source[source.index("def run(current_head: str)") :]
+    failure_guard = run_source.index(
+        '(cuda_failure_path, "confirmation CUDA failure evidence exists")'
+    )
+    inventory = run_source.index("diagnostics = gpu_diagnostics(configured_gpus)")
+    prepare = run_source.index('str(PREPARE),\n            "--base-config"')
+    runtime_creation = run_source.index("runtime_root.mkdir(parents=True)")
+    assert failure_guard < inventory < prepare < runtime_creation

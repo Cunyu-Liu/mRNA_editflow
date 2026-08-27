@@ -121,6 +121,28 @@ def _defined_ndcg_by_source(
     return result
 
 
+def _present_closed_metric_by_source(
+    closed: Mapping[str, Any], *, label: str, metric: str
+) -> dict[str, float]:
+    rows = closed.get("per_source")
+    _require(
+        isinstance(rows, Mapping) and bool(rows),
+        f"V4 closed per-source evidence is absent: {label}",
+    )
+    result = {
+        str(source_key): _finite(
+            row.get(metric), f"V4 closed source {metric} {label}/{source_key}"
+        )
+        for source_key, row in rows.items()
+        if row.get(metric) is not None
+    }
+    _require(
+        bool(result),
+        f"V4 closed method has no source-defined {metric}: {label}",
+    )
+    return result
+
+
 def _source_max_critic_score(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -249,6 +271,20 @@ def assemble_final_seed_evidence_v4(
             f"V4 open evidence is incomplete: {method}",
         )
         if method in V4_GENERATED_METHODS:
+            closed_combination = tuple(
+                _finite(
+                    closed.get(key),
+                    f"V4 closed combination {method}/{key}",
+                )
+                for key in ("kappa", "temperature", "beta_max")
+            )
+            open_combination = tuple(
+                _finite(
+                    opened.get(key),
+                    f"V4 open combination {method}/{key}",
+                )
+                for key in ("kappa", "temperature", "beta_max")
+            )
             _require(
                 generation.get("status")
                 == "XEDITFLOW_V4_SMC_GENERATION_COMPLETE_PENDING_TERMINAL_CRITIC_SCORING"
@@ -261,7 +297,10 @@ def assemble_final_seed_evidence_v4(
                 for key in ("kappa", "temperature", "beta_max")
             )
             _require(
-                observed_combination == combination,
+                closed_combination
+                == open_combination
+                == observed_combination
+                == combination,
                 f"V4 generation combination differs: {method}",
             )
             terminal = bundle["terminal_critic"]
@@ -301,9 +340,23 @@ def assemble_final_seed_evidence_v4(
         compute_ok = 0 <= maximum_compute <= 320
         all_compute_ok = all_compute_ok and compute_ok
         ndcg_by_method[method] = _defined_ndcg_by_source(closed, method)
+        regret_by_source = _present_closed_metric_by_source(
+            closed, label=method, metric="normalized_regret"
+        )
+        top_1_by_source = _present_closed_metric_by_source(
+            closed, label=method, metric="top_1_recall"
+        )
         source_inventory[method] = {str(key) for key in closed["per_source"]}
         macro_ndcg = _finite(
             closed.get("source_macro_ndcg"), f"V4 closed macro NDCG {method}"
+        )
+        macro_regret = _finite(
+            closed.get("source_macro_normalized_regret"),
+            f"V4 closed macro regret {method}",
+        )
+        macro_top_1 = _finite(
+            closed.get("source_macro_top_1_recall"),
+            f"V4 closed macro top-1 {method}",
         )
         _require(
             math.isclose(
@@ -314,6 +367,24 @@ def assemble_final_seed_evidence_v4(
             ),
             f"V4 closed macro NDCG is not the defined-source mean: {method}",
         )
+        _require(
+            math.isclose(
+                macro_regret,
+                float(np.mean(list(regret_by_source.values()))),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ),
+            f"V4 closed macro regret is not the source-defined mean: {method}",
+        )
+        _require(
+            math.isclose(
+                macro_top_1,
+                float(np.mean(list(top_1_by_source.values()))),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ),
+            f"V4 closed macro top-1 is not the source-defined mean: {method}",
+        )
         equal_wall = equal_wall_time_sensitivity["methods"][method]
         _require(
             isinstance(equal_wall, Mapping)
@@ -322,14 +393,8 @@ def assemble_final_seed_evidence_v4(
         )
         metrics = {
             "closed_source_macro_ndcg": macro_ndcg,
-            "closed_source_macro_normalized_regret": _finite(
-                closed.get("source_macro_normalized_regret"),
-                f"V4 closed macro regret {method}",
-            ),
-            "closed_source_macro_top_1_recall": _finite(
-                closed.get("source_macro_top_1_recall"),
-                f"V4 closed macro top-1 {method}",
-            ),
+            "closed_source_macro_normalized_regret": macro_regret,
+            "closed_source_macro_top_1_recall": macro_top_1,
             "open_source_macro_candidate_recovery": _finite(
                 opened.get("source_macro_candidate_recovery"),
                 f"V4 open recovery {method}",

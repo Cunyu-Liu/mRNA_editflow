@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import inspect
+import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -89,3 +91,113 @@ def test_guidance_screen_can_bind_derived_protocol_and_distinct_preflight_heads(
     assert parameters["protocol_path"].default == launcher.PROTOCOL
     assert parameters["critic_preflight_head"].default is None
     assert parameters["setflow_preflight_head"].default is None
+
+
+@pytest.mark.parametrize(
+    ("result", "reason", "missing"),
+    [
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND, 9, stdout="partial", stderr="driver"
+            ),
+            "NONZERO_RETURN_CODE",
+            (),
+        ),
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND, 0, stdout="broken\n", stderr=""
+            ),
+            "OUTPUT_PARSE_FAILED",
+            (),
+        ),
+        (
+            subprocess.CompletedProcess(
+                launcher.GPU_INVENTORY_COMMAND,
+                0,
+                stdout="0, 1\n1, 1\n2, 1\n3, 1\n4, 1\n",
+                stderr="",
+            ),
+            "PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            (5,),
+        ),
+    ],
+)
+def test_guidance_inventory_failures_are_structured(
+    monkeypatch: pytest.MonkeyPatch,
+    result: subprocess.CompletedProcess[str],
+    reason: str,
+    missing: tuple[int, ...],
+) -> None:
+    monkeypatch.setattr(launcher.subprocess, "run", lambda *args, **kwargs: result)
+    with pytest.raises(
+        launcher.XEditFlowV4GuidanceGpuInventoryError
+    ) as captured:
+        launcher.gpu_free_memory_mib()
+    assert captured.value.reason == reason
+    assert captured.value.return_code == result.returncode
+    assert captured.value.stdout == result.stdout
+    assert captured.value.stderr == result.stderr
+    assert captured.value.missing_physical_gpus == missing
+
+
+def test_guidance_inventory_command_execution_failure_is_structured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail(*args, **kwargs):
+        raise OSError("nvidia-smi absent")
+
+    monkeypatch.setattr(launcher.subprocess, "run", fail)
+    with pytest.raises(
+        launcher.XEditFlowV4GuidanceGpuInventoryError
+    ) as captured:
+        launcher.gpu_free_memory_mib()
+    assert captured.value.reason == "COMMAND_EXECUTION_FAILED"
+    assert captured.value.return_code is None
+
+
+def test_guidance_inventory_failure_is_bridge_locatable_and_non_overwriting(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "screen_execution.failed.json"
+    error = launcher.XEditFlowV4GuidanceGpuInventoryError(
+        "missing GPU 5",
+        reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+        return_code=0,
+        stdout="0, 100\n",
+        missing_physical_gpus=(5,),
+    )
+    kwargs = {
+        "current_head": "a" * 40,
+        "experiment_head": "b" * 40,
+        "protocol_path": tmp_path / "guidance_protocol.json",
+        "authorization_decision_path": tmp_path / "decision.json",
+        "critic_preflight_path": tmp_path / "critic.json",
+        "critic_preflight_head": "c" * 40,
+        "setflow_preflight_path": tmp_path / "setflow.json",
+        "setflow_preflight_head": "d" * 40,
+        "config_root": tmp_path / "configs",
+        "output_root": tmp_path / "outputs",
+        "runtime_root": tmp_path / "screen_execution",
+        "log_root": tmp_path / "logs",
+        "error": error,
+    }
+    launcher.write_gpu_inventory_failure_evidence(path, **kwargs)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["intended_runtime_root"] == str(tmp_path / "screen_execution")
+    assert payload["guidance_protocol_path"] == str(
+        tmp_path / "guidance_protocol.json"
+    )
+    assert payload["missing_physical_gpus"] == [5]
+    assert payload["scheduler_started"] is False
+    assert payload["free_memory_gate_applied"] is False
+    with pytest.raises(Exception, match="already exists"):
+        launcher.write_gpu_inventory_failure_evidence(path, **kwargs)
+
+
+def test_guidance_inventory_failure_path_is_fixed_before_prepare() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    run_source = source[source.index("def run(") :]
+    failure_guard = run_source.index("not prelaunch_failure_path.exists()")
+    inventory = run_source.index("free_memory = gpu_free_memory_mib()")
+    prepare = run_source.index("str(PREPARER)")
+    assert failure_guard < inventory < prepare

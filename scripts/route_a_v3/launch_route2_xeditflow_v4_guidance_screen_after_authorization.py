@@ -29,10 +29,37 @@ SETFLOW_PREFLIGHT = (
     / "experiments/xeditsetflow_v4/screen_seed_20260911/"
     "preflight_attempt_5/preflight.json"
 )
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,memory.free",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditFlowV4GuidanceScreenLaunchError(RuntimeError):
     pass
+
+
+class XEditFlowV4GuidanceGpuInventoryError(
+    XEditFlowV4GuidanceScreenLaunchError
+):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
 
 
 def require(condition: bool, message: str) -> None:
@@ -66,17 +93,50 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
 
 
 def gpu_free_memory_mib() -> dict[int, int]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free",
-            "--format=csv,noheader,nounits",
-        ]
-    )
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise XEditFlowV4GuidanceGpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditFlowV4GuidanceGpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     values: dict[int, int] = {}
-    for line in result.stdout.splitlines():
-        index, free = (value.strip() for value in line.split(",", maxsplit=1))
-        values[int(index)] = int(free)
+    try:
+        for line in result.stdout.splitlines():
+            index, free = (value.strip() for value in line.split(",", maxsplit=1))
+            values[int(index)] = int(free)
+    except (TypeError, ValueError) as error:
+        raise XEditFlowV4GuidanceGpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    missing = tuple(sorted(set(range(6)) - set(values)))
+    if missing:
+        raise XEditFlowV4GuidanceGpuInventoryError(
+            f"physical GPU inventory 0-5 is incomplete; missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
     return values
 
 
@@ -132,6 +192,72 @@ def validate_manifest(
 
 def directory_failure(output: Path) -> Path:
     return output.with_name(output.name + ".failed.json")
+
+
+def write_gpu_inventory_failure_evidence(
+    path: Path,
+    *,
+    current_head: str,
+    experiment_head: str,
+    protocol_path: Path,
+    authorization_decision_path: Path,
+    critic_preflight_path: Path,
+    critic_preflight_head: str,
+    setflow_preflight_path: Path,
+    setflow_preflight_head: str,
+    config_root: Path,
+    output_root: Path,
+    runtime_root: Path,
+    log_root: Path,
+    error: XEditFlowV4GuidanceGpuInventoryError,
+) -> None:
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "V4 guidance prelaunch failure evidence already exists; "
+        "use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_v4_guidance_prelaunch_failure.v1"
+            ),
+            "status": "XEDITFLOW_V4_GUIDANCE_PRELAUNCH_GPU_INVENTORY_FAILURE",
+            "failure_stage": "GPU_INVENTORY_BEFORE_GUIDANCE_CONFIG_OR_RUNTIME_CREATION",
+            "git_head": current_head,
+            "experiment_head": experiment_head,
+            "guidance_protocol_path": str(protocol_path),
+            "authorization_decision_path": str(authorization_decision_path),
+            "critic_preflight_path": str(critic_preflight_path),
+            "critic_preflight_runner_git_head": critic_preflight_head,
+            "setflow_preflight_path": str(setflow_preflight_path),
+            "setflow_preflight_runner_git_head": setflow_preflight_head,
+            "intended_config_root": str(config_root),
+            "intended_output_root": str(output_root),
+            "intended_runtime_root": str(runtime_root),
+            "intended_log_root": str(log_root),
+            "config_root_created": config_root.exists(),
+            "output_root_created": output_root.exists(),
+            "runtime_root_created": runtime_root.exists(),
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "inventory_failure_reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "development_test_reopened": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def run(
@@ -210,6 +336,19 @@ def run(
         not config_root.exists() and not output_root.exists() and not runtime_root.exists(),
         "V4 guidance screen config, output, or runtime already exists",
     )
+    log_root = execution_log_root or (
+        ROOT
+        / "logs/xedit_v4"
+        / f"guidance_screen_execution_{experiment_head}_runner_{current_head}"
+    )
+    prelaunch_failure_path = directory_failure(runtime_root)
+    require(
+        not prelaunch_failure_path.exists()
+        and not prelaunch_failure_path.with_suffix(
+            prelaunch_failure_path.suffix + ".partial"
+        ).exists(),
+        "V4 guidance prelaunch failure evidence exists; use a new retry family",
+    )
     critic_preflight = read_json(critic_preflight_path)
     setflow_preflight = read_json(setflow_preflight_path)
     require(
@@ -229,8 +368,26 @@ def run(
         )
         * 1024
     )
-    free_memory = gpu_free_memory_mib()
-    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0-5 is incomplete")
+    try:
+        free_memory = gpu_free_memory_mib()
+    except XEditFlowV4GuidanceGpuInventoryError as error:
+        write_gpu_inventory_failure_evidence(
+            prelaunch_failure_path,
+            current_head=current_head,
+            experiment_head=experiment_head,
+            protocol_path=protocol_path,
+            authorization_decision_path=authorization_decision_path,
+            critic_preflight_path=critic_preflight_path,
+            critic_preflight_head=critic_preflight_head,
+            setflow_preflight_path=setflow_preflight_path,
+            setflow_preflight_head=setflow_preflight_head,
+            config_root=config_root,
+            output_root=output_root,
+            runtime_root=runtime_root,
+            log_root=log_root,
+            error=error,
+        )
+        raise
     primary_gpu = 0
     command(
         [
@@ -248,11 +405,6 @@ def run(
     manifest = read_json(manifest_path)
     validate_manifest(manifest, config_root=config_root)
 
-    log_root = execution_log_root or (
-        ROOT
-        / "logs/xedit_v4"
-        / f"guidance_screen_execution_{experiment_head}_runner_{current_head}"
-    )
     failure_root = runtime_root / "failures"
     rollout_config_path = Path(manifest["config_paths"]["value_rollout.json"])
     score_config_path = Path(manifest["config_paths"]["value_critic_score.json"])

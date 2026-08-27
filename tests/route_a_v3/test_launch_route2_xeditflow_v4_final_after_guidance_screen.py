@@ -85,6 +85,10 @@ def test_v4_final_launcher_builds_exact_three_seed_job_graph(tmp_path: Path) -> 
     assert schedule["new_final_evaluation_outcome_reads"] == 0
     assert schedule["free_memory_gate_applied"] is False
     assert schedule["diagnostic_peak_plus_two_gib_mib"] == 30_000
+    timing_job = schedule["prerequisite_queues"][-1]["jobs"][0]
+    assert timing_job["command"][
+        timing_job["command"].index("--failure-path") + 1
+    ] == timing_job["failure_path"]
 
 
 def test_v4_final_launcher_uses_own_repo_and_does_not_memory_gate() -> None:
@@ -522,11 +526,15 @@ def test_v4_final_prelaunch_gpu_inventory_failure_is_sibling_evidence(
         encoding="utf-8",
     )
     protocol = tmp_path / "protocol.json"
+    frozen_strongest_score_table = tmp_path / "frozen_strongest_scores.jsonl"
     protocol.write_text(
         json.dumps(
             {
                 "guidance_screen_output_root": str(guidance_output),
                 "runtime_config_root": str(tmp_path / "runtime_configs" / "guidance"),
+                "strongest_closed_score_table_path": str(
+                    frozen_strongest_score_table
+                ),
             }
         ),
         encoding="utf-8",
@@ -583,6 +591,34 @@ def test_v4_final_prelaunch_gpu_inventory_failure_is_sibling_evidence(
     def fail_inventory() -> dict[int, int]:
         raise inventory_error
 
+    identity_probe_called = False
+
+    def unexpected_identity_probe() -> dict[int, int]:
+        nonlocal identity_probe_called
+        identity_probe_called = True
+        return {gpu: 40_000 for gpu in range(6)}
+
+    monkeypatch.setattr(launcher, "gpu_free_memory_mib", unexpected_identity_probe)
+    with pytest.raises(
+        launcher.XEditFlowV4FinalLaunchError,
+        match="differs from the frozen protocol",
+    ):
+        launcher.run(
+            head,
+            experiment_head,
+            guidance_head,
+            tmp_path / "different_strongest_scores.jsonl",
+            protocol_path=protocol,
+            guidance_runtime_path=guidance_runtime,
+            critic_preflight_path=critic_preflight,
+            critic_preflight_head=critic_head,
+            setflow_preflight_path=setflow_preflight,
+            setflow_preflight_head=setflow_head,
+            execution_runtime_root=tmp_path / "identity_mismatch_runtime",
+            execution_log_root=tmp_path / "identity_mismatch_logs",
+        )
+    assert identity_probe_called is False
+
     existing_runtime_root = tmp_path / "existing_final_execution"
     existing_runtime_root.mkdir()
     existing_probe_called = False
@@ -603,7 +639,7 @@ def test_v4_final_prelaunch_gpu_inventory_failure_is_sibling_evidence(
             head,
             experiment_head,
             guidance_head,
-            tmp_path / "not_read_for_existing_runtime.json",
+            frozen_strongest_score_table,
             protocol_path=protocol,
             guidance_runtime_path=guidance_runtime,
             critic_preflight_path=critic_preflight,
@@ -623,7 +659,7 @@ def test_v4_final_prelaunch_gpu_inventory_failure_is_sibling_evidence(
             head,
             experiment_head,
             guidance_head,
-            tmp_path / "not_read_before_inventory.json",
+            frozen_strongest_score_table,
             protocol_path=protocol,
             guidance_runtime_path=guidance_runtime,
             critic_preflight_path=critic_preflight,
@@ -673,7 +709,7 @@ def test_v4_final_prelaunch_gpu_inventory_failure_is_sibling_evidence(
             head,
             experiment_head,
             guidance_head,
-            tmp_path / "still_not_read.json",
+            frozen_strongest_score_table,
             protocol_path=protocol,
             guidance_runtime_path=guidance_runtime,
             critic_preflight_path=critic_preflight,

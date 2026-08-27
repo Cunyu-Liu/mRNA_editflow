@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,6 +30,60 @@ def _json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     _require(isinstance(value, dict), f"JSON root is not an object: {path}")
     return value
+
+
+def _write_new_atomic(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _require(not path.exists(), f"failure evidence already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    _require(not partial.exists(), f"partial failure evidence exists: {partial}")
+    partial.write_text(
+        json.dumps(dict(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
+def bridge_strongest_timing_failure_v4(
+    *,
+    producer_failure_path: Path,
+    declared_failure_path: Path,
+    error: Exception,
+) -> None:
+    producer_evidence: dict[str, Any] | None = None
+    producer_read_error: str | None = None
+    if producer_failure_path.exists():
+        try:
+            producer_evidence = _json(producer_failure_path)
+        except Exception as read_error:
+            producer_read_error = (
+                f"{type(read_error).__name__}: {read_error}"
+            )
+    payload: dict[str, Any] = {
+        "schema_version": (
+            "route_a_v3_route2_xeditflow_v4_final_job_failure.v1"
+        ),
+        "status": "TERMINAL_STRONGEST_TIMING_PRODUCER_FAILURE",
+        "failure_stage": "STRONGEST_TIMING_CUDA_OR_EXECUTION",
+        "job_key": "strongest_timing",
+        "exception_type": type(error).__name__,
+        "error": str(error),
+        "producer_failure_path": str(producer_failure_path),
+        "producer_failure_evidence_present": producer_evidence is not None,
+        "job_process_started": True,
+        "cpu_fallback_used": bool(
+            producer_evidence.get("cpu_fallback_used", False)
+        )
+        if producer_evidence is not None
+        else False,
+        "development_test_outcomes_accessed_after_atomic_test": False,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    if producer_evidence is not None:
+        payload["producer_failure_evidence"] = producer_evidence
+    if producer_read_error is not None:
+        payload["producer_failure_read_error"] = producer_read_error
+    _write_new_atomic(declared_failure_path, payload)
 
 
 def validate_strongest_timing_config_v4(
@@ -123,7 +178,9 @@ def strongest_timing_command_v4(
     ]
 
 
-def run(config: Mapping[str, Any]) -> dict[str, Any]:
+def run(
+    config: Mapping[str, Any], *, failure_path: Path
+) -> dict[str, Any]:
     strongest = _json(Path(str(config["strongest_generation_baseline_path"])))
     selection = _json(Path(str(config["baseline_selection_input_path"])))
     validate_strongest_timing_config_v4(config, strongest, selection)
@@ -131,14 +188,28 @@ def run(config: Mapping[str, Any]) -> dict[str, Any]:
     _require(
         not output_dir.exists(), f"V4 strongest timing output exists: {output_dir}"
     )
+    _require(
+        not failure_path.exists(),
+        f"V4 strongest timing declared failure exists: {failure_path}",
+    )
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir()
     candidate_path = output_dir / "timed_genetic_candidates.private.jsonl"
-    subprocess.run(
-        strongest_timing_command_v4(config, candidate_path),
-        cwd=REPO_ROOT,
-        check=True,
-    )
+    try:
+        subprocess.run(
+            strongest_timing_command_v4(config, candidate_path),
+            cwd=REPO_ROOT,
+            check=True,
+        )
+    except Exception as error:
+        bridge_strongest_timing_failure_v4(
+            producer_failure_path=candidate_path.with_suffix(
+                candidate_path.suffix + ".failed.json"
+            ),
+            declared_failure_path=failure_path,
+            error=error,
+        )
+        raise
     rows = [
         json.loads(line)
         for line in candidate_path.read_text(encoding="utf-8").splitlines()
@@ -177,8 +248,15 @@ def run(config: Mapping[str, Any]) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--failure-path", required=True, type=Path)
     arguments = parser.parse_args()
-    print(json.dumps(run(_json(arguments.config)), sort_keys=True), flush=True)
+    print(
+        json.dumps(
+            run(_json(arguments.config), failure_path=arguments.failure_path),
+            sort_keys=True,
+        ),
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

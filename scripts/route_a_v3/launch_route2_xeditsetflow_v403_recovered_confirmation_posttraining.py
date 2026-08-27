@@ -28,7 +28,10 @@ from scripts.route_a_v3.authorize_route2_xeditsetflow_v403_recovered_confirmatio
     require_science_protocol_unchanged_v403,
 )
 from scripts.route_a_v3.launch_route2_xeditsetflow_v403_recovered_confirmation import (
+    GPU_INVENTORY_COMMAND,
+    XEditSetFlowV403GpuInventoryError,
     cuda_bf16_probe,
+    gpu_failure_process_details_v403,
     gpu_diagnostics,
     validate_authorization_v403,
     validate_manifest_v403,
@@ -499,6 +502,61 @@ def require_validation_targets_absent_v403(
         )
 
 
+def write_posttraining_cuda_failure_evidence_v403(
+    path: Path,
+    *,
+    orchestration_head: str,
+    training_runner_head: str,
+    physical_gpus: Sequence[int],
+    diagnostics: Mapping[int, Mapping[str, Any]],
+    runtime_root: Path,
+    log_root: Path,
+    confirmation_gate: Path,
+    error: Exception,
+) -> None:
+    details = gpu_failure_process_details_v403(error)
+    inventory_failure = isinstance(error, XEditSetFlowV403GpuInventoryError)
+    write_new_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditsetflow_v403_recovered_confirmation_posttraining_cuda_failure.v1"
+            ),
+            "status": "STOPPED_BEFORE_CONFIRMATION_VALIDATION_LAUNCH",
+            "failure_stage": (
+                "GPU_INVENTORY_BEFORE_CONFIRMATION_VALIDATION_RUNTIME_CREATION"
+                if inventory_failure
+                else "CUDA_BF16_PROBE_BEFORE_CONFIRMATION_VALIDATION_RUNTIME_CREATION"
+            ),
+            "orchestration_git_head": orchestration_head,
+            "training_runner_git_head": training_runner_head,
+            "training_git_head": TRAINING_HEAD,
+            "recovery_validation_git_head": VALIDATION_HEAD,
+            "selected_physical_gpus": [int(gpu) for gpu in physical_gpus],
+            "gpu_diagnostics": {
+                str(gpu): dict(payload) for gpu, payload in diagnostics.items()
+            },
+            "inventory_command": list(GPU_INVENTORY_COMMAND),
+            **details,
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "intended_runtime_root": str(runtime_root),
+            "intended_log_root": str(log_root),
+            "intended_confirmation_gate": str(confirmation_gate),
+            "runtime_root_created": runtime_root.exists(),
+            "log_root_created": log_root.exists(),
+            "confirmation_gate_created": confirmation_gate.exists(),
+            "scheduler_started": False,
+            "validation_jobs_launched": 0,
+            "automatic_retry_attempted": False,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
+
+
 def build_posttraining_schedule_v403(
     training_schedule_path: Path,
     training_schedule: Mapping[str, Any],
@@ -718,42 +776,31 @@ def run(
         and recovery_config["gpu_policy"].get("cpu_fallback") is False,
         "SetFlow V4.0.3 recovered Validation GPU authorization changed",
     )
-    diagnostics = gpu_diagnostics()
-    require(
-        all(gpu in diagnostics for gpu in physical_gpus),
-        "SetFlow V4.0.3 physical GPU inventory 0-5 is incomplete",
-    )
     cuda_failure_path = runtime_root.with_name(
         runtime_root.name + "_cuda_failure.json"
     )
     require(
-        not cuda_failure_path.exists(),
+        not cuda_failure_path.exists()
+        and not cuda_failure_path.with_suffix(
+            cuda_failure_path.suffix + ".partial"
+        ).exists(),
         "SetFlow V4.0.3 posttraining CUDA failure evidence already exists",
     )
+    diagnostics: dict[int, dict[str, Any]] = {}
     try:
+        diagnostics = gpu_diagnostics(physical_gpus)
         probes = {gpu: cuda_bf16_probe(gpu) for gpu in physical_gpus}
     except Exception as error:
-        write_new_atomic(
+        write_posttraining_cuda_failure_evidence_v403(
             cuda_failure_path,
-            {
-                "schema_version": (
-                    "route_a_v3_route2_xeditsetflow_v403_recovered_confirmation_posttraining_cuda_failure.v1"
-                ),
-                "status": "STOPPED_BEFORE_CONFIRMATION_VALIDATION_LAUNCH",
-                "orchestration_git_head": orchestration_head,
-                "training_runner_git_head": training_runner_head,
-                "training_git_head": TRAINING_HEAD,
-                "recovery_validation_git_head": VALIDATION_HEAD,
-                "selected_physical_gpus": list(physical_gpus),
-                "gpu_diagnostics": {
-                    str(gpu): dict(diagnostics[gpu]) for gpu in physical_gpus
-                },
-                "error_type": type(error).__name__,
-                "error": str(error),
-                "validation_jobs_launched": 0,
-                "development_test_outcome_reads": 0,
-                "new_final_evaluation_outcome_reads": 0,
-            },
+            orchestration_head=orchestration_head,
+            training_runner_head=training_runner_head,
+            physical_gpus=physical_gpus,
+            diagnostics=diagnostics,
+            runtime_root=runtime_root,
+            log_root=log_root,
+            confirmation_gate=confirmation_gate,
+            error=error,
         )
         raise
 

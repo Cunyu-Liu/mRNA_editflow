@@ -181,6 +181,8 @@ def _validate_protocol_v4(protocol: Mapping[str, Any]) -> None:
         "independent_evaluator_adjudication_path",
         "strongest_generation_baseline_path",
         "baseline_selection_input_path",
+        "strongest_closed_score_summary_path",
+        "strongest_closed_score_table_path",
     ):
         _route2(protocol.get(field, ""), f"V4 protocol {field}")
 
@@ -295,6 +297,18 @@ def build_final_generation_configs_v4(
         strongest_closed_score_table_path,
         "V4 pre-frozen strongest closed score table",
     )
+    strongest_summary_path = _route2(
+        protocol.get("strongest_closed_score_summary_path", ""),
+        "V4 pre-frozen strongest closed score summary",
+    )
+    _require(
+        strongest_score_path
+        == _route2(
+            protocol.get("strongest_closed_score_table_path", ""),
+            "V4 protocol pre-frozen strongest closed score table",
+        ),
+        "V4 strongest closed score table differs from the frozen protocol",
+    )
     frozen_screen_gate_path = _route2(
         guidance_screen_gate_path, "V4 frozen guidance screen gate"
     )
@@ -313,7 +327,11 @@ def build_final_generation_configs_v4(
         == 320
         and baseline_selection_input.get("selection_pool")
         == "DEVELOPMENT_MEASURED_NEIGHBORHOOD"
-        and baseline_selection_input.get("evaluation_release_state") == "CLOSED",
+        and baseline_selection_input.get("evaluation_release_state") == "CLOSED"
+        and strongest_generation_baseline.get(
+            "independent_evaluator_checkpoint_path"
+        )
+        == protocol.get("independent_evaluator_checkpoint_path"),
         "V4 final strongest baseline inputs differ",
     )
     runtime_paths = protocol.get("setflow_confirmation_runtime_config_paths")
@@ -761,6 +779,7 @@ def build_final_generation_configs_v4(
             "score_transform": "SOURCEWISE_EXP_SHIFTED_MAX",
             "measured_neighborhood_path": str(protocol["measured_neighborhood_path"]),
             "score_table_path": strongest_score_path,
+            "score_summary_path": strongest_summary_path,
             "strongest_baseline_frozen_before_v4_candidate_generation": True,
             "baseline_reselected_for_v4": False,
             "development_test_outcomes_accessed_after_atomic_test": False,
@@ -1020,6 +1039,7 @@ def build_final_generation_configs_v4(
         "forward_equivalent_ceiling_per_source": 320,
         "terminal_critic_forwards_by_member": reservations,
         "strongest_closed_score_table_path": strongest_score_path,
+        "strongest_closed_score_summary_path": strongest_summary_path,
         "strongest_baseline_reselected_for_v4": False,
         "strongest_timing_config": strongest_timing_config,
         "strongest_timing_candidate_path": str(strongest_timing_candidate_path),

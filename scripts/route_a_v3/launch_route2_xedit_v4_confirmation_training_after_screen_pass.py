@@ -21,10 +21,35 @@ CONFIRMATION_SCHEDULER = (
 )
 CRITIC_SEEDS = (20260908, 20260909, 20260910)
 SETFLOW_SEEDS = (20260912, 20260913, 20260914)
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,memory.free",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditV4ConfirmationLaunchError(RuntimeError):
     pass
+
+
+class XEditV4ConfirmationGpuInventoryError(XEditV4ConfirmationLaunchError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
 
 
 def require(condition: bool, message: str) -> None:
@@ -55,19 +80,115 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def directory_failure(output: Path) -> Path:
+    return output.with_name(output.name + ".failed.json")
+
+
 def gpu_free_memory_mib() -> dict[int, int]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free",
-            "--format=csv,noheader,nounits",
-        ]
-    )
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as error:
+        raise XEditV4ConfirmationGpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditV4ConfirmationGpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     values: dict[int, int] = {}
-    for line in result.stdout.splitlines():
-        index, free = (part.strip() for part in line.split(",", maxsplit=1))
-        values[int(index)] = int(free)
+    try:
+        for line in result.stdout.splitlines():
+            index, free = (part.strip() for part in line.split(",", maxsplit=1))
+            values[int(index)] = int(free)
+    except (TypeError, ValueError) as error:
+        raise XEditV4ConfirmationGpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    missing = tuple(sorted(set(range(6)) - set(values)))
+    if missing:
+        raise XEditV4ConfirmationGpuInventoryError(
+            f"physical GPU inventory 0-5 is incomplete; missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
     return values
+
+
+def write_gpu_inventory_failure_evidence(
+    path: Path,
+    *,
+    current_head: str,
+    experiment_head: str,
+    eligible_components: list[str],
+    authorization_root: Path,
+    authorization_staging: Path,
+    runtime_root: Path,
+    log_root: Path,
+    error: XEditV4ConfirmationGpuInventoryError,
+) -> None:
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "confirmation training prelaunch failure evidence already exists; "
+        "use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xedit_v4_confirmation_training_prelaunch_failure.v1"
+            ),
+            "status": (
+                "XEDIT_V4_CONFIRMATION_TRAINING_PRELAUNCH_GPU_INVENTORY_FAILURE"
+            ),
+            "failure_stage": (
+                "GPU_INVENTORY_BEFORE_CONFIRMATION_FAMILY_MATERIALIZATION"
+            ),
+            "git_head": current_head,
+            "experiment_head": experiment_head,
+            "eligible_components": list(eligible_components),
+            "intended_authorization_root": str(authorization_root),
+            "intended_authorization_staging": str(authorization_staging),
+            "intended_runtime_root": str(runtime_root),
+            "intended_log_root": str(log_root),
+            "authorization_root_created": authorization_root.exists(),
+            "authorization_staging_created": authorization_staging.exists(),
+            "runtime_root_created": runtime_root.exists(),
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "inventory_failure_reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def gate_passed(component: str, gate: dict[str, Any]) -> bool:
@@ -231,12 +352,36 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     )
     runtime_root = ROOT / f"experiments/xedit_v4/confirmation_training_{current_head}"
     log_root = ROOT / f"logs/xedit_v4/confirmation_training_{current_head}"
+    prelaunch_failure_path = directory_failure(runtime_root)
     require(not authorization_root.exists(), "confirmation authorization package exists")
     require(
         not authorization_staging.exists(),
         "partial confirmation authorization package exists",
     )
     require(not runtime_root.exists(), "confirmation training runtime exists")
+    require(
+        not prelaunch_failure_path.exists()
+        and not prelaunch_failure_path.with_suffix(
+            prelaunch_failure_path.suffix + ".partial"
+        ).exists(),
+        "confirmation training prelaunch failure evidence exists; "
+        "use a new retry family",
+    )
+    try:
+        free_memory = gpu_free_memory_mib()
+    except XEditV4ConfirmationGpuInventoryError as error:
+        write_gpu_inventory_failure_evidence(
+            prelaunch_failure_path,
+            current_head=current_head,
+            experiment_head=experiment_head,
+            eligible_components=eligible,
+            authorization_root=authorization_root,
+            authorization_staging=authorization_staging,
+            runtime_root=runtime_root,
+            log_root=log_root,
+            error=error,
+        )
+        raise
 
     manifests: dict[str, dict[str, Any]] = {}
     for component in eligible:
@@ -287,9 +432,6 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             component, read_json(authorization), head=current_head
         )
     os.replace(authorization_staging, authorization_root)
-
-    free_memory = gpu_free_memory_mib()
-    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
     queues: dict[int, list[dict[str, Any]]] = {gpu: [] for gpu in range(6)}
     required_by_gpu = {gpu: 0 for gpu in range(6)}
     critic_trainer = WORKTREE / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"

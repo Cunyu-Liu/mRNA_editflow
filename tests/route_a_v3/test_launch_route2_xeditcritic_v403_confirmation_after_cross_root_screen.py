@@ -286,13 +286,34 @@ def test_confirmation_configs_change_only_the_screen_gate_binding(
 def test_exact_runner_rejects_changed_repaired_training_semantics(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    commands: list[list[str]] = []
+
+    def unchanged(command_args, **kwargs):
+        commands.append(list(command_args))
+        return SimpleNamespace(stdout="")
+
     monkeypatch.setattr(
         launcher,
         "command",
-        lambda *args, **kwargs: SimpleNamespace(stdout=""),
+        unchanged,
     )
     receipt = launcher.validate_runner_training_semantics("c" * 40)
     assert receipt["training_semantics_unchanged"] is True
+    assert receipt["repaired_screen_git_head"] == launcher.TRAINING_GIT_HEAD
+    assert receipt["training_semantics_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_BASELINE_HEAD
+    )
+    assert commands == [
+        [
+            "git",
+            "diff",
+            "--name-only",
+            launcher.TRAINING_SEMANTICS_BASELINE_HEAD,
+            "c" * 40,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ]
+    ]
     monkeypatch.setattr(
         launcher,
         "command",
@@ -302,6 +323,19 @@ def test_exact_runner_rejects_changed_repaired_training_semantics(
     )
     with pytest.raises(Exception, match="training semantics changed"):
         launcher.validate_runner_training_semantics("d" * 40)
+
+
+def test_committed_successor_head_preserves_audited_training_semantics(
+) -> None:
+    current_head = launcher.command(
+        ["git", "rev-parse", "HEAD"]
+    ).stdout.strip()
+    receipt = launcher.validate_runner_training_semantics(current_head)
+    assert receipt["training_semantics_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_BASELINE_HEAD
+    )
+    assert receipt["training_semantic_diff_paths"] == []
+    assert receipt["training_semantics_unchanged"] is True
 
 
 @pytest.mark.parametrize(

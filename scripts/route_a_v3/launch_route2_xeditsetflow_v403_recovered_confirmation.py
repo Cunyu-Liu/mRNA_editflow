@@ -54,10 +54,37 @@ SCHEDULER = (
     WORKTREE
     / "scripts/route_a_v3/run_route2_xedit_v4_confirmation_training_scheduler.py"
 )
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,name,memory.free,memory.total",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditSetFlowV403ConfirmationLaunchError(RuntimeError):
     pass
+
+
+class XEditSetFlowV403GpuInventoryError(
+    XEditSetFlowV403ConfirmationLaunchError
+):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: str,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+        missing_physical_gpus: tuple[int, ...] = (),
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+        self.command_line = GPU_INVENTORY_COMMAND
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.missing_physical_gpus = missing_physical_gpus
 
 
 def require(condition: bool, message: str) -> None:
@@ -93,25 +120,156 @@ def command(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
     )
 
 
-def gpu_diagnostics() -> dict[int, dict[str, Any]]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,name,memory.free,memory.total",
-            "--format=csv,noheader,nounits",
-        ]
-    )
-    values: dict[int, dict[str, Any]] = {}
-    for line in result.stdout.splitlines():
-        index, name, free, total = (
-            part.strip() for part in line.split(",", maxsplit=3)
+def gpu_diagnostics(
+    required_physical_gpus: Sequence[int] = (),
+) -> dict[int, dict[str, Any]]:
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
         )
-        values[int(index)] = {
-            "name": name,
-            "free_memory_mib": int(free),
-            "total_memory_mib": int(total),
-        }
+    except OSError as error:
+        raise XEditSetFlowV403GpuInventoryError(
+            f"nvidia-smi could not be executed: {error}",
+            reason="COMMAND_EXECUTION_FAILED",
+        ) from error
+    if result.returncode != 0:
+        raise XEditSetFlowV403GpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            reason="NONZERO_RETURN_CODE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
+    values: dict[int, dict[str, Any]] = {}
+    try:
+        for line in result.stdout.splitlines():
+            index, name, free, total = (
+                part.strip() for part in line.split(",", maxsplit=3)
+            )
+            values[int(index)] = {
+                "name": name,
+                "free_memory_mib": int(free),
+                "total_memory_mib": int(total),
+            }
+    except (TypeError, ValueError) as error:
+        raise XEditSetFlowV403GpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {error}",
+            reason="OUTPUT_PARSE_FAILED",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from error
+    required = tuple(int(gpu) for gpu in required_physical_gpus)
+    missing = tuple(sorted(set(required) - set(values)))
+    if missing:
+        raise XEditSetFlowV403GpuInventoryError(
+            "configured physical GPU inventory is incomplete; "
+            f"missing {list(missing)}",
+            reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+            missing_physical_gpus=missing,
+        )
     return values
+
+
+def gpu_failure_process_details_v403(error: Exception) -> dict[str, Any]:
+    if isinstance(error, XEditSetFlowV403GpuInventoryError):
+        return {
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "inventory_failure_reason": error.reason,
+            "missing_physical_gpus": list(error.missing_physical_gpus),
+        }
+    if isinstance(error, subprocess.CalledProcessError):
+        raw_command = error.cmd
+        command_line = (
+            list(raw_command)
+            if isinstance(raw_command, (list, tuple))
+            else [str(raw_command)]
+        )
+        return {
+            "command": command_line,
+            "return_code": error.returncode,
+            "stdout": error.stdout or "",
+            "stderr": error.stderr or "",
+            "inventory_failure_reason": None,
+            "missing_physical_gpus": [],
+        }
+    return {
+        "command": None,
+        "return_code": None,
+        "stdout": "",
+        "stderr": "",
+        "inventory_failure_reason": None,
+        "missing_physical_gpus": [],
+    }
+
+
+def write_prelaunch_cuda_failure_evidence_v403(
+    path: Path,
+    *,
+    current_head: str,
+    configured_gpus: Sequence[int],
+    selected_gpus: Sequence[int],
+    diagnostics: Mapping[int, Mapping[str, Any]],
+    authorization_path: Path,
+    config_root: Path,
+    run_root: Path,
+    runtime_root: Path,
+    error: Exception,
+) -> None:
+    details = gpu_failure_process_details_v403(error)
+    inventory_failure = isinstance(error, XEditSetFlowV403GpuInventoryError)
+    write_new_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditsetflow_v403_confirmation_cuda_failure.v1"
+            ),
+            "status": "STOPPED_BEFORE_CONFIRMATION_LAUNCH",
+            "failure_stage": (
+                "GPU_INVENTORY_BEFORE_CONFIRMATION_FAMILY_MATERIALIZATION"
+                if inventory_failure
+                else "CUDA_BF16_PROBE_BEFORE_CONFIRMATION_FAMILY_MATERIALIZATION"
+            ),
+            "runner_git_head": current_head,
+            "training_git_head": TRAINING_HEAD,
+            "validation_git_head": VALIDATION_HEAD,
+            "configured_physical_gpus": [int(gpu) for gpu in configured_gpus],
+            "selected_physical_gpus": [int(gpu) for gpu in selected_gpus],
+            "gpu_diagnostics": {
+                str(gpu): dict(payload) for gpu, payload in diagnostics.items()
+            },
+            "inventory_command": list(GPU_INVENTORY_COMMAND),
+            **details,
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "intended_authorization_path": str(authorization_path),
+            "intended_config_root": str(config_root),
+            "intended_run_root": str(run_root),
+            "intended_runtime_root": str(runtime_root),
+            "authorization_materialized": authorization_path.exists(),
+            "config_root_created": config_root.exists(),
+            "run_root_created": run_root.exists(),
+            "runtime_root_created": runtime_root.exists(),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "parameter_update_count": 0,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def cuda_bf16_probe(physical_gpu_index: int) -> dict[str, Any]:
@@ -461,52 +619,52 @@ def run(current_head: str) -> dict[str, Any]:
     )
     config_root = Path(protocol["runtime_config_root"])
     run_root = Path(protocol["run_root"])
+    cuda_failure_path = Path(
+        runner_outputs["cuda_failure_evidence_template"].format(
+            runner_git_head=current_head
+        )
+    )
     for path, message in (
         (authorization_path, "confirmation authorization exists"),
         (config_root, "confirmation runtime config root exists"),
         (run_root, "confirmation run root exists"),
         (runtime_root, "confirmation training runtime exists"),
+        (cuda_failure_path, "confirmation CUDA failure evidence exists"),
     ):
         require(not path.exists(), f"{message}: {path}")
+    require(
+        not cuda_failure_path.with_suffix(
+            cuda_failure_path.suffix + ".partial"
+        ).exists(),
+        "partial confirmation CUDA failure evidence exists: "
+        f"{cuda_failure_path}",
+    )
 
-    diagnostics = gpu_diagnostics()
     configured_gpus = tuple(
         int(gpu) for gpu in recovery_config["gpu_policy"]["physical_gpu_scope"]
     )
     require(
-        len(configured_gpus) >= len(CONFIRMATION_SEEDS)
-        and all(gpu in diagnostics for gpu in configured_gpus),
-        "SetFlow V4.0.3 configured physical GPU inventory is incomplete",
+        len(configured_gpus) >= len(CONFIRMATION_SEEDS),
+        "SetFlow V4.0.3 configured physical GPU scope is too small",
     )
     selected_gpus = configured_gpus[: len(CONFIRMATION_SEEDS)]
+    diagnostics: dict[int, dict[str, Any]] = {}
     try:
+        diagnostics = gpu_diagnostics(configured_gpus)
         cuda_probes = {gpu: cuda_bf16_probe(gpu) for gpu in selected_gpus}
     except Exception as error:
-        failure_path = Path(
-            runner_outputs["cuda_failure_evidence_template"].format(
-                runner_git_head=current_head
-            )
+        write_prelaunch_cuda_failure_evidence_v403(
+            cuda_failure_path,
+            current_head=current_head,
+            configured_gpus=configured_gpus,
+            selected_gpus=selected_gpus,
+            diagnostics=diagnostics,
+            authorization_path=authorization_path,
+            config_root=config_root,
+            run_root=run_root,
+            runtime_root=runtime_root,
+            error=error,
         )
-        if not failure_path.exists():
-            write_new_atomic(
-                failure_path,
-                {
-                    "schema_version": (
-                        "route_a_v3_route2_xeditsetflow_v403_confirmation_cuda_failure.v1"
-                    ),
-                    "status": "STOPPED_BEFORE_CONFIRMATION_LAUNCH",
-                    "runner_git_head": current_head,
-                    "training_git_head": TRAINING_HEAD,
-                    "validation_git_head": VALIDATION_HEAD,
-                    "selected_physical_gpus": list(selected_gpus),
-                    "error_type": type(error).__name__,
-                    "error": str(error),
-                    "cpu_fallback_used": False,
-                    "parameter_update_count": 0,
-                    "development_test_outcome_reads": 0,
-                    "new_final_evaluation_outcome_reads": 0,
-                },
-            )
         raise
 
     command(

@@ -124,7 +124,7 @@ def _closed(method: str, seed: int, value: float, *, source_count: int = 891):
         }
         for index in range(source_count)
     }
-    return {
+    result = {
         "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood.v4",
         "status": "XEDITFLOW_V4_CLOSED_NEIGHBORHOOD_COMPLETE",
         "method_id": method,
@@ -137,6 +137,9 @@ def _closed(method: str, seed: int, value: float, *, source_count: int = 891):
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
+    if method in V4_GENERATED_METHODS:
+        result.update({"kappa": 0.5, "temperature": 1.0, "beta_max": 2.0})
+    return result
 
 
 def _compute(source_key: str):
@@ -221,7 +224,7 @@ def test_v4_equal_wall_requires_terminal_reconciled_compute() -> None:
 
 
 def _open(method: str, seed: int):
-    return {
+    result = {
         "status": "XEDITFLOW_V4_OPEN_GENERATION_METRICS_COMPLETE",
         "method_id": method,
         "base_flow_training_seed": seed,
@@ -232,6 +235,9 @@ def _open(method: str, seed: int):
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
+    if method in V4_GENERATED_METHODS:
+        result.update({"kappa": 0.5, "temperature": 1.0, "beta_max": 2.0})
+    return result
 
 
 def _generation(method: str, seed: int):
@@ -310,7 +316,7 @@ def _equal_wall(seed: int):
     }
 
 
-def _assembled(seed: int):
+def _assembled(seed: int, evidence_mutator=None):
     values = {method: 0.70 for method in METHODS_V4}
     values["full_soft_value_smc"] = 0.85
     values["unguided_setflow"] = 0.65
@@ -325,12 +331,13 @@ def _assembled(seed: int):
             "top_1_recall": 0.5,
         }
         closed["source_macro_ndcg"] = values[method]
-        closed["source_macro_normalized_regret"] = (
-            0.30 if method == "full_soft_value_smc" else 0.40
-        )
-        closed["source_macro_top_1_recall"] = (
-            0.60 if method == "full_soft_value_smc" else 0.50
-        )
+        regret = 0.30 if method == "full_soft_value_smc" else 0.40
+        top_1 = 0.60 if method == "full_soft_value_smc" else 0.50
+        for row in closed["per_source"].values():
+            row["normalized_regret"] = regret
+            row["top_1_recall"] = top_1
+        closed["source_macro_normalized_regret"] = regret
+        closed["source_macro_top_1_recall"] = top_1
         bundle = {
             "closed": closed,
             "open": _open(method, seed),
@@ -339,6 +346,8 @@ def _assembled(seed: int):
         if method in V4_GENERATED_METHODS:
             bundle["terminal_critic"] = _terminal(method, seed)
         evidence[method] = bundle
+    if evidence_mutator is not None:
+        evidence_mutator(evidence)
     evaluator = {
         "status": "XEDITFLOW_V4_INDEPENDENT_EVALUATOR_COMPARISON_COMPLETE",
         "analysis_unit": "SOURCE",
@@ -372,6 +381,40 @@ def _assembled(seed: int):
         bootstrap_iterations=10_000,
         bootstrap_seed=20261001 + seed,
     )
+
+
+@pytest.mark.parametrize(
+    ("field", "message"),
+    (
+        (
+            "source_macro_normalized_regret",
+            "macro regret is not the source-defined mean",
+        ),
+        (
+            "source_macro_top_1_recall",
+            "macro top-1 is not the source-defined mean",
+        ),
+    ),
+)
+def test_v4_final_evidence_recomputes_all_closed_source_macros(
+    field: str, message: str
+) -> None:
+    def tamper(evidence) -> None:
+        evidence["full_soft_value_smc"]["closed"][field] += 0.01
+
+    with pytest.raises(Exception, match=message):
+        _assembled(20260912, evidence_mutator=tamper)
+
+
+@pytest.mark.parametrize("bundle_name", ("closed", "open"))
+def test_v4_final_evidence_binds_generated_metric_combination(
+    bundle_name: str,
+) -> None:
+    def tamper(evidence) -> None:
+        evidence["simple_rate_guidance"][bundle_name]["beta_max"] = 1.0
+
+    with pytest.raises(Exception, match="generation combination differs"):
+        _assembled(20260912, evidence_mutator=tamper)
 
 
 def test_v4_final_evidence_and_three_seed_gate_are_exact_and_terminal(tmp_path) -> None:

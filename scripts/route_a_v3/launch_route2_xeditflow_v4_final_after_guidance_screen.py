@@ -225,6 +225,7 @@ def _config_job(
         command_line += ["--config", str(config_path)]
         success = output / "run_summary.json"
         failure = failure_root / f"{key}.failed.json"
+        command_line += ["--failure-path", str(failure)]
     elif output_kind == "seed_manifest_row":
         output = Path(str(config["output_dir"]))
         command_line += ["--config", str(config_path), "--output-dir", str(output)]
@@ -625,6 +626,11 @@ def run(
         "A100 worktree is not clean at expected current HEAD",
     )
     protocol = read_json(protocol_path)
+    require(
+        strongest_closed_score_table
+        == Path(str(protocol.get("strongest_closed_score_table_path", ""))),
+        "pre-frozen strongest closed score table differs from the frozen protocol",
+    )
     gate_path = Path(str(protocol["guidance_screen_output_root"])) / "guidance_screen_gate.json"
     gate = read_json(gate_path)
     require(

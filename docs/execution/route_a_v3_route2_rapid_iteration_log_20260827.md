@@ -374,3 +374,68 @@ or terminal artifacts.
   identity with complete terminal artifacts or stops at the first technical
   failure with evidence. Model quality itself is still pending the already-
   frozen GPU and scientific gates.
+
+## Iteration 7 — Close the handover, GPU-evidence, and final-science identity gaps
+
+- Objective: remove only the reachable blockers found by three independent
+  static audits before any frozen successor or final comparison starts. The two
+  active V4.0.3 attempts, their artifacts, all frozen thresholds, seeds,
+  budgets, precision modes, and protected-data boundaries remain unchanged.
+- Current execution entry: `CURRENT_EXECUTION_INDEX.md` is now the sole current
+  repository entry point. The dated 2026-08-20 handover is explicitly marked as
+  a read-only historical snapshot, so a new operator cannot mistake its old
+  branch, worktree, launcher commands, or scientific route for the current
+  V4.0.3 path.
+- Critic successor correction: repaired-screen provenance remains fixed at the
+  true f34 training HEAD, while the confirmation training-semantics comparison
+  now starts from the independently audited a305 safety baseline. This preserves
+  the trainer/core/config diff barrier without treating the later clean-worktree
+  execution check as a model-semantic change. A real committed-Git regression
+  supplements the mocked diff tests; the affected module passed 22/22.
+- GPU prelaunch evidence: generic confirmation training now inventories GPUs
+  before publishing its one-shot authorization package. Generic guidance and
+  posttraining, plus recovered SetFlow confirmation and posttraining, record
+  command, return code, output, parse/missing-device reason, code identity,
+  protected-read state, and explicit CPU-fallback status for inventory and
+  CUDA/BF16 probe failures. Existing evidence prevents same-family overwrite.
+  The five affected launcher modules passed 56/56.
+- Final timing evidence: the final schedule passes its declared
+  `failures/strongest_timing.failed.json` path directly to the frozen genetic
+  timing wrapper. A lower-level CUDA or execution failure is bridged there with
+  the original producer evidence, including a true CPU-fallback observation,
+  instead of being replaced by a generic scheduler failure. The wrapper and
+  final-launcher interface passed 10/10 targeted tests.
+- Final scientific identity: the seed assembler now recomputes source-macro
+  normalized regret and top-1 recall from their existing eligible per-source
+  rows and requires 1e-12 agreement with producer aggregates. Every generated
+  method's closed, open, generation, and terminal evidence is bound to the one
+  selected `kappa/temperature/beta_max`; the pre-frozen strongest baseline is
+  deliberately combination-independent. The closed-score controls retain the
+  already-validated combination fields.
+- Frozen comparator identity: final configs must use the protocol-fixed
+  strongest score table and its existing V4.0.3 producer summary. The consumer
+  verifies the fixed producer seed, 891-source coverage, score path/provider,
+  CUDA/no-CPU-fallback state, no reselection, no measured outcomes, and protected
+  reads. Guided and strongest margins also require the same independent
+  evaluator checkpoint, frozen Development Validation stage, score scale, and
+  no CPU fallback. The five directly affected final-science modules passed
+  34/34 without changing a scientific threshold.
+- Memory policy: GPU free-memory and peak-memory values remain diagnostics only.
+  No launcher filters, sorts, rejects, or authorizes a configured GPU by free or
+  estimated memory; no new memory threshold was added.
+- Verification and publication: the containing commit must be clean and pushed,
+  then the complete successor focused cohort must run as isolated Python
+  processes together with the 96 V3.3.2 regression tests. Exact-HEAD shared and
+  SetFlow receipts are materialized only from those final committed results and
+  accepted by their real consumers before the two-hour heartbeat is updated.
+  Targeted tests above are engineering evidence only, never model or scientific
+  evidence.
+- Active and protected scope: no active runtime, metric, curve, stdout/stderr,
+  Development TEST outcome, or new final Evaluation outcome was read while
+  making these corrections. No training or GPU validation was launched. The
+  single two-hour heartbeat remains the only progress monitor.
+- Conclusion: these repairs make a future Development PASS auditable, but do not
+  claim that PASS in advance. An excellent Development result still requires
+  `XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL` together with `XEDITFLOW_V4_PASS` on
+  all frozen final evidence. External scientific confirmation remains locked
+  until a genuinely new outcome-unexposed Evaluation cohort is available.

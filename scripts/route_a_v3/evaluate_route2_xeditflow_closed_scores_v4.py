@@ -25,6 +25,7 @@ from scripts.route_a_v3.score_route2_xeditflow_closed_controls_v4 import (
 CLOSED_SCORED_METHODS_V4 = CLOSED_CRITIC_METHODS_V4 | {
     "strongest_matched_baseline"
 }
+STRONGEST_CLOSED_SCORE_PRODUCER_SEED_V4 = 20260904
 
 
 class XEditFlowClosedScoresV4Error(RuntimeError):
@@ -139,6 +140,33 @@ def evaluate_closed_method_scores_v4(
             score_table_method == "strongest_matched_baseline",
             "V4 strongest baseline score-table identity differs",
         )
+        _require(
+            isinstance(score_summary, Mapping)
+            and score_summary.get("schema_version")
+            == "route_a_v3_route2_xeditflow_closed_frozen_scores.v3"
+            and score_summary.get("status")
+            == "XEDITFLOW_V3_CLOSED_FROZEN_SCORES_COMPLETE"
+            and score_summary.get("method_id") == "strongest_matched_baseline"
+            and int(score_summary.get("base_flow_training_seed", -1))
+            == STRONGEST_CLOSED_SCORE_PRODUCER_SEED_V4
+            and int(score_summary.get("source_count", -1)) == 891
+            and score_summary.get("score_path") == config.get("score_table_path")
+            and score_summary.get("score_provider")
+            == "FROZEN_GENETIC_GUIDING_CHECKPOINT"
+            and score_summary.get("frozen_baseline_reselected") is False
+            and score_summary.get("measured_outcome_used_for_score") is False
+            and score_summary.get("development_test_outcomes_accessed") is False
+            and score_summary.get("new_final_evaluation_outcomes_accessed")
+            is False
+            and score_summary.get("cpu_fallback_used") is False
+            and int(score_summary.get("cuda_device_index", -1)) in range(6)
+            and bool(str(score_summary.get("cuda_device_name", "")).strip())
+            and score_summary.get(
+                "cuda_parent_uuid_matches_declared_physical_index"
+            )
+            is True,
+            "V4 strongest closed-score producer lineage differs",
+        )
     legacy_config = {
         "schema_version": "route_a_v3_route2_xeditflow_closed_score_config.v1",
         "method_id": method,
@@ -155,7 +183,7 @@ def evaluate_closed_method_scores_v4(
         [dict(row) for row in measured_rows],
         [dict(row) for row in score_rows],
     )
-    return {
+    result_v4 = {
         **result,
         "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood.v4",
         "status": "XEDITFLOW_V4_CLOSED_NEIGHBORHOOD_COMPLETE",
@@ -163,6 +191,15 @@ def evaluate_closed_method_scores_v4(
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
+    if method in CLOSED_CRITIC_METHODS_V4:
+        result_v4.update(
+            {
+                "kappa": combination[0],
+                "temperature": combination[1],
+                "beta_max": combination[2],
+            }
+        )
+    return result_v4
 
 
 def main() -> None:

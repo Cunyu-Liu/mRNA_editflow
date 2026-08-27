@@ -93,10 +93,16 @@ def compare_independent_evaluator_v4(
     _require(
         strongest.get("status")
         == "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY"
-        and strongest.get("evaluation_outcomes_accessed") is False,
+        and strongest.get("evaluation_outcomes_accessed") is False
+        and bool(
+            str(strongest.get("independent_evaluator_checkpoint_path", "")).strip()
+        ),
         "V4 strongest generation baseline is not frozen and outcome-isolated",
     )
     strongest_id = str(strongest["strongest_generation_baseline_id"])
+    evaluator_checkpoint_path = str(
+        strongest["independent_evaluator_checkpoint_path"]
+    )
     selection = _json(Path(str(config["baseline_selection_input_path"])))
     _require(
         selection.get("selection_pool") == "DEVELOPMENT_MEASURED_NEIGHBORHOOD"
@@ -122,6 +128,13 @@ def compare_independent_evaluator_v4(
         is True
         and scoring_summary.get("guiding_checkpoint_distinct") is True
         and len(scoring_summary.get("guiding_checkpoint_paths", ())) == 3
+        and scoring_summary.get("evaluator_checkpoint_path")
+        == evaluator_checkpoint_path
+        and scoring_summary.get("evaluator_result_stage")
+        == "FROZEN_DEVELOPMENT_VALIDATION"
+        and scoring_summary.get("selection_score_scale")
+        == "TRAIN_TASK_ROBUST_STANDARDIZED"
+        and scoring_summary.get("cpu_fallback_used") is False
         and scoring_summary.get("independent_evaluator_in_gradient") is False
         and scoring_summary.get(
             "development_test_outcomes_accessed_after_atomic_test"
@@ -195,6 +208,10 @@ def compare_independent_evaluator_v4(
         "base_flow_training_seed": base_flow_seed,
         "combination": list(combination),
         "strongest_baseline_id": strongest_id,
+        "independent_evaluator_checkpoint_path": evaluator_checkpoint_path,
+        "evaluator_result_stage": scoring_summary["evaluator_result_stage"],
+        "selection_score_scale": scoring_summary["selection_score_scale"],
+        "cpu_fallback_used": False,
         "source_count": len(values),
         "guided_source_macro_max_uplift": float(
             np.mean(list(guided_uplifts.values()))

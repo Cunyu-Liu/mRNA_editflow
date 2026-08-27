@@ -1,13 +1,16 @@
 # Route A V3.3 Route 2 下一阶段 Goal 与 To-Do 交接文档
 
-**文档状态：** 当前可执行交接  
+> **历史文件警告：本文件是 2026-08-20 快照，只读，禁止作为当前执行入口。**
+> 当前唯一入口见 [`CURRENT_EXECUTION_INDEX.md`](CURRENT_EXECUTION_INDEX.md)。不得复制本文件中的旧分支、旧工作树或启动命令执行当前实验。
+
+**文档状态：** 历史快照（只读、不可执行）
 **快照时间：** 2026-08-20 17:30（Asia/Shanghai）  
 **适用分支：** `route-a-v3-route2-method-repair-20260817`  
 **本地工作树：** `/Users/liucunyu/Documents/Codex/2026-08-10/ssh-p-22-cunyuliu-36-137-2/work/route2_pretrained_scaleup_20260817`  
 **A100 工作树：** `/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_method_repair_20260817`  
 **运行产物根目录：** `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2`
 
-本文件是执行交接，不是新的科学结果，也不修改当前资格、canonical 数量或论文 claim。普通工程任务按本文件直接推进；不恢复 successor、runtime ledger、one-read resource 或无实际用途的 checksum 约束。
+本文件只保留 2026-08-20 的历史执行背景，不是新的科学结果，也不修改当前资格、canonical 数量或论文 claim。任何当前工程任务均不得按本文件推进；请返回顶部所列唯一当前执行入口。
 
 ---
 

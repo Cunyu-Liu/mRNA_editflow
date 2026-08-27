@@ -25,6 +25,9 @@ from scripts.route_a_v3.prepare_route2_xeditcritic_v4_confirmation_configs impor
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 TRAINING_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
+TRAINING_SEMANTICS_BASELINE_HEAD = (
+    "a305d332c7cbde8066c57c30a330a1e63a0d3d0d"
+)
 C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 TRAINING_WORKTREE = Path(
     "/home/cunyuliu/mrna_editflow_goal/worktrees/"
@@ -421,7 +424,7 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
             "git",
             "diff",
             "--name-only",
-            TRAINING_GIT_HEAD,
+            TRAINING_SEMANTICS_BASELINE_HEAD,
             current_head,
             "--",
             *TRAINING_SEMANTIC_PATHS,
@@ -429,11 +432,14 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     ).stdout.splitlines()
     require(
         not changed,
-        "Critic confirmation training semantics changed after the repaired "
-        "screen: " + ", ".join(changed),
+        "Critic confirmation training semantics changed after the audited "
+        "successor safety baseline: " + ", ".join(changed),
     )
     return {
         "repaired_screen_git_head": TRAINING_GIT_HEAD,
+        "training_semantics_baseline_git_head": (
+            TRAINING_SEMANTICS_BASELINE_HEAD
+        ),
         "runner_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
         "training_semantic_diff_paths": changed,

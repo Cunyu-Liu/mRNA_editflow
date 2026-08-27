@@ -64,6 +64,7 @@ def _fixture(tmp_path, *, seed=20260912):
             ),
             "strongest_generation_baseline_id": "genetic",
             "evaluation_outcomes_accessed": False,
+            "independent_evaluator_checkpoint_path": "/frozen/evaluator.pt",
         },
     )
     _write_json(
@@ -97,6 +98,10 @@ def _fixture(tmp_path, *, seed=20260912):
             "evaluator_frozen_before_candidate_generation": True,
             "guiding_checkpoint_distinct": True,
             "guiding_checkpoint_paths": ["a", "b", "c"],
+            "evaluator_checkpoint_path": "/frozen/evaluator.pt",
+            "evaluator_result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
+            "selection_score_scale": "TRAIN_TASK_ROBUST_STANDARDIZED",
+            "cpu_fallback_used": False,
             "independent_evaluator_in_gradient": False,
             "development_test_outcomes_accessed_after_atomic_test": False,
             "new_final_evaluation_outcome_reads": 0,
@@ -129,6 +134,12 @@ def test_v4_independent_evaluator_margin_is_source_paired_and_frozen(
     assert abs(result["paired_margin_over_strongest_baseline"] - 0.3) < 1e-12
     assert result["source_paired_margin_ci_95"] == pytest.approx([0.3, 0.3])
     assert result["independent_evaluator_used_for_gradient"] is False
+    assert result["independent_evaluator_checkpoint_path"] == (
+        "/frozen/evaluator.pt"
+    )
+    assert result["evaluator_result_stage"] == "FROZEN_DEVELOPMENT_VALIDATION"
+    assert result["selection_score_scale"] == "TRAIN_TASK_ROBUST_STANDARDIZED"
+    assert result["cpu_fallback_used"] is False
 
 
 def test_v4_independent_evaluator_accepts_frozen_final_seed(tmp_path) -> None:
@@ -148,3 +159,24 @@ def test_v4_independent_evaluator_rejects_gradient_or_combination_drift(
     changed["combination"] = [0.5, 1.0, 1.0]
     with pytest.raises(Exception, match="combination differs"):
         compare_independent_evaluator_v4(changed)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("evaluator_checkpoint_path", "/different/evaluator.pt"),
+        ("evaluator_result_stage", "TRAIN"),
+        ("selection_score_scale", "RAW"),
+        ("cpu_fallback_used", True),
+    ),
+)
+def test_v4_independent_evaluator_rejects_scoring_lineage_drift(
+    tmp_path, field: str, value
+) -> None:
+    config = _fixture(tmp_path)
+    scoring_path = tmp_path / "scoring.json"
+    scoring = json.loads(scoring_path.read_text(encoding="utf-8"))
+    scoring[field] = value
+    _write_json(scoring_path, scoring)
+    with pytest.raises(Exception, match="scoring is incomplete or contaminated"):
+        compare_independent_evaluator_v4(config)
