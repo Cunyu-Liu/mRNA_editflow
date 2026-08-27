@@ -29,6 +29,31 @@ V402_OUTPUT_ROOT = (
 )
 PREFLIGHT = OLD_OUTPUT_ROOT / "preflight_attempt_5/preflight.json"
 SMOKE_PROVENANCE_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
+CANONICAL_RECOVERY_HEAD = SMOKE_PROVENANCE_HEAD
+CANONICAL_ATTEMPT_ID = (
+    "xeditcritic_v4_screen_seed20260907::v4_full::"
+    f"v403_rng_replay_fix_{CANONICAL_RECOVERY_HEAD}"
+)
+CANONICAL_OUTPUT_ROOT = (
+    ROOT
+    / "experiments/xeditcritic_v4"
+    / f"screen_seed_20260907_v403_rng_replay_fix_{CANONICAL_RECOVERY_HEAD}"
+)
+CANONICAL_RUNTIME_ROOT = (
+    ROOT
+    / "experiments/xeditcritic_v4"
+    / f"v403_rng_replay_fix_runner_{CANONICAL_RECOVERY_HEAD}"
+)
+CANONICAL_AUTHORIZATION_ROOT = (
+    ROOT
+    / "authorizations/xeditcritic_v4"
+    / f"v403_rng_replay_fix_{CANONICAL_RECOVERY_HEAD}"
+)
+CANONICAL_LOG_ROOT = (
+    ROOT
+    / "logs/xeditcritic_v4"
+    / f"v403_rng_replay_fix_{CANONICAL_RECOVERY_HEAD}"
+)
 SMOKE_TRAINING_SEMANTIC_PATHS = (
     "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
     "core",
@@ -53,6 +78,63 @@ def read_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(payload, dict), f"JSON artifact is not an object: {path}")
     return payload
+
+
+def require_canonical_attempt_unconsumed(current_head: str) -> None:
+    """Keep the f34 seed-20260907 full recovery a true one-shot attempt."""
+
+    runtime_path = CANONICAL_RUNTIME_ROOT / "runtime.json"
+    schedule_path = CANONICAL_RUNTIME_ROOT / "schedule.json"
+    launch_path = CANONICAL_RUNTIME_ROOT / "launch.json"
+    authorization_path = CANONICAL_AUTHORIZATION_ROOT / "launch_authorization.json"
+    if runtime_path.is_file():
+        runtime = read_json(runtime_path)
+        require(
+            runtime.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v403_full_recovery_runtime.v1"
+            and runtime.get("run_id") == RUN_ID
+            and runtime.get("git_head") == CANONICAL_RECOVERY_HEAD
+            and runtime.get("status")
+            in {
+                "XEDITCRITIC_V403_FULL_RECOVERY_RUNNING",
+                "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL",
+                "XEDITCRITIC_V403_FULL_RECOVERY_NO_TERMINAL_ARTIFACT",
+            },
+            "canonical Critic V4.0.3 runtime identity is invalid; use an explicit retry family",
+        )
+    if schedule_path.is_file():
+        schedule = read_json(schedule_path)
+        require(
+            schedule.get("schema_version")
+            == "route_a_v3_route2_xeditcritic_v403_full_recovery_schedule.v1"
+            and schedule.get("run_id") == RUN_ID
+            and schedule.get("git_head") == CANONICAL_RECOVERY_HEAD
+            and CANONICAL_ATTEMPT_ID in list(schedule.get("command", [])),
+            "canonical Critic V4.0.3 schedule identity is invalid; use an explicit retry family",
+        )
+    consumed_paths = tuple(
+        path
+        for path in (
+            CANONICAL_OUTPUT_ROOT,
+            CANONICAL_RUNTIME_ROOT,
+            CANONICAL_AUTHORIZATION_ROOT,
+            CANONICAL_LOG_ROOT,
+            launch_path,
+            authorization_path,
+        )
+        if path.exists()
+    )
+    require(
+        not consumed_paths,
+        "canonical Critic V4.0.3 f34 seed-20260907 v4_full attempt is already "
+        "RUNNING, terminal, or consumed; use an explicit new retry family: "
+        + ", ".join(str(path) for path in consumed_paths),
+    )
+    require(
+        current_head == CANONICAL_RECOVERY_HEAD,
+        "this one-shot Critic recovery launcher is bound to the canonical f34 "
+        "attempt; use an explicit new retry family for another HEAD",
+    )
 
 
 def write_atomic(path: Path, payload: Mapping[str, Any]) -> None:
@@ -272,6 +354,7 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
     require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     require(command(["git", "rev-parse", "HEAD"]).stdout.strip() == expected_head, "V4.0.3 worktree is at another HEAD")
     require(not command(["git", "status", "--porcelain"]).stdout.strip(), "V4.0.3 worktree is dirty")
+    require_canonical_attempt_unconsumed(expected_head)
 
     preflight = read_json(PREFLIGHT)
     require(

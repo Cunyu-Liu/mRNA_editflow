@@ -6,8 +6,13 @@ from pathlib import Path
 
 import pytest
 
+from core.route2_xeditsetflow_runtime_v4 import (
+    require_setflow_v4_confirmation_launch_authorization,
+)
 from scripts.route_a_v3.authorize_route2_xeditsetflow_v403_recovered_confirmation import (
     CONFIRMATION_SEEDS,
+    RUNNER_VERIFICATION_RECEIPT_PASS,
+    RUNNER_VERIFICATION_RECEIPT_SCHEMA,
     SCREEN_EXPERIMENT_HEAD,
     TRAINING_HEAD,
     VALIDATION_HEAD,
@@ -112,7 +117,38 @@ def _recovered_gate(*, passed: bool = True) -> dict:
     }
 
 
-def _build(*, runner_head: str = "c" * 40) -> dict:
+def _runner_receipt(*, runner_head: str = "c" * 40) -> dict:
+    return {
+        "schema_version": RUNNER_VERIFICATION_RECEIPT_SCHEMA,
+        "status": RUNNER_VERIFICATION_RECEIPT_PASS,
+        "runner_git_head": runner_head,
+        "worktree_clean": True,
+        "focused_tests": {
+            "command": ["python", "-m", "pytest", "focused-tests"],
+            "passed": True,
+            "passed_count": 35,
+            "failed_count": 0,
+        },
+        "v332_tests": {
+            "command": ["python", "-m", "pytest", "v332-tests"],
+            "passed": True,
+            "passed_count": 96,
+            "failed_count": 0,
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _receipt_path(runner_head: str) -> str:
+    return DERIVED_PROTOCOL["runner_outputs"][
+        "runner_verification_receipt_template"
+    ].format(runner_git_head=runner_head)
+
+
+def _build(
+    *, runner_head: str = "c" * 40, runner_receipt: dict | None = None
+) -> dict:
     authorization, preflight, source_data = _authorization(head=TRAINING_HEAD)
     return build_recovered_confirmation_authorization_v403(
         BASE_PROTOCOL,
@@ -124,7 +160,9 @@ def _build(*, runner_head: str = "c" * 40) -> dict:
         _recovery_config(),
         _recovery_runtime(),
         _recovered_gate(),
+        runner_receipt or _runner_receipt(runner_head=runner_head),
         current_runner_head=runner_head,
+        runner_verification_receipt_path=_receipt_path(runner_head),
     )
 
 
@@ -137,6 +175,16 @@ def test_recovered_authorization_preserves_three_distinct_heads() -> None:
     assert result["authorized_seeds"] == list(CONFIRMATION_SEEDS)
     assert result["recovery_parameter_update_count"] == 0
     assert result["scientific_thresholds_changed"] is False
+    assert result["source_screen_head_test_evidence"] == {
+        "source_screen_git_head": TRAINING_HEAD,
+        "source_screen_head_focused_tests_passed": True,
+        "source_screen_head_v332_tests_passed": True,
+    }
+    runner_evidence = result["runner_current_head_verification"]
+    assert runner_evidence["runner_git_head"] == "c" * 40
+    assert runner_evidence["receipt_path"] == _receipt_path("c" * 40)
+    assert result["barriers"]["a100_current_head_focused_tests_passed"] is True
+    assert result["barriers"]["a100_current_head_v332_tests_passed"] is True
 
 
 def test_existing_prepare_entry_accepts_recovery_derived_inputs() -> None:
@@ -159,6 +207,24 @@ def test_existing_prepare_entry_accepts_recovery_derived_inputs() -> None:
         == VALIDATION_HEAD
         and config["validation_recovery"]["parameter_updates"] == 0
         for config in configs
+    )
+
+
+def test_core_consumes_only_receipt_derived_current_head_barriers() -> None:
+    runner_head = "c" * 40
+    result = _build(runner_head=runner_head)
+    config = build_confirmation_configs_v4(
+        _recovery_config(), DERIVED_PROTOCOL, _recovered_gate()
+    )[0]
+    _, preflight, source_data = _authorization(head=TRAINING_HEAD)
+    require_setflow_v4_confirmation_launch_authorization(
+        config,
+        result,
+        preflight,
+        source_data,
+        _recovered_gate(),
+        run_id="v4_full",
+        current_git_head=runner_head,
     )
 
 
@@ -206,5 +272,30 @@ def test_recovered_authorization_rejects_screen_authorization_at_wrong_head() ->
             _recovery_config(),
             _recovery_runtime(),
             _recovered_gate(),
+            _runner_receipt(),
             current_runner_head="c" * 40,
+            runner_verification_receipt_path=_receipt_path("c" * 40),
         )
+
+
+def test_recovered_authorization_requires_exact_runner_receipt() -> None:
+    wrong_head = _runner_receipt(runner_head="d" * 40)
+    with pytest.raises(Exception, match="not exact-HEAD PASS"):
+        _build(runner_receipt=wrong_head)
+
+    failed = _runner_receipt()
+    failed["focused_tests"] = {
+        **failed["focused_tests"],
+        "passed": False,
+        "passed_count": 34,
+        "failed_count": 1,
+    }
+    with pytest.raises(Exception, match="failed or incomplete focused tests"):
+        _build(runner_receipt=failed)
+
+
+def test_recovered_authorization_rejects_runner_receipt_protected_read() -> None:
+    receipt = _runner_receipt()
+    receipt["development_test_outcome_reads"] = 1
+    with pytest.raises(Exception, match="protected outcome read"):
+        _build(runner_receipt=receipt)

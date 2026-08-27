@@ -1,4 +1,7 @@
+import json
 from pathlib import Path
+
+import pytest
 
 import scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery as launcher
 from scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery import (
@@ -97,3 +100,55 @@ def test_v403_smoke_provenance_is_explicit_and_training_semantic_only() -> None:
     assert "SMOKE_TRAINING_SEMANTIC_PATHS" in source
     assert '"training_semantics_unchanged": True' in source
     assert '"training_semantic_diff_paths": changed' in source
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "XEDITCRITIC_V403_FULL_RECOVERY_RUNNING",
+        "XEDITCRITIC_V403_FULL_RECOVERY_NO_TERMINAL_ARTIFACT",
+    ],
+)
+def test_new_head_cannot_bypass_existing_canonical_critic_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, status: str
+) -> None:
+    runtime_root = tmp_path / "canonical-runtime"
+    runtime_root.mkdir()
+    (runtime_root / "runtime.json").write_text(
+        json.dumps(
+            {
+                "schema_version": (
+                    "route_a_v3_route2_xeditcritic_v403_full_recovery_runtime.v1"
+                ),
+                "status": status,
+                "run_id": launcher.RUN_ID,
+                "git_head": launcher.CANONICAL_RECOVERY_HEAD,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(launcher, "CANONICAL_RUNTIME_ROOT", runtime_root)
+    monkeypatch.setattr(
+        launcher, "CANONICAL_OUTPUT_ROOT", tmp_path / "canonical-output"
+    )
+    monkeypatch.setattr(
+        launcher,
+        "CANONICAL_AUTHORIZATION_ROOT",
+        tmp_path / "canonical-authorization",
+    )
+    monkeypatch.setattr(
+        launcher, "CANONICAL_LOG_ROOT", tmp_path / "canonical-logs"
+    )
+
+    with pytest.raises(Exception, match="already RUNNING, terminal, or consumed"):
+        launcher.require_canonical_attempt_unconsumed("9" * 40)
+
+
+def test_canonical_critic_guard_precedes_probe_and_new_head_paths() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    launch_source = source[source.index("def launch(") :]
+    guard = launch_source.index("require_canonical_attempt_unconsumed(")
+    probe = launch_source.index("gpu_free_memory_bytes(")
+    new_path = launch_source.index('f"screen_seed_20260907_v403_rng_replay_fix_')
+    assert guard < probe
+    assert guard < new_path

@@ -311,6 +311,9 @@ def build_schedule_v403(
         "recovery_runtime": provenance["recovery_runtime_path"],
         "recovered_screen_gate": provenance["recovered_screen_gate_path"],
         "confirmation_authorization": str(authorization_path),
+        "runner_verification_receipt": runner_outputs[
+            "runner_verification_receipt_template"
+        ].format(runner_git_head=runner_head),
         "config_manifest": str(
             Path(str(protocol["runtime_config_root"])) / "manifest.json"
         ),
@@ -382,6 +385,20 @@ def run(current_head: str) -> dict[str, Any]:
     base_protocol = read_json(BASE_CONFIRMATION_PROTOCOL)
     protocol = read_json(PROTOCOL)
     screen_config = read_json(SCREEN_CONFIG)
+    runner_outputs = protocol["runner_outputs"]
+    runner_verification_receipt_path = Path(
+        runner_outputs["runner_verification_receipt_template"].format(
+            runner_git_head=current_head
+        )
+    )
+    require(
+        runner_verification_receipt_path.is_file(),
+        "SetFlow V4.0.3 exact-runner-HEAD verification receipt is absent: "
+        f"{runner_verification_receipt_path}",
+    )
+    runner_verification_receipt = read_json(
+        runner_verification_receipt_path
+    )
     provenance = protocol["validation_recovery_provenance"]
     recovery_config_path = Path(provenance["recovery_config_path"])
     recovery_runtime_path = Path(provenance["recovery_runtime_path"])
@@ -420,10 +437,13 @@ def run(current_head: str) -> dict[str, Any]:
         recovery_config,
         recovery_runtime,
         recovered_gate,
+        runner_verification_receipt,
         current_runner_head=current_head,
+        runner_verification_receipt_path=str(
+            runner_verification_receipt_path
+        ),
     )
 
-    runner_outputs = protocol["runner_outputs"]
     authorization_path = Path(
         runner_outputs["authorization_output_template"].format(
             runner_git_head=current_head
@@ -527,6 +547,8 @@ def run(current_head: str) -> dict[str, Any]:
             str(recovery_runtime_path),
             "--recovered-screen-gate",
             str(recovered_gate_path),
+            "--runner-verification-receipt",
+            str(runner_verification_receipt_path),
             "--output",
             str(authorization_path),
         ]
@@ -579,6 +601,9 @@ def run(current_head: str) -> dict[str, Any]:
         "runtime_manifest": str(runtime_manifest),
         "scheduler_log": str(scheduler_log),
         "confirmation_authorization": str(authorization_path),
+        "runner_verification_receipt": str(
+            runner_verification_receipt_path
+        ),
         "recovered_screen_gate": str(recovered_gate_path),
         "required_seeds": list(CONFIRMATION_SEEDS),
         "selected_physical_gpus": list(selected_gpus),

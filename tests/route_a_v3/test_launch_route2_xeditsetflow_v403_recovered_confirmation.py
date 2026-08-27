@@ -53,6 +53,22 @@ def test_nonterminal_recovery_guard_precedes_any_prepare_or_launch() -> None:
     assert terminal_guard < prepare_invocation < scheduler_launch
 
 
+def test_exact_runner_receipt_barrier_precedes_config_materialization() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    run_source = source[source.index("def run(current_head: str)") :]
+    receipt_read = run_source.index(
+        "runner_verification_receipt = read_json("
+    )
+    receipt_validation = run_source.index(
+        "expected_authorization = build_recovered_confirmation_authorization_v403("
+    )
+    prepare_invocation = run_source.index(
+        'str(PREPARE),\n            "--base-config"'
+    )
+    scheduler_launch = run_source.index("process = subprocess.Popen(")
+    assert receipt_read < receipt_validation < prepare_invocation < scheduler_launch
+
+
 def test_schedule_binds_dual_head_recovered_inputs_and_posttraining(
     tmp_path: Path,
 ) -> None:
@@ -108,6 +124,9 @@ def test_schedule_binds_dual_head_recovered_inputs_and_posttraining(
     assert schedule["confirmation_authorization"].endswith(
         "authorization.json"
     )
+    assert schedule["runner_verification_receipt"] == PROTOCOL[
+        "runner_outputs"
+    ]["runner_verification_receipt_template"].format(runner_git_head="c" * 40)
     assert schedule["posttraining_bindings"]["recovered_screen_gate_path"] == (
         provenance["recovered_screen_gate_path"]
     )

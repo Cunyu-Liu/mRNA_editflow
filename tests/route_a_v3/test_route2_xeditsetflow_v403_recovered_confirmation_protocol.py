@@ -56,6 +56,13 @@ def test_posttraining_paths_remain_bound_to_recovered_sources() -> None:
     assert "{runner_git_head}" in binding[
         "confirmation_authorization_output_template"
     ]
+    receipt_template = DERIVED["runner_outputs"][
+        "runner_verification_receipt_template"
+    ]
+    assert receipt_template.startswith(
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/"
+    )
+    assert "{runner_git_head}" in receipt_template
 
 
 def test_protocol_never_authorizes_protected_outcomes() -> None:

@@ -38,6 +38,12 @@ SCIENCE_PROTOCOL_KEYS = (
     "development_test_outcome_reads",
     "new_final_evaluation_outcome_reads",
 )
+RUNNER_VERIFICATION_RECEIPT_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_v403_runner_verification_receipt.v1"
+)
+RUNNER_VERIFICATION_RECEIPT_PASS = (
+    "XEDITSETFLOW_V403_RUNNER_VERIFICATION_PASS"
+)
 
 
 class XEditSetFlowV403ConfirmationAuthorizationError(RuntimeError):
@@ -73,6 +79,46 @@ def require_zero_protected_reads(
         and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
         f"SetFlow V4.0.3 {label} reports a protected outcome read",
     )
+
+
+def require_runner_verification_receipt_v403(
+    receipt: Mapping[str, Any],
+    *,
+    current_runner_head: str,
+) -> None:
+    require(
+        receipt.get("schema_version") == RUNNER_VERIFICATION_RECEIPT_SCHEMA
+        and receipt.get("status") == RUNNER_VERIFICATION_RECEIPT_PASS
+        and receipt.get("runner_git_head") == current_runner_head
+        and receipt.get("worktree_clean") is True,
+        "SetFlow V4.0.3 runner verification receipt is not exact-HEAD PASS",
+    )
+    for field, label in (
+        ("focused_tests", "focused tests"),
+        ("v332_tests", "V3.3.2 tests"),
+    ):
+        record = receipt.get(field)
+        require(
+            isinstance(record, Mapping),
+            f"SetFlow V4.0.3 runner receipt lacks {label}",
+        )
+        command_value = record.get("command")
+        passed_count = record.get("passed_count")
+        failed_count = record.get("failed_count")
+        require(
+            isinstance(command_value, list)
+            and bool(command_value)
+            and all(isinstance(value, str) and value for value in command_value)
+            and record.get("passed") is True
+            and isinstance(passed_count, int)
+            and not isinstance(passed_count, bool)
+            and passed_count > 0
+            and isinstance(failed_count, int)
+            and not isinstance(failed_count, bool)
+            and failed_count == 0,
+            f"SetFlow V4.0.3 runner receipt reports failed or incomplete {label}",
+        )
+    require_zero_protected_reads(receipt, label="runner verification receipt")
 
 
 def require_science_protocol_unchanged_v403(
@@ -245,12 +291,25 @@ def build_recovered_confirmation_authorization_v403(
     recovery_config: Mapping[str, Any],
     recovery_runtime: Mapping[str, Any],
     recovered_gate: Mapping[str, Any],
+    runner_verification_receipt: Mapping[str, Any],
     *,
     current_runner_head: str,
+    runner_verification_receipt_path: str,
 ) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_runner_head) is not None,
         "SetFlow V4.0.3 runner Git HEAD is invalid",
+    )
+    expected_receipt_path = protocol["runner_outputs"][
+        "runner_verification_receipt_template"
+    ].format(runner_git_head=current_runner_head)
+    require(
+        runner_verification_receipt_path == expected_receipt_path,
+        "SetFlow V4.0.3 runner verification receipt path changed",
+    )
+    require_runner_verification_receipt_v403(
+        runner_verification_receipt,
+        current_runner_head=current_runner_head,
     )
     require_science_protocol_unchanged_v403(base_protocol, protocol)
     require_recovery_config_derivation_v403(
@@ -290,16 +349,36 @@ def build_recovered_confirmation_authorization_v403(
         "recovery_config_path": provenance["recovery_config_path"],
         "recovery_runtime_path": provenance["recovery_runtime_path"],
         "recovered_screen_gate_path": provenance["recovered_screen_gate_path"],
+        "source_screen_head_test_evidence": {
+            "source_screen_git_head": TRAINING_HEAD,
+            "source_screen_head_focused_tests_passed": screen_barriers[
+                "a100_current_head_focused_tests_passed"
+            ],
+            "source_screen_head_v332_tests_passed": screen_barriers[
+                "a100_current_head_v332_tests_passed"
+            ],
+        },
+        "runner_current_head_verification": {
+            "receipt_path": runner_verification_receipt_path,
+            "schema_version": runner_verification_receipt["schema_version"],
+            "status": runner_verification_receipt["status"],
+            "runner_git_head": runner_verification_receipt["runner_git_head"],
+            "worktree_clean": runner_verification_receipt["worktree_clean"],
+            "focused_tests": dict(runner_verification_receipt["focused_tests"]),
+            "v332_tests": dict(runner_verification_receipt["v332_tests"]),
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
         "authorized_seeds": list(CONFIRMATION_SEEDS),
         "authorized_run_id": "v4_full",
         "barriers": {
             "screen_gate_passed": True,
-            "a100_current_head_focused_tests_passed": screen_barriers[
-                "a100_current_head_focused_tests_passed"
-            ],
-            "a100_current_head_v332_tests_passed": screen_barriers[
-                "a100_current_head_v332_tests_passed"
-            ],
+            "a100_current_head_focused_tests_passed": (
+                runner_verification_receipt["focused_tests"]["passed"]
+            ),
+            "a100_current_head_v332_tests_passed": (
+                runner_verification_receipt["v332_tests"]["passed"]
+            ),
             "source_token_cache_terminal_complete": screen_barriers[
                 "source_token_cache_terminal_complete"
             ],
@@ -339,6 +418,9 @@ def main() -> None:
     parser.add_argument("--recovery-config", required=True, type=Path)
     parser.add_argument("--recovery-runtime", required=True, type=Path)
     parser.add_argument("--recovered-screen-gate", required=True, type=Path)
+    parser.add_argument(
+        "--runner-verification-receipt", required=True, type=Path
+    )
     parser.add_argument("--output", required=True, type=Path)
     arguments = parser.parse_args()
     protocol = read_json(arguments.protocol)
@@ -356,9 +438,16 @@ def main() -> None:
     expected_output = protocol["runner_outputs"][
         "authorization_output_template"
     ].format(runner_git_head=current_head)
+    expected_receipt = protocol["runner_outputs"][
+        "runner_verification_receipt_template"
+    ].format(runner_git_head=current_head)
     require(
         str(arguments.output) == expected_output,
         "SetFlow V4.0.3 confirmation authorization output path changed",
+    )
+    require(
+        str(arguments.runner_verification_receipt) == expected_receipt,
+        "SetFlow V4.0.3 runner verification receipt path changed",
     )
     require(
         not arguments.output.exists(),
@@ -374,7 +463,11 @@ def main() -> None:
         read_json(arguments.recovery_config),
         read_json(arguments.recovery_runtime),
         read_json(arguments.recovered_screen_gate),
+        read_json(arguments.runner_verification_receipt),
         current_runner_head=current_head,
+        runner_verification_receipt_path=str(
+            arguments.runner_verification_receipt
+        ),
     )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     partial = arguments.output.with_suffix(arguments.output.suffix + ".partial")

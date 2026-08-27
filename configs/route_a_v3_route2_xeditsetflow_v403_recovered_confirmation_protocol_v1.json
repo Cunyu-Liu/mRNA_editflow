@@ -65,6 +65,7 @@
     "new_final_evaluation_outcome_reads": 0
   },
   "runner_outputs": {
+    "runner_verification_receipt_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/confirmation_v403_recovered_runner_verification_{runner_git_head}.json",
     "authorization_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/confirmation_v403_recovered_{runner_git_head}.json",
     "cuda_failure_evidence_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/confirmation_v403_recovered_cuda_failure_{runner_git_head}.json",
     "training_runtime_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/confirmation_v403_recovered_training_{runner_git_head}",

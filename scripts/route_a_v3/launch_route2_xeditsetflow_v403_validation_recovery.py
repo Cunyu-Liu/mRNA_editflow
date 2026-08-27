@@ -28,6 +28,25 @@ VALIDATION_JOBS = tuple(
     for run_id in ("v4_full", "v4_single_mode")
     for checkpoint_pass in (4, 6, 8, 10)
 )
+CANONICAL_RECOVERY_HEAD = "37c5901000cf6bef1606f05af242512f1342ceb6"
+CANONICAL_RUN_NAME = f"v403_validation_recovery_{CANONICAL_RECOVERY_HEAD}"
+CANONICAL_RECOVERY_ROOT = (
+    ROOT
+    / "experiments/xeditsetflow_v4/screen_seed_20260911"
+    / CANONICAL_RUN_NAME
+)
+CANONICAL_RUNTIME_CONFIG = (
+    ROOT / "runtime_configs/xeditsetflow_v4" / f"{CANONICAL_RUN_NAME}.json"
+)
+CANONICAL_RUNTIME_ROOT = (
+    ROOT / "experiments/xeditsetflow_v4" / CANONICAL_RUN_NAME
+)
+CANONICAL_LOG_ROOT = ROOT / "logs/xeditsetflow_v4" / CANONICAL_RUN_NAME
+CANONICAL_LAUNCH_MARKER = (
+    ROOT
+    / "authorizations/xeditsetflow_v4"
+    / f"v403_validation_recovery_launch_{CANONICAL_RECOVERY_HEAD}.json"
+)
 
 
 class XEditSetFlowV403LaunchError(RuntimeError):
@@ -60,6 +79,76 @@ def write_new_atomic(path: Path, payload: dict[str, Any]) -> None:
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     os.replace(partial, path)
+
+
+def require_canonical_attempt_unconsumed(current_head: str) -> None:
+    """Keep the fixed two-model-by-four-pass recovery a one-shot cohort."""
+
+    runtime_path = CANONICAL_RUNTIME_ROOT / "runtime.json"
+    schedule_path = CANONICAL_RUNTIME_ROOT / "schedule.json"
+    if runtime_path.is_file():
+        runtime = read_json(runtime_path)
+        require(
+            runtime.get("schema_version")
+            == "route_a_v3_route2_xeditsetflow_v403_validation_recovery_runtime.v1"
+            and runtime.get("git_head") == CANONICAL_RECOVERY_HEAD
+            and runtime.get("source_screen_head") == SOURCE_SCREEN_HEAD
+            and runtime.get("experiment_head") == EXPERIMENT_HEAD
+            and runtime.get("status")
+            in {
+                "XEDITSETFLOW_V403_VALIDATION_RECOVERY_RUNNING",
+                "XEDITSETFLOW_V403_VALIDATION_RECOVERY_AND_GATE_TERMINAL",
+                "XEDITSETFLOW_V403_VALIDATION_RECOVERY_FAILED",
+            },
+            "canonical SetFlow V4.0.3 runtime identity is invalid; use an explicit retry family",
+        )
+    if schedule_path.is_file():
+        schedule = read_json(schedule_path)
+        jobs = {
+            (str(job.get("run_id")), int(job.get("checkpoint_pass", -1)))
+            for queue in schedule.get("validation_queues", [])
+            for job in queue.get("jobs", [])
+        }
+        require(
+            schedule.get("schema_version")
+            == "route_a_v3_route2_xeditsetflow_v403_validation_recovery_schedule.v1"
+            and schedule.get("git_head") == CANONICAL_RECOVERY_HEAD
+            and schedule.get("source_screen_head") == SOURCE_SCREEN_HEAD
+            and schedule.get("experiment_head") == EXPERIMENT_HEAD
+            and jobs == set(VALIDATION_JOBS),
+            "canonical SetFlow V4.0.3 schedule identity or 2x4 cohort is invalid; "
+            "use an explicit retry family",
+        )
+    if CANONICAL_LAUNCH_MARKER.is_file():
+        marker = read_json(CANONICAL_LAUNCH_MARKER)
+        require(
+            marker.get("status") == "CONSUMED"
+            and marker.get("git_head") == CANONICAL_RECOVERY_HEAD
+            and marker.get("source_screen_head") == SOURCE_SCREEN_HEAD,
+            "canonical SetFlow V4.0.3 launch marker identity is invalid; use an explicit retry family",
+        )
+    consumed_paths = tuple(
+        path
+        for path in (
+            CANONICAL_RECOVERY_ROOT,
+            CANONICAL_RUNTIME_CONFIG,
+            CANONICAL_RUNTIME_ROOT,
+            CANONICAL_LOG_ROOT,
+            CANONICAL_LAUNCH_MARKER,
+        )
+        if path.exists()
+    )
+    require(
+        not consumed_paths,
+        "canonical SetFlow V4.0.3 2x4 validation cohort is already RUNNING, "
+        "terminal, or consumed; use an explicit new retry family: "
+        + ", ".join(str(path) for path in consumed_paths),
+    )
+    require(
+        current_head == CANONICAL_RECOVERY_HEAD,
+        "this one-shot SetFlow validation recovery launcher is bound to runner 37c; "
+        "use an explicit new retry family for another HEAD",
+    )
 
 
 def gpu_free_memory_mib() -> dict[int, int]:
@@ -107,6 +196,7 @@ def run(current_head: str) -> dict[str, Any]:
         not command(["git", "status", "--porcelain"]).stdout.strip(),
         "A100 recovery worktree is dirty",
     )
+    require_canonical_attempt_unconsumed(current_head)
 
     screen_root = (
         ROOT
