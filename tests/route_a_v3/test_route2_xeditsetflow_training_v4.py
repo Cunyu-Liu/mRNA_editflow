@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 
+import pytest
 import torch
 
 from core.route2_source_token_cache_v3 import (
@@ -108,6 +109,14 @@ def test_four_states_use_empty_two_distinct_partial_anchors_and_completed_or_str
     assert states[1]["partial_anchor_is_distinct_from_other_partial"] is True
     assert states[3]["common_stop_positive"] != states[3]["structural_budget_exhausted"]
     assert all(sum(state["remaining_count_soft_target"]) == 1.0 for state in states)
+    assert [state["state_slot"] for state in states] == [0, 1, 2, 3]
+    for state in states:
+        assert tuple(
+            records[0].terminal_edit_sets[candidate_index]
+            for candidate_index in state[
+                "compatible_canonical_candidate_indices"
+            ]
+        ) == state["compatible_terminal_edit_sets"]
 
 
 def test_source_states_are_replayable_by_seed_and_pass() -> None:
@@ -138,6 +147,56 @@ def test_source_state_collator_keeps_each_candidate_constraint_separate() -> Non
     assert torch.allclose(
         batch["remaining_count_soft_target"].sum(dim=1), torch.ones(4)
     )
+    assert torch.equal(batch["state_slots"], torch.tensor([0, 1, 2, 3]))
+    assert torch.equal(batch["source_occurrence_ids"], torch.zeros(4, dtype=torch.long))
+    assert torch.equal(
+        batch["canonical_candidate_indices"] >= 0,
+        batch["candidate_valid_mask"],
+    )
+    for row_index, state in enumerate(examples):
+        valid_count = int(batch["candidate_valid_mask"][row_index].sum().item())
+        assert tuple(
+            batch["canonical_candidate_indices"][row_index, :valid_count].tolist()
+        ) == state["compatible_canonical_candidate_indices"]
+
+
+def test_collator_isolates_repeated_source_draws_as_distinct_occurrences() -> None:
+    rows, records, _ = _records()
+    dataset = SetFlowSourceStateDatasetV4(
+        records, setflow_source_vocabs_v4(records), seed=20260911
+    )
+    one_draw = [dataset.state(0, slot) for slot in range(4)]
+    batch = collate_setflow_source_states_v4(
+        one_draw + one_draw,
+        source_cache=_cache(rows),
+    )
+    assert batch["source_ids"][:4] == batch["source_ids"][4:]
+    assert torch.equal(
+        batch["state_slots"],
+        torch.tensor([0, 1, 2, 3, 0, 1, 2, 3]),
+    )
+    assert torch.equal(
+        batch["source_occurrence_ids"],
+        torch.tensor([0, 0, 0, 0, 1, 1, 1, 1]),
+    )
+
+
+def test_collator_rejects_noncontiguous_or_conflicting_canonical_state_blocks() -> None:
+    rows, records, _ = _records()
+    dataset = SetFlowSourceStateDatasetV4(
+        records, setflow_source_vocabs_v4(records), seed=20260911
+    )
+    states = [dataset.state(0, slot) for slot in range(4)]
+    with pytest.raises(RuntimeError, match="contiguous slot-0/1/2/3"):
+        collate_setflow_source_states_v4(
+            [states[0], states[2], states[1], states[3]],
+            source_cache=_cache(rows),
+        )
+
+    poisoned = [dict(state) for state in states]
+    poisoned[0]["compatible_canonical_candidate_indices"] = (0, 0, 2)
+    with pytest.raises(RuntimeError, match="canonical candidate identities are invalid"):
+        collate_setflow_source_states_v4(poisoned, source_cache=_cache(rows))
 
 
 def test_expansion_never_splits_one_sources_four_states() -> None:

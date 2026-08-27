@@ -153,7 +153,15 @@ def _focused_test_commands() -> list[str]:
         "test_route2_xeditcritic_v4_confirmation_runtime.py",
         "python -m pytest -q "
         "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py "
-        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py "
+        "test_route2_xeditsetflow_training_v4.py "
+        "test_route2_xeditsetflow_s1_protocol.py "
+        "test_route2_xeditsetflow_s1.py "
+        "test_train_route2_xeditsetflow_s1.py "
+        "test_validate_route2_xeditsetflow_s1_checkpoint.py "
+        "test_route2_xeditsetflow_gate_s1.py "
+        "test_run_route2_xeditsetflow_s1_screen_scheduler.py "
+        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
         "python -m pytest -q "
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
         "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
@@ -523,6 +531,30 @@ def test_runner_receipt_coverage_fails_closed(
         raise AssertionError(case)
 
     with pytest.raises(Exception, match=error):
+        launcher.validate_runner_verification_receipt(
+            receipt,
+            runner_head=runner_head,
+            receipt_path=launcher.runner_verification_receipt_path(
+                runner_head
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    "marker", launcher.FOCUSED_GROUP_REQUIRED_TEST_MARKERS[2][2:]
+)
+def test_runner_receipt_requires_each_s1_focused_marker(
+    marker: str,
+) -> None:
+    runner_head = "c" * 40
+    receipt = _runner_receipt(runner_head)
+    receipt["focused_tests"]["command"][2] = receipt["focused_tests"][
+        "command"
+    ][2].replace(marker, "")
+
+    with pytest.raises(
+        Exception, match="lacks required test-module coverage"
+    ):
         launcher.validate_runner_verification_receipt(
             receipt,
             runner_head=runner_head,

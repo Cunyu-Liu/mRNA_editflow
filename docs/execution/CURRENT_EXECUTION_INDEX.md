@@ -1,8 +1,8 @@
 # mRNA EditFlow 当前执行索引
 
 **文档角色：** 唯一当前执行入口  
-**适用项目：** Route A V3 / XEditFlow V4.0.3  
-**更新时间：** 2026-08-27（Asia/Shanghai）  
+**适用项目：** Route A V3 / XEditFlow V4.0.3 / SetFlow V4-S1
+**更新时间：** 2026-08-28（Asia/Shanghai）
 **执行原则：** 本文件只规定当前入口、阶段依赖和证据边界；科学阈值仍以冻结合同与协议为准。
 
 > 除本文件外，`docs/execution/` 中带有旧日期、旧分支或旧工作树的执行文档均为历史快照。不得从历史快照复制命令启动当前实验。
@@ -37,39 +37,44 @@
 
 ## 3. 当前运行边界
 
-本索引提交时已经存在以下两条在途实验；在它们各自形成合法终态前，其 canonical one-shot launcher 均不得再次调用：
+原两条活跃游标均已结案，不再轮询：
 
-1. SetFlow V4.0.3 validation recovery：
-   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/runtime.json`
-2. Critic V4.0.3 `v4_full`：
-   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_rng_replay_fix_runner_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/runtime.json`
+1. SetFlow V4.0.3 recovered Validation 已精确 8/8 SUMMARY terminal；冻结 gate 为
+   `XEDITSETFLOW_V4_SCREEN_NO_GO`，`confirmation_authorized=false`，protected、Development
+   TEST 与 new Evaluation reads 均为 0。该科学 NO-GO 和全部旧路径永久只读；禁止重启 recovery、启动旧
+   recovered confirmation/posttraining、降低阈值或追加 seed。
+2. Critic V4.0.3 `v4_full` 已发布唯一 terminal SUMMARY：seed 20260907、pass 8、22,416 updates、
+   physical/effective batch 32、A100 GPU5、CUDA/BF16、无 CPU fallback、f34 authorization，protected、
+   Development TEST 与 new Evaluation reads 均为 0。六个 controls 没有启动，因为它们无法恢复已经失败的
+   SetFlow dual-readiness；该单臂 summary 不是 screen PASS 或最终科学结论。
 
-它们的实时状态不写入本文件，以 runtime、schedule 和终态 evidence 为准。合法终态后，只能由两小时 heartbeat 按第 4 节阶段图启动满足前置 gate 的后继；因此后继出现时，不应把上面的“本索引提交时”快照误读为永久限制。
+对应 repo 事实审计为：
+
+- `audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`
+- `audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`
+
+当前新入口是独立的 SetFlow V4-S1 mechanics family。它是主合同下的前瞻性从属修订，不是旧 V4.0.3
+重试，也不覆盖旧 NO-GO。配置为
+`configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`；任何真实启动仍必须等待包含实现的
+clean、已推送 exact HEAD 完成全量准入与双 receipt。
 
 监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。人工执行阶段不得循环轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
 
 ## 4. 唯一阶段图
 
 ```text
-SetFlow recovery ──> SetFlow screen PASS ──> 3-seed confirmation
-                                            └─> 12 checkpoint Validation
-                                                └─> XEDITSETFLOW_V4_G0_READY
+旧 SetFlow V4.0.3 recovered screen ──> XEDITSETFLOW_V4_SCREEN_NO_GO（冻结、只读）
+旧 Critic V4.0.3 full ──> terminal SUMMARY（controls 暂停、非 screen PASS）
 
-Critic current full ──> 6 controls ──> cross-root screen PASS
-                                      └─> 3-seed full + matched C0
-                                          └─> confirmation Validation PASS
-                                              └─> atomic frozen TEST
-                                                  └─> 3 refits
-                                                      └─> 42-job LOSO readiness
-
-SetFlow G0_READY + Critic post-test readiness
-                    └─> 18-cell guidance screen
-                        └─> XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN
-                            └─> 3-seed, 98-job final Development comparison
-                                └─> XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL
-                                    ├─> gate PASS：优秀 Development 结果
-                                    ├─> gate NO_GO：冻结科学 NO_GO
-                                    └─> 两者均执行 terminal-only 交接收尾
+SetFlow V4-S1 prospective freeze
+    └─> v4_s1_full + v4_s1_single_mode（seed 20260911）
+        └─> checkpoints 4/6/8/10 的冻结 891×32 outcome-free Validation
+            ├─> XEDITSETFLOW_V4_S1_SCREEN_NO_GO：该新方法 family 终止
+            └─> XEDITSETFLOW_V4_S1_SCREEN_PASS
+                └─> 仅允许新 S1-bound 三 seed confirmation；旧 V4.0.3 launcher 禁用
+                    └─> 后续仍须逐级重获 SetFlow G0_READY、Critic readiness、
+                        guidance frozen 与 98-job Final terminal
+                            └─> Final gate PASS：优秀 Development 结果
 ```
 
 每一箭头都要求前一阶段产物完整、唯一、精确终态、protected reads 合法且冻结 gate 达标。不得以 smoke、proxy、训练集指标、单 seed、单臂、screen、原子 TEST、G0 或 guidance screen 代替后续 gate。
@@ -80,10 +85,20 @@ SetFlow G0_READY + Critic post-test readiness
 
 ### SetFlow
 
+- `launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py`
+- `run_route2_xeditsetflow_s1_screen_scheduler.py`
+
+S1 只新增 fixed-weight 0.05 的跨状态候选 mode-responsibility forward KL；根 `EMPTY` slot 0 posterior
+停梯度，约束同一 occurrence/canonical candidate 的 compatible nonroot、nonstructural states，归约严格为
+state→candidate→occurrence。原 V4 架构、sampler、seed 20260911、十 passes、batch 32、checkpoints
+4/6/8/10、891×32 Validation 与全部绝对/相对 gate 不变；不存在 weight sweep 或额外 screen seed。
+
 - `launch_route2_xeditsetflow_v403_recovered_confirmation.py`
 - `launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py`
 
-SetFlow confirmation 训练 schedule 与 posttraining schedule 是两个不同文件。Guidance 只能消费 posttraining schedule。SetFlow dual-readiness 的精确终态是 `XEDITSETFLOW_V4_G0_READY`，不是 `G0_PASS`。
+上面两个 V4.0.3 recovered launcher 现在仅保留为历史实现，已被冻结 NO-GO 禁用。未来只有 S1 screen
+精确 PASS 才可实现并启动新 S1-bound confirmation；其训练 schedule 与 posttraining schedule 仍必须分离。
+Guidance 只能消费真正达到 `XEDITSETFLOW_V4_G0_READY` 的 posttraining schedule，而不是 screen PASS。
 
 ### Critic
 

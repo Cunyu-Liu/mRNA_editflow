@@ -47,6 +47,11 @@ def test_named_batch_and_checkpoint_interfaces_are_used_by_real_consumers() -> N
         "edit_candidate_window_starts",
         "edit_candidate_window_ends",
     } <= CriticStateBatchV4.__required_keys__
+    assert {
+        "state_slots",
+        "source_occurrence_ids",
+        "canonical_candidate_indices",
+    } <= SetFlowSourceBatchV4.__required_keys__
 
 
 def test_critic_prediction_v4_freezes_three_seed_mean_sd_reward_and_neutrality() -> None:

@@ -578,3 +578,65 @@ or terminal artifacts.
 - Conclusion: this code shortens terminal handover closure but creates no model
   result. The real R3 directory and terminal ledger remain gated on Final exact
   terminal; the excellent-result criterion remains frozen Final PASS only.
+
+## Iteration 11 — Freeze the independent SetFlow V4-S1 mechanics successor
+
+- Terminal facts: the V4.0.3 SetFlow recovery is now exact terminal with eight
+  unique Validation summaries, frozen gate `XEDITSETFLOW_V4_SCREEN_NO_GO`, and
+  `confirmation_authorized=false`. Protected, Development TEST, and new
+  Evaluation reads are zero. This is a successfully executed scientific NO-GO,
+  not a technical failure; the old runtime, gate, training, and Validation paths
+  remain immutable and no legacy confirmation/posttraining family exists.
+- Critic closure: V4.0.3 `v4_full` independently reached a unique terminal
+  summary at seed 20260907, pass 8, 22,416 optimizer updates, physical/effective
+  batch 32, A100 GPU5, CUDA/BF16, no CPU fallback, f34 authorization, and zero
+  protected/TEST/Evaluation reads. Six controls are paused because they cannot
+  restore SetFlow dual-readiness. This single arm is not a Critic screen PASS and
+  is not a final model result.
+- Prospective method decision: a new independent SetFlow family is frozen under
+  the existing master contract rather than retrying or reinterpreting the old
+  NO-GO. It contains exactly `v4_s1_full` and `v4_s1_single_mode`, reuses screen
+  seed 20260911, and adds no extra screen seed.
+- S1 mechanism: duplicate-collapsed terminal edit sets retain their target-only
+  canonical index after sorting by edit count and edit tuple. Each expanded
+  source draw carries explicit slots 0/1/2/3 and a fresh occurrence identity;
+  padding repeats never share an occurrence. The detached slot-0 `EMPTY`
+  candidate-mode posterior is the target for forward KL to the same candidate's
+  compatible nonroot, nonstructural state posteriors. Reduction is fixed as
+  state mean, candidate mean, occurrence mean.
+- Frozen delta and controls: the S1 term has prospective weight 0.05 with no
+  sweep. The existing V4 common/coverage/count weights remain 1.0/0.50/0.20 and
+  mode-information remains 0.05 for full and exactly 0.0 for single-mode.
+  Architecture, sampler, source repeat cap, AdamW schedule, ten passes, batch
+  32, checkpoints 4/6/8/10, candidate generation, and selection order are
+  unchanged.
+- Scientific gates: Validation remains the same 891×32 cohort. Absolute floors
+  remain NLL≤2.06809, recovery≥0.35, top-k≥0.20, unique≥0.90, legality=1.0,
+  and all failures zero. Terminal-F2 margins remain 0.05/0.03/0.15 and full over
+  single-mode margins remain 0.03 recovery and 0.05 unique. No threshold is
+  weakened.
+- Execution boundary: the one-shot S1 launcher requires a clean pushed exact
+  HEAD, complete isolated focused tests, exactly 96 V3.3.2 tests, and both
+  exact-HEAD receipts. Training and GPU Validation are CUDA/BF16 only with no
+  CPU fallback. GPU memory is diagnostic only and cannot gate, sort, authorize,
+  or reject a configured GPU. Any existing or partial family forbids reuse.
+- Runner audit closure: real tracked config and terminal-fact audits are now
+  exercised directly by launcher tests. Parameter attempts include the exact
+  runner HEAD so a distinct retry cannot overwrite the earlier ledger row; a
+  success summary is published only after terminal ledger bookkeeping. Job
+  success requires a zero process exit and one SUMMARY. Original `.partial`
+  evidence is never overwritten, and training, Validation, adjudication, CUDA
+  probe, or scheduler-start failures retain the unique first failure, command,
+  device, and protected-read state. A completed Validation with a failed frozen
+  legality/budget/replay/numerical check remains a scientific ineligible row and
+  can yield `XEDITSETFLOW_V4_S1_SCREEN_NO_GO`; a technically incomplete package
+  skips adjudication and cannot be relabeled as scientific NO-GO.
+- Claim boundary: no S1 optimizer, GPU Validation, Development TEST, or new
+  Evaluation read is claimed by this freeze. An S1 screen PASS is still only a
+  screen result; it can open only a new S1-bound successor under all unchanged
+  downstream gates. Excellent Development evidence still requires terminal
+  Final adjudication with `XEDITFLOW_V4_PASS`; `submission_ready=false` remains.
+- Evidence: `configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`,
+  `audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`,
+  `audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`, and
+  `audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json`.

@@ -459,3 +459,95 @@ original screen-launch worktree remains fixed while the two SetFlow jobs finish
 naturally. The SetFlow jobs may not be stopped, modified or restarted. This
 amendment authorizes neither an extra seed nor Critic confirmation, Development
 TEST, or guidance. Those stages retain every original strict gate.
+
+## V4-S1 prospective SetFlow mechanics amendment
+
+This section is a subordinate prospective amendment under the existing master
+contract and the unchanged V4 protocol above. It does not delete, retry, or
+reinterpret the completed V4.0.3 SetFlow result. That recovered package reached
+an exact 8/8-summary terminal state and its frozen gate is
+`XEDITSETFLOW_V4_SCREEN_NO_GO` with `confirmation_authorized=false`; its runtime,
+gate, training, and Validation artifacts remain immutable. The terminal Critic
+V4.0.3 `v4_full` summary is retained as independent engineering evidence, but
+the six Critic controls remain paused because they cannot restore the failed
+SetFlow half of dual readiness. Neither terminal fact is a Final result.
+
+S1 asks one new method question: can the existing eight-mode SetFlow learn a
+stable candidate-specific latent-mode responsibility across the four states of
+the same source occurrence? It adds one loss term and nothing else. Duplicate
+terminal edit sets are first collapsed exactly as in V4 and then sorted by
+`(edit_count, edit_tuple)`. The zero-based position in that tuple is the stable
+canonical candidate identity. This identity uses TRAIN target edit sets only;
+row order, row identity, outcome values, Critic scores, independent-evaluator
+scores, Development TEST, and Evaluation are excluded.
+
+Each expanded sampler draw of one source is one occurrence with exactly four
+contiguous state slots: slot 0 `EMPTY`, slots 1 and 2 `PARTIAL`, and slot 3
+`COMPLETED_OR_STRUCTURAL`. A padding repeat of the same source is a new
+occurrence and never shares an S1 reduction group. The existing V4 state draws,
+candidate compatibility masks, sampler, repeat cap, and remaining-count targets
+are unchanged; S1 merely carries the explicit slot, occurrence, and canonical
+candidate identities through the collator.
+
+For an occurrence (o), compatible canonical candidate (c), and state (s),
+let (q_{o,c,s}(z)) be the normalized latent-mode posterior formed from the
+existing source-conditioned mode prior and that candidate's positive-action
+mass. The slot-0 empty-state posterior is the detached target. Every compatible,
+nonroot, nonstructural state is trained with the forward divergence
+
+\[
+D_{\mathrm{KL}}\!\left(
+\operatorname{stopgrad}q_{o,c,\mathrm{EMPTY}}(z)
+\,\middle\|\,
+q_{o,c,s}(z)
+\right).
+\]
+
+The fixed reduction is state mean, then canonical-candidate mean, then source-
+occurrence mean. This prevents a candidate with more compatible states, or a
+source draw with more candidates, from receiving accidental extra weight. The
+full and single-mode runs both carry the term at the prospectively fixed weight
+0.05; for the one-mode control its mathematical value is exactly zero. There is
+no weight sweep, adaptive coefficient, additional regularizer, or post-outcome
+choice.
+
+The new independent family contains exactly `v4_s1_full` and
+`v4_s1_single_mode` and reuses screen seed 20260911; this is not an additional
+seed. Architecture, parameter ranges, source-token cache, source-organized
+sampler, four states per source, repeat cap, AdamW settings, ten passes, physical
+and effective batch 32, BF16, checkpoints 4/6/8/10, and terminal-only checkpoint
+selection are identical to V4. The existing objective remains common set-
+marginal 1.0, source-candidate coverage 0.50, remaining-count 0.20, and mode
+information 0.05 for full / 0.0 for single-mode; S1 adds only the 0.05
+cross-state candidate-mode responsibility term.
+
+Outcome-free Validation remains exactly 891 eligible sources times 32
+trajectories per source with the original decoder streams, cap, allocation, and
+no retry or duplicate-rejection sampling. Every absolute threshold is unchanged:
+common NLL at most 2.06809, recovery at least 0.35, top-k recovery at least 0.20,
+unique-candidate rate at least 0.90, legality exactly 1.0, and all failure
+counters zero. The terminal-F2 margins remain 0.05 recovery, 0.03 top-k, and
+0.15 unique rate; the full-versus-single mechanism margins remain 0.03 recovery
+and 0.05 unique rate. A complete pass is
+`XEDITSETFLOW_V4_S1_SCREEN_PASS`; otherwise the independent family closes as
+`XEDITSETFLOW_V4_S1_SCREEN_NO_GO`. No threshold may be lowered and no extra
+screen seed may be added.
+
+Training and GPU Validation require real CUDA on a configured physical GPU0–5,
+BF16, and no CPU fallback. GPU inventory failure, missing configured device,
+OOM, CPU fallback, launch failure, double terminal, or missing exact terminal
+evidence fails closed and preserves a non-overwriting sibling failure artifact.
+Free, estimated, or reserved memory is diagnostic only: it cannot filter, sort,
+authorize, or reject a configured GPU. A clean pushed exact HEAD, the complete
+isolated focused cohort, exactly 96 V3.3.2 tests, and both exact-HEAD receipts
+must precede the one-shot S1 family.
+
+S1 screen evidence cannot by itself establish an excellent Development result,
+open Development TEST, or support an external model-advantage claim. A screen
+PASS can authorize only a new S1-bound successor using the unchanged three
+confirmation seeds 20260912/20260913/20260914 and all existing downstream
+gates; the legacy V4.0.3 recovered-confirmation launcher is not authorized.
+Development TEST and new Evaluation reads remain zero. The sole excellent-result
+criterion remains terminal Final adjudication with frozen gate
+`XEDITFLOW_V4_PASS`, and even that keeps `submission_ready=false` until a lawful
+new outcome-unexposed Evaluation exists.

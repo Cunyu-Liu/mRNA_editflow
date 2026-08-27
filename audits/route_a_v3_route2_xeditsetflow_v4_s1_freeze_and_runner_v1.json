@@ -1,0 +1,95 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner.v1",
+  "status": "XEDITSETFLOW_V4_S1_PROTOCOL_AND_RUNNER_FROZEN_NO_ATTEMPT",
+  "authority": {
+    "master_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "parent_protocol": "docs/paper/route2_xedit_v4_prospective_experiments_protocol_v1.md",
+    "s1_config": "configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json",
+    "subordinate_amendment": true,
+    "legacy_v403_gate_overwritten_or_reinterpreted": false
+  },
+  "repo_fact_prerequisites": {
+    "v403_setflow_terminal_nogo": "audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json",
+    "v403_critic_full_terminal": "audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json"
+  },
+  "new_family": {
+    "identity": "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY",
+    "screen_seed": 20260911,
+    "run_ids": ["v4_s1_full", "v4_s1_single_mode"],
+    "independent_family": true,
+    "legacy_v403_retry": false,
+    "additional_screen_seed": false,
+    "output_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_{runner_git_head}"
+  },
+  "mechanism_delta": {
+    "canonical_candidate_identity": "TARGET_ONLY_DUPLICATE_COLLAPSED_TERMINAL_EDIT_SET_ORDER",
+    "four_state_draw_identity_explicit": true,
+    "empty_slot_zero_root_posterior_detached": true,
+    "loss": "FORWARD_KL_ROOT_TARGET_TO_COMPATIBLE_NONROOT_NONSTRUCTURAL_STATE_POSTERIOR",
+    "reduction_order": ["STATE", "CANONICAL_CANDIDATE", "SOURCE_OCCURRENCE"],
+    "weight": 0.05,
+    "weight_sweep_authorized": false
+  },
+  "unchanged_contract": {
+    "architecture": true,
+    "sampler": true,
+    "common_set_marginal_weight": 1.0,
+    "source_candidate_coverage_weight": 0.5,
+    "remaining_count_weight": 0.2,
+    "full_mode_information_weight": 0.05,
+    "single_mode_information_weight": 0.0,
+    "passes": 10,
+    "physical_and_effective_batch_size": 32,
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "eligible_validation_source_count": 891,
+    "trajectories_per_source": 32,
+    "absolute_and_relative_screen_thresholds": "IDENTICAL_TO_BASE_V4_SCREEN",
+    "additional_seed_authorized": false
+  },
+  "runner": {
+    "launcher": "scripts/route_a_v3/launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
+    "scheduler": "scripts/route_a_v3/run_route2_xeditsetflow_s1_screen_scheduler.py",
+    "trainer": "scripts/route_a_v3/train_route2_xeditsetflow_s1.py",
+    "checkpoint_validator": "scripts/route_a_v3/validate_route2_xeditsetflow_s1_checkpoint.py",
+    "adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditsetflow_s1_screen.py",
+    "single_schedule_and_runtime_cursor": true,
+    "exact_clean_pushed_head_required": true,
+    "exact_head_shared_and_setflow_receipts_required": true,
+    "package_first_terminal_failure_stops_pending_launches": true,
+    "gpu_inventory_before_family_consumption": true,
+    "cuda_bf16_required": true,
+    "cpu_fallback": false,
+    "free_or_estimated_memory_gate": false,
+    "memory_sorting_or_threshold": false,
+    "memory_diagnostic_only": true,
+    "existing_or_partial_family_forbids_reuse": true
+  },
+  "frozen_gate": {
+    "maximum_common_validation_nll": 2.06809,
+    "minimum_source_macro_recovery": 0.35,
+    "minimum_source_macro_top_k_recovery": 0.2,
+    "minimum_source_macro_unique_candidate_rate": 0.9,
+    "hard_legality_rate": 1.0,
+    "minimum_recovery_margin_over_terminal_f2": 0.05,
+    "minimum_top_k_margin_over_terminal_f2": 0.03,
+    "minimum_unique_margin_over_terminal_f2": 0.15,
+    "minimum_recovery_margin_over_single_mode": 0.03,
+    "minimum_unique_margin_over_single_mode": 0.05,
+    "success_status": "XEDITSETFLOW_V4_S1_SCREEN_PASS",
+    "failure_status": "XEDITSETFLOW_V4_S1_SCREEN_NO_GO"
+  },
+  "execution_state": {
+    "optimizer_attempt_started": false,
+    "gpu_validation_started": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "model_advantage_claimed": false,
+    "submission_ready": false
+  },
+  "verification_contract": {
+    "direct_test": "tests/route_a_v3/test_route2_xeditsetflow_s1_protocol.py",
+    "full_isolated_focused_cohort_required_before_launch": true,
+    "exact_v332_96_required_before_launch": true,
+    "dual_exact_head_receipts_required_before_launch": true
+  }
+}

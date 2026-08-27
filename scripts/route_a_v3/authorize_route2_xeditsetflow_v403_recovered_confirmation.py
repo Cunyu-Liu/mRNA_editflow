@@ -65,6 +65,14 @@ FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
     (
         "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py",
         "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+        "test_route2_xeditsetflow_training_v4.py",
+        "test_route2_xeditsetflow_s1_protocol.py",
+        "test_route2_xeditsetflow_s1.py",
+        "test_train_route2_xeditsetflow_s1.py",
+        "test_validate_route2_xeditsetflow_s1_checkpoint.py",
+        "test_route2_xeditsetflow_gate_s1.py",
+        "test_run_route2_xeditsetflow_s1_screen_scheduler.py",
+        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
     ),
     (
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py",

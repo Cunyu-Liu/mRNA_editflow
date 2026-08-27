@@ -1,0 +1,39 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo.v1",
+  "status": "XEDITSETFLOW_V403_RECOVERED_SCREEN_TERMINAL_NO_GO_RECORDED",
+  "evidence_scope": "TERMINAL_FACTS_ALREADY_CONSUMED_BY_THE_LOW_FREQUENCY_HEARTBEAT_ONLY",
+  "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/runtime.json",
+  "gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/v403_validation_recovery_37c5901000cf6bef1606f05af242512f1342ceb6/screen_gate.json",
+  "terminal_facts": {
+    "runtime_status": "XEDITSETFLOW_V403_VALIDATION_RECOVERY_AND_GATE_TERMINAL",
+    "validation_job_count": 8,
+    "unique_summary_count": 8,
+    "failure_count": 0,
+    "double_terminal_count": 0,
+    "gate_status": "XEDITSETFLOW_V4_SCREEN_NO_GO",
+    "confirmation_authorized": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "protected_outcome_reads": 0
+  },
+  "scientific_interpretation": {
+    "classification": "SUCCESSFULLY_EXECUTED_FROZEN_SCIENTIFIC_NO_GO",
+    "old_v4_gate_rewritten": false,
+    "failed_subchecks_not_invented": true,
+    "model_advantage_established": false,
+    "submission_ready": false
+  },
+  "successor_state": {
+    "legacy_recovered_confirmation_started": false,
+    "legacy_recovered_posttraining_started": false,
+    "legacy_successor_schedule_or_runtime_exists": false,
+    "legacy_recovery_restart_authorized": false,
+    "threshold_reduction_authorized": false,
+    "additional_seed_authorized": false
+  },
+  "immutability": {
+    "runtime_and_gate_are_read_only": true,
+    "old_training_and_validation_paths_are_read_only": true,
+    "new_method_must_use_an_independent_family": true
+  }
+}

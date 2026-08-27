@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v403_full_terminal.v1",
+  "status": "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED",
+  "evidence_scope": "TERMINAL_FACTS_ALREADY_CONSUMED_BY_THE_LOW_FREQUENCY_HEARTBEAT_ONLY",
+  "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_rng_replay_fix_runner_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/runtime.json",
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/v4_full",
+  "terminal_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/v4_full/run_summary.json",
+  "terminal_facts": {
+    "runtime_status": "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL",
+    "terminal_artifact_kind": "SUMMARY",
+    "run_id": "v4_full",
+    "seed": 20260907,
+    "completed_passes": 8,
+    "selected_pass": 8,
+    "optimizer_update_count": 22416,
+    "physical_batch_size": 32,
+    "effective_batch_size": 32,
+    "training_precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
+    "physical_gpu_index": 5,
+    "device_class": "A100",
+    "cuda_used": true,
+    "cpu_fallback_used": false,
+    "authorization_git_head": "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea",
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0,
+    "protected_outcome_reads": 0
+  },
+  "successor_decision": {
+    "controls_started": false,
+    "controls_status": "PAUSED_NOT_LAUNCHED",
+    "reason": "CRITIC_CONTROLS_CANNOT_RESTORE_THE_ALREADY_FAILED_SETFLOW_DUAL_READINESS",
+    "confirmation_or_posttest_authorized": false,
+    "critic_terminal_summary_reinterpreted_as_final_science": false
+  },
+  "claim_boundary": {
+    "single_arm_terminal_summary_is_not_a_screen_pass": true,
+    "single_arm_terminal_summary_is_not_final_scientific_evidence": true,
+    "model_advantage_established": false,
+    "submission_ready": false
+  }
+}

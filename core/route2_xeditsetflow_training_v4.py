@@ -228,6 +228,18 @@ def _compatible_candidates(
     )
 
 
+def _compatible_canonical_candidate_indices(
+    terminal_sets: Sequence[tuple[tuple[int, str], ...]],
+    selected: set[tuple[int, str]],
+    assigned_budget: int,
+) -> tuple[int, ...]:
+    return tuple(
+        candidate_index
+        for candidate_index, edits in enumerate(terminal_sets)
+        if len(edits) <= assigned_budget and selected <= set(edits)
+    )
+
+
 class SetFlowSourceStateDatasetV4:
     """Exactly four source-level states per source and pass."""
 
@@ -297,7 +309,18 @@ class SetFlowSourceStateDatasetV4:
         remaining_budget = budget - len(selected)
         _require(remaining_budget >= 0, "SetFlow V4 selected edits exceed assigned budget")
         compatible = _compatible_candidates(candidates, selected, budget)
+        compatible_canonical_candidate_indices = (
+            _compatible_canonical_candidate_indices(candidates, selected, budget)
+        )
         _require(anchor in compatible, "SetFlow V4 anchor candidate is not compatible with its state")
+        _require(
+            compatible
+            == tuple(
+                candidates[candidate_index]
+                for candidate_index in compatible_canonical_candidate_indices
+            ),
+            "SetFlow V4 compatible candidates lost canonical identity alignment",
+        )
         remaining_anchor = tuple(edit for edit in anchor if edit not in selected)
         structural = remaining_budget == 0
         common_stop = not remaining_anchor and remaining_budget > 0
@@ -320,7 +343,11 @@ class SetFlowSourceStateDatasetV4:
             "anchor_terminal_edit_set": anchor,
             "anchor_candidate_index": anchor_index,
             "compatible_terminal_edit_sets": compatible,
+            "compatible_canonical_candidate_indices": (
+                compatible_canonical_candidate_indices
+            ),
             "partial_anchor_is_distinct_from_other_partial": len(candidates) >= 2,
+            "state_slot": state_slot,
             "state_kind": state_kind,
             "remaining_true_edits": remaining_anchor,
             "remaining_budget": remaining_budget,
@@ -364,6 +391,104 @@ def collate_setflow_source_states_v4(
     source_cache: SourceTokenCacheIndexV3,
 ) -> SetFlowSourceBatchV4:
     _require(bool(examples), "SetFlow V4 state batch is empty")
+    _require(
+        len(examples) % SetFlowSourceStateDatasetV4.states_per_source == 0,
+        "SetFlow V4 state batch does not contain complete four-state occurrences",
+    )
+    state_slots: list[int] = []
+    source_occurrence_ids: list[int] = []
+    for block_start in range(
+        0, len(examples), SetFlowSourceStateDatasetV4.states_per_source
+    ):
+        occurrence_id = block_start // SetFlowSourceStateDatasetV4.states_per_source
+        block = examples[
+            block_start : block_start + SetFlowSourceStateDatasetV4.states_per_source
+        ]
+        _require(
+            all(type(example["state_slot"]) is int for example in block),
+            "SetFlow V4 state slot identity is not an integer",
+        )
+        block_slots = tuple(int(example["state_slot"]) for example in block)
+        _require(
+            block_slots == tuple(range(SetFlowSourceStateDatasetV4.states_per_source)),
+            "SetFlow V4 source occurrence is not a contiguous slot-0/1/2/3 block",
+        )
+        _require(
+            len({str(example["source_id"]) for example in block}) == 1,
+            "SetFlow V4 source occurrence mixes source ids",
+        )
+        _require(
+            len({str(example["source_sequence"]) for example in block}) == 1,
+            "SetFlow V4 source occurrence mixes source sequences",
+        )
+        _require(
+            len({str(example["record_id"]) for example in block}) == 1,
+            "SetFlow V4 source occurrence mixes cache records",
+        )
+        _require(
+            len({str(example["task"]) for example in block}) == 1,
+            "SetFlow V4 source occurrence mixes tasks",
+        )
+        canonical_candidates: dict[int, tuple[tuple[int, str], ...]] = {}
+        root_canonical_indices: set[int] | None = None
+        for example in block:
+            candidates = tuple(example["compatible_terminal_edit_sets"])
+            raw_canonical_indices = tuple(
+                example["compatible_canonical_candidate_indices"]
+            )
+            _require(
+                all(
+                    type(candidate_index) is int
+                    for candidate_index in raw_canonical_indices
+                ),
+                "SetFlow V4 canonical candidate identity is not an integer",
+            )
+            canonical_indices = tuple(
+                int(candidate_index)
+                for candidate_index in raw_canonical_indices
+            )
+            _require(
+                len(candidates) == len(canonical_indices),
+                "SetFlow V4 compatible candidates and canonical identities differ",
+            )
+            _require(
+                len(set(canonical_indices)) == len(canonical_indices)
+                and all(candidate_index >= 0 for candidate_index in canonical_indices),
+                "SetFlow V4 canonical candidate identities are invalid",
+            )
+            if int(example["state_slot"]) == 0:
+                root_canonical_indices = set(canonical_indices)
+            for canonical_index, candidate in zip(canonical_indices, candidates):
+                normalized_candidate = tuple(
+                    (int(position), str(alt)) for position, alt in candidate
+                )
+                prior_candidate = canonical_candidates.setdefault(
+                    canonical_index, normalized_candidate
+                )
+                _require(
+                    prior_candidate == normalized_candidate,
+                    "SetFlow V4 canonical candidate identity maps to conflicting edits",
+                )
+        _require(
+            root_canonical_indices is not None
+            and root_canonical_indices
+            == set(range(len(block[0]["compatible_terminal_edit_sets"])))
+            and all(
+                set(
+                    int(candidate_index)
+                    for candidate_index in example[
+                        "compatible_canonical_candidate_indices"
+                    ]
+                )
+                <= root_canonical_indices
+                for example in block[1:]
+            ),
+            "SetFlow V4 root/non-root canonical candidate identity is invalid",
+        )
+        state_slots.extend(block_slots)
+        source_occurrence_ids.extend(
+            [occurrence_id] * SetFlowSourceStateDatasetV4.states_per_source
+        )
     maximum_length = max(len(str(example["source_sequence"])) for example in examples)
     maximum_candidates = max(len(example["compatible_terminal_edit_sets"]) for example in examples)
     batch_size = len(examples)
@@ -380,6 +505,9 @@ def collate_setflow_source_states_v4(
         (batch_size, maximum_candidates, action_count), dtype=torch.bool
     )
     candidate_valid = torch.zeros((batch_size, maximum_candidates), dtype=torch.bool)
+    canonical_candidate_indices = torch.full(
+        (batch_size, maximum_candidates), -1, dtype=torch.long
+    )
     for row_index, example in enumerate(examples):
         source_sequence = str(example["source_sequence"])
         current_sequence = str(example["current_sequence"])
@@ -401,10 +529,20 @@ def collate_setflow_source_states_v4(
             common_positive[row_index, maximum_length * 4] = True
         selected = set(example["selected_edit_set"])
         remaining_budget = int(example["remaining_budget"])
-        for candidate_index, candidate in enumerate(
-            example["compatible_terminal_edit_sets"]
+        compatible_candidates = tuple(example["compatible_terminal_edit_sets"])
+        compatible_canonical_indices = tuple(
+            int(candidate_index)
+            for candidate_index in example[
+                "compatible_canonical_candidate_indices"
+            ]
+        )
+        for candidate_index, (candidate, canonical_candidate_index) in enumerate(
+            zip(compatible_candidates, compatible_canonical_indices)
         ):
             candidate_valid[row_index, candidate_index] = True
+            canonical_candidate_indices[
+                row_index, candidate_index
+            ] = canonical_candidate_index
             remaining = [edit for edit in candidate if edit not in selected]
             for position, alt in remaining:
                 candidate_positive[
@@ -433,11 +571,24 @@ def collate_setflow_source_states_v4(
         ),
         "SetFlow V4 per-candidate targets differ from structural terminal",
     )
+    _require(
+        bool(
+            torch.equal(
+                canonical_candidate_indices >= 0,
+                candidate_valid,
+            )
+        ),
+        "SetFlow V4 canonical candidate identities do not align with validity",
+    )
     return {
         "source_ids": [str(example["source_id"]) for example in examples],
         "record_ids": [str(example["record_id"]) for example in examples],
         "task_ids": [str(example["task"]) for example in examples],
         "state_kinds": [str(example["state_kind"]) for example in examples],
+        "state_slots": torch.tensor(state_slots, dtype=torch.long),
+        "source_occurrence_ids": torch.tensor(
+            source_occurrence_ids, dtype=torch.long
+        ),
         "source_tokens": source,
         "current_tokens": current,
         "padding_mask": padding,
@@ -455,6 +606,7 @@ def collate_setflow_source_states_v4(
         "common_positive_action_mask": common_positive,
         "candidate_positive_action_mask": candidate_positive,
         "candidate_valid_mask": candidate_valid,
+        "canonical_candidate_indices": canonical_candidate_indices,
         "remaining_count_soft_target": torch.tensor(
             [example["remaining_count_soft_target"] for example in examples],
             dtype=torch.float32,

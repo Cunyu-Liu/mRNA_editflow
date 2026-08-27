@@ -11,6 +11,7 @@ from core.route2_xeditsetflow_runtime_v4 import (
 )
 from scripts.route_a_v3.authorize_route2_xeditsetflow_v403_recovered_confirmation import (
     CONFIRMATION_SEEDS,
+    FOCUSED_GROUP_REQUIRED_TEST_MARKERS,
     RUNNER_VERIFICATION_RECEIPT_PASS,
     RUNNER_VERIFICATION_RECEIPT_SCHEMA,
     SCREEN_EXPERIMENT_HEAD,
@@ -135,7 +136,15 @@ def _focused_test_commands() -> list[str]:
         "test_route2_xeditcritic_v4_confirmation_runtime.py",
         "python -m pytest -q "
         "test_run_route2_xeditsetflow_v402_terminal_validation_scheduler.py "
-        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py",
+        "test_adjudicate_route2_xeditsetflow_v4_confirmation.py "
+        "test_route2_xeditsetflow_training_v4.py "
+        "test_route2_xeditsetflow_s1_protocol.py "
+        "test_route2_xeditsetflow_s1.py "
+        "test_train_route2_xeditsetflow_s1.py "
+        "test_validate_route2_xeditsetflow_s1_checkpoint.py "
+        "test_route2_xeditsetflow_gate_s1.py "
+        "test_run_route2_xeditsetflow_s1_screen_scheduler.py "
+        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
         "python -m pytest -q "
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
         "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
@@ -365,6 +374,25 @@ def test_recovered_authorization_runner_receipt_coverage_fails_closed(
         raise AssertionError(case)
 
     with pytest.raises(Exception, match=error):
+        require_runner_verification_receipt_v403(
+            receipt, current_runner_head="c" * 40
+        )
+
+
+@pytest.mark.parametrize(
+    "marker", FOCUSED_GROUP_REQUIRED_TEST_MARKERS[2][2:]
+)
+def test_recovered_authorization_requires_each_s1_focused_marker(
+    marker: str,
+) -> None:
+    receipt = _runner_receipt()
+    receipt["focused_tests"]["command"][2] = receipt["focused_tests"][
+        "command"
+    ][2].replace(marker, "")
+
+    with pytest.raises(
+        Exception, match="lacks required test-module coverage"
+    ):
         require_runner_verification_receipt_v403(
             receipt, current_runner_head="c" * 40
         )

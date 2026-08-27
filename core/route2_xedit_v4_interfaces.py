@@ -124,6 +124,8 @@ class SetFlowSourceBatchV4(TypedDict):
     record_ids: list[str]
     task_ids: list[str]
     state_kinds: list[str]
+    state_slots: torch.Tensor
+    source_occurrence_ids: torch.Tensor
     source_tokens: torch.Tensor
     current_tokens: torch.Tensor
     padding_mask: torch.Tensor
@@ -139,6 +141,7 @@ class SetFlowSourceBatchV4(TypedDict):
     common_positive_action_mask: torch.Tensor
     candidate_positive_action_mask: torch.Tensor
     candidate_valid_mask: torch.Tensor
+    canonical_candidate_indices: torch.Tensor
     remaining_count_soft_target: torch.Tensor
     structural_budget_exhausted: torch.Tensor
     sample_weight: torch.Tensor

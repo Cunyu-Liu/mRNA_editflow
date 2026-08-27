@@ -4272,3 +4272,45 @@ integration technical NO-GO，以及当前Critic recovery full failure“存在�
 Critic窗口顺延至本地12:52:07之后。该无效检查没有读取runtime状态、terminal payload、active log/curve/metric、
 Development TEST或new Evaluation。审计：
 `audits/route_a_v3_route2_handover_v4_failure_update_20260827.json`。
+
+## SetFlow V4.0.3 recovered screen 科学终态（2026-08-28 记录）
+
+低频 heartbeat 已完成唯一终态消费：recovery runtime 为
+`XEDITSETFLOW_V403_VALIDATION_RECOVERY_AND_GATE_TERMINAL`，八个冻结 checkpoint Validation 均为唯一
+SUMMARY，正式 gate 为 `XEDITSETFLOW_V4_SCREEN_NO_GO`，`confirmation_authorized=false`。这是完整执行后的
+科学 NO-GO，不是技术失败；本记录不推测或补造未提供的 failed subcheck。Protected、Development TEST 与 new
+Evaluation reads 均为 0，19dfa/7c2dde7d successor training/posttraining family 均未启动。旧 runtime、gate、
+training 与 Validation 路径保持不可覆盖只读，不重启 recovery、不降低阈值、不追加 seed。审计：
+`audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`。
+
+## Critic V4.0.3 full terminal SUMMARY（2026-08-28 记录）
+
+唯一 `v4_full` 已自然发布 terminal SUMMARY：seed 20260907、完成并固定 pass 8、22,416 optimizer updates、
+physical/effective batch 32、A100 physical GPU5、真实 CUDA/BF16、无 CPU fallback，并绑定 f34 authorization；
+protected、Development TEST 与 new Evaluation reads 均为 0。它是单臂训练终态，不是八臂 screen PASS、Atomic
+TEST、readiness 或最终科学结论。由于 SetFlow 已冻结科学 NO-GO，六个 controls 暂停且未启动；继续该旧组合链
+不能恢复 dual-readiness。审计：`audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`。
+
+## SetFlow V4-S1 prospective mechanics screen freeze（2026-08-28）
+
+在任何 S1 参数更新或 Validation generation read 前，冻结独立新 family `v4_s1_full/v4_s1_single_mode`。它从属于
+现有主合同，不是旧 V4.0.3 recovery 重试，也不覆盖、删除或重新解释其 NO-GO。screen seed 继续使用 20260911，
+不是新增 seed；当前 optimizer attempt started=false、GPU Validation started=false、Development TEST/new Evaluation
+reads=0。
+
+唯一方法增量是跨状态候选 mode-responsibility：duplicate-collapsed terminal edit sets 按
+`(edit_count, edit_tuple)`排序后的下标作为 target-only canonical candidate identity；每次 expanded source draw 的
+四个连续 slot 0/1/2/3 共用一个 occurrence identity，padding repeat 获得新 identity。slot 0 `EMPTY` 的候选 mode
+posterior 停梯度，作为 forward KL 目标约束同 occurrence、同 candidate 的 compatible nonroot nonstructural state；
+归约固定 state→candidate→occurrence。权重前瞻固定 0.05，不做 sweep；single-mode 项数学上精确为 0。
+
+原 V4 architecture、sampler、repeat cap、AdamW、十 passes、batch 32、checkpoints 4/6/8/10 与 891×32
+Validation 均不变。原 objective 权重仍为 common 1.0、coverage 0.50、count 0.20、mode information full 0.05 /
+single 0.0。绝对门槛仍为 NLL≤2.06809、recovery≥0.35、top-k≥0.20、unique≥0.90、legality=1.0、全部
+failure counters=0；相对 F2 margins 0.05/0.03/0.15 与 full-over-single margins 0.03 recovery/0.05 unique
+均不变。
+
+正式 family 只能在 clean pushed exact HEAD、完整 isolated focused cohort、精确 V3.3.2 96/96 与双 exact-HEAD
+receipt 后 one-shot 启动。训练和 GPU Validation 必须真实 CUDA/BF16、禁止 CPU fallback；显存仅诊断，不筛卡、
+不排序、不设 threshold/gate。当前记录仅为 protocol/runner freeze，无 S1 性能结果；S1 screen PASS 也不能直接称
+优秀 Development 结果。审计：`audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json`。
