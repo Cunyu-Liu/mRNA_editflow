@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 CONFIRMATION_SCHEDULER = (
@@ -361,13 +358,6 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
                 }
             )
             required_by_gpu[gpu] = max(required_by_gpu[gpu], required)
-    for gpu, required in required_by_gpu.items():
-        if queues[gpu]:
-            require(
-                free_memory[gpu] >= required,
-                f"GPU {gpu} lacks V4 confirmation training memory",
-            )
-
     runtime_root.mkdir(parents=True)
     log_root.mkdir(parents=True)
     runtime_manifest = runtime_root / "runtime.json"
@@ -385,7 +375,9 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             value for value in ("critic", "setflow") if value not in eligible
         ],
         "gpu_free_memory_mib_before_launch": free_memory,
-        "required_free_memory_mib_by_gpu": required_by_gpu,
+        "diagnostic_peak_plus_two_gib_mib_by_gpu": required_by_gpu,
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_PHYSICAL_GPU_ASSIGNMENT",
         "gpu_queues": [
             {"physical_gpu_index": gpu, "jobs": jobs}
             for gpu, jobs in queues.items()

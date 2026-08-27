@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 PROTOCOL = WORKTREE / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json"
@@ -172,7 +169,7 @@ def build_schedule(
     current_head: str,
     experiment_head: str,
     guidance_runner_head: str,
-    required_free_memory_mib: int,
+    diagnostic_peak_plus_two_gib_mib: int,
     free_memory_mib: Mapping[int, int],
 ) -> dict[str, Any]:
     validate_manifest(manifest, config_root)
@@ -454,10 +451,14 @@ def build_schedule(
         "prerequisite_queues": prerequisite_queues,
         "seed_chains": seed_chains,
         "finalization_jobs": finalization_jobs,
-        "required_free_memory_mib": int(required_free_memory_mib),
+        "diagnostic_peak_plus_two_gib_mib": int(
+            diagnostic_peak_plus_two_gib_mib
+        ),
         "gpu_free_memory_mib_before_launch": {
             str(key): int(value) for key, value in free_memory_mib.items()
         },
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_PHYSICAL_GPU_ASSIGNMENT",
         "active_performance_output_read": False,
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcome_reads": 0,
@@ -536,11 +537,7 @@ def run(
         * 1024
     )
     free_memory = gpu_free_memory_mib()
-    require(
-        set(free_memory).issuperset(range(6))
-        and all(free_memory[gpu] >= required_mib for gpu in range(6)),
-        "GPU 0-5 do not all satisfy the frozen V4 final memory requirement",
-    )
+    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0-5 is incomplete")
     config_root = Path(str(protocol["runtime_config_root"])).parent / "final_three_seed_v1"
     output_root = Path(str(protocol["guidance_screen_output_root"])).parent / "final_three_seed"
     runtime_root = (
@@ -612,7 +609,7 @@ def run(
         current_head=current_head,
         experiment_head=experiment_head,
         guidance_runner_head=guidance_runner_head,
-        required_free_memory_mib=required_mib,
+        diagnostic_peak_plus_two_gib_mib=required_mib,
         free_memory_mib=free_memory,
     )
     schedule_path = runtime_root / "schedule.json"

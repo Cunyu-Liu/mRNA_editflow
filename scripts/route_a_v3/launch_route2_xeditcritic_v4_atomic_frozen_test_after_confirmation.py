@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 JOB_RUNNER = (
@@ -96,14 +93,12 @@ def atomic_test_decision(
     return "LAUNCH_EXACT_ATOMIC_TEST"
 
 
-def select_gpu(free_memory: Mapping[int, int], *, required_mib: int) -> int:
-    candidates = [
-        gpu
-        for gpu in range(6)
-        if int(free_memory.get(gpu, -1)) >= required_mib
-    ]
-    require(bool(candidates), "no GPU 0–5 has enough memory for atomic TEST")
-    return min(candidates, key=lambda gpu: (-int(free_memory[gpu]), gpu))
+def select_gpu(
+    physical_gpu_index: int, inventory: Mapping[int, int]
+) -> int:
+    require(0 <= physical_gpu_index <= 5, "atomic TEST GPU must be 0–5")
+    require(physical_gpu_index in inventory, "atomic TEST GPU is absent")
+    return physical_gpu_index
 
 
 def run(head: str) -> dict[str, Any]:
@@ -161,15 +156,19 @@ def run(head: str) -> dict[str, Any]:
     )
     free_memory = gpu_free_memory_mib()
     require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
-    physical_gpu_index = select_gpu(free_memory, required_mib=required_mib)
+    physical_gpu_index = select_gpu(
+        int(frozen_protocol["physical_gpu_index"]), free_memory
+    )
     runtime_root.mkdir(parents=True)
     decision_path = runtime_root / "decision.json"
     runtime_protocol = {
         **frozen_protocol,
         "physical_gpu_index": physical_gpu_index,
         "runtime_device_selection": {
-            "policy": "MAXIMUM_FREE_MEMORY_AMONG_GPU_0_TO_5_MEETING_PREFLIGHT_PLUS_2_GIB",
-            "required_free_memory_mib": required_mib,
+            "policy": "FROZEN_PROTOCOL_PHYSICAL_GPU_WITHOUT_FREE_MEMORY_GATE",
+            "diagnostic_peak_plus_two_gib_mib": required_mib,
+            "free_memory_mib_before_launch": free_memory[physical_gpu_index],
+            "free_memory_gate_applied": False,
             "selected_gpu": physical_gpu_index,
             "scientific_configuration_changed": False,
         },
@@ -213,8 +212,9 @@ def run(head: str) -> dict[str, Any]:
         "git_head": head,
         "job_pid": process.pid,
         "physical_gpu_index": physical_gpu_index,
-        "required_free_memory_mib": required_mib,
+        "diagnostic_peak_plus_two_gib_mib": required_mib,
         "gpu_free_memory_mib_before_launch": free_memory,
+        "free_memory_gate_applied": False,
         "runtime_protocol": str(runtime_protocol_path),
         "job_runtime": str(job_runtime),
         "wrapper_log": str(wrapper_log),

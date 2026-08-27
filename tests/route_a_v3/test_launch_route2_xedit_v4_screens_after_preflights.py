@@ -9,6 +9,7 @@ import scripts.route_a_v3.launch_route2_xedit_v4_screens_after_preflights as lau
 
 
 def test_screen_launcher_uses_current_head_formal_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.SCREEN_PACKAGE_SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xedit_v4_screen_package_scheduler.py"
@@ -103,14 +104,10 @@ def test_screen_authorization_status_is_component_exact() -> None:
         launcher.expected_authorization_status("other")
 
 
-def test_screen_jobs_use_any_sufficient_gpu_and_preserve_exact_frozen_package() -> None:
-    free_memory = {0: 39000, 1: 7000, 2: 7000, 3: 12000, 4: 5000, 5: 3000}
-    queues = launcher.assign_screen_jobs_to_gpu_queues(
-        free_memory,
-        critic_required_mib=9000,
-        setflow_required_mib=4000,
-    )
-    assert set(queues).issubset(range(6))
+def test_screen_jobs_use_frozen_gpu_order_and_preserve_exact_package() -> None:
+    inventory = {gpu: 1 for gpu in range(6)}
+    queues = launcher.assign_screen_jobs_to_gpu_queues(inventory)
+    assert set(queues) == set(range(6))
     assigned = [job for jobs in queues.values() for job in jobs]
     assert {run_id for component, run_id in assigned if component == "critic"} == set(
         launcher.screen_run_ids()["critic"]
@@ -118,17 +115,22 @@ def test_screen_jobs_use_any_sufficient_gpu_and_preserve_exact_frozen_package() 
     assert {run_id for component, run_id in assigned if component == "setflow"} == set(
         launcher.screen_run_ids()["setflow"]
     )
-    for gpu, jobs in queues.items():
-        for component, _ in jobs:
-            required = 9000 if component == "critic" else 4000
-            assert free_memory[gpu] >= required
+    assert queues[0][0] == ("critic", "v4_full")
+    assert queues[2][-1] == ("setflow", "v4_full")
+    assert queues[3][-1] == ("setflow", "v4_single_mode")
 
 
-def test_screen_assignment_fails_only_when_no_gpu_has_measured_capacity() -> None:
-    free_memory = {gpu: 8000 for gpu in range(6)}
-    with pytest.raises(Exception, match="enough measured memory for Critic"):
-        launcher.assign_screen_jobs_to_gpu_queues(
-            free_memory,
-            critic_required_mib=9000,
-            setflow_required_mib=4000,
-        )
+def test_screen_assignment_requires_inventory_but_not_a_memory_floor() -> None:
+    assert launcher.assign_screen_jobs_to_gpu_queues(
+        {gpu: 0 for gpu in range(6)}
+    )
+    with pytest.raises(Exception, match="inventory"):
+        launcher.assign_screen_jobs_to_gpu_queues({gpu: 1 for gpu in range(5)})
+
+
+def test_screen_launcher_records_memory_without_gating_or_sorting() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"critic_diagnostic_peak_plus_two_gib_mib"' in source
+    assert "free_memory_mib[gpu] >=" not in source
+    assert "key=lambda candidate" not in source

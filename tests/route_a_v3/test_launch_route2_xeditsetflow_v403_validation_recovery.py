@@ -5,6 +5,10 @@ from pathlib import Path
 import scripts.route_a_v3.launch_route2_xeditsetflow_v403_validation_recovery as launcher
 
 
+def test_v403_setflow_launcher_resolves_its_own_repository_root() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
+
+
 def test_v403_validation_recovery_distributes_all_checkpoints_including_gpu5() -> None:
     assignments = launcher.validation_assignments([0, 5])
     assert set(assignments) == {0, 5}

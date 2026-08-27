@@ -12,10 +12,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 AUTHORIZER = WORKTREE / "scripts/route_a_v3/authorize_route2_xeditflow_v4_guidance.py"

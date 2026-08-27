@@ -5,9 +5,8 @@ import runpy
 import sys
 from pathlib import Path
 
-from scripts.route_a_v3.launch_route2_xeditflow_v4_final_after_guidance_screen import (
-    build_schedule,
-)
+import scripts.route_a_v3.launch_route2_xeditflow_v4_final_after_guidance_screen as launcher
+from scripts.route_a_v3.launch_route2_xeditflow_v4_final_after_guidance_screen import build_schedule
 from scripts.route_a_v3.run_route2_xeditflow_v4_final_scheduler import run
 
 
@@ -40,7 +39,7 @@ def test_v4_final_launcher_builds_exact_three_seed_job_graph(tmp_path: Path) -> 
         current_head="a" * 40,
         experiment_head="b" * 40,
         guidance_runner_head="c" * 40,
-        required_free_memory_mib=30_000,
+        diagnostic_peak_plus_two_gib_mib=30_000,
         free_memory_mib={gpu: 40_000 for gpu in range(6)},
     )
     assert [row["queue_key"] for row in schedule["prerequisite_queues"]] == [
@@ -73,6 +72,15 @@ def test_v4_final_launcher_builds_exact_three_seed_job_graph(tmp_path: Path) -> 
     )
     assert schedule["development_test_outcomes_accessed_after_atomic_test"] is False
     assert schedule["new_final_evaluation_outcome_reads"] == 0
+    assert schedule["free_memory_gate_applied"] is False
+    assert schedule["diagnostic_peak_plus_two_gib_mib"] == 30_000
+
+
+def test_v4_final_launcher_uses_own_repo_and_does_not_memory_gate() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert "all(free_memory[gpu]" not in source
 
 
 def _job(tmp_path: Path, key: str, *, succeed: bool = True) -> dict:

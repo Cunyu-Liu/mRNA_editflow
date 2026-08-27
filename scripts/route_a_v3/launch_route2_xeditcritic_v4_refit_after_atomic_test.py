@@ -10,13 +10,10 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 REFIT_SCHEDULER = (
@@ -69,18 +66,16 @@ def gpu_free_memory_mib() -> dict[int, int]:
 
 
 def select_refit_gpus(
-    free_memory: Mapping[int, int], *, required_mib: int
+    physical_gpu_indices: Sequence[int], inventory: Mapping[int, int]
 ) -> tuple[int, int, int]:
-    candidates = sorted(
-        (
-            gpu
-            for gpu in range(6)
-            if int(free_memory.get(gpu, -1)) >= required_mib
-        ),
-        key=lambda gpu: (-int(free_memory[gpu]), gpu),
+    configured = tuple(dict.fromkeys(int(gpu) for gpu in physical_gpu_indices))
+    require(
+        len(configured) >= 3 and all(0 <= gpu <= 5 for gpu in configured),
+        "fewer than three valid refit GPU 0–5 are configured",
     )
-    require(len(candidates) >= 3, "fewer than three GPU 0–5 satisfy refit memory")
-    return candidates[0], candidates[1], candidates[2]
+    selected = configured[:3]
+    require(all(gpu in inventory for gpu in selected), "a configured refit GPU is absent")
+    return selected
 
 
 def refit_decision(
@@ -185,7 +180,9 @@ def run(head: str) -> dict[str, Any]:
     )
     free_memory = gpu_free_memory_mib()
     require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
-    selected_gpus = select_refit_gpus(free_memory, required_mib=required_mib)
+    selected_gpus = select_refit_gpus(
+        protocol_payload["physical_gpu_indices"], free_memory
+    )
     prepare = WORKTREE / "scripts/route_a_v3/prepare_route2_xeditcritic_v4_posttest_configs.py"
     authorize = WORKTREE / "scripts/route_a_v3/authorize_route2_xeditcritic_v4_posttest.py"
     adjudicator = WORKTREE / "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_posttest.py"
@@ -238,7 +235,9 @@ def run(head: str) -> dict[str, Any]:
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "gpu_free_memory_mib_before_launch": free_memory,
-        "required_free_memory_mib": required_mib,
+        "diagnostic_peak_plus_two_gib_mib": required_mib,
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_PROTOCOL_PHYSICAL_GPU_ORDER",
         "selected_physical_gpus": list(selected_gpus),
         "gpu_queues": [
             {"physical_gpu_index": gpu, "jobs": rows}

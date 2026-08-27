@@ -12,10 +12,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_v403_setflow_validation_recovery_20260827"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 SOURCE_SCREEN_HEAD = "edad89392077a0cf56e84dfcf94335606dd2b05a"

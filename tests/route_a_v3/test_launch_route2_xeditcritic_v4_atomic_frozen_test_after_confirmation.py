@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation as launcher
@@ -50,15 +52,23 @@ def test_atomic_test_decision_rejects_relaxed_authorization() -> None:
         launcher.atomic_test_decision(_posttraining(eligible=True), gate)
 
 
-def test_atomic_test_gpu_selection_uses_only_zero_to_five_and_maximum_free() -> None:
-    free = {0: 20_000, 1: 35_000, 2: 34_000, 3: 10_000, 4: 36_000, 5: 36_000, 6: 80_000}
-    assert launcher.select_gpu(free, required_mib=30_000) == 4
-    with pytest.raises(Exception, match="no GPU 0–5"):
-        launcher.select_gpu({gpu: 10_000 for gpu in range(8)}, required_mib=30_000)
+def test_atomic_test_gpu_selection_uses_frozen_protocol_without_memory_gate() -> None:
+    inventory = {gpu: 1 for gpu in range(6)}
+    assert launcher.select_gpu(4, inventory) == 4
+    with pytest.raises(Exception, match="absent"):
+        launcher.select_gpu(4, {0: 100_000})
 
 
 def test_atomic_test_launcher_uses_formal_current_head_job_runner() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.JOB_RUNNER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xeditcritic_v4_atomic_frozen_test_job.py"
     )
+
+
+def test_atomic_test_records_memory_without_filtering_or_sorting() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"diagnostic_peak_plus_two_gib_mib"' in source
+    assert "key=lambda gpu" not in source

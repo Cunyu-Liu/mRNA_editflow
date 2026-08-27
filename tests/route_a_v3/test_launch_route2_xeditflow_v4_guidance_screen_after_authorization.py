@@ -58,7 +58,16 @@ def test_guidance_screen_manifest_requires_exact_chain_and_final_paths(
 
 
 def test_guidance_screen_launcher_uses_formal_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xeditflow_v4_guidance_screen_scheduler.py"
     )
+
+
+def test_guidance_screen_records_memory_without_filtering_or_sorting() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"diagnostic_peak_plus_two_gib_mib"' in source
+    assert "all(free_memory[gpu]" not in source
+    assert "key=lambda gpu" not in source

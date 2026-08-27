@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_loso_after_refits as launcher
@@ -30,17 +32,25 @@ def test_loso_manifest_is_exact_42_paired_jobs() -> None:
         launcher.validate_loso_manifest(payload)
 
 
-def test_loso_gpu_selection_uses_all_eligible_zero_to_five() -> None:
-    free = {0: 31_000, 1: 36_000, 2: 35_000, 3: 20_000, 4: 34_000, 5: 33_000, 6: 90_000}
-    assert launcher.eligible_loso_gpus(free, required_mib=30_000) == (1, 2, 4, 5, 0)
-    with pytest.raises(Exception, match="no GPU 0–5"):
-        launcher.eligible_loso_gpus(
-            {gpu: 10_000 for gpu in range(8)}, required_mib=30_000
-        )
+def test_loso_gpu_selection_uses_frozen_protocol_order_without_memory_gate() -> None:
+    inventory = {gpu: 1 for gpu in range(6)}
+    assert launcher.eligible_loso_gpus((5, 2, 0, 1, 3, 4), inventory) == (
+        5, 2, 0, 1, 3, 4
+    )
+    with pytest.raises(Exception, match="absent"):
+        launcher.eligible_loso_gpus((0, 5), {0: 100_000})
 
 
 def test_loso_launcher_uses_formal_current_head_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.LOSO_SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xeditcritic_v4_loso_scheduler.py"
     )
+
+
+def test_loso_records_memory_without_filtering_or_sorting() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"diagnostic_peak_plus_two_gib_mib"' in source
+    assert "key=lambda gpu" not in source

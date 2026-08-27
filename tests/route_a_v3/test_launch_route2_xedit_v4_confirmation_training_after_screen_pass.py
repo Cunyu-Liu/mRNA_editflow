@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xedit_v4_confirmation_training_after_screen_pass as launcher
@@ -16,6 +18,7 @@ def _gate(component: str, *, passed: bool) -> dict[str, object]:
 
 
 def test_confirmation_launcher_uses_current_head_formal_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.CONFIRMATION_SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xedit_v4_confirmation_training_scheduler.py"
@@ -49,3 +52,10 @@ def test_confirmation_launcher_consumes_dual_head_screen_authorizations() -> Non
     assert "def run(current_head: str, experiment_head: str)" in source
     assert "screen_{experiment_head}_runner_{current_head}/critic.json" in source
     assert "screen_{experiment_head}_runner_{current_head}/setflow.json" in source
+
+
+def test_confirmation_training_records_memory_without_using_it_as_a_gate() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"diagnostic_peak_plus_two_gib_mib_by_gpu"' in source
+    assert "free_memory[gpu] >=" not in source

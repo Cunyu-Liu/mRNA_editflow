@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xedit_v4_confirmation_posttraining_after_terminal as launcher
 
 
 def test_confirmation_posttraining_launcher_uses_current_head_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.POSTTRAINING_SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xedit_v4_confirmation_posttraining_scheduler.py"
@@ -66,3 +69,10 @@ def test_confirmation_runtime_rejects_nonterminal_job() -> None:
     runtime["jobs"]["setflow:20260914:v4_full"]["terminal_artifact_kind"] = None
     with pytest.raises(Exception, match="lacks an exact terminal"):
         launcher.validate_confirmation_runtime(runtime, head="a" * 40)
+
+
+def test_confirmation_validation_records_memory_without_gating() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"setflow_diagnostic_peak_plus_two_gib_mib"' in source
+    assert "free_memory[gpu] >=" not in source

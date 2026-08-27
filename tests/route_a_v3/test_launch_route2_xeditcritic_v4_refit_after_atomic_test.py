@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_refit_after_atomic_test as launcher
@@ -65,17 +67,22 @@ def test_refit_manifest_is_exact_three_seed_full_only() -> None:
 
 
 def test_refit_launcher_uses_formal_current_head_scheduler() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.REFIT_SCHEDULER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xeditcritic_v4_refit_scheduler.py"
     )
 
 
-def test_refit_gpu_selection_uses_three_best_eligible_zero_to_five() -> None:
-    free = {0: 31_000, 1: 36_000, 2: 35_000, 3: 34_000, 4: 10_000, 5: 36_000, 6: 90_000}
-    assert launcher.select_refit_gpus(free, required_mib=30_000) == (1, 5, 2)
+def test_refit_gpu_selection_uses_frozen_protocol_order_without_memory_gate() -> None:
+    inventory = {gpu: 1 for gpu in range(6)}
+    assert launcher.select_refit_gpus((5, 2, 0, 1, 3, 4), inventory) == (5, 2, 0)
     with pytest.raises(Exception, match="fewer than three"):
-        launcher.select_refit_gpus(
-            {0: 31_000, 1: 29_000, 2: 35_000, 3: 20_000, 4: 10_000, 5: 15_000},
-            required_mib=30_000,
-        )
+        launcher.select_refit_gpus((0, 1), inventory)
+
+
+def test_refit_records_memory_without_filtering_or_sorting() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"diagnostic_peak_plus_two_gib_mib"' in source
+    assert "key=lambda gpu" not in source

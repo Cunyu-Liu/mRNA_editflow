@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 POSTTRAINING_SCHEDULER = (
@@ -168,7 +165,7 @@ def run(head: str) -> dict[str, Any]:
     adjudications: dict[str, dict[str, Any]] = {}
     validation_queues: list[dict[str, Any]] = []
     free_memory: dict[int, int] = {}
-    required_free_memory_mib = 0
+    diagnostic_peak_plus_two_gib_mib = 0
 
     if "critic" in eligible:
         protocol = WORKTREE / "configs/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_v1.json"
@@ -276,17 +273,13 @@ def run(head: str) -> dict[str, Any]:
         assignments = validation_assignments(tuple(successful))
         if assignments:
             preflight = read_json(preflight_path)
-            required_free_memory_mib = math.ceil(
+            diagnostic_peak_plus_two_gib_mib = math.ceil(
                 (float(preflight["peak_memory_allocated_gib"]) + 2.0) * 1024
             )
             free_memory = gpu_free_memory_mib()
             require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
             validator = WORKTREE / "scripts/route_a_v3/validate_route2_xeditsetflow_v4_checkpoint.py"
             for gpu, rows in assignments.items():
-                require(
-                    free_memory[gpu] >= required_free_memory_mib,
-                    f"GPU {gpu} lacks SetFlow confirmation validation memory",
-                )
                 jobs: list[dict[str, Any]] = []
                 for seed, checkpoint_pass in rows:
                     config_path, config = configs[seed]
@@ -351,7 +344,11 @@ def run(head: str) -> dict[str, Any]:
         "validation_queues": validation_queues,
         "adjudications": adjudications,
         "gpu_free_memory_mib_before_launch": free_memory,
-        "setflow_required_free_memory_mib": required_free_memory_mib,
+        "setflow_diagnostic_peak_plus_two_gib_mib": (
+            diagnostic_peak_plus_two_gib_mib
+        ),
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_ROUND_ROBIN_PHYSICAL_GPU_ASSIGNMENT",
         "active_performance_output_read": False,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,

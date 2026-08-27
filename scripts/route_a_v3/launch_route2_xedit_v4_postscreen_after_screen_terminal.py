@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 POSTSCREEN_COORDINATOR = (
@@ -207,10 +204,10 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
 
     validation_queues: list[dict[str, Any]] = []
     free_memory: dict[int, int] = {}
-    required_free = 0
+    diagnostic_peak_plus_two_gib_mib = 0
     if set(training_kinds.values()) == {"SUMMARY"}:
         preflight = read_json(Path(setflow_payload["preflight_output_path"]))
-        required_free = math.ceil(
+        diagnostic_peak_plus_two_gib_mib = math.ceil(
             (float(preflight["peak_memory_allocated_gib"]) + 2.0) * 1024
         )
         free_memory = gpu_free_memory_mib()
@@ -218,11 +215,6 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             set(free_memory).issuperset(range(6)),
             "physical GPU inventory 0–5 is incomplete",
         )
-        for gpu in range(6):
-            require(
-                free_memory[gpu] >= required_free,
-                f"GPU {gpu} lacks SetFlow validation memory",
-            )
         assignments = {
             0: (("v4_full", 4), ("v4_single_mode", 8)),
             1: (("v4_full", 6), ("v4_single_mode", 10)),
@@ -282,7 +274,11 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
         "screen_runtime": str(screen_root / "runtime.json"),
         "setflow_training_terminal_kinds": training_kinds,
         "gpu_free_memory_mib_before_launch": free_memory,
-        "setflow_required_free_memory_mib": required_free,
+        "setflow_diagnostic_peak_plus_two_gib_mib": (
+            diagnostic_peak_plus_two_gib_mib
+        ),
+        "free_memory_gate_applied": False,
+        "gpu_assignment_policy": "FROZEN_PHYSICAL_GPU_ASSIGNMENT",
         "critic_adjudication": {
             "gate_path": str(critic_gate),
             "log_path": str(log_root / "critic_adjudication.log"),

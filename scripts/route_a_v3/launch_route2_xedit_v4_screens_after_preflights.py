@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 C3_REFERENCE = (
@@ -99,58 +96,32 @@ def screen_run_ids() -> dict[str, list[str]]:
 
 
 def assign_screen_jobs_to_gpu_queues(
-    free_memory_mib: dict[int, int],
-    *,
-    critic_required_mib: int,
-    setflow_required_mib: int,
+    gpu_inventory: dict[int, int],
 ) -> dict[int, list[tuple[str, str]]]:
-    """Assign the frozen screen arms to any sufficient physical GPU 0–5."""
+    """Assign the frozen screen arms in physical GPU order, without a memory gate."""
 
     require(
-        set(free_memory_mib).issuperset(range(6)),
+        set(gpu_inventory).issuperset(range(6)),
         "physical GPU inventory 0–5 is incomplete",
     )
-    critic_gpus = [
-        gpu for gpu in range(6) if free_memory_mib[gpu] >= critic_required_mib
+    jobs = [
+        ("critic", run_id)
+        for run_id in (
+            "v4_full",
+            "v4_source_only",
+            "v4_edit_metadata_only",
+            "v4_no_candidate_sequence",
+            "c0_v4",
+            "v4_candidate_bundle_permutation",
+            "v4_no_cross",
+            "v4_no_moe",
+        )
+    ] + [
+        ("setflow", run_id) for run_id in ("v4_full", "v4_single_mode")
     ]
-    setflow_gpus = [
-        gpu for gpu in range(6) if free_memory_mib[gpu] >= setflow_required_mib
-    ]
-    require(bool(critic_gpus), "no GPU 0–5 has enough measured memory for Critic V4")
-    require(bool(setflow_gpus), "no GPU 0–5 has enough measured memory for SetFlow V4")
-
     queues: dict[int, list[tuple[str, str]]] = {}
-    for run_id in (
-        "v4_full",
-        "v4_source_only",
-        "v4_edit_metadata_only",
-        "v4_no_candidate_sequence",
-        "c0_v4",
-        "v4_candidate_bundle_permutation",
-        "v4_no_cross",
-        "v4_no_moe",
-    ):
-        gpu = min(
-            critic_gpus,
-            key=lambda candidate: (
-                sum(
-                    component == "critic"
-                    for component, _ in queues.get(candidate, [])
-                ),
-                len(queues.get(candidate, [])),
-                candidate,
-            ),
-        )
-        queues.setdefault(gpu, []).append(("critic", run_id))
-
-    setflow_only_gpus = [gpu for gpu in setflow_gpus if gpu not in critic_gpus]
-    for run_id in ("v4_full", "v4_single_mode"):
-        candidates = setflow_only_gpus or setflow_gpus
-        gpu = min(
-            candidates,
-            key=lambda candidate: (len(queues.get(candidate, [])), candidate),
-        )
-        queues.setdefault(gpu, []).append(("setflow", run_id))
+    for index, job in enumerate(jobs):
+        queues.setdefault(index % 6, []).append(job)
     return {gpu: queues[gpu] for gpu in sorted(queues)}
 
 
@@ -257,11 +228,7 @@ def run(
     setflow_required = math.ceil(
         (float(setflow_preflight["peak_memory_allocated_gib"]) + 2.0) * 1024
     )
-    screen_assignments = assign_screen_jobs_to_gpu_queues(
-        free_memory,
-        critic_required_mib=critic_required,
-        setflow_required_mib=setflow_required,
-    )
+    screen_assignments = assign_screen_jobs_to_gpu_queues(free_memory)
     for run_id in screen_run_ids()["critic"]:
         output = ROOT / f"experiments/xeditcritic_v4/screen_seed_20260907/{run_id}"
         require(not output.exists(), f"Critic output already exists: {run_id}")
@@ -408,11 +375,10 @@ def run(
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "gpu_free_memory_mib_before_launch": free_memory,
-        "critic_required_free_memory_mib": critic_required,
-        "setflow_required_free_memory_mib": setflow_required,
-        "gpu_assignment_policy": (
-            "ANY_PHYSICAL_GPU_0_TO_5_MEETING_MEASURED_PEAK_PLUS_2_GIB"
-        ),
+        "critic_diagnostic_peak_plus_two_gib_mib": critic_required,
+        "setflow_diagnostic_peak_plus_two_gib_mib": setflow_required,
+        "free_memory_gate_applied": False,
+        "gpu_assignment_policy": "FROZEN_ROUND_ROBIN_PHYSICAL_GPU_ORDER",
         "gpu_queues": gpu_queues,
         "active_performance_output_read": False,
         "development_test_outcome_reads": 0,

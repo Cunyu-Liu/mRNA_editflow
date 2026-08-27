@@ -10,13 +10,10 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 LOSO_SCHEDULER = (
@@ -78,19 +75,14 @@ def gpu_free_memory_mib() -> dict[int, int]:
 
 
 def eligible_loso_gpus(
-    free_memory: Mapping[int, int], *, required_mib: int
+    physical_gpu_indices: Sequence[int], inventory: Mapping[int, int]
 ) -> tuple[int, ...]:
-    values = tuple(
-        sorted(
-            (
-                gpu
-                for gpu in range(6)
-                if int(free_memory.get(gpu, -1)) >= required_mib
-            ),
-            key=lambda gpu: (-int(free_memory[gpu]), gpu),
-        )
+    values = tuple(dict.fromkeys(int(gpu) for gpu in physical_gpu_indices))
+    require(
+        bool(values) and all(0 <= gpu <= 5 for gpu in values),
+        "no valid LOSO GPU 0–5 is configured",
     )
-    require(bool(values), "no GPU 0–5 satisfies LOSO memory")
+    require(all(gpu in inventory for gpu in values), "a configured LOSO GPU is absent")
     return values
 
 
@@ -178,7 +170,9 @@ def run(head: str) -> dict[str, Any]:
     )
     free_memory = gpu_free_memory_mib()
     require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0–5 is incomplete")
-    selected_gpus = eligible_loso_gpus(free_memory, required_mib=required_mib)
+    selected_gpus = eligible_loso_gpus(
+        protocol_payload["physical_gpu_indices"], free_memory
+    )
     prepare = WORKTREE / "scripts/route_a_v3/prepare_route2_xeditcritic_v4_posttest_configs.py"
     authorize = WORKTREE / "scripts/route_a_v3/authorize_route2_xeditcritic_v4_posttest.py"
     trainer = WORKTREE / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
@@ -254,7 +248,9 @@ def run(head: str) -> dict[str, Any]:
         "runtime_manifest": str(runtime_manifest),
         "selected_physical_gpus": list(selected_gpus),
         "gpu_free_memory_mib_before_launch": free_memory,
-        "required_free_memory_mib": required_mib,
+        "diagnostic_peak_plus_two_gib_mib": required_mib,
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_PROTOCOL_PHYSICAL_GPU_ORDER",
         "gpu_queues": [
             {"physical_gpu_index": gpu, "jobs": rows}
             for gpu, rows in queues.items()

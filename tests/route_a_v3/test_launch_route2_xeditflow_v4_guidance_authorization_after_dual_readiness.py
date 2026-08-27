@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 import scripts.route_a_v3.launch_route2_xeditflow_v4_guidance_authorization_after_dual_readiness as launcher
@@ -100,6 +102,7 @@ def test_joint_authorization_rejects_active_or_protected_runtime() -> None:
 
 
 def test_joint_authorization_entry_uses_existing_one_shot_authorizer() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.AUTHORIZER == (
         launcher.WORKTREE
         / "scripts/route_a_v3/authorize_route2_xeditflow_v4_guidance.py"

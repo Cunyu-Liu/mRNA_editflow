@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import scripts.route_a_v3.launch_route2_xedit_v4_postscreen_after_screen_terminal as launcher
 
 
 def test_postscreen_launcher_uses_current_head_formal_coordinator() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.POSTSCREEN_COORDINATOR == (
         launcher.WORKTREE
         / "scripts/route_a_v3/run_route2_xedit_v4_postscreen_adjudication_scheduler.py"
@@ -34,3 +37,10 @@ def test_postscreen_launcher_consumes_dual_head_screen_paths() -> None:
     assert "def run(current_head: str, experiment_head: str)" in source
     assert "screen_package_{experiment_head}_runner_{current_head}" in source
     assert "screen_{experiment_head}_runner_{current_head}/setflow.json" in source
+
+
+def test_postscreen_validation_records_memory_without_gating() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert '"setflow_diagnostic_peak_plus_two_gib_mib"' in source
+    assert "free_memory[gpu] >=" not in source

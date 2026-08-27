@@ -13,10 +13,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_method_repair_20260817"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 PROTOCOL = WORKTREE / "configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json"
@@ -208,11 +205,7 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
     )
     free_memory = gpu_free_memory_mib()
     require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0-5 is incomplete")
-    require(
-        all(free_memory[gpu] >= required_mib for gpu in range(6)),
-        "not every GPU 0-5 has enough memory for the fixed six-way guidance screen",
-    )
-    primary_gpu = min(range(6), key=lambda gpu: (-free_memory[gpu], gpu))
+    primary_gpu = 0
     command(
         [
             str(PYTHON),
@@ -424,8 +417,10 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
             for gpu in range(6)
         ],
         "adjudication": adjudication,
-        "required_free_memory_mib": required_mib,
+        "diagnostic_peak_plus_two_gib_mib": required_mib,
         "gpu_free_memory_mib_before_launch": free_memory,
+        "free_memory_gate_applied": False,
+        "gpu_selection_policy": "FROZEN_PHYSICAL_GPU_ASSIGNMENT",
         "active_performance_output_read": False,
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcome_reads": 0,

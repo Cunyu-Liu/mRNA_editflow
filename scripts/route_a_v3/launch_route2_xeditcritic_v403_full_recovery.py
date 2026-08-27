@@ -14,10 +14,7 @@ import time
 from typing import Any, Mapping
 
 
-WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_v403_critic_rng_replay_20260827"
-)
+WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 BASE_CONFIG = WORKTREE / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
@@ -31,6 +28,16 @@ V402_OUTPUT_ROOT = (
     "93703adec7a4c76b4466d3aaae8684620bee985a"
 )
 PREFLIGHT = OLD_OUTPUT_ROOT / "preflight_attempt_5/preflight.json"
+SMOKE_PROVENANCE_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
+SMOKE_TRAINING_SEMANTIC_PATHS = (
+    "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json",
+    "core",
+    "scripts/route_a_v3/preflight_route2_xeditcritic_v4.py",
+    "scripts/route_a_v3/smoke_route2_xeditcritic_v402_recovery.py",
+    "scripts/route_a_v3/train_route2_xeditcritic_v3.py",
+    "scripts/route_a_v3/train_route2_xeditcritic_v4.py",
+    ":(glob)scripts/route_a_v3/route2_mrnabert_*.py",
+)
 
 
 class XEditCriticV403FullRecoveryLaunchError(RuntimeError):
@@ -103,6 +110,49 @@ def gpu_free_memory_bytes(physical_gpu_index: int) -> int:
     return values[physical_gpu_index]
 
 
+def smoke_memory_diagnostic_bytes(smoke: Mapping[str, Any]) -> tuple[int, str]:
+    """Read either V4.0.3 smoke diagnostic spelling without making it a gate."""
+
+    for field in (
+        "diagnostic_peak_plus_two_gib_bytes",
+        "required_free_memory_bytes",
+    ):
+        value = smoke.get(field)
+        if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+            return value, field
+    raise XEditCriticV403FullRecoveryLaunchError(
+        "V4.0.3 smoke lacks a positive peak-plus-two-GiB diagnostic"
+    )
+
+
+def require_smoke_training_semantics_unchanged(current_head: str) -> dict[str, Any]:
+    """Bind the f34 GPU smoke to a later launcher with unchanged training code."""
+
+    changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            SMOKE_PROVENANCE_HEAD,
+            current_head,
+            "--",
+            *SMOKE_TRAINING_SEMANTIC_PATHS,
+        ]
+    ).stdout.splitlines()
+    require(
+        not changed,
+        "Critic training semantics changed after the f34 GPU smoke: "
+        + ", ".join(changed),
+    )
+    return {
+        "smoke_git_head": SMOKE_PROVENANCE_HEAD,
+        "launcher_git_head": current_head,
+        "training_semantic_paths": list(SMOKE_TRAINING_SEMANTIC_PATHS),
+        "training_semantic_diff_paths": changed,
+        "training_semantics_unchanged": True,
+    }
+
+
 def build_launch_authorization(
     config: Mapping[str, Any],
     preflight: Mapping[str, Any],
@@ -131,6 +181,7 @@ def build_launch_authorization(
             "run_id": RUN_ID,
             "physical_gpu_index": physical_gpu_index,
             "strict_full_model_rng_replay_smoke_passed": True,
+            "strict_full_model_rng_replay_smoke_git_head": SMOKE_PROVENANCE_HEAD,
             "scientific_config_changed": False,
             "historical_c0_reference_reused": True,
         },
@@ -231,12 +282,12 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
     smoke_path = (
         ROOT
         / "audits/xeditcritic_v4"
-        / f"v403_rng_replay_smoke_{expected_head}.json"
+        / f"v403_rng_replay_smoke_{SMOKE_PROVENANCE_HEAD}.json"
     )
     smoke = read_json(smoke_path)
     require(
         smoke.get("status") == "XEDITCRITIC_V403_FULL_MODEL_RNG_REPLAY_SMOKE_PASS"
-        and str(smoke.get("git_head")) == expected_head
+        and str(smoke.get("git_head")) == SMOKE_PROVENANCE_HEAD
         and smoke.get("strict_replay_prediction_equal") is True
         and smoke.get("retained_graph_prediction_equal_to_replay") is True
         and smoke.get("retained_graph_parameter_gradients_equal_to_replay") is True
@@ -251,8 +302,9 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         and smoke.get("validation_metric_read") is False
         and int(smoke.get("development_test_outcome_reads", -1)) == 0
         and int(smoke.get("new_final_evaluation_outcome_reads", -1)) == 0,
-        "exact-head full-model RNG replay smoke is absent or invalid",
+        "f34 full-model RNG replay smoke is absent or invalid",
     )
+    smoke_provenance = require_smoke_training_semantics_unchanged(expected_head)
     historical_c0 = V402_OUTPUT_ROOT / "c0_v4/run_summary.json"
     require(historical_c0.is_file(), "matched V4.0.2 C0 terminal summary is absent")
 
@@ -282,8 +334,8 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         require(not path.exists(), f"{label} already exists")
 
     free_memory_bytes = gpu_free_memory_bytes(physical_gpu_index)
-    diagnostic_peak_plus_two_gib_bytes = int(
-        smoke["diagnostic_peak_plus_two_gib_bytes"]
+    diagnostic_peak_plus_two_gib_bytes, smoke_memory_diagnostic_field = (
+        smoke_memory_diagnostic_bytes(smoke)
     )
     base = read_json(BASE_CONFIG)
     recovery_config = build_recovery_config(base, output_root)
@@ -320,6 +372,8 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         "screen_config": str(config_path),
         "launch_authorization": str(authorization_path),
         "strict_rng_replay_smoke": str(smoke_path),
+        "strict_rng_replay_smoke_provenance": smoke_provenance,
+        "smoke_memory_diagnostic_source_field": smoke_memory_diagnostic_field,
         "historical_c0_reference": str(historical_c0),
         "diagnostic_peak_plus_two_gib_bytes": diagnostic_peak_plus_two_gib_bytes,
         "free_memory_bytes_before_launch": free_memory_bytes,
@@ -364,6 +418,7 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
         "strict_rng_replay_smoke": str(smoke_path),
+        "strict_rng_replay_smoke_provenance": smoke_provenance,
         "historical_c0_reference": str(historical_c0),
         "scientific_config_changed": False,
         "development_test_outcome_reads": 0,

@@ -3,9 +3,15 @@ from pathlib import Path
 import scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery as launcher
 from scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery import (
     OLD_OUTPUT_ROOT,
+    SMOKE_PROVENANCE_HEAD,
     build_launch_authorization,
     build_recovery_config,
+    smoke_memory_diagnostic_bytes,
 )
+
+
+def test_v403_critic_launcher_resolves_its_own_repository_root() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
 
 
 def test_v403_full_recovery_changes_only_output_paths() -> None:
@@ -52,6 +58,7 @@ def test_v403_authorization_remains_compatible_with_frozen_screen_runner() -> No
         "run_id": "v4_full",
         "physical_gpu_index": 3,
         "strict_full_model_rng_replay_smoke_passed": True,
+        "strict_full_model_rng_replay_smoke_git_head": SMOKE_PROVENANCE_HEAD,
         "scientific_config_changed": False,
         "historical_c0_reference_reused": True,
     }
@@ -65,7 +72,6 @@ def test_v403_smoke_and_launcher_record_memory_without_gating() -> None:
 
     for source in (launcher_source, smoke_source):
         assert '"free_memory_gate_applied": False' in source
-        assert "required_free_memory_bytes" not in source
     assert (
         "selected GPU lacks the replay-smoke memory requirement"
         not in launcher_source
@@ -74,3 +80,20 @@ def test_v403_smoke_and_launcher_record_memory_without_gating() -> None:
         "selected GPU free memory is below measured peak plus 2 GiB"
         not in smoke_source
     )
+
+
+def test_v403_launcher_accepts_old_and_new_smoke_memory_diagnostics() -> None:
+    assert smoke_memory_diagnostic_bytes(
+        {"required_free_memory_bytes": 123}
+    ) == (123, "required_free_memory_bytes")
+    assert smoke_memory_diagnostic_bytes(
+        {"diagnostic_peak_plus_two_gib_bytes": 456}
+    ) == (456, "diagnostic_peak_plus_two_gib_bytes")
+
+
+def test_v403_smoke_provenance_is_explicit_and_training_semantic_only() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert SMOKE_PROVENANCE_HEAD in source
+    assert "SMOKE_TRAINING_SEMANTIC_PATHS" in source
+    assert '"training_semantics_unchanged": True' in source
+    assert '"training_semantic_diff_paths": changed' in source

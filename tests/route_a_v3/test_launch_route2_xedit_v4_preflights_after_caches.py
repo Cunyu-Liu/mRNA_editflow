@@ -9,6 +9,7 @@ import scripts.route_a_v3.launch_route2_xedit_v4_preflights_after_caches as laun
 
 
 def test_preflight_launcher_uses_current_head_formal_job_runner() -> None:
+    assert launcher.WORKTREE == Path(launcher.__file__).resolve().parents[2]
     assert launcher.PREFLIGHT_JOB_RUNNER == (
         launcher.WORKTREE / "scripts/route_a_v3/run_route2_xedit_v4_preflight_job.py"
     )
