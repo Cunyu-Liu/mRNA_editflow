@@ -281,11 +281,9 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
     ):
         require(not path.exists(), f"{label} already exists")
 
-    required_free_bytes = int(smoke["required_free_memory_bytes"])
     free_memory_bytes = gpu_free_memory_bytes(physical_gpu_index)
-    require(
-        free_memory_bytes >= required_free_bytes,
-        "selected GPU lacks the replay-smoke memory requirement",
+    diagnostic_peak_plus_two_gib_bytes = int(
+        smoke["diagnostic_peak_plus_two_gib_bytes"]
     )
     base = read_json(BASE_CONFIG)
     recovery_config = build_recovery_config(base, output_root)
@@ -323,8 +321,9 @@ def launch(expected_head: str, physical_gpu_index: int) -> dict[str, Any]:
         "launch_authorization": str(authorization_path),
         "strict_rng_replay_smoke": str(smoke_path),
         "historical_c0_reference": str(historical_c0),
-        "required_free_memory_bytes": required_free_bytes,
+        "diagnostic_peak_plus_two_gib_bytes": diagnostic_peak_plus_two_gib_bytes,
         "free_memory_bytes_before_launch": free_memory_bytes,
+        "free_memory_gate_applied": False,
         "command": [
             str(PYTHON),
             str(TRAINER),

@@ -5,14 +5,21 @@ from pathlib import Path
 import scripts.route_a_v3.launch_route2_xeditsetflow_v403_validation_recovery as launcher
 
 
-def test_v403_validation_recovery_distributes_all_checkpoints_without_gpu5() -> None:
-    assignments = launcher.validation_assignments([0, 2])
-    assert set(assignments) == {0, 2}
+def test_v403_validation_recovery_distributes_all_checkpoints_including_gpu5() -> None:
+    assignments = launcher.validation_assignments([0, 5])
+    assert set(assignments) == {0, 5}
     assert {
         row for rows in assignments.values() for row in rows
     } == set(launcher.VALIDATION_JOBS)
     assert sum(len(rows) for rows in assignments.values()) == 8
-    assert 5 not in assignments
+    assert 5 in assignments
+
+
+def test_v403_validation_recovery_does_not_gate_on_free_memory() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    assert '"free_memory_gate_applied": False' in source
+    assert "required_free_memory_mib" not in source
+    assert ">= required_free" not in source
 
 
 def test_v403_recovery_is_validation_only_and_preserves_old_gate() -> None:

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery as launcher
 from scripts.route_a_v3.launch_route2_xeditcritic_v403_full_recovery import (
     OLD_OUTPUT_ROOT,
     build_launch_authorization,
@@ -54,3 +55,22 @@ def test_v403_authorization_remains_compatible_with_frozen_screen_runner() -> No
         "scientific_config_changed": False,
         "historical_c0_reference_reused": True,
     }
+
+
+def test_v403_smoke_and_launcher_record_memory_without_gating() -> None:
+    launcher_source = Path(launcher.__file__).read_text(encoding="utf-8")
+    smoke_source = Path(launcher.__file__).with_name(
+        "smoke_route2_xeditcritic_v403_rng_replay.py"
+    ).read_text(encoding="utf-8")
+
+    for source in (launcher_source, smoke_source):
+        assert '"free_memory_gate_applied": False' in source
+        assert "required_free_memory_bytes" not in source
+    assert (
+        "selected GPU lacks the replay-smoke memory requirement"
+        not in launcher_source
+    )
+    assert (
+        "selected GPU free memory is below measured peak plus 2 GiB"
+        not in smoke_source
+    )

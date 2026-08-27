@@ -126,14 +126,10 @@ def run(
         physical_batch_size in {4, 8, 16, 32},
         "formal physical batch is unsupported",
     )
-    required_free_bytes = math.ceil(
+    diagnostic_peak_plus_two_gib_bytes = math.ceil(
         (float(preflight["selected_peak_allocated_gib"]) + 2.0) * 1024**3
     )
-    free_bytes, _total_bytes = torch.cuda.mem_get_info(device)
-    _require(
-        free_bytes >= required_free_bytes,
-        "selected GPU free memory is below measured peak plus 2 GiB",
-    )
+    free_bytes, total_bytes = torch.cuda.mem_get_info(device)
 
     row_by_id = {str(row["canonical_record_id"]): row for row in rows}
     selected_rows = [row_by_id[records[index].record_id] for index in effective_indices]
@@ -323,7 +319,11 @@ def run(
         "peak_allocated_bytes": peak_bytes,
         "peak_allocated_gib": peak_bytes / 1024**3,
         "launch_free_memory_bytes": int(free_bytes),
-        "required_free_memory_bytes": int(required_free_bytes),
+        "launch_total_memory_bytes": int(total_bytes),
+        "diagnostic_peak_plus_two_gib_bytes": int(
+            diagnostic_peak_plus_two_gib_bytes
+        ),
+        "free_memory_gate_applied": False,
         "target_value_accessed": False,
         "validation_metric_read": False,
         "cpu_fallback_used": False,

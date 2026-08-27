@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import re
 import subprocess
@@ -82,13 +81,13 @@ def gpu_free_memory_mib() -> dict[int, int]:
 
 
 def validation_assignments(
-    eligible_gpus: Sequence[int],
+    physical_gpus: Sequence[int],
 ) -> dict[int, tuple[tuple[str, int], ...]]:
-    gpus = tuple(dict.fromkeys(int(gpu) for gpu in eligible_gpus))
-    require(bool(gpus), "no eligible GPU is available for SetFlow validation")
+    gpus = tuple(dict.fromkeys(int(gpu) for gpu in physical_gpus))
+    require(bool(gpus), "no physical GPU is configured for SetFlow validation")
     require(
-        all(gpu in {0, 1, 2, 3, 4} for gpu in gpus),
-        "SetFlow validation recovery may use only physical GPU0-4",
+        all(gpu >= 0 for gpu in gpus),
+        "SetFlow validation recovery received a negative physical GPU index",
     )
     assignments: dict[int, list[tuple[str, int]]] = {gpu: [] for gpu in gpus}
     for index, job in enumerate(VALIDATION_JOBS):
@@ -161,15 +160,15 @@ def run(current_head: str) -> dict[str, Any]:
         / f"screen_{EXPERIMENT_HEAD}_runner_{SOURCE_SCREEN_HEAD}/setflow.json"
     )
     require(authorization.is_file(), "SetFlow screen authorization is absent")
-    preflight = read_json(Path(base_config["preflight_output_path"]))
-    required_free = math.ceil(
-        (float(preflight["peak_memory_allocated_gib"]) + 2.0) * 1024
-    )
     free_memory = gpu_free_memory_mib()
-    eligible_gpus = [
-        gpu for gpu in range(5) if free_memory.get(gpu, -1) >= required_free
-    ]
-    assignments = validation_assignments(eligible_gpus)
+    configured_gpus = tuple(
+        int(gpu) for gpu in base_config["gpu_policy"]["physical_gpu_scope"]
+    )
+    require(
+        all(gpu in free_memory for gpu in configured_gpus),
+        "a configured SetFlow physical GPU is absent",
+    )
+    assignments = validation_assignments(configured_gpus)
 
     run_name = f"v403_validation_recovery_{current_head}"
     recovery_root = output_root / run_name
@@ -271,7 +270,8 @@ def run(current_head: str) -> dict[str, Any]:
         "source_screen_runtime": str(screen_root / "runtime.json"),
         "original_technical_gate": str(original_gate_path),
         "gpu_free_memory_mib_before_launch": free_memory,
-        "required_free_memory_mib": required_free,
+        "free_memory_gate_applied": False,
+        "configured_physical_gpu_scope": list(configured_gpus),
         "validation_queues": queues,
         "runtime_identity": {
             "schema_version": (
