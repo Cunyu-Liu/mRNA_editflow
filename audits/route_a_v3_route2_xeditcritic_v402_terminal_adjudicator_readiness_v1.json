@@ -1,0 +1,27 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v402_terminal_adjudicator_readiness.v1",
+  "status": "READY_TO_ADJUDICATE_EXACTLY_ONCE_AFTER_ALL_EIGHT_TERMINAL",
+  "existing_adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_screen.py",
+  "recovery_config_source": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditcritic_v4/v402_recovery_runner_93703adec7a4c76b4466d3aaae8684620bee985a/screen_config.json",
+  "recovery_gate_path_rule": "RECOVERY_OUTPUT_ROOT/screen_gate.json",
+  "read_policy": {
+    "before_all_eight_terminal": "NO_PAYLOAD_READ",
+    "after_all_eight_terminal": "ONE_ADJUDICATOR_INVOCATION_ONLY",
+    "active_log_curve_or_metric_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "expected_known_outcome_constraint": {
+    "v4_full_terminal_kind": "FAILURE",
+    "performance_screen_pass_possible": false,
+    "formal_failure_classification_waits_for_complete_package": true
+  },
+  "local_verification": {
+    "critic_gate_and_recovery_focused_tests_passed": 18,
+    "exact_v332_tests_passed": 96,
+    "failed": 0
+  },
+  "new_code_or_scientific_config_change": false,
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

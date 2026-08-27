@@ -4239,3 +4239,12 @@ recovery、top-k或diversity性能失败；8项均未产生有效Validation性�
 `guidance_authorized=false`。按V4/V4.0.2纪律，本项永久保留terminal NO-GO，不删除gate、不重跑validation、不修改
 authorization或阈值。Development TEST/new Evaluation read=0。SetFlow无法形成G0 ready，论文继续不具备模型优势
 投稿质量。审计：`audits/route_a_v3_route2_xeditsetflow_v4_screen_terminal_nogo_v1.json`。
+
+### Critic V4.0.2 terminal adjudicator readiness（2026-08-27）
+
+等待Critic recovery期间复核现有正式入口：recovery config已把`output_root`与`screen_gate_output`隔离到V4.0.2
+目录，八项全部exact terminal后可直接由既有`adjudicate_route2_xeditcritic_v4_screen.py`一次性读取完整package并
+原子发布gate；无需新增wrapper或重读历史C3/旧Critic payload。已知full为FAILURE，因此performance PASS已不可能，
+但failure分类仍等待完整八项terminal。相关Critic gate/recovery focused 18/18、精确V3.3.2 96/96通过；未连接
+A100、未读取active输出或protected outcome。审计：
+`audits/route_a_v3_route2_xeditcritic_v402_terminal_adjudicator_readiness_v1.json`。

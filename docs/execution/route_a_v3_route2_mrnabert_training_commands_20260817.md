@@ -4819,3 +4819,7 @@ terminal/failure/alive/CUDA，不读active metric。审计：
 HEAD `bcf1ae9`不一致。未读取8份独立failure、active metric、TEST或Evaluation。该集成技术NO-GO不产生任何
 SetFlow性能结论，但按冻结协议关闭confirmation与guidance且不重跑。审计：
 `audits/route_a_v3_route2_xeditsetflow_v4_screen_terminal_nogo_v1.json`。
+
+Critic V4.0.2 terminal adjudicator readiness复核确认：完整八臂terminal后直接调用既有V4 screen adjudicator与
+recovery config即可原子发布独立gate；不需要新兼容层。focused 18/18、V3.3.2 96/96；当前payload仍0 read。
+审计：`audits/route_a_v3_route2_xeditcritic_v402_terminal_adjudicator_readiness_v1.json`。
