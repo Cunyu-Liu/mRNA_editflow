@@ -85,3 +85,58 @@ or terminal artifacts.
   grad-sensitive checkpoint path; keep the existing source-only/control queue
   as complementary diagnostics.
 
+### Iteration 1 launch and throughput follow-up
+
+- Final implementation commit:
+  `f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea`.
+- Additional change: validate the immutable 9.65 GB bottom-six cache once
+  before batching instead of rescanning it for every batch; use one retained
+  graph forward when the physical batch already equals the fixed effective
+  batch of 32; keep the strict replay path for smaller physical batches.
+- Exact-head A100 verification: 217 Critic-focused tests and 96 exact V3.3.2
+  tests passed. The 170,481,957-parameter BF16 CUDA smoke confirmed identical
+  retained/replay predictions, parameter gradients, gradient norm, CPU/CUDA RNG
+  terminal state, exercised router-balance loss, materialized AdamW state, and
+  `cpu_fallback_used=false`. Evidence:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditcritic_v4/v403_rng_replay_smoke_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea.json`.
+- Formal run: `v4_full`, seed `20260907`, 8 passes, 22,416 fixed optimizer
+  updates, physical/effective batch 32, BF16 AdamW on physical GPU5.
+- Start: `2026-08-27 13:06:36 +08:00`; worker PID `1521028`; trainer PID
+  `1521031`; unique attempt ID
+  `xeditcritic_v4_screen_seed20260907::v4_full::v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea`.
+- Runtime:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_rng_replay_fix_runner_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/runtime.json`.
+- Output:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/v4_full`.
+- Resource coordination: the older V4.0.2 `v4_source_only` process was retained
+  with `SIGSTOP`; it was not killed and its artifacts were not modified.
+- Protected data: Development TEST reads 0; new final Evaluation reads 0.
+- Last launch-window observation: Critic runtime was running on CUDA with no
+  summary or failure artifact. No active training metric was read and no
+  performance conclusion is available before terminal Validation evidence.
+
+## Iteration 2 — Remove remaining-free-memory launch gates
+
+- Objective: apply the operator instruction that any configured GPU with CUDA
+  memory may be used; current remaining memory must not be a launch-authorization
+  threshold.
+- Integrated recovery branch:
+  `route-a-v3-v403-no-vram-gate-20260827`; SetFlow/Critic merge commit
+  `6ff81ad3`; policy-fix commit
+  `6e5dc4a4b95432fae568d7602d9d07efafaa4578`.
+- SetFlow change: use the frozen configured physical GPU scope, including GPU5,
+  without filtering by `preflight peak + 2 GiB`.
+- Critic change: both the full-model smoke and formal launcher retain free/total
+  memory and `peak + 2 GiB` as diagnostics only; neither value can authorize or
+  reject launch. Real CUDA allocation or OOM remains fail-closed evidence.
+- CUDA/BF16 policy is unchanged: no CPU fallback, no `CUDA_VISIBLE_DEVICES`
+  remapping, explicit physical device identity, and terminal failure evidence on
+  CUDA errors.
+- Verification: the two directly affected test files passed 6/6 under the A100
+  Python 3.10 environment; `git diff --check` passed. No neural parameter update,
+  protected outcome read, or new experiment was performed for this policy fix.
+- Active-run policy: the already running SetFlow `37c59010` and Critic `f34ab7d8`
+  worktrees and artifacts remain unchanged for exact provenance.
+- Conclusion: future launch code records memory telemetry but no longer treats
+  free-memory headroom as a gate. Existing active scientific results remain
+  pending their frozen Development Validation terminal artifacts.
