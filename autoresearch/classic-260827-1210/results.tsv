@@ -1,0 +1,2 @@
+iteration	change	training_updates	status	nll	recovery	top_k	unique	gate	conclusion
+0	separate training and validation Git provenance; reuse eight terminal checkpoints	0	PENDING						await A100 validation

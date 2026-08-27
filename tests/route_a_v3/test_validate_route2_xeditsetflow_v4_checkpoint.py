@@ -12,6 +12,7 @@ from scripts.route_a_v3 import validate_route2_xeditsetflow_v4_checkpoint as val
 from scripts.route_a_v3.validate_route2_xeditsetflow_v4_checkpoint import (
     SetFlowCheckpointValidationV4Error,
     _write_atomic_terminal_v4,
+    require_training_package_provenance_v4,
     require_training_package_terminal_v4,
     setflow_validation_stage_seed_v4,
 )
@@ -178,3 +179,52 @@ def test_confirmation_waits_only_for_full_training_at_declared_seed(
     )
     assert setflow_validation_stage_seed_v4(config) == ("CONFIRMATION", 20260913)
     assert set(require_training_package_terminal_v4(config)) == {"v4_full"}
+
+
+def test_checkpoint_validation_binds_authorization_to_training_head(
+    tmp_path: Path,
+) -> None:
+    config = {
+        "output_root": str(tmp_path),
+        "training": {"screen_seed": 20260911},
+    }
+    training_head = "a" * 40
+    for run_id in ("v4_full", "v4_single_mode"):
+        directory = tmp_path / run_id
+        directory.mkdir()
+        (directory / "training_summary.json").write_text(
+            json.dumps(
+                {
+                    "status": "TERMINAL_XEDITSETFLOW_V4_TRAINING_COMPLETE_PENDING_VALIDATION",
+                    "run_stage": "SCREEN",
+                    "seed": 20260911,
+                    "saved_checkpoint_paths": {
+                        "4": "a",
+                        "6": "b",
+                        "8": "c",
+                        "10": "d",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        (directory / "training_config.json").write_text(
+            json.dumps({"authorized_git_head": training_head}),
+            encoding="utf-8",
+        )
+        (directory / "training_attempt.json").write_text(
+            json.dumps({"code_commit": training_head}),
+            encoding="utf-8",
+        )
+
+    assert require_training_package_provenance_v4(config) == {
+        "v4_full": training_head,
+        "v4_single_mode": training_head,
+    }
+
+    (tmp_path / "v4_single_mode" / "training_attempt.json").write_text(
+        json.dumps({"code_commit": "b" * 40}),
+        encoding="utf-8",
+    )
+    with pytest.raises(SetFlowCheckpointValidationV4Error, match="disagree on Git HEAD"):
+        require_training_package_provenance_v4(config)

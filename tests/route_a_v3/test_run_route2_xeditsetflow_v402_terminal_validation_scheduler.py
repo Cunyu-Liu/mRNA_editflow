@@ -60,3 +60,22 @@ def test_setflow_only_scheduler_publishes_terminal_gate_without_critic_read(
     assert payload["active_performance_output_read"] is False
     assert payload["development_test_outcome_reads"] == 0
     assert payload["new_final_evaluation_outcome_reads"] == 0
+
+
+def test_scheduler_accepts_explicit_recovery_runtime_identity() -> None:
+    identity = scheduler.runtime_identity(
+        {
+            "runtime_identity": {
+                "schema_version": "setflow_validation_recovery.v1",
+                "running_status": "RECOVERY_RUNNING",
+                "terminal_status": "RECOVERY_TERMINAL",
+                "failure_status": "RECOVERY_FAILED",
+            }
+        }
+    )
+    assert identity == {
+        "schema_version": "setflow_validation_recovery.v1",
+        "running_status": "RECOVERY_RUNNING",
+        "terminal_status": "RECOVERY_TERMINAL",
+        "failure_status": "RECOVERY_FAILED",
+    }

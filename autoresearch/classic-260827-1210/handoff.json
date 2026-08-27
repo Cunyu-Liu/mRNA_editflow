@@ -1,0 +1,11 @@
+{
+  "mode": "classic",
+  "status": "PENDING_REMOTE_VALIDATION",
+  "current_incumbent": null,
+  "iteration": 0,
+  "training_git_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+  "parameter_updates": 0,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "next_action": "verify recovery code on A100 Python 3.10 and launch eight checkpoint validations"
+}

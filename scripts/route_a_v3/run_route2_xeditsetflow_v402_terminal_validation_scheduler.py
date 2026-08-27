@@ -13,6 +13,23 @@ from pathlib import Path
 from typing import Any
 
 
+DEFAULT_RUNTIME_IDENTITY = {
+    "schema_version": (
+        "route_a_v3_route2_xeditsetflow_v402_terminal_validation_runtime.v1"
+    ),
+    "running_status": "XEDITSETFLOW_V402_TERMINAL_VALIDATION_RUNNING",
+    "terminal_status": "XEDITSETFLOW_V402_VALIDATION_AND_GATE_TERMINAL",
+    "failure_status": "XEDITSETFLOW_V402_VALIDATION_TECHNICAL_FAILURE",
+}
+
+
+def runtime_identity(schedule: dict[str, Any]) -> dict[str, str]:
+    identity = {**DEFAULT_RUNTIME_IDENTITY, **schedule.get("runtime_identity", {})}
+    if not all(isinstance(value, str) and value for value in identity.values()):
+        raise ValueError("SetFlow validation runtime identity is invalid")
+    return identity
+
+
 def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     partial = path.with_suffix(path.suffix + ".partial")
@@ -44,6 +61,7 @@ def run_logged(command: list[str], *, cwd: Path, log: Path) -> int:
 def run(schedule: dict[str, Any]) -> None:
     runtime_path = Path(schedule["runtime_manifest"])
     worktree = Path(schedule["worktree"])
+    identity = runtime_identity(schedule)
     states = {
         job["job_key"]: {
             "run_id": job["run_id"],
@@ -64,9 +82,7 @@ def run(schedule: dict[str, Any]) -> None:
         write_atomic(
             runtime_path,
             {
-                "schema_version": (
-                    "route_a_v3_route2_xeditsetflow_v402_terminal_validation_runtime.v1"
-                ),
+                "schema_version": identity["schema_version"],
                 "status": status,
                 "scheduler_pid": os.getpid(),
                 "git_head": schedule["git_head"],
@@ -81,7 +97,7 @@ def run(schedule: dict[str, Any]) -> None:
             },
         )
 
-    publish("XEDITSETFLOW_V402_TERMINAL_VALIDATION_RUNNING")
+    publish(identity["running_status"])
 
     def run_queue(queue: dict[str, Any]) -> None:
         for job in queue["jobs"]:
@@ -89,7 +105,7 @@ def run(schedule: dict[str, Any]) -> None:
             with lock:
                 states[key]["status"] = "RUNNING"
                 states[key]["started_unix_seconds"] = time.time()
-                publish("XEDITSETFLOW_V402_TERMINAL_VALIDATION_RUNNING")
+                publish(identity["running_status"])
             return_code = run_logged(
                 list(job["command"]), cwd=worktree, log=Path(job["log_path"])
             )
@@ -107,7 +123,7 @@ def run(schedule: dict[str, Any]) -> None:
                         "finished_unix_seconds": time.time(),
                     }
                 )
-                publish("XEDITSETFLOW_V402_TERMINAL_VALIDATION_RUNNING")
+                publish(identity["running_status"])
 
     threads = [
         threading.Thread(target=run_queue, args=(queue,))
@@ -137,9 +153,9 @@ def run(schedule: dict[str, Any]) -> None:
         for row in states.values()
     )
     publish(
-        "XEDITSETFLOW_V402_VALIDATION_AND_GATE_TERMINAL"
+        identity["terminal_status"]
         if exact_validations and gate_present
-        else "XEDITSETFLOW_V402_VALIDATION_TECHNICAL_FAILURE"
+        else identity["failure_status"]
     )
 
 
