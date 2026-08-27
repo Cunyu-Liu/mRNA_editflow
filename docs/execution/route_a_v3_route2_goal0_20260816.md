@@ -61,3 +61,12 @@ GPUs 0–4 for the eight frozen checkpoint evaluations while GPU5 remains assign
 to Critic recovery. No active metric or protected outcome was read at launch;
 therefore the scientific and publication-readiness status remains unchanged
 until the terminal SetFlow gate is published.
+
+The SetFlow checkpoint package terminated before producing any performance
+summary because the historical training authorization was bound to the original
+screen HEAD while the terminal-validation runner used the successor integration
+HEAD. The frozen atomic gate therefore records `XEDITSETFLOW_V4_SCREEN_NO_GO`,
+with confirmation, Development TEST, and guidance all unauthorized. This is an
+integration failure rather than a negative recovery or diversity estimate, but
+it still leaves SetFlow V4 not ready and the manuscript below the stated model-
+advantage publication threshold.

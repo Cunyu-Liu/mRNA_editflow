@@ -4226,3 +4226,16 @@ adjudicator将在八项全部terminal后自动原子发布PASS或NO-GO gate。�
 Validation性能、旧Critic failure、Development TEST或new Evaluation。首次alive/CUDA/terminal检查不早于本地
 11:04:31。审计：
 `audits/route_a_v3_route2_xeditsetflow_v402_terminal_validation_launch_v1.json`。
+
+### SetFlow V4 screen terminal NO-GO（2026-08-27 11:06:47 +08:00）
+
+首次合规窗口确认scheduler已自然退出、8/8 checkpoint Validation均为FAILURE terminal、原子screen gate已存在。
+随后只读取一次正式gate，没有逐项打开failure payload。gate状态为`XEDITSETFLOW_V4_SCREEN_NO_GO`，原因是8项
+共同的`XEditSetFlowRuntimeV4Error: SetFlow V4 authorization is for another Git HEAD`：训练及原authorization绑定
+历史HEAD `edad893`，而本次SetFlow-only validation runner位于`bcf1ae9`。这是post-training集成错误，不是NLL、
+recovery、top-k或diversity性能失败；8项均未产生有效Validation性能摘要。
+
+冻结gate明确`confirmation_authorized=false`、`additional_seed_authorized=false`、`development_test_authorized=false`、
+`guidance_authorized=false`。按V4/V4.0.2纪律，本项永久保留terminal NO-GO，不删除gate、不重跑validation、不修改
+authorization或阈值。Development TEST/new Evaluation read=0。SetFlow无法形成G0 ready，论文继续不具备模型优势
+投稿质量。审计：`audits/route_a_v3_route2_xeditsetflow_v4_screen_terminal_nogo_v1.json`。

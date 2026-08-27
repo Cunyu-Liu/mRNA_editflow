@@ -1,0 +1,43 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_screen_terminal_nogo.v1",
+  "status": "XEDITSETFLOW_V4_SCREEN_NO_GO",
+  "local_terminal_observation_time": "2026-08-27 11:06:31 +0800",
+  "remote_terminal_observation_time": "2026-08-27T11:08:49+08:00",
+  "remote_clock_offset_seconds": 138,
+  "gate_read_once_local_time": "2026-08-27 11:06:47 +0800",
+  "remote_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/screen_seed_20260911/screen_gate.json",
+  "gate_schema_version": "route_a_v3_route2_xeditsetflow_v4_screen_gate.v1",
+  "screen_seed": 20260911,
+  "reason": "ONE_OR_MORE_FROZEN_TRAINING_OR_CHECKPOINT_VALIDATION_RUNS_FAILED_TECHNICALLY",
+  "technical_failure_count": 8,
+  "technical_failure_common_error_type": "XEditSetFlowRuntimeV4Error",
+  "technical_failure_common_error": "SetFlow V4 authorization is for another Git HEAD",
+  "affected_runs": {
+    "v4_full": [4, 6, 8, 10],
+    "v4_single_mode": [4, 6, 8, 10]
+  },
+  "root_cause": {
+    "training_and_original_authorization_head": "edad89392077a0cf56e84dfcf94335606dd2b05a",
+    "validation_runner_head": "bcf1ae9c7dfaa48ae394cf3973aa88d28e07f2a5",
+    "classification": "POST_TRAINING_INTEGRATION_ERROR_NOT_MODEL_PERFORMANCE_FAILURE",
+    "active_performance_metric_produced": false
+  },
+  "authorization": {
+    "confirmation_authorized": false,
+    "confirmation_seeds": [],
+    "additional_seed_authorized": false,
+    "development_test_authorized": false,
+    "guidance_authorized": false,
+    "same_protocol_rerun_authorized": false
+  },
+  "read_accounting": {
+    "formal_gate_reads": 1,
+    "individual_validation_failure_payload_reads": 0,
+    "active_logs_or_curves_read": false,
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "scientific_interpretation": "NO_SETFLOW_V4_PERFORMANCE_METRIC_WAS_OBTAINED_AND_NO_GENERATOR_ADVANTAGE_WAS_ESTABLISHED",
+  "formal_tag_or_release_created": false,
+  "shared_history_rewritten": false
+}

@@ -297,3 +297,13 @@ The eight-checkpoint SetFlow Validation package has now launched from its exact
 A100-tested revision without reading active metrics or protected outcomes. This
 updates only execution status: no recovery, diversity, NLL, or generator-
 advantage result is available until the terminal atomic gate is published.
+
+That atomic gate is now terminal `XEDITSETFLOW_V4_SCREEN_NO_GO`. All eight
+checkpoint evaluations failed before metric production because the validation
+runner HEAD differed from the Git HEAD bound into the historical training
+authorization. This is a post-training integration failure, not evidence that
+the model's NLL, recovery, top-k recovery, or diversity is poor; nevertheless,
+the preregistered protocol authorizes neither confirmation nor guidance after
+this terminal, so no SetFlow V4 model-advantage claim can be made. Development
+TEST and new Evaluation outcome reads remain zero, and the manuscript remains
+unready for submission.
