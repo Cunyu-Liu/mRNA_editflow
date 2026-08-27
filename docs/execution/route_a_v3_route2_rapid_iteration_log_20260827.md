@@ -314,3 +314,63 @@ or terminal artifacts.
   identity throughout or terminate promptly with durable first-failure
   evidence. Current model quality remains pending the frozen terminal and
   scientific gates.
+
+## Iteration 6 — Make every frozen V4 successor fail closed as one package
+
+- Objective: remove the remaining deterministic and package-orchestration
+  blockers from the confirmation, posttraining, guidance-screen, and final
+  comparison successors before any of those long queues starts. No active
+  V4.0.3 process, frozen scientific threshold, seed, budget, precision mode,
+  protected-data boundary, or GPU assignment is changed.
+- Final-evidence correction: a successful per-seed final evidence job is now
+  recognized by its actual atomic `seed_manifest_row.json` terminal artifact.
+  The previous scheduler contract expected a nonexistent `run_summary.json`
+  from this directory-producing job and would therefore have converted every
+  successful final seed into a manufactured technical failure.
+- Package-wide first-failure correction: confirmation training,
+  posttraining/Validation, guidance screening, and the 98-job matched-final
+  comparison now share one stop signal and one durable first-terminal-failure
+  record per package. Jobs already in flight may finish, but no pending job is
+  started after a technical failure or non-exact terminal state. Downstream
+  adjudication is skipped for a technically incomplete package. A scientifically
+  valid terminal adjudication, including a frozen scientific NO_GO, remains a
+  successful execution and is not reclassified as an infrastructure failure.
+- Exact-code correction: every process launch in those future queues rechecks
+  that the worktree is clean and still equals the schedule's frozen Git HEAD.
+  A mismatch is recorded as that job's technical failure before process launch,
+  so one schedule cannot silently combine code identities while repository work
+  continues in parallel.
+- GPU prelaunch evidence: failures while querying or parsing the final package's
+  CUDA inventory now produce a sibling prelaunch-failure record with the command,
+  captured output, expected and observed code identity, and explicit no-CPU-
+  fallback status. Available memory remains diagnostic only: no free-memory,
+  estimated-memory, or headroom gate was introduced. The frozen genetic timing
+  baseline remains real-CUDA FP32 timing-only as required by its protocol; neural
+  jobs remain CUDA/BF16 and fail closed on CPU fallback.
+- Scientific meaning: the only excellent Development result remains a terminal
+  `XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL` adjudication whose frozen gate is
+  `XEDITFLOW_V4_PASS`, backed by all three matched seeds and their paired
+  uncertainty, regret, recovery, evaluator, legality, failure, budget, and
+  provenance checks. A smoke test, proxy, training metric, atomic TEST, Critic
+  screen, G0, guidance screen, or single seed is not promoted to that conclusion.
+  Even a Development PASS remains non-external while the current named cohorts
+  are outcome-exposed or invalid; submission readiness requires a genuinely new
+  outcome-unexposed Evaluation cohort.
+- Verification: the directly affected scheduler/launcher cohort passed 22/22,
+  and the complete V4 successor orchestration cohort passed 131/131 in six
+  isolated Python processes. A deliberately attempted single-process aggregate
+  imported already-cached modules from a legacy worktree after an existing test
+  helper changed Python import state; it was rejected as non-authoritative, and
+  the established isolated-process layout removed that cross-worktree test
+  contamination. The exact V3.3.2 CPU-native regression cohort and both exact-
+  HEAD repeats remain required after commit before new runner receipts are
+  materialized. These tests certify orchestration only and are not GPU
+  validation or scientific evidence.
+- Active and protected scope: no active training metric, curve, stdout/stderr,
+  Development TEST outcome, or final Evaluation outcome was opened while making
+  these corrections. The existing two-hour heartbeat remains the only progress
+  monitor for the two active V4.0.3 recoveries.
+- Conclusion: the corrected successor design either advances on one exact code
+  identity with complete terminal artifacts or stops at the first technical
+  failure with evidence. Model quality itself is still pending the already-
+  frozen GPU and scientific gates.

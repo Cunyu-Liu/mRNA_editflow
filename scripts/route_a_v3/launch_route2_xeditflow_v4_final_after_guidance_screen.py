@@ -37,10 +37,32 @@ METHODS = (
     "simple_rate_guidance",
     "generate_then_rerank",
 )
+GPU_INVENTORY_COMMAND = (
+    "nvidia-smi",
+    "--query-gpu=index,memory.free",
+    "--format=csv,noheader,nounits",
+)
 
 
 class XEditFlowV4FinalLaunchError(RuntimeError):
     pass
+
+
+class XEditFlowV4GpuInventoryError(XEditFlowV4FinalLaunchError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        command_line: tuple[str, ...] = GPU_INVENTORY_COMMAND,
+        return_code: int | None = None,
+        stdout: str = "",
+        stderr: str = "",
+    ) -> None:
+        super().__init__(message)
+        self.command_line = command_line
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
 
 
 def require(condition: bool, message: str) -> None:
@@ -79,18 +101,90 @@ def directory_failure(output: Path) -> Path:
 
 
 def gpu_free_memory_mib() -> dict[int, int]:
-    result = command(
-        [
-            "nvidia-smi",
-            "--query-gpu=index,memory.free",
-            "--format=csv,noheader,nounits",
-        ]
-    )
+    try:
+        result = subprocess.run(
+            list(GPU_INVENTORY_COMMAND),
+            cwd=WORKTREE,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError as exc:
+        raise XEditFlowV4GpuInventoryError(
+            f"nvidia-smi could not be executed: {exc}",
+        ) from exc
+    if result.returncode != 0:
+        raise XEditFlowV4GpuInventoryError(
+            f"nvidia-smi exited with return code {result.returncode}",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     values: dict[int, int] = {}
-    for line in result.stdout.splitlines():
-        index, free = (value.strip() for value in line.split(",", maxsplit=1))
-        values[int(index)] = int(free)
+    try:
+        for line in result.stdout.splitlines():
+            index, free = (value.strip() for value in line.split(",", maxsplit=1))
+            values[int(index)] = int(free)
+    except (TypeError, ValueError) as exc:
+        raise XEditFlowV4GpuInventoryError(
+            f"nvidia-smi inventory could not be parsed: {exc}",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        ) from exc
+    missing = sorted(set(range(6)) - set(values))
+    if missing:
+        raise XEditFlowV4GpuInventoryError(
+            f"physical GPU inventory 0-5 is incomplete; missing {missing}",
+            return_code=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr,
+        )
     return values
+
+
+def write_gpu_inventory_failure_evidence(
+    path: Path,
+    *,
+    runtime_root: Path,
+    current_head: str,
+    experiment_head: str,
+    guidance_runner_head: str,
+    critic_preflight_head: str,
+    setflow_preflight_head: str,
+    error: XEditFlowV4GpuInventoryError,
+) -> None:
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditflow_v4_final_prelaunch_failure.v1"
+            ),
+            "status": "XEDITFLOW_V4_FINAL_PRELAUNCH_GPU_INVENTORY_FAILURE",
+            "failure_stage": "GPU_INVENTORY_BEFORE_RUNTIME_CREATION",
+            "git_head": current_head,
+            "experiment_head": experiment_head,
+            "guidance_runner_head": guidance_runner_head,
+            "critic_preflight_runner_git_head": critic_preflight_head,
+            "setflow_preflight_runner_git_head": setflow_preflight_head,
+            "intended_runtime_root": str(runtime_root),
+            "runtime_root_created": runtime_root.exists(),
+            "command": list(error.command_line),
+            "return_code": error.return_code,
+            "stdout": error.stdout,
+            "stderr": error.stderr,
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "cpu_fallback_used": False,
+            "free_memory_gate_applied": False,
+            "development_test_reopened": False,
+            "development_test_outcomes_accessed_after_atomic_test": False,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
 
 
 def _config_job(
@@ -131,6 +225,11 @@ def _config_job(
         command_line += ["--config", str(config_path)]
         success = output / "run_summary.json"
         failure = failure_root / f"{key}.failed.json"
+    elif output_kind == "seed_manifest_row":
+        output = Path(str(config["output_dir"]))
+        command_line += ["--config", str(config_path), "--output-dir", str(output)]
+        success = output / "seed_manifest_row.json"
+        failure = directory_failure(output)
     else:
         raise XEditFlowV4FinalLaunchError(f"unknown job output kind: {output_kind}")
     return {
@@ -415,7 +514,7 @@ def build_schedule(
                 config=payload,
                 log_root=log_root,
                 failure_root=failure_root,
-                output_kind="directory",
+                output_kind="seed_manifest_row",
             )
         )
         require(len(jobs) == 29, f"V4 final seed job count differs: {seed}")
@@ -572,15 +671,36 @@ def run(
         )
         * 1024
     )
-    free_memory = gpu_free_memory_mib()
-    require(set(free_memory).issuperset(range(6)), "physical GPU inventory 0-5 is incomplete")
-    config_root = Path(str(protocol["runtime_config_root"])).parent / "final_three_seed_v1"
-    output_root = Path(str(protocol["guidance_screen_output_root"])).parent / "final_three_seed"
     runtime_root = execution_runtime_root or (
         ROOT
         / "experiments/xedit_v4"
         / f"final_execution_{experiment_head}_guidance_{guidance_runner_head}_runner_{current_head}"
     )
+    prelaunch_failure_path = directory_failure(runtime_root)
+    require(
+        not runtime_root.exists(),
+        "V4 final runtime already exists; use a new retry family",
+    )
+    require(
+        not prelaunch_failure_path.exists(),
+        "V4 final prelaunch failure evidence already exists; use a new retry family",
+    )
+    try:
+        free_memory = gpu_free_memory_mib()
+    except XEditFlowV4GpuInventoryError as exc:
+        write_gpu_inventory_failure_evidence(
+            prelaunch_failure_path,
+            runtime_root=runtime_root,
+            current_head=current_head,
+            experiment_head=experiment_head,
+            guidance_runner_head=guidance_runner_head,
+            critic_preflight_head=critic_preflight_head,
+            setflow_preflight_head=setflow_preflight_head,
+            error=exc,
+        )
+        raise
+    config_root = Path(str(protocol["runtime_config_root"])).parent / "final_three_seed_v1"
+    output_root = Path(str(protocol["guidance_screen_output_root"])).parent / "final_three_seed"
     require(
         strongest_closed_score_table.is_file()
         and str(strongest_closed_score_table).startswith(str(ROOT) + "/"),
