@@ -45,8 +45,15 @@
    recovered confirmation/posttraining、降低阈值或追加 seed。
 2. Critic V4.0.3 `v4_full` 已发布唯一 terminal SUMMARY：seed 20260907、pass 8、22,416 updates、
    physical/effective batch 32、A100 GPU5、CUDA/BF16、无 CPU fallback、f34 authorization，protected、
-   Development TEST 与 new Evaluation reads 均为 0。六个 controls 没有启动，因为它们无法恢复已经失败的
-   SetFlow dual-readiness；该单臂 summary 不是 screen PASS 或最终科学结论。
+   Development TEST 与 new Evaluation reads 均为 0。该单臂 summary 不是 screen PASS 或最终科学结论。
+   2026-08-28 的执行决策已把 Critic readiness 提升为 Guidance 的第一关键路径：历史暂停只说明当时没有
+   启动 controls，不再阻止 Critic 独立完成自己的 controls、confirmation、atomic TEST、refit 与 LOSO。
+   已存在的 full=f34 和 C0=937 只作为精确历史 v1 producer；六个尚未启动的 controls 必须使用新的许可
+   clean exact HEAD、当前 trainer 和 v2 terminal evidence，不能恢复或冒充旧 f34 controls。
+
+Critic 与基础 SetFlow mechanics 在数据依赖上独立，可以并行使用多张 GPU；Critic 未达到自己的冻结
+readiness 时仍严禁进入 value target 或 Guidance。SetFlow 的旧科学 NO-GO 不得被改写，但也不再被用作
+停止 Critic 自身验证链的理由。
 
 对应 repo 事实审计为：
 
@@ -82,20 +89,35 @@ family 禁止重新启动、覆盖或手工接续。该 family 继续自然收�
 
 ```text
 旧 SetFlow V4.0.3 recovered screen ──> XEDITSETFLOW_V4_SCREEN_NO_GO（冻结、只读）
-旧 Critic V4.0.3 full ──> terminal SUMMARY（controls 暂停、非 screen PASS）
+旧 Critic C0=937 + repaired full=f34 ──> 历史 v1 terminal producer（只读、非 screen PASS）
 
 SetFlow V4-S1 旧 930 family（seed 初始化缺陷，继续自然收尾）
     └─> 终态证据只读；无论形式 gate 如何均不得授权 successor
 
-SetFlow V4-S1 corrected independent retry（尚未启动）
-    └─> seed-before-model 的 matched v4_s1_full + v4_s1_single_mode（seed 20260911）
-        └─> checkpoints 4/6/8/10 的冻结 891×32 outcome-free Validation
-            ├─> XEDITSETFLOW_V4_S1_SCREEN_NO_GO：该 corrected family 终止
-            └─> XEDITSETFLOW_V4_S1_SCREEN_PASS
-                └─> 仅允许新 S1-bound 三 seed confirmation；旧 V4.0.3 launcher 禁用
-                    └─> 后续仍须逐级重获 SetFlow G0_READY、Critic readiness、
-                        guidance frozen 与 98-job Final terminal
-                            └─> Final gate PASS：优秀 Development 结果
+┌─ Critic 第一关键路径（与基础 SetFlow 并行）
+│  └─> current-HEAD 六 controls，物理 GPU 0–5 一臂一卡并发，全部 v2
+│      └─> historical C0/full + current controls 的 mixed 八臂 cross-root gate
+│          ├─> 科学 NO_GO：停止 Critic 科学分支
+│          └─> PASS
+│              └─> 三 seed full/matched-C0，六 job 六卡并发 confirmation
+│                  └─> 一次 atomic frozen Development TEST
+│                      └─> 三 seed refit（三卡并发）
+│                          └─> 42-job LOSO（多卡队列）
+│                              └─> Critic frozen readiness
+│
+└─ SetFlow V4-S1 corrected independent retry
+   └─> seed-before-model、canonical-full 投影的 matched full/single initialization
+       └─> checkpoints 4/6/8/10 的冻结 891×32 outcome-free Validation
+           ├─> XEDITSETFLOW_V4_S1_SCREEN_NO_GO：该 corrected family 终止
+           └─> XEDITSETFLOW_V4_S1_SCREEN_PASS
+               └─> 新 S1-bound 三 seed confirmation 与 12-job Validation
+                   └─> SetFlow G0_READY
+
+Critic frozen readiness + SetFlow G0_READY
+    └─> 冻结 SetFlow rollout + 冻结 Critic score target
+        └─> value training / Guidance screen frozen
+            └─> 三 seed、98-job Final Development + 独立 evaluator
+                └─> Final gate PASS：优秀 Development 结果
 ```
 
 每一箭头都要求前一阶段产物完整、唯一、精确终态、protected reads 合法且冻结 gate 达标。不得以 smoke、proxy、训练集指标、单 seed、单臂、screen、原子 TEST、G0 或 guidance screen 代替后续 gate。
@@ -143,6 +165,21 @@ Guidance 只能消费真正达到 `XEDITSETFLOW_V4_G0_READY` 的 posttraining sc
 - `launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py`
 - `launch_route2_xeditcritic_v4_refit_after_atomic_test.py`
 - `launch_route2_xeditcritic_v4_loso_after_refits.py`
+
+Critic controls 现在是独立第一优先级，不再等待 SetFlow screen 通过。canonical controls launcher 只消费
+仓库冻结的 full-terminal audit、当前 clean exact HEAD 和该 HEAD 的 shared runner receipt；启动前不重读旧
+full runtime/summary、C0 summary、旧 preflight 或 smoke payload。六个 controls 固定分配到物理 GPU 0–5，
+不按显存排序、筛卡或设置阈值。任一 technical first failure 只允许已在飞臂自然收尾，禁止再启动 pending，
+且不得运行 cross-root 科学裁决。
+
+六 controls 精确终态后，transition 才一次消费 C0、full 与六 controls 的八份 summary 并执行 mixed-provenance
+gate；历史 v1 例外严格只有 C0=937 和 full=f34。screen PASS 后，confirmation 的三个 seed
+20260908/20260909/20260910 各训练 full 与 matched C0，共六 job 六卡并发。后续 atomic TEST、三卡 refit 和
+42-job 多卡 LOSO 仍逐 gate 串行依赖；Critic readiness 本身不授权 Guidance，必须等待 SetFlow readiness。
+
+SetFlow corrected S1 retry 可与 Critic controls/confirmation 并行推进。两条 family 可按各自冻结物理 GPU
+队列同时运行；配置 GPU 存在即可使用，显存只作诊断。任何 CUDA/设备/CPU-fallback/OOM 技术失败均由各
+自 package fail closed，不得借另一条分支的状态覆盖或重试同一 family。
 
 冻结 TEST 只允许在 confirmation 科学 gate PASS 后原子读取一次。LOSO 不得在 refit 或 readiness 前置条件未满足时提前启动。
 

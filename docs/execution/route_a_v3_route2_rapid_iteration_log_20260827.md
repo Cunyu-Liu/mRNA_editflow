@@ -743,3 +743,90 @@ or terminal artifacts.
   promoted; it does not claim a model-quality result. Excellent Development
   evidence still requires terminal Final adjudication with frozen
   `XEDITFLOW_V4_PASS`, and `submission_ready=false` remains.
+
+## Iteration 14 — Put Critic readiness on the multi-GPU critical path
+
+- Scheduling decision: Critic readiness is now the first blocking path for
+  value targets and Guidance. Base SetFlow mechanics remains independent and
+  may run in parallel, but no value training or guided sampling may begin until
+  the Critic has passed its own controls, confirmation, atomic frozen TEST,
+  refit and LOSO gates and has been frozen. This changes execution priority,
+  not the frozen scientific thresholds. It does not reinterpret the old
+  SetFlow V4.0.3 NO-GO or the old single-arm Critic full summary.
+- Multi-GPU plan: the six previously unstarted Critic controls are fixed to
+  physical GPUs 0–5, one arm per GPU. A screen PASS opens three confirmation
+  seeds, each with full and matched C0, again six jobs across six GPUs. The
+  post-test chain uses three concurrent refit GPUs followed by a 42-job LOSO
+  multi-GPU queue. The corrected SetFlow S1 retry uses its own frozen multi-GPU
+  queues concurrently when the execution branch is available. GPU inventory is
+  an identity check only; free or predicted memory never sorts, filters or
+  gates a configured device.
+- Historical/current separation: the already existing C0 producer remains
+  exact head `93703adec7a4c76b4466d3aaae8684620bee985a` and repaired full remains
+  exact head `f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea`. They are the only allowed
+  Critic v1 screen summaries. All six new controls use the current licensed
+  clean HEAD, current trainer/worktree and v2 evidence. The controls launcher
+  consumes the current shared runner receipt rather than inheriting f34 test
+  booleans. Historical terminal payloads are not reopened at launch; the repo
+  full-terminal audit is the barrier, and the eight summaries are consumed
+  only once when the cross-root scientific gate is actually run.
+- Code baseline: prep commit
+  `eba5b17431cb8e19202e5ea788fd419338da2d66` is the immutable code/test
+  baseline X for this iteration. It applies CPU/CUDA seed before every new
+  Critic or SetFlow model construction, projects one canonical full SetFlow
+  initialization into the single-mode arm, and carries exact initialization,
+  device, BF16/no-CPU, HEAD, output, summary, checkpoint and attempt lineage.
+  Value training now carries the same seed-before-model and checkpoint
+  provenance through Guidance and Final evidence.
+- Critic gate and package semantics: legacy compatibility is limited to the
+  real C0/full pair. Controls, confirmation, refit and LOSO require v2. A job is
+  successful only with zero return code and one unique SUMMARY. Before each
+  pending process starts, the scheduler holds the shared lock and rechecks the
+  schedule-fixed clean HEAD. The first spawn, CUDA, OOM, nonzero-return,
+  FAILURE, double-terminal, missing-terminal or worktree-drift event stops new
+  pending jobs, preserves one `first_terminal_failure`, lets jobs already in
+  flight finish, and skips incomplete-package adjudication/readiness. Technical
+  failures are no longer emitted as scientific NO-GO.
+- Evidence and closeout repair: Critic screen peak VRAM is now a finite positive
+  diagnostic only; the former 35-GiB ceiling is removed. The terminal ledger
+  accepts v1 only for the exact historical C0/full identities, requires v2 for
+  all new Critic attempts, and proves
+  `summary.update_count == attempt.optimizer_steps ==
+  config.data_geometry.total_optimizer_updates`. Its 72-attempt inventory
+  remains explicit and does not scan directories or read logs/checkpoint
+  payloads. Final value evidence remains tied to the exact frozen evaluator and
+  checkpoint lineage rather than Critic self-evaluation.
+- Engineering verification: direct stable results included controls 31/31,
+  cross-root transition 10/10, confirmation launcher 46/46 with only the
+  deliberately deferred exact-HEAD semantic-audit node deselected,
+  refit/LOSO 10/10, screen mixed-root/technical classification 2/2, and ledger
+  budget-drift checks 5/5. The integrated 18-module batch reported 239 passes
+  and two stale ledger-fixture failures: the fixture still expected current
+  controls to use f34 and rewrote the already-correct current HEAD as its
+  supposed drift. Those two assertions were corrected; the exact affected
+  three-node run then passed 3/3. `git diff --check`, the no-AppleDouble check,
+  the no-directory-discovery ledger check and the no-VRAM-gate diff check all
+  passed. These are CPU-native engineering checks, not model Validation.
+- Semantic audit boundary: relative to the previous 708 baseline, the Critic
+  successor path set has 20 exact changed paths. The v2 audit must state
+  truthfully that initialization order, terminal/provenance schema, gate
+  acceptance and scheduler failure semantics changed, while model architecture,
+  forward/loss, data, sampler, batch, seed cohort, optimizer-update budget and
+  scientific thresholds did not. It must keep f34 historical provenance,
+  baseline X and the eventual audit-only runner HEAD Y as three distinct
+  identities. Only an X-to-Y empty semantic-path diff may authorize launch.
+- Publication and launch boundary: this prep commit is not an execution entry
+  and no receipt or GPU family is created from it. After the v2 audit-only
+  commit is tested and pushed, the old 930 SetFlow family must still reach exact
+  terminal before the prep branch can enter the licensed execution branch.
+  The merged clean pushed HEAD must then pass all eight isolated focused groups
+  and exactly 96 V3.3.2 tests and materialize both exact-HEAD receipts. Only
+  then may the six-card Critic controls and the corrected multi-GPU SetFlow S1
+  retry launch in parallel as independent one-shot families.
+- Protected scope and claim boundary: this iteration did not read the active
+  930 runtime, any training log or checkpoint payload, Development TEST or new
+  Evaluation outcome, and launched no GPU job. Critic readiness, S1 screen,
+  atomic TEST, G0 and Guidance remain intermediate evidence. The excellent
+  Development claim still requires the terminal 98-job Final adjudication with
+  frozen `XEDITFLOW_V4_PASS` and an independent evaluator;
+  `submission_ready=false` remains.

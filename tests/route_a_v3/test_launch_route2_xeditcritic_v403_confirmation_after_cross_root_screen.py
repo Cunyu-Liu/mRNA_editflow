@@ -80,8 +80,10 @@ def _gate(tmp_path: Path, *, control_head: str = CONTROL_HEAD) -> dict:
             ),
             "ordered_run_ids": list(launcher.ARM_ORDER),
             "arm_sources": arm_sources,
-            "historical_c0_git_head": launcher.C0_GIT_HEAD,
-            "historical_full_git_head": launcher.TRAINING_GIT_HEAD,
+            "historical_c0_git_head": launcher.HISTORICAL_C0_GIT_HEAD,
+            "historical_full_git_head": (
+                launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+            ),
             "control_runner_git_head": control_head,
             "full_runtime_path": str(launcher.FULL_RUNTIME),
             "full_runtime_status": (
@@ -225,6 +227,23 @@ def _runner_receipt(runner_head: str) -> dict:
     }
 
 
+def _training_semantics(runner_head: str) -> dict:
+    return {
+        "historical_repaired_screen_provenance_git_head": (
+            launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+        ),
+        "historical_c0_git_head": launcher.HISTORICAL_C0_GIT_HEAD,
+        "audited_successor_semantic_baseline_git_head": (
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        ),
+        "runner_git_head": runner_head,
+        "training_git_head": runner_head,
+        "training_semantic_diff_paths_since_audited_successor_baseline": [],
+        "training_semantics_unchanged_since_audited_successor_baseline": True,
+        "repaired_screen_is_historical_provenance_only": True,
+    }
+
+
 def test_fixed_cross_root_pass_and_all_eight_authorizations_are_accepted(
     tmp_path: Path,
 ) -> None:
@@ -233,7 +252,7 @@ def test_fixed_cross_root_pass_and_all_eight_authorizations_are_accepted(
     authorizations = launcher.load_and_validate_source_authorizations(gate)
     assert tuple(authorizations) == launcher.ARM_ORDER
     assert authorizations["c0_v4"]["authorized_git_head"] == (
-        launcher.C0_GIT_HEAD
+        launcher.HISTORICAL_C0_GIT_HEAD
     )
     assert all(
         authorizations[run_id]["authorized_git_head"]
@@ -241,7 +260,7 @@ def test_fixed_cross_root_pass_and_all_eight_authorizations_are_accepted(
         for run_id in launcher.CONTROL_RUN_IDS
     )
     assert authorizations["v4_full"]["authorized_git_head"] == (
-        launcher.TRAINING_GIT_HEAD
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
     )
 
 
@@ -290,13 +309,17 @@ def test_sort_keys_persisted_pass_gate_round_trip_preserves_semantic_arm_order(
         (
             lambda gate: gate["cross_root_transition"]["arm_sources"][
                 "c0_v4"
-            ].update(authorized_git_head=launcher.TRAINING_GIT_HEAD),
+            ].update(
+                authorized_git_head=(
+                    launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+                )
+            ),
             "provenance changed for c0_v4",
         ),
         (
             lambda gate: gate["cross_root_transition"]["arm_sources"][
                 "v4_no_moe"
-            ].update(authorized_git_head=launcher.C0_GIT_HEAD),
+            ].update(authorized_git_head=launcher.HISTORICAL_C0_GIT_HEAD),
             "provenance changed for v4_no_moe",
         ),
     ],
@@ -320,7 +343,7 @@ def test_source_authorization_artifact_must_match_embedded_provenance(
         ]
     )
     payload = json.loads(path.read_text(encoding="utf-8"))
-    payload["authorized_git_head"] = launcher.C0_GIT_HEAD
+    payload["authorized_git_head"] = launcher.HISTORICAL_C0_GIT_HEAD
     _write_json(path, payload)
     with pytest.raises(Exception, match="v4_no_cross"):
         launcher.load_and_validate_source_authorizations(gate)
@@ -356,43 +379,86 @@ def test_confirmation_configs_change_only_the_screen_gate_binding(
     )
 
 
-def test_exact_runner_rejects_changed_repaired_training_semantics(
+def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     commands: list[list[str]] = []
 
-    def unchanged(command_args, **kwargs):
+    def exact_audit_then_unchanged_runner(command_args, **kwargs):
         commands.append(list(command_args))
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(stdout="")
 
     monkeypatch.setattr(
         launcher,
         "command",
-        unchanged,
+        exact_audit_then_unchanged_runner,
     )
     receipt = launcher.validate_runner_training_semantics("c" * 40)
-    assert receipt["training_semantics_unchanged"] is True
-    assert receipt["repaired_screen_git_head"] == launcher.TRAINING_GIT_HEAD
-    assert receipt["training_semantics_baseline_git_head"] == (
-        launcher.TRAINING_SEMANTICS_BASELINE_HEAD
+    assert (
+        receipt[
+            "training_semantics_unchanged_since_audited_successor_baseline"
+        ]
+        is True
+    )
+    assert "training_semantics_unchanged" not in receipt
+    assert receipt["historical_repaired_screen_provenance_git_head"] == (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    assert receipt["audited_successor_semantic_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
     )
     assert commands == [
         [
             "git",
             "diff",
             "--name-only",
-            launcher.TRAINING_SEMANTICS_BASELINE_HEAD,
+            launcher.TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD,
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ],
+        [
+            "git",
+            "diff",
+            "--name-only",
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
             "c" * 40,
             "--",
             *launcher.TRAINING_SEMANTIC_PATHS,
         ]
     ]
+
+    def exact_audit_then_changed_runner(command_args, **kwargs):
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+                    )
+                    + "\n"
+                )
+            )
+        return SimpleNamespace(
+            stdout="scripts/route_a_v3/train_route2_xeditcritic_v4.py\n"
+        )
+
     monkeypatch.setattr(
         launcher,
         "command",
-        lambda *args, **kwargs: SimpleNamespace(
-            stdout="scripts/route_a_v3/train_route2_xeditcritic_v4.py\n"
-        ),
+        exact_audit_then_changed_runner,
     )
     with pytest.raises(Exception, match="training semantics changed"):
         launcher.validate_runner_training_semantics("d" * 40)
@@ -404,22 +470,111 @@ def test_committed_successor_head_preserves_audited_training_semantics(
         ["git", "rev-parse", "HEAD"]
     ).stdout.strip()
     receipt = launcher.validate_runner_training_semantics(current_head)
-    assert receipt["training_semantics_baseline_git_head"] == (
-        launcher.TRAINING_SEMANTICS_BASELINE_HEAD
+    assert receipt["audited_successor_semantic_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
     )
-    assert receipt["training_semantic_diff_paths"] == []
-    assert receipt["training_semantics_unchanged"] is True
-    assert receipt["training_semantics_baseline_audit"] == str(
+    assert receipt[
+        "training_semantic_diff_paths_since_audited_successor_baseline"
+    ] == []
+    assert receipt[
+        "training_semantics_unchanged_since_audited_successor_baseline"
+    ] is True
+    assert receipt["audited_successor_changed_training_semantic_paths"] == (
+        list(launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS)
+    )
+    assert len(receipt["audited_successor_changed_training_semantic_paths"]) == 20
+    assert receipt["audited_successor_semantic_baseline_audit"] == str(
         launcher.TRAINING_SEMANTICS_BASELINE_AUDIT
     )
 
 
-def test_training_semantics_reaudit_rejects_changed_critic_classification() -> None:
+def test_training_semantics_reaudit_accepts_exact_v2_audit() -> None:
     audit = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
     launcher.validate_training_semantics_baseline_audit(audit)
-    audit["critic_confirmation_training_semantics_changed"] = True
+    assert audit["changed_training_semantic_paths"] == list(
+        launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+    )
+    assert audit["path_classification"] == (
+        launcher.TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION
+    )
+
+
+def test_training_semantics_reaudit_rejects_path_or_classification_drift() -> None:
+    original = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
+    path_drift = copy.deepcopy(original)
+    path_drift["changed_training_semantic_paths"] = path_drift[
+        "changed_training_semantic_paths"
+    ][:-1]
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(path_drift)
+
+    classification_drift = copy.deepcopy(original)
+    classification_drift["path_classification"][
+        "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
+    ] = "MODEL_OBJECTIVE_CHANGED"
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(
+            classification_drift
+        )
+
+
+@pytest.mark.parametrize(
+    "field", tuple(launcher.TRAINING_SEMANTICS_CHANGED_FLAGS)
+)
+def test_training_semantics_reaudit_rejects_changed_flag_drift(
+    field: str,
+) -> None:
+    audit = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
+    audit[field] = False
     with pytest.raises(Exception, match="re-audit"):
         launcher.validate_training_semantics_baseline_audit(audit)
+
+
+@pytest.mark.parametrize(
+    "field", tuple(launcher.TRAINING_SEMANTICS_UNCHANGED_FLAGS)
+)
+def test_training_semantics_reaudit_rejects_narrow_unchanged_flag_drift(
+    field: str,
+) -> None:
+    audit = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
+    audit[field] = True
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(audit)
+
+
+@pytest.mark.parametrize(
+    "historical_head",
+    (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD,
+        launcher.HISTORICAL_C0_GIT_HEAD,
+    ),
+)
+def test_runner_semantics_rejects_historical_provenance_as_current_runner(
+    historical_head: str,
+) -> None:
+    with pytest.raises(Exception, match="historical screen provenance"):
+        launcher.validate_runner_training_semantics(historical_head)
+
+
+def test_training_semantics_reaudit_rejects_f34_x_role_mixing() -> None:
+    original = launcher.read_json(launcher.TRAINING_SEMANTICS_BASELINE_AUDIT)
+    repaired_as_successor = copy.deepcopy(original)
+    repaired_as_successor["audited_successor_semantic_baseline_git_head"] = (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(
+            repaired_as_successor
+        )
+
+    successor_as_repaired = copy.deepcopy(original)
+    successor_as_repaired["critic_repaired_screen_provenance_git_head"] = (
+        launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+    )
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(
+            successor_as_repaired
+        )
 
 
 @pytest.mark.parametrize(
@@ -618,6 +773,13 @@ def test_manifest_is_standard_consumer_shape_and_binds_exact_runner(
     )
     assert manifest["required_run_ids"] == ["v4_full", "c0_v4"]
     assert manifest["confirmation_runner_git_head"] == runner_head
+    assert manifest["training_git_head"] == runner_head
+    assert manifest["historical_full_git_head"] == (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    assert manifest["audited_successor_semantic_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+    )
     assert manifest["screen_gate_path"] == str(
         launcher.cross_root_gate_path(runner_head)
     )
@@ -640,6 +802,7 @@ def test_authorization_is_trainer_and_posttraining_compatible(
         gate,
         source,
         receipt,
+        _training_semantics(runner_head),
         runner_head=runner_head,
         runner_verification_receipt_path_value=(
             launcher.runner_verification_receipt_path(runner_head)
@@ -657,6 +820,16 @@ def test_authorization_is_trainer_and_posttraining_compatible(
         launcher.CONFIRMATION_SEEDS
     )
     assert authorization["authorized_run_ids"] == ["v4_full", "c0_v4"]
+    assert authorization["training_git_head"] == runner_head
+    assert authorization["historical_full_git_head"] == (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    assert authorization[
+        "training_semantics_unchanged_since_audited_successor_baseline"
+    ] is True
+    assert "training_semantics_unchanged_from_repaired_screen" not in (
+        authorization
+    )
     assert authorization["runner_current_head_verification"][
         "runner_git_head"
     ] == runner_head
@@ -671,6 +844,28 @@ def test_authorization_is_trainer_and_posttraining_compatible(
             "formal_memory_preflight_passed",
         )
     )
+
+
+def test_authorization_rejects_historical_full_as_new_training_head(
+    tmp_path: Path,
+) -> None:
+    runner_head = "d" * 40
+    gate = _gate(tmp_path, control_head=runner_head)
+    semantics = _training_semantics(runner_head)
+    semantics["training_git_head"] = (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    with pytest.raises(Exception, match="baseline or runner roles changed"):
+        launcher.build_confirmation_authorization(
+            gate,
+            launcher.load_and_validate_source_authorizations(gate),
+            _runner_receipt(runner_head),
+            semantics,
+            runner_head=runner_head,
+            runner_verification_receipt_path_value=(
+                launcher.runner_verification_receipt_path(runner_head)
+            ),
+        )
 
 
 def test_schedule_is_exact_three_seeds_two_arms_on_fixed_gpu_zero_to_five(
@@ -694,6 +889,13 @@ def test_schedule_is_exact_three_seeds_two_arms_on_fixed_gpu_zero_to_five(
         preflight_peak_allocated_gib=14.9,
     )
     jobs = [queue["jobs"][0] for queue in schedule["gpu_queues"]]
+    assert schedule["training_git_head"] == runner_head
+    assert schedule["historical_full_git_head"] == (
+        launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
+    )
+    assert schedule["audited_successor_semantic_baseline_git_head"] == (
+        launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+    )
     assert [queue["physical_gpu_index"] for queue in schedule["gpu_queues"]] == list(
         launcher.PHYSICAL_GPUS
     )
