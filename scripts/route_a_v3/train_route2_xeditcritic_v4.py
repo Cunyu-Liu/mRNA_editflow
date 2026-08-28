@@ -333,6 +333,8 @@ def require_confirmation_launch_authorization_v4(
         == "route_a_v3_route2_xeditcritic_v4_confirmation_launch_authorization.v1"
         and authorization.get("status")
         == "XEDITCRITIC_V4_CONFIRMATION_LAUNCH_AUTHORIZED"
+        and str(config.get("confirmation_runner_git_head"))
+        == str(current_git_head)
         and str(authorization.get("authorized_git_head")) == str(current_git_head)
         and authorization.get("authorized_seeds")
         == [20260908, 20260909, 20260910]
@@ -400,6 +402,7 @@ def require_posttest_launch_authorization_v4(
         and authorization.get("status")
         == f"XEDITCRITIC_V4_{run_stage}_LAUNCH_AUTHORIZED"
         and authorization.get("authorized_stage") == run_stage
+        and str(config.get("posttest_runner_git_head")) == str(current_git_head)
         and str(authorization.get("authorized_git_head")) == str(current_git_head)
         and authorization.get("authorized_seeds") == list(CONFIRMATION_SEEDS_V4)
         and authorization.get("authorized_run_ids") == expected_runs
@@ -498,6 +501,43 @@ def _set_seed(seed: int) -> None:
     np.random.seed(seed % (2**32))
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+
+def _terminal_training_environment_v4(
+    *,
+    training_seed: int,
+    device: torch.device,
+    training_git_head: str,
+    spec: ScreenRunSpecV4,
+) -> dict[str, Any]:
+    """Capture fail-closed device and initialization provenance before build."""
+
+    _require(device.type == "cuda", "Critic V4 parameter updates require CUDA")
+    _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
+    device_name = torch.cuda.get_device_name(device)
+    _require("A100" in device_name, "formal Critic V4 updates require an A100")
+    _require(
+        torch.cuda.is_bf16_supported(),
+        "Critic V4 parameter updates require CUDA BF16 support",
+    )
+    if spec.model_kind == "C0-V4":
+        tensor_identity_scope = "NOT_CLAIMED_DIFFERENT_C0_ARCHITECTURE"
+    elif spec.mechanism_mode == "NO_CROSS":
+        tensor_identity_scope = "NOT_CLAIMED_PARAMETER_MATCHED_DIFFERENT_MODULE"
+    else:
+        tensor_identity_scope = "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+    return {
+        "parameter_initialization_seed": int(training_seed),
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "parameter_initialization_tensor_identity_scope": tensor_identity_scope,
+        "cuda_available": True,
+        "cuda_device": str(device),
+        "cuda_device_name": device_name,
+        "a100_device_verified": True,
+        "bf16_supported": True,
+        "cpu_fallback_used": False,
+        "training_git_head": str(training_git_head),
+    }
 
 
 CPU_RAGGED_STRUCTURE_KEYS_V4 = frozenset(
@@ -811,18 +851,36 @@ def run(
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     _set_seed(training_seed)
     device = require_cuda(physical_gpu_index)
+    terminal_training_environment = _terminal_training_environment_v4(
+        training_seed=training_seed,
+        device=device,
+        training_git_head=current_head,
+        spec=spec,
+    )
     output_directory = Path(config["output_root"]) / run_id
     _require(not output_directory.exists(), f"Critic V4 run directory already exists: {output_directory}")
     output_directory.mkdir(parents=True)
     started = time.time()
-    attempt_config = critic_v4_attempt_config(
-        config,
-        run_id=run_id,
-        physical_gpu_index=physical_gpu_index,
-        physical_batch_size=physical_batch_size,
-        training_attempt_id=training_attempt_id,
-    )
     ledger_path, attempt_path = critic_v4_ledger_paths(config, output_directory)
+    checkpoint_path = output_directory / "final_pass_8_checkpoint.pt"
+    training_summary_path = output_directory / "run_summary.json"
+    terminal_paths = {
+        "output_directory": str(output_directory),
+        "training_summary_path": str(training_summary_path),
+        "checkpoint_path": str(checkpoint_path),
+        "training_attempt_path": str(attempt_path),
+    }
+    attempt_config = {
+        **critic_v4_attempt_config(
+            config,
+            run_id=run_id,
+            physical_gpu_index=physical_gpu_index,
+            physical_batch_size=physical_batch_size,
+            training_attempt_id=training_attempt_id,
+        ),
+        **terminal_training_environment,
+        **terminal_paths,
+    }
     attempt_details = critic_v4_attempt_details(
         config, physical_batch_size=physical_batch_size
     )
@@ -1125,11 +1183,10 @@ def run(
             if validation_dataset is not None and prediction_path is not None
             else None
         )
-        checkpoint_path = output_directory / "final_pass_8_checkpoint.pt"
         selection_policy = posttest_selection_policy_v4(run_stage)
         torch.save(
             {
-                "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_checkpoint.v1",
+                "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_checkpoint.v2",
                 "run_stage": run_stage,
                 "run_id": run_id,
                 "model_kind": spec.model_kind,
@@ -1137,6 +1194,8 @@ def run(
                 "mechanism_mode": spec.mechanism_mode,
                 "candidate_bundle_permutation": spec.candidate_bundle_permutation,
                 "seed": training_seed,
+                "physical_gpu_index": physical_gpu_index,
+                "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
                 "selected_pass": 8,
                 "selection_policy": selection_policy,
                 "model_state_dict": model.state_dict(),
@@ -1148,13 +1207,15 @@ def run(
                 "retained_graph_fast_path": physical_batch_size == 32,
                 "full_cache_validation_per_batch": False,
                 "validation_metrics": final_metrics,
+                **terminal_training_environment,
+                **terminal_paths,
                 "development_test_outcome_reads": 0,
                 "new_final_evaluation_outcome_reads": 0,
             },
             checkpoint_path,
         )
         summary = {
-            "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_run.v1",
+            "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_run.v2",
             "status": f"TERMINAL_XEDITCRITIC_V4_{run_stage}_RUN_COMPLETE",
             "run_stage": run_stage,
             "run_id": run_id,
@@ -1170,7 +1231,7 @@ def run(
                 "held_out_study_scale_policy"
             ),
             "physical_gpu_index": physical_gpu_index,
-            "cuda_device_name": torch.cuda.get_device_name(device),
+            **terminal_training_environment,
             "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
             "capacity": capacity,
             "bottom_six_cache_identity": bottom_six_cache_identity,
@@ -1191,7 +1252,6 @@ def run(
             "full_cache_validation_per_batch": False,
             "parameter_changed": parameter_changed,
             "singleton_forward_count": 0,
-            "cpu_fallback_used": False,
             "selection_policy": selection_policy,
             "sampler": {
                 "policy": "SQRT_TASK_SIZE_TASK_HOMOGENEOUS_SOURCE_GROUP_BALANCED",
@@ -1201,7 +1261,7 @@ def run(
             "target_scaler": scaler.to_dict(),
             "passes": pass_rows,
             "final_validation": final_metrics,
-            "checkpoint_path": str(checkpoint_path),
+            **terminal_paths,
             "validation_prediction_path": (
                 str(prediction_path) if prediction_path is not None else None
             ),
@@ -1212,7 +1272,7 @@ def run(
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
         }
-        _write_atomic_terminal_v4(output_directory / "run_summary.json", summary)
+        _write_atomic_terminal_v4(training_summary_path, summary)
         record_training_attempt(
             ledger_path,
             attempt_path,
@@ -1228,6 +1288,8 @@ def run(
                     "validation_metrics": final_metrics,
                     "wall_time_seconds": summary["elapsed_seconds"],
                     "peak_vram_mb": summary["peak_vram_bytes"] / 1024**2,
+                    **terminal_training_environment,
+                    **terminal_paths,
                     "notes": f"terminal prospective Critic V4 {run_stage.lower()} run; final-pass-8 fixed; no TEST or Evaluation access",
                 },
             ),

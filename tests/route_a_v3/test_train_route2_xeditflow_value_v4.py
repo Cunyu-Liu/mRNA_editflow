@@ -3,8 +3,11 @@ from __future__ import annotations
 import copy
 
 import pytest
+import torch
 
+import scripts.route_a_v3.train_route2_xeditflow_value_v4 as trainer
 from scripts.route_a_v3.train_route2_xeditflow_value_v4 import (
+    initialize_value_model_and_optimizer_v4,
     validate_value_training_config_v4,
 )
 
@@ -114,3 +117,57 @@ def test_v4_value_training_config_rejects_gpu_or_protected_path_drift() -> None:
     config["development_test_outcomes_accessed_after_atomic_test"] = True
     with pytest.raises(Exception, match="reopened Development TEST"):
         validate_value_training_config_v4(config, _target())
+
+
+def test_v4_value_initialization_seeds_before_model_and_optimizer(monkeypatch) -> None:
+    events = []
+
+    class FakeModel:
+        def __init__(self, **_kwargs):
+            events.append("model")
+
+        def to(self, _device):
+            events.append("model_to_device")
+            return self
+
+        def parameters(self):
+            return [object()]
+
+    monkeypatch.setattr(
+        trainer.torch, "manual_seed", lambda seed: events.append(("manual_seed", seed))
+    )
+    monkeypatch.setattr(
+        trainer.torch.cuda,
+        "manual_seed_all",
+        lambda seed: events.append(("cuda_manual_seed_all", seed)),
+    )
+    monkeypatch.setattr(trainer, "XEditValueV4", FakeModel)
+    monkeypatch.setattr(
+        trainer.torch.optim,
+        "AdamW",
+        lambda *_args, **_kwargs: events.append("optimizer") or object(),
+    )
+
+    initialize_value_model_and_optimizer_v4(
+        seed=20260912,
+        sizes={
+            "assay_count": 1,
+            "context_count": 1,
+            "quantity_count": 1,
+            "measurement_count": 1,
+            "numerator_count": 1,
+            "denominator_count": 1,
+        },
+        dropout=0.1,
+        device=torch.device("cpu"),
+        learning_rate=3e-4,
+        weight_decay=1e-4,
+    )
+
+    assert events == [
+        ("manual_seed", 20260912),
+        ("cuda_manual_seed_all", 20260912),
+        "model",
+        "model_to_device",
+        "optimizer",
+    ]

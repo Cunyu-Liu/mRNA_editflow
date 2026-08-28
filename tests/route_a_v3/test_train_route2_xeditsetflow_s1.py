@@ -6,9 +6,11 @@ import json
 from pathlib import Path
 
 import pytest
+import torch
 
 import scripts.route_a_v3.train_route2_xeditsetflow_s1 as trainer
 from core.route2_xeditsetflow_s1 import mixture_setflow_loss_s1
+from core.route2_xeditsetflow_v4 import XEditSetFlowV4
 from scripts.route_a_v3.train_route2_xeditsetflow_s1 import (
     AUTHORIZATION_SCHEMA,
     AUTHORIZATION_STATUS,
@@ -23,9 +25,11 @@ from scripts.route_a_v3.train_route2_xeditsetflow_s1 import (
     SetFlowTrainingS1Error,
     _write_atomic_terminal_s1,
     build_seeded_setflow_model_s1,
+    canonical_initialization_state_digest_s1,
     complete_attempt_then_publish_training_summary_s1,
     derive_training_update_geometry_s1,
     pass_complete_alive_event_s1,
+    project_single_mode_initialization_s1,
     record_training_attempt_s1,
     require_s1_confirmation_launch_authorization,
     require_s1_launch_authorization,
@@ -245,25 +249,40 @@ def test_s1_parameter_seed_is_applied_before_model_construction_for_all_confirma
         lambda seed: events.append(("cuda_seed", seed)),
     )
 
+    models = {
+        "v4_s1_full": object(),
+        "v4_s1_single_mode": object(),
+    }
+
     def fake_build(_config, _vocabs, *, run_id):
         events.append(("build", run_id))
-        return object(), {"trainable_parameter_count": 1}
+        return models[run_id], {"trainable_parameter_count": 8 if run_id == "v4_s1_full" else 1}
+
+    def fake_project(full, single):
+        assert full is models["v4_s1_full"]
+        assert single is models["v4_s1_single_mode"]
+        events.append(("project", "mode_zero"))
+        return {"all_equal": True}
 
     monkeypatch.setattr(trainer, "build_setflow_screen_model_s1", fake_build)
+    monkeypatch.setattr(trainer, "project_single_mode_initialization_s1", fake_project)
     for seed in CONFIRMATION_SEEDS:
         events.clear()
-        model, capacity = build_seeded_setflow_model_s1(
+        model, capacity, matched_initialization = build_seeded_setflow_model_s1(
             _confirmation_config(seed),
             {},
             run_id="v4_s1_full",
             training_seed=seed,
         )
-        assert model is not None
-        assert capacity == {"trainable_parameter_count": 1}
+        assert model is models["v4_s1_full"]
+        assert capacity == {"trainable_parameter_count": 8}
+        assert matched_initialization == {"all_equal": True}
         assert events == [
             ("cpu_seed", seed),
             ("cuda_seed", seed),
             ("build", "v4_s1_full"),
+            ("build", "v4_s1_single_mode"),
+            ("project", "mode_zero"),
         ]
     with pytest.raises(SetFlowTrainingS1Error, match="undeclared"):
         build_seeded_setflow_model_s1(
@@ -275,6 +294,79 @@ def test_s1_parameter_seed_is_applied_before_model_construction_for_all_confirma
     source = SCRIPT.read_text()
     assert source.count("torch.manual_seed(training_seed)") == 1
     assert source.count("torch.cuda.manual_seed_all(training_seed)") == 1
+
+
+def _small_setflow(mode_count: int) -> XEditSetFlowV4:
+    return XEditSetFlowV4(
+        quantity_count=2,
+        measurement_count=2,
+        numerator_count=2,
+        denominator_count=2,
+        assay_count=2,
+        context_count=2,
+        region_count=2,
+        pretrained_width=8,
+        model_width=16,
+        depth=1,
+        heads=2,
+        ffn_width=32,
+        local_attention_window=4,
+        mode_count=mode_count,
+        mode_residual_rank=4,
+        stop_bottleneck_width=8,
+        dropout=0.1,
+        activation_checkpointing=True,
+        support_floor=1e-8,
+    )
+
+
+def test_s1_single_mode_projects_every_parameter_and_buffer_from_seeded_canonical_full() -> None:
+    torch.manual_seed(20260911)
+    full = _small_setflow(8)
+    single = _small_setflow(1)
+    assert not torch.equal(
+        full.remaining_count_head[0].weight,
+        single.remaining_count_head[0].weight,
+    )
+
+    evidence = project_single_mode_initialization_s1(full, single)
+    full_state = full.state_dict()
+    for name, observed in single.state_dict().items():
+        expected = full_state[name]
+        if name in {"mode_router.weight", "mode_router.bias"}:
+            expected = expected[0:1]
+        assert torch.equal(observed, expected), name
+    assert evidence["all_equal"] is True
+    assert evidence["unmapped_target_names"] == []
+    assert evidence["mismatched_target_names"] == []
+    assert evidence["comparable_tensor_count"] == len(single.state_dict())
+    assert evidence["comparable_element_count"] == sum(
+        tensor.numel() for tensor in single.state_dict().values()
+    )
+    assert evidence["canonical_state_digest_input_fields"] == [
+        "name",
+        "dtype",
+        "shape",
+        "bytes",
+    ]
+
+
+def test_s1_projection_rejects_unknown_target_and_digest_detects_state_drift() -> None:
+    torch.manual_seed(20260911)
+    full = _small_setflow(8)
+    single = _small_setflow(1)
+    first_digest = canonical_initialization_state_digest_s1(full)[
+        "canonical_state_digest"
+    ]
+    with torch.no_grad():
+        next(full.parameters()).view(-1)[0].add_(1.0)
+    assert (
+        canonical_initialization_state_digest_s1(full)["canonical_state_digest"]
+        != first_digest
+    )
+    single.unmapped_parameter = torch.nn.Parameter(torch.zeros(1))
+    with pytest.raises(SetFlowTrainingS1Error, match="unmapped target state"):
+        project_single_mode_initialization_s1(full, single)
 
 
 def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_provenance() -> None:
@@ -354,6 +446,12 @@ def test_s1_attempt_json_retains_objective_identity_weight_and_count(
     tmp_path: Path,
 ) -> None:
     attempt = tmp_path / "training_attempt.json"
+    matched_initialization = {
+        "schema_version": (
+            "route_a_v3_route2_xeditsetflow_v4_s1_matched_initialization.v1"
+        ),
+        "all_equal": True,
+    }
     record_training_attempt_s1(
         tmp_path / "attempts.csv",
         attempt,
@@ -366,6 +464,7 @@ def test_s1_attempt_json_retains_objective_identity_weight_and_count(
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
             "parameter_initialization_seed": 20260911,
             "parameter_initialization_seed_applied_before_model_construction": True,
+            "matched_initialization": matched_initialization,
             "active_responsibility_constraint_count": 123,
         },
     )
@@ -377,6 +476,7 @@ def test_s1_attempt_json_retains_objective_identity_weight_and_count(
         payload["parameter_initialization_seed_applied_before_model_construction"]
         is True
     )
+    assert payload["matched_initialization"] == matched_initialization
     assert payload["active_responsibility_constraint_count"] == 123
 
 

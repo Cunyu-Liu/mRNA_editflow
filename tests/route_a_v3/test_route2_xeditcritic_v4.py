@@ -233,6 +233,29 @@ def test_no_cross_and_no_moe_are_parameter_matched_without_unused_padding() -> N
         assert all(parameter.grad is not None for parameter in model.parameters() if parameter.requires_grad)
 
 
+def test_identical_v4_control_constructors_share_seeded_initial_tensors() -> None:
+    full = _model()
+    full_state = full.state_dict()
+    for control_mode, mechanism_mode in (
+        ("SOURCE_ONLY", "FULL"),
+        ("EDIT_METADATA_ONLY", "FULL"),
+        ("NO_CANDIDATE_SEQUENCE", "FULL"),
+        ("NONE", "NO_MOE"),
+    ):
+        control = _model(
+            control_mode=control_mode, mechanism_mode=mechanism_mode
+        )
+        control_state = control.state_dict()
+        assert control_state.keys() == full_state.keys()
+        assert all(
+            torch.equal(full_state[name], control_state[name])
+            for name in full_state
+        )
+
+    no_cross = _model(mechanism_mode="NO_CROSS")
+    assert no_cross.state_dict().keys() != full_state.keys()
+
+
 def test_candidate_information_controls_keep_full_parameter_geometry() -> None:
     batch = _batch()
     full_count = _model().trainable_parameter_count

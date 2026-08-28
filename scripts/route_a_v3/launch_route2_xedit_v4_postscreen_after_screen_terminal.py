@@ -287,6 +287,8 @@ def run(current_head: str, experiment_head: str) -> dict[str, Any]:
                 str(critic_adjudicator),
                 "--config",
                 str(critic_config),
+                "--expected-runner-head",
+                current_head,
             ],
         },
         "validation_queues": validation_queues,

@@ -15,7 +15,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_xeditflow_gate_v4 import adjudicate_guided_three_seed_v4
-from core.route2_xeditflow_value_training_v4 import BASE_FLOW_SEEDS_V4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    validate_value_training_provenance_v4,
+)
 from scripts.route_a_v3.assemble_route2_xeditflow_final_seed_evidence_v4 import (
     METHODS_V4,
 )
@@ -63,12 +66,42 @@ def assemble_final_payloads_v4(
         and selected_combination[2] in {0.5, 1.0, 2.0},
         "V4 final comparison selected combination differs",
     )
+    value_checkpoint_paths = manifest.get("value_checkpoint_paths")
+    _require(
+        isinstance(value_checkpoint_paths, Mapping)
+        and set(value_checkpoint_paths)
+        == {str(seed) for seed in BASE_FLOW_SEEDS_V4},
+        "V4 final value checkpoint inventory differs",
+    )
+    value_checkpoint_paths = {
+        str(seed): str(value_checkpoint_paths[str(seed)])
+        for seed in BASE_FLOW_SEEDS_V4
+    }
+    _require(
+        manifest.get("guidance_screen_value_checkpoint_path")
+        == value_checkpoint_paths["20260912"],
+        "V4 final guidance-screen value checkpoint path differs",
+    )
+    validate_value_training_provenance_v4(
+        manifest.get("guidance_screen_value_training_provenance", {}),
+        base_flow_training_seed=20260912,
+        value_checkpoint_path=value_checkpoint_paths["20260912"],
+    )
     payloads: dict[int, dict[str, Any]] = {}
     for row in rows:
         seed = int(row.get("base_flow_training_seed", -1))
         _require(
             seed in BASE_FLOW_SEEDS_V4 and seed not in payloads,
             "V4 final comparison seed differs or is duplicated",
+        )
+        _require(
+            row.get("value_checkpoint_path") == value_checkpoint_paths[str(seed)],
+            f"V4 final value checkpoint path differs: {seed}",
+        )
+        validate_value_training_provenance_v4(
+            row.get("value_training_provenance", {}),
+            base_flow_training_seed=seed,
+            value_checkpoint_path=value_checkpoint_paths[str(seed)],
         )
         method_specs = row.get("methods")
         _require(
@@ -175,10 +208,16 @@ def assemble_final_payloads_v4(
 
 def adjudicate_final_manifest_v4(manifest: Mapping[str, Any]) -> dict[str, Any]:
     gate = adjudicate_guided_three_seed_v4(assemble_final_payloads_v4(manifest))
+    rows = manifest["seeds"]
     return {
         "schema_version": "route_a_v3_route2_xeditflow_final_adjudication.v4",
         "status": "XEDITFLOW_V4_FINAL_COMPARISON_TERMINAL",
         "gate": gate,
+        "value_checkpoint_paths": dict(manifest["value_checkpoint_paths"]),
+        "value_training_provenance_by_seed": {
+            str(row["base_flow_training_seed"]): row["value_training_provenance"]
+            for row in rows
+        },
         "predictor_generator_baselines_metrics_policy_frozen": True,
         "new_final_evaluation_authorized": gate[
             "new_final_evaluation_authorized"

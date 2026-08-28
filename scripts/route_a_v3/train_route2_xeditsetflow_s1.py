@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -29,6 +30,14 @@ from core.route2_source_token_cache_v3 import (
     SourceTokenCacheIndexV3,
     load_source_token_cache_v3,
     require_source_token_cache_identity_v3,
+)
+from core.route2_xeditsetflow_gate_s1 import (
+    MATCHED_INITIALIZATION_DIGEST_ALGORITHM,
+    MATCHED_INITIALIZATION_DIGEST_INPUT_FIELDS,
+    MATCHED_INITIALIZATION_MODEL_ROLES,
+    MATCHED_INITIALIZATION_ROUTER_PROJECTION,
+    MATCHED_INITIALIZATION_SCHEMA,
+    require_matched_initialization_evidence_s1,
 )
 from core.route2_xeditsetflow_runtime_v4 import (
     pad_source_batches_v4,
@@ -206,6 +215,7 @@ def record_failed_attempt_if_started_s1(
                 "cross_state_candidate_mode_responsibility_weight",
                 "parameter_initialization_seed",
                 "parameter_initialization_seed_applied_before_model_construction",
+                "matched_initialization",
                 "cuda_available",
                 "bf16_supported",
                 "cpu_fallback_used",
@@ -350,16 +360,174 @@ def build_seeded_setflow_model_s1(
     *,
     run_id: str,
     training_seed: int,
-) -> tuple[torch.nn.Module, dict[str, Any]]:
-    """Apply the frozen seed before any trainable parameter is constructed."""
+) -> tuple[torch.nn.Module, dict[str, Any], dict[str, Any]]:
+    """Build both arms from one seeded canonical full initialization."""
 
     _require(
         training_seed in {SCREEN_SEED, *CONFIRMATION_SEEDS},
         "SetFlow V4 S1 parameter initialization seed is undeclared",
     )
+    _require(run_id in RUN_IDS, "SetFlow V4 S1 parameter initialization arm changed")
     torch.manual_seed(training_seed)
     torch.cuda.manual_seed_all(training_seed)
-    return build_setflow_screen_model_s1(config, vocabs, run_id=run_id)
+    canonical_full, full_capacity = build_setflow_screen_model_s1(
+        config, vocabs, run_id="v4_s1_full"
+    )
+    projected_single, single_capacity = build_setflow_screen_model_s1(
+        config, vocabs, run_id="v4_s1_single_mode"
+    )
+    matched_initialization = project_single_mode_initialization_s1(
+        canonical_full, projected_single
+    )
+    if run_id == "v4_s1_full":
+        del projected_single
+        return canonical_full, full_capacity, matched_initialization
+    del canonical_full
+    return projected_single, single_capacity, matched_initialization
+
+
+def canonical_initialization_state_digest_s1(
+    canonical_full: torch.nn.Module,
+) -> dict[str, Any]:
+    """Digest the complete canonical state without persisting a second weight copy."""
+
+    state = canonical_full.state_dict()
+    digest = hashlib.sha256()
+    element_count = 0
+    for name in sorted(state):
+        tensor = state[name]
+        _require(
+            isinstance(tensor, torch.Tensor),
+            f"SetFlow V4 S1 canonical state is not tensor-valued: {name}",
+        )
+        contiguous = tensor.detach().cpu().contiguous()
+        raw_bytes = (
+            contiguous.reshape(-1).view(torch.uint8).numpy().tobytes(order="C")
+        )
+        descriptor = json.dumps(
+            {
+                "name": name,
+                "dtype": str(contiguous.dtype),
+                "shape": list(contiguous.shape),
+                "byte_count": len(raw_bytes),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        digest.update(len(descriptor).to_bytes(8, "big"))
+        digest.update(descriptor)
+        digest.update(len(raw_bytes).to_bytes(8, "big"))
+        digest.update(raw_bytes)
+        element_count += int(contiguous.numel())
+    return {
+        "canonical_state_digest_algorithm": MATCHED_INITIALIZATION_DIGEST_ALGORITHM,
+        "canonical_state_digest_input_fields": list(
+            MATCHED_INITIALIZATION_DIGEST_INPUT_FIELDS
+        ),
+        "canonical_state_digest": digest.hexdigest(),
+        "canonical_state_tensor_count": len(state),
+        "canonical_state_element_count": element_count,
+    }
+
+
+def project_single_mode_initialization_s1(
+    canonical_full: torch.nn.Module,
+    single_mode: torch.nn.Module,
+) -> dict[str, Any]:
+    """Project every single-mode parameter/buffer from canonical full mode zero."""
+
+    _require(
+        getattr(canonical_full, "mode_count", None) == 8
+        and getattr(single_mode, "mode_count", None) == 1,
+        "SetFlow V4 S1 matched-initialization model roles changed",
+    )
+    canonical_state = canonical_full.state_dict()
+    target_state = single_mode.state_dict()
+    target_parameter_names = set(dict(single_mode.named_parameters()))
+    target_buffer_names = set(dict(single_mode.named_buffers()))
+    unknown_target_names = sorted(
+        set(target_state) - target_parameter_names - target_buffer_names
+    )
+    _require(
+        not unknown_target_names,
+        "SetFlow V4 S1 projection encountered an unclassified target state: "
+        + ", ".join(unknown_target_names),
+    )
+
+    projected_state: dict[str, torch.Tensor] = {}
+    unmapped_target_names: list[str] = []
+    for name, target in target_state.items():
+        source = canonical_state.get(name)
+        if not isinstance(source, torch.Tensor):
+            unmapped_target_names.append(name)
+            continue
+        if name in MATCHED_INITIALIZATION_ROUTER_PROJECTION:
+            _require(
+                source.ndim >= 1 and source.shape[0] == 8,
+                f"SetFlow V4 S1 canonical router geometry changed: {name}",
+            )
+            source = source[0:1]
+        _require(
+            source.shape == target.shape and source.dtype == target.dtype,
+            f"SetFlow V4 S1 canonical projection shape or dtype changed: {name}",
+        )
+        projected_state[name] = source.detach().clone()
+    _require(
+        not unmapped_target_names and set(projected_state) == set(target_state),
+        "SetFlow V4 S1 canonical projection has unmapped target state: "
+        + ", ".join(unmapped_target_names),
+    )
+    single_mode.load_state_dict(projected_state, strict=True)
+    observed_state = single_mode.state_dict()
+    mismatched_target_names = sorted(
+        name
+        for name, expected in projected_state.items()
+        if not torch.equal(observed_state[name], expected)
+    )
+    _require(
+        not mismatched_target_names,
+        "SetFlow V4 S1 canonical projection is not exactly equal: "
+        + ", ".join(mismatched_target_names),
+    )
+
+    comparable_parameter_element_count = sum(
+        int(target_state[name].numel()) for name in target_parameter_names
+    )
+    comparable_buffer_element_count = sum(
+        int(target_state[name].numel()) for name in target_buffer_names
+    )
+    full_only_names = set(canonical_state) - set(target_state)
+    evidence = {
+        "schema_version": MATCHED_INITIALIZATION_SCHEMA,
+        "canonical_run_id": "v4_s1_full",
+        "projection_target_run_id": "v4_s1_single_mode",
+        "model_roles": dict(MATCHED_INITIALIZATION_MODEL_ROLES),
+        **canonical_initialization_state_digest_s1(canonical_full),
+        "comparable_parameter_tensor_count": len(target_parameter_names),
+        "comparable_parameter_element_count": comparable_parameter_element_count,
+        "comparable_buffer_tensor_count": len(target_buffer_names),
+        "comparable_buffer_element_count": comparable_buffer_element_count,
+        "comparable_tensor_count": len(target_state),
+        "comparable_element_count": (
+            comparable_parameter_element_count + comparable_buffer_element_count
+        ),
+        "full_only_state_tensor_count": len(full_only_names),
+        "full_only_state_element_count": (
+            sum(int(canonical_state[name].numel()) for name in full_only_names)
+            + sum(
+                int(canonical_state[name].numel() - target_state[name].numel())
+                for name in MATCHED_INITIALIZATION_ROUTER_PROJECTION
+            )
+        ),
+        "router_projection": dict(MATCHED_INITIALIZATION_ROUTER_PROJECTION),
+        "unmapped_target_names": [],
+        "mismatched_target_names": [],
+        "all_equal": True,
+    }
+    return require_matched_initialization_evidence_s1(
+        {"matched_initialization": evidence},
+        label="SetFlow V4 S1 in-memory projection",
+    )
 
 
 def training_summary_identity_s1(
@@ -604,7 +772,7 @@ def train(
         ),
     )
     cache = SourceTokenCacheIndexV3(cache_payload)
-    model, capacity = build_seeded_setflow_model_s1(
+    model, capacity, matched_initialization = build_seeded_setflow_model_s1(
         config,
         vocabs,
         run_id=run_id,
@@ -677,6 +845,7 @@ def train(
                 "authorized_git_head": current_head,
                 "parameter_initialization_seed": training_seed,
                 "parameter_initialization_seed_applied_before_model_construction": True,
+                "matched_initialization": matched_initialization,
             },
             indent=2,
             sort_keys=True,
@@ -710,6 +879,7 @@ def train(
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
         "parameter_initialization_seed": training_seed,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": matched_initialization,
         "cuda_available": True,
         "bf16_supported": True,
         "cpu_fallback_used": False,
@@ -746,6 +916,7 @@ def train(
         "seed": training_seed,
         "parameter_initialization_seed": training_seed,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": matched_initialization,
         "physical_gpu_index": physical_gpu_index,
         "device": str(device),
         "cuda_available": True,
@@ -771,6 +942,7 @@ def train(
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
             "parameter_initialization_seed": training_seed,
             "parameter_initialization_seed_applied_before_model_construction": True,
+            "matched_initialization": matched_initialization,
             "active_responsibility_constraint_count": 0,
             "active_responsibility_constraint_count_status": "PENDING_TRAINING",
             "active_responsibility_candidate_count": 0,
@@ -951,6 +1123,7 @@ def train(
                     "seed": training_seed,
                     "parameter_initialization_seed": training_seed,
                     "parameter_initialization_seed_applied_before_model_construction": True,
+                    "matched_initialization": matched_initialization,
                     "completed_pass": pass_number,
                     "model_state_dict": model.state_dict(),
                     "vocabs": vocabs,
@@ -1025,6 +1198,7 @@ def train(
         "seed": training_seed,
         "parameter_initialization_seed": training_seed,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": matched_initialization,
         "train_projection_candidate_row_count": len(train_rows),
         "train_source_count": len(train_records),
         "train_inventory": train_inventory,
@@ -1075,6 +1249,7 @@ def train(
                 ),
                 "parameter_initialization_seed": training_seed,
                 "parameter_initialization_seed_applied_before_model_construction": True,
+                "matched_initialization": matched_initialization,
                 "cuda_available": True,
                 "bf16_supported": True,
                 "cpu_fallback_used": False,
@@ -1095,6 +1270,7 @@ def train(
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
             "parameter_initialization_seed": training_seed,
             "parameter_initialization_seed_applied_before_model_construction": True,
+            "matched_initialization": matched_initialization,
             "cuda_available": True,
             "bf16_supported": True,
             "cpu_fallback_used": False,

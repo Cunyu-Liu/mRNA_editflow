@@ -29,6 +29,40 @@ CONFIG = {
 }
 
 
+def _matched_initialization(seed: int) -> dict:
+    return {
+        "schema_version": (
+            "route_a_v3_route2_xeditsetflow_v4_s1_matched_initialization.v1"
+        ),
+        "canonical_run_id": "v4_s1_full",
+        "projection_target_run_id": "v4_s1_single_mode",
+        "model_roles": {
+            "v4_s1_full": "CANONICAL_FULL_MODEL",
+            "v4_s1_single_mode": "PROJECTED_FROM_CANONICAL_FULL_MODE_ZERO",
+        },
+        "canonical_state_digest_algorithm": "sha256",
+        "canonical_state_digest_input_fields": ["name", "dtype", "shape", "bytes"],
+        "canonical_state_digest": f"{seed:064x}",
+        "canonical_state_tensor_count": 120,
+        "canonical_state_element_count": 2000,
+        "comparable_parameter_tensor_count": 80,
+        "comparable_parameter_element_count": 1000,
+        "comparable_buffer_tensor_count": 2,
+        "comparable_buffer_element_count": 10,
+        "comparable_tensor_count": 82,
+        "comparable_element_count": 1010,
+        "full_only_state_tensor_count": 38,
+        "full_only_state_element_count": 990,
+        "router_projection": {
+            "mode_router.weight": "canonical_full.mode_router.weight[0:1]",
+            "mode_router.bias": "canonical_full.mode_router.bias[0:1]",
+        },
+        "unmapped_target_names": [],
+        "mismatched_target_names": [],
+        "all_equal": True,
+    }
+
+
 def _summary(
     run_id: str,
     checkpoint_pass: int,
@@ -57,6 +91,7 @@ def _summary(
         "seed": seed,
         "parameter_initialization_seed": seed,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": _matched_initialization(seed),
         "checkpoint_pass": checkpoint_pass,
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
@@ -161,11 +196,37 @@ def test_s1_pass_uses_old_absolute_and_relative_gates_but_no_legacy_successor() 
     assert gate["successor_protocol_required"] is True
     assert gate["confirmation_authorized"] is False
     assert gate["guidance_authorized"] is False
+    assert gate["matched_initialization"] == _matched_initialization(20260911)
     summaries["v4_s1_full"][4]["source_macro_candidate_recovery_rate"] = .34
     summaries["v4_s1_full"][6]["source_macro_candidate_recovery_rate"] = .34
     summaries["v4_s1_full"][8]["source_macro_candidate_recovery_rate"] = .34
     summaries["v4_s1_full"][10]["source_macro_candidate_recovery_rate"] = .34
     assert adjudicate_setflow_screen_s1(CONFIG, summaries)["status"] == "XEDITSETFLOW_V4_S1_SCREEN_NO_GO"
+
+
+def test_s1_screen_gate_rejects_unmatched_or_cross_process_initialization_drift() -> None:
+    bad = _summary("v4_s1_full", 4)
+    bad["matched_initialization"]["all_equal"] = False
+    with pytest.raises(XEditSetFlowGateS1Error, match="not exactly matched"):
+        validate_checkpoint_summary_identity_s1(
+            bad,
+            run_id="v4_s1_full",
+            checkpoint_pass=4,
+        )
+
+    summaries = {
+        "v4_s1_full": {
+            p: _summary("v4_s1_full", p) for p in (4, 6, 8, 10)
+        },
+        "v4_s1_single_mode": {
+            p: _summary("v4_s1_single_mode", p, recovery=.36, top_k=.21, unique=.90)
+            for p in (4, 6, 8, 10)
+        },
+    }
+    for summary in summaries["v4_s1_single_mode"].values():
+        summary["matched_initialization"]["canonical_state_digest"] = "f" * 64
+    with pytest.raises(XEditSetFlowGateS1Error, match="differs across full and single-mode"):
+        adjudicate_setflow_screen_s1(CONFIG, summaries)
 
 
 def test_s1_terminal_g0_failure_is_a_scientific_ineligible_checkpoint() -> None:

@@ -25,6 +25,19 @@ CONFIRMATION_BOOTSTRAP_SEED = 2026091102
 CONFIRMATION_BOOTSTRAP_STATISTIC = (
     "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_S1_FULL_MINUS_TERMINAL_F2"
 )
+MATCHED_INITIALIZATION_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_v4_s1_matched_initialization.v1"
+)
+MATCHED_INITIALIZATION_DIGEST_ALGORITHM = "sha256"
+MATCHED_INITIALIZATION_DIGEST_INPUT_FIELDS = ["name", "dtype", "shape", "bytes"]
+MATCHED_INITIALIZATION_ROUTER_PROJECTION = {
+    "mode_router.weight": "canonical_full.mode_router.weight[0:1]",
+    "mode_router.bias": "canonical_full.mode_router.bias[0:1]",
+}
+MATCHED_INITIALIZATION_MODEL_ROLES = {
+    "v4_s1_full": "CANONICAL_FULL_MODEL",
+    "v4_s1_single_mode": "PROJECTED_FROM_CANONICAL_FULL_MODE_ZERO",
+}
 
 
 class XEditSetFlowGateS1Error(RuntimeError):
@@ -44,6 +57,81 @@ def _finite(value: Any, label: str) -> float:
     result = float(value)
     _require(math.isfinite(result), f"{label} is nonfinite")
     return result
+
+
+def require_matched_initialization_evidence_s1(
+    payload: Mapping[str, Any], *, label: str
+) -> dict[str, Any]:
+    """Validate the fail-closed, cross-process matched-initialization record."""
+
+    evidence = payload.get("matched_initialization")
+    _require(isinstance(evidence, Mapping), f"{label} matched initialization is absent")
+    _require(
+        evidence.get("schema_version") == MATCHED_INITIALIZATION_SCHEMA
+        and evidence.get("canonical_run_id") == "v4_s1_full"
+        and evidence.get("projection_target_run_id") == "v4_s1_single_mode"
+        and evidence.get("model_roles") == MATCHED_INITIALIZATION_MODEL_ROLES,
+        f"{label} matched-initialization identity changed",
+    )
+    digest = evidence.get("canonical_state_digest")
+    _require(
+        evidence.get("canonical_state_digest_algorithm")
+        == MATCHED_INITIALIZATION_DIGEST_ALGORITHM
+        and evidence.get("canonical_state_digest_input_fields")
+        == MATCHED_INITIALIZATION_DIGEST_INPUT_FIELDS
+        and isinstance(digest, str)
+        and re.fullmatch(r"[0-9a-f]{64}", digest) is not None,
+        f"{label} canonical initialization digest is invalid",
+    )
+    count_names = (
+        "canonical_state_tensor_count",
+        "canonical_state_element_count",
+        "comparable_parameter_tensor_count",
+        "comparable_parameter_element_count",
+        "comparable_buffer_tensor_count",
+        "comparable_buffer_element_count",
+        "comparable_tensor_count",
+        "comparable_element_count",
+        "full_only_state_tensor_count",
+        "full_only_state_element_count",
+    )
+    counts: dict[str, int] = {}
+    for name in count_names:
+        value = evidence.get(name)
+        _require(
+            isinstance(value, int) and not isinstance(value, bool) and value >= 0,
+            f"{label} matched-initialization count is invalid: {name}",
+        )
+        counts[name] = value
+    _require(
+        counts["comparable_parameter_tensor_count"] > 0
+        and counts["comparable_parameter_element_count"] > 0
+        and counts["comparable_tensor_count"]
+        == counts["comparable_parameter_tensor_count"]
+        + counts["comparable_buffer_tensor_count"]
+        and counts["comparable_element_count"]
+        == counts["comparable_parameter_element_count"]
+        + counts["comparable_buffer_element_count"]
+        and counts["canonical_state_tensor_count"]
+        >= counts["comparable_tensor_count"]
+        and counts["canonical_state_element_count"]
+        >= counts["comparable_element_count"]
+        and counts["canonical_state_tensor_count"]
+        == counts["comparable_tensor_count"]
+        + counts["full_only_state_tensor_count"]
+        and counts["canonical_state_element_count"]
+        == counts["comparable_element_count"]
+        + counts["full_only_state_element_count"],
+        f"{label} matched-initialization count geometry changed",
+    )
+    _require(
+        evidence.get("router_projection") == MATCHED_INITIALIZATION_ROUTER_PROJECTION
+        and evidence.get("unmapped_target_names") == []
+        and evidence.get("mismatched_target_names") == []
+        and evidence.get("all_equal") is True,
+        f"{label} comparable initialization is not exactly matched",
+    )
+    return copy.deepcopy(dict(evidence))
 
 
 def _require_compute_identity_s1(
@@ -102,6 +190,10 @@ def validate_checkpoint_summary_identity_s1(
 ) -> dict[str, Any]:
     mode_count = 8 if run_id == "v4_s1_full" else 1
     selectable = run_id == "v4_s1_full"
+    matched_initialization = require_matched_initialization_evidence_s1(
+        summary,
+        label=f"SetFlow V4 S1 {run_id} pass {checkpoint_pass} Validation",
+    )
     _require(
         summary.get("schema_version")
         == "route_a_v3_route2_xeditsetflow_v4_s1_checkpoint_validation.v1"
@@ -293,6 +385,7 @@ def validate_checkpoint_summary_identity_s1(
     return {
         "run_id": run_id,
         "checkpoint_pass": checkpoint_pass,
+        "matched_initialization": matched_initialization,
         "common_validation_set_marginal_nll": nll,
         "source_macro_candidate_recovery_rate": recovery,
         "source_macro_measured_top_k_recovery_at_k": top_k,
@@ -348,6 +441,7 @@ def adjudicate_setflow_screen_s1(
     )
     rows: dict[str, dict[int, dict[str, Any]]] = {}
     selections: dict[str, dict[str, Any]] = {}
+    matched_initialization_by_run: dict[str, dict[str, Any]] = {}
     for run_id in ("v4_s1_full", "v4_s1_single_mode"):
         _require(
             set(summaries[run_id]) == {4, 6, 8, 10},
@@ -361,7 +455,23 @@ def adjudicate_setflow_screen_s1(
             )
             for checkpoint_pass in (4, 6, 8, 10)
         }
+        matched_initialization_by_run[run_id] = copy.deepcopy(
+            rows[run_id][4]["matched_initialization"]
+        )
+        _require(
+            all(
+                rows[run_id][checkpoint_pass]["matched_initialization"]
+                == matched_initialization_by_run[run_id]
+                for checkpoint_pass in (4, 6, 8, 10)
+            ),
+            f"SetFlow V4 S1 matched-initialization evidence drifted across checkpoints: {run_id}",
+        )
         selections[run_id] = select_checkpoint_s1(rows[run_id])
+    _require(
+        matched_initialization_by_run["v4_s1_full"]
+        == matched_initialization_by_run["v4_s1_single_mode"],
+        "SetFlow V4 S1 canonical initialization differs across full and single-mode processes",
+    )
     full = selections["v4_s1_full"]["generation_constrained_selected_checkpoint"]
     single = selections["v4_s1_single_mode"][
         "generation_constrained_selected_checkpoint"
@@ -418,6 +528,9 @@ def adjudicate_setflow_screen_s1(
         if passed
         else "XEDITSETFLOW_V4_S1_SCREEN_NO_GO",
         "screen_seed": 20260911,
+        "matched_initialization": copy.deepcopy(
+            matched_initialization_by_run["v4_s1_full"]
+        ),
         "checkpoint_rows": rows,
         "checkpoint_decisions": selections,
         "terminal_f2_reference": dict(reference),

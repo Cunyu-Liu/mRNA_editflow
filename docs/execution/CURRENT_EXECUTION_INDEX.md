@@ -58,6 +58,10 @@
 
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json`。
 
+该 family 与 corrected independent retry 共用的冻结 mechanics 配置身份是
+`configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`；retry 只修复初始化执行与证据，
+不改变该配置中的 objective、weight、seed、预算或阈值。
+
 它是主合同下的前瞻性从属修订，不覆盖旧 V4.0.3 NO-GO。canonical launcher 已经消费一次；同一
 family 禁止重新启动、覆盖或手工接续。该 family 继续自然收尾，但后续静态审计发现其 trainer 在模型构造后
 才应用名义 seed，因此 `v4_s1_full` 与 `v4_s1_single_mode` 的参数初始化并未由 screen seed

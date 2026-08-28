@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -40,7 +41,15 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
 
 def load_critic_confirmation_configs_v4(
     manifest: Mapping[str, Any],
+    *,
+    runtime_config_root: Path,
+    run_root: Path,
 ) -> dict[int, dict[str, Any]]:
+    runner_head = str(manifest.get("confirmation_runner_git_head", ""))
+    expected_paths = [
+        runtime_config_root / f"seed_{seed}.json"
+        for seed in (20260908, 20260909, 20260910)
+    ]
     _require(
         manifest.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_confirmation_config_manifest.v1"
@@ -50,11 +59,28 @@ def load_critic_confirmation_configs_v4(
         and manifest.get("required_run_ids") == ["v4_full", "c0_v4"],
         "Critic V4 confirmation config manifest changed",
     )
+    _require(
+        re.fullmatch(r"[0-9a-f]{40}", runner_head) is not None
+        and [Path(str(value)) for value in manifest.get("config_paths", [])]
+        == expected_paths,
+        "Critic V4 confirmation config manifest HEAD or paths changed",
+    )
     configs = {
         int(config["training_seed"]): config
-        for config in map(_read, [Path(value) for value in manifest["config_paths"]])
+        for config in map(_read, expected_paths)
     }
-    _require(set(configs) == {20260908, 20260909, 20260910}, "Critic V4 confirmation configs changed")
+    _require(
+        set(configs) == {20260908, 20260909, 20260910}
+        and all(
+            config.get("confirmation_runner_git_head") == runner_head
+            and config.get("run_stage") == "CONFIRMATION"
+            and config.get("required_confirmation_run_ids")
+            == ["v4_full", "c0_v4"]
+            and config.get("output_root") == str(run_root / f"seed_{seed}")
+            for seed, config in configs.items()
+        ),
+        "Critic V4 confirmation configs changed",
+    )
     return configs
 
 
@@ -90,6 +116,7 @@ def collect_critic_confirmation_payloads_v4(
             summaries["c0_v4"],
             _read_jsonl(Path(summaries["v4_full"]["validation_prediction_path"])),
             _read_jsonl(Path(summaries["c0_v4"]["validation_prediction_path"])),
+            config,
             seed=seed,
             bootstrap_seed=int(config["bootstrap_seed"]),
         )
@@ -110,7 +137,11 @@ def main() -> None:
         == "FROZEN_PROSPECTIVE_BEFORE_SCREEN_OR_CONFIRMATION_RESULT",
         "Critic V4 confirmation protocol changed",
     )
-    configs = load_critic_confirmation_configs_v4(_read(arguments.config_manifest))
+    configs = load_critic_confirmation_configs_v4(
+        _read(arguments.config_manifest),
+        runtime_config_root=Path(protocol["runtime_config_root"]),
+        run_root=Path(protocol["run_root"]),
+    )
     output = Path(protocol["confirmation_gate_output"])
     _require(not output.exists(), f"Critic V4 confirmation gate exists: {output}")
     payloads, failures = collect_critic_confirmation_payloads_v4(configs)

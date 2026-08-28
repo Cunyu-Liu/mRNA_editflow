@@ -31,6 +31,35 @@ from scripts.route_a_v3.run_route2_xeditflow_strongest_timing_v4 import (
 )
 
 
+def _value_checkpoint_path(seed: int) -> str:
+    return (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"
+        f"final/value_seed_{seed}.pt"
+    )
+
+
+def _value_provenance(seed: int) -> dict:
+    path = _value_checkpoint_path(seed)
+    return {
+        "parameter_initialization_seed": seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "optimizer_steps": 10,
+        "parameter_changed": True,
+        "cuda_available": True,
+        "bf16_supported": True,
+        "training_precision": "BF16",
+        "cpu_fallback_used": False,
+        "torch_device": "cuda:0",
+        "physical_gpu_index": 0,
+        "cuda_device_index": 0,
+        "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+        "cuda_device_uuid": "GPU-actual",
+        "declared_physical_gpu_uuid": "actual",
+        "cuda_parent_uuid_matches_declared_physical_index": True,
+        "value_checkpoint_path": path,
+    }
+
+
 def _strongest_inputs():
     strongest = {
         "status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY",
@@ -256,7 +285,7 @@ def _generation(method: str, seed: int):
             "development_test_outcomes_accessed_after_atomic_test": False,
             "new_final_evaluation_outcomes_accessed": False,
         }
-    return {
+    result = {
         "status": "XEDITFLOW_V4_SMC_GENERATION_COMPLETE_PENDING_TERMINAL_CRITIC_SCORING",
         "method_id": method,
         "base_flow_training_seed": seed,
@@ -273,6 +302,14 @@ def _generation(method: str, seed: int):
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
+    if method == "full_soft_value_smc":
+        result.update(
+            {
+                "value_checkpoint_path": _value_checkpoint_path(seed),
+                "value_training_provenance": _value_provenance(seed),
+            }
+        )
+    return result
 
 
 def _terminal(method: str, seed: int):
@@ -374,6 +411,7 @@ def _assembled(seed: int, evidence_mutator=None):
         evidence,
         base_flow_training_seed=seed,
         selected_combination=[0.5, 1.0, 2.0],
+        value_checkpoint_path=_value_checkpoint_path(seed),
         equal_wall_time_sensitivity=_equal_wall(seed),
         full_independent_evaluator=evaluator,
         full_candidate_rows=candidate("full_soft_value_smc", 2.0),
@@ -430,6 +468,16 @@ def test_v4_final_evidence_and_three_seed_gate_are_exact_and_terminal(tmp_path) 
             "status": "XEDITFLOW_V4_FINAL_COMPARISON_RESULTS_COMPLETE",
             "guidance_screen_status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
             "selected_combination": [0.5, 1.0, 2.0],
+            "value_checkpoint_paths": {
+                str(seed): _value_checkpoint_path(seed)
+                for seed in (20260912, 20260913, 20260914)
+            },
+            "guidance_screen_value_checkpoint_path": _value_checkpoint_path(
+                20260912
+            ),
+            "guidance_screen_value_training_provenance": _value_provenance(
+                20260912
+            ),
             "seeds": rows,
         }
     )
@@ -460,9 +508,42 @@ def test_v4_final_gate_rejects_non_v4_compute_evidence(tmp_path) -> None:
                 "status": "XEDITFLOW_V4_FINAL_COMPARISON_RESULTS_COMPLETE",
                 "guidance_screen_status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
                 "selected_combination": [0.5, 1.0, 2.0],
+                "value_checkpoint_paths": {
+                    str(seed): _value_checkpoint_path(seed)
+                    for seed in (20260912, 20260913, 20260914)
+                },
+                "guidance_screen_value_checkpoint_path": _value_checkpoint_path(
+                    20260912
+                ),
+                "guidance_screen_value_training_provenance": _value_provenance(
+                    20260912
+                ),
                 "seeds": rows,
             }
         )
+
+
+def test_v4_final_gate_rejects_value_training_provenance_drift(tmp_path) -> None:
+    rows = [
+        write_final_seed_evidence_v4(_assembled(seed), output_dir=tmp_path / str(seed))
+        for seed in (20260912, 20260913, 20260914)
+    ]
+    rows[1]["value_training_provenance"]["bf16_supported"] = False
+    manifest = {
+        "schema_version": "route_a_v3_route2_xeditflow_final_comparison_manifest.v4",
+        "status": "XEDITFLOW_V4_FINAL_COMPARISON_RESULTS_COMPLETE",
+        "guidance_screen_status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
+        "selected_combination": [0.5, 1.0, 2.0],
+        "value_checkpoint_paths": {
+            str(seed): _value_checkpoint_path(seed)
+            for seed in (20260912, 20260913, 20260914)
+        },
+        "guidance_screen_value_checkpoint_path": _value_checkpoint_path(20260912),
+        "guidance_screen_value_training_provenance": _value_provenance(20260912),
+        "seeds": rows,
+    }
+    with pytest.raises(Exception, match="BF16/no-CPU"):
+        adjudicate_final_manifest_v4(manifest)
 
 
 def test_v4_final_composer_accepts_only_exact_three_route2_rows() -> None:
@@ -475,11 +556,17 @@ def test_v4_final_composer_accepts_only_exact_three_route2_rows() -> None:
             },
             "paired_bootstrap_path": f"{prefix}/{seed}/bootstrap.json",
             "equal_wall_time_sensitivity_path": f"{prefix}/{seed}/equal.json",
+            "value_checkpoint_path": _value_checkpoint_path(seed),
+            "value_training_provenance": _value_provenance(seed),
         }
         for seed in (20260912, 20260913, 20260914)
     }
     config = {
         "schema_version": "route_a_v3_route2_xeditflow_final_comparison_compose_config.v4",
+        "expected_value_checkpoint_paths": {
+            str(seed): _value_checkpoint_path(seed)
+            for seed in (20260912, 20260913, 20260914)
+        },
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcomes_accessed": False,
     }
@@ -491,6 +578,8 @@ def test_v4_final_composer_accepts_only_exact_three_route2_rows() -> None:
         "selected_kappa": 0.5,
         "selected_temperature": 1.0,
         "selected_beta_max": 2.0,
+        "selected_value_checkpoint_path": _value_checkpoint_path(20260912),
+        "selected_value_training_provenance": _value_provenance(20260912),
     }
     result = compose_final_comparison_manifest_v4(config, gate, rows)
     assert result["status"] == "XEDITFLOW_V4_FINAL_COMPARISON_RESULTS_COMPLETE"

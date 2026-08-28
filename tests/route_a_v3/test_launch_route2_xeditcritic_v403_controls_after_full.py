@@ -47,7 +47,7 @@ def _full_runtime(*, physical_gpu_index: int = 3) -> dict:
         "terminal_artifact_kind": "SUMMARY",
         "return_code": 0,
         "run_id": "v4_full",
-        "git_head": launcher.TRAINING_GIT_HEAD,
+        "git_head": launcher.HISTORICAL_FULL_GIT_HEAD,
         "physical_gpu_index": physical_gpu_index,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
@@ -62,7 +62,7 @@ def _full_authorization(
             "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
         ),
         "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
-        "authorized_git_head": launcher.TRAINING_GIT_HEAD,
+        "authorized_git_head": launcher.HISTORICAL_FULL_GIT_HEAD,
         "authorized_run_ids": list(launcher.ALL_RUN_IDS),
         "v403_rng_replay_recovery": {
             "run_id": "v4_full",
@@ -85,17 +85,76 @@ def _inventory() -> list[dict]:
     ]
 
 
-def test_nonterminal_full_stops_before_probe_spawn_or_artifact_creation(
+def _runner_receipt(head: str) -> dict:
+    group_counts = [25, 25, 25, 25, 25, 25, 25, 28]
+    return {
+        "schema_version": launcher.RUNNER_VERIFICATION_RECEIPT_SCHEMA,
+        "status": launcher.RUNNER_VERIFICATION_RECEIPT_PASS,
+        "runner_git_head": head,
+        "worktree_clean": True,
+        "focused_tests": {
+            "isolated_process_groups": True,
+            "command": [
+                "python -m pytest " + " ".join(markers)
+                for markers in launcher.FOCUSED_GROUP_REQUIRED_TEST_MARKERS
+            ],
+            "group_passed_counts": group_counts,
+            "passed": True,
+            "passed_count": sum(group_counts),
+            "failed_count": 0,
+        },
+        "v332_tests": {
+            "command": ["python -m pytest tests/route_a_v3/*v332*.py"],
+            "passed": True,
+            "passed_count": 96,
+            "failed_count": 0,
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _schedule(tmp_path: Path, *, head: str = "a" * 40) -> dict:
+    return launcher.build_control_schedule(
+        current_head=head,
+        config_path=tmp_path / "screen_config.json",
+        authorization_path=tmp_path / "authorization.json",
+        cuda_bf16_inventory=_inventory(),
+        output_root=tmp_path / "fresh_controls",
+        runtime_manifest=tmp_path / "runtime.json",
+        log_root=tmp_path / "logs",
+        transition_gate=tmp_path / "cross_root/screen_gate.json",
+    )
+
+
+def test_invalid_tracked_full_audit_stops_without_historical_payload_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(launcher, "CURRENT_FULL_OUTPUT_ROOT", tmp_path / "full")
-    monkeypatch.setattr(launcher, "CURRENT_FULL_RUNTIME", tmp_path / "runtime.json")
-    monkeypatch.setattr(launcher, "CONTROL_OUTPUT_ROOT", tmp_path / "controls")
-    monkeypatch.setattr(launcher, "RUNTIME_ROOT", tmp_path / "runner")
-    monkeypatch.setattr(launcher, "AUTHORIZATION_ROOT", tmp_path / "auth")
-    monkeypatch.setattr(launcher, "TRANSITION_GATE", tmp_path / "gate/screen_gate.json")
-
     calls = {"probe": 0, "spawn": 0}
+
+    monkeypatch.setattr(
+        launcher,
+        "validate_historical_full_terminal_audit",
+        lambda: (_ for _ in ()).throw(
+            launcher.XEditCriticV403ControlRecoveryLaunchError(
+                "tracked historical full terminal audit identity is invalid"
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        launcher,
+        "validate_current_full_terminal",
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("canonical launch must not read historical full payload")
+        ),
+    )
+    monkeypatch.setattr(
+        launcher,
+        "validate_historical_c0_terminal",
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("canonical launch must not read historical C0 payload")
+        ),
+    )
 
     def forbidden_probe() -> list[dict]:
         calls["probe"] += 1
@@ -108,7 +167,7 @@ def test_nonterminal_full_stops_before_probe_spawn_or_artifact_creation(
     monkeypatch.setattr(launcher, "probe_cuda_bf16", forbidden_probe)
     monkeypatch.setattr(launcher.subprocess, "Popen", forbidden_spawn)
 
-    with pytest.raises(Exception, match="not exact terminal SUMMARY"):
+    with pytest.raises(Exception, match="tracked historical full terminal audit"):
         launcher.launch("a" * 40)
 
     assert calls == {"probe": 0, "spawn": 0}
@@ -116,6 +175,24 @@ def test_nonterminal_full_stops_before_probe_spawn_or_artifact_creation(
     assert not (tmp_path / "runner").exists()
     assert not (tmp_path / "auth").exists()
     assert not (tmp_path / "gate").exists()
+
+
+def test_tracked_full_terminal_audit_is_strict_and_payload_closed(
+    tmp_path: Path,
+) -> None:
+    payload = json.loads(
+        launcher.FULL_TERMINAL_AUDIT.read_text(encoding="utf-8")
+    )
+    audit_path = tmp_path / "full_terminal_audit.json"
+    _write_json(audit_path, payload)
+    assert launcher.validate_historical_full_terminal_audit(audit_path)[
+        "status"
+    ] == "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"
+
+    payload["terminal_facts"]["cuda_used"] = False
+    _write_json(audit_path, payload)
+    with pytest.raises(Exception, match="terminal facts are invalid"):
+        launcher.validate_historical_full_terminal_audit(audit_path)
 
 
 def test_full_terminal_requires_zero_protected_reads(tmp_path: Path) -> None:
@@ -210,16 +287,11 @@ def test_full_terminal_rejects_gpu_disagreement_or_unauthorized_run(
         launcher.validate_current_full_terminal(output_root, runtime_path)
 
 
-def test_schedule_is_exactly_six_fresh_controls_from_f34(tmp_path: Path) -> None:
-    schedule = launcher.build_control_schedule(
-        expected_orchestration_head="a" * 40,
-        config_path=tmp_path / "screen_config.json",
-        authorization_path=tmp_path / "authorization.json",
-        cuda_bf16_inventory=_inventory(),
-        output_root=tmp_path / "fresh_controls",
-        runtime_manifest=tmp_path / "runtime.json",
-        log_root=tmp_path / "logs",
-    )
+def test_schedule_is_exactly_six_fresh_controls_from_current_head(
+    tmp_path: Path,
+) -> None:
+    head = "a" * 40
+    schedule = _schedule(tmp_path, head=head)
 
     assert [job["run_id"] for job in schedule["jobs"]] == list(
         launcher.CONTROL_RUN_IDS
@@ -239,7 +311,16 @@ def test_schedule_is_exactly_six_fresh_controls_from_f34(tmp_path: Path) -> None
         in str(job["output_directory"])
         for job in schedule["jobs"]
     )
-    assert schedule["training_code_git_head"] == launcher.TRAINING_GIT_HEAD
+    assert schedule["historical_full_git_head"] == launcher.HISTORICAL_FULL_GIT_HEAD
+    assert schedule["historical_c0_git_head"] == launcher.HISTORICAL_C0_GIT_HEAD
+    assert schedule["current_git_head"] == head
+    assert schedule["runner_git_head"] == head
+    assert schedule["training_code_git_head"] == head
+    assert schedule["orchestration_git_head"] == head
+    assert all(job["training_git_head"] == head for job in schedule["jobs"])
+    assert schedule["cross_root_gate"] == str(
+        tmp_path / "cross_root/screen_gate.json"
+    )
     assert schedule["full_retrained"] is False
     assert schedule["c0_retrained"] is False
     assert schedule["old_v402_stopped_process_resumed"] is False
@@ -249,31 +330,74 @@ def test_schedule_is_exactly_six_fresh_controls_from_f34(tmp_path: Path) -> None
 
 
 def test_schedule_rejects_missing_control_or_full_injection(tmp_path: Path) -> None:
-    schedule = launcher.build_control_schedule(
-        expected_orchestration_head="a" * 40,
-        config_path=tmp_path / "screen_config.json",
-        authorization_path=tmp_path / "authorization.json",
-        cuda_bf16_inventory=_inventory(),
-        output_root=tmp_path / "fresh_controls",
-        runtime_manifest=tmp_path / "runtime.json",
-        log_root=tmp_path / "logs",
-    )
+    schedule = _schedule(tmp_path)
     schedule["jobs"] = schedule["jobs"][:-1]
     with pytest.raises(Exception, match="exact six-control package"):
         scheduler.validate_schedule(schedule)
 
-    schedule = launcher.build_control_schedule(
-        expected_orchestration_head="a" * 40,
-        config_path=tmp_path / "screen_config.json",
-        authorization_path=tmp_path / "authorization.json",
-        cuda_bf16_inventory=_inventory(),
-        output_root=tmp_path / "fresh_controls",
-        runtime_manifest=tmp_path / "runtime.json",
-        log_root=tmp_path / "logs",
-    )
+    schedule = _schedule(tmp_path)
     schedule["jobs"][0]["run_id"] = "v4_full"
     with pytest.raises(Exception, match="six-control package|retrain"):
         scheduler.validate_schedule(schedule)
+
+
+def test_current_head_family_paths_and_v2_config_are_exact(tmp_path: Path) -> None:
+    head = "b" * 40
+    paths = launcher.control_family_paths(head)
+    assert paths["output_root"].name.endswith(head)
+    assert paths["runtime_root"].name == f"v403_control_recovery_runner_{head}"
+    assert paths["transition_gate"].parent.name == (
+        f"screen_seed_20260907_v403_cross_root_controls_{head}"
+    )
+    base = {
+        "required_screen_runs": [
+            {"run_id": run_id} for run_id in launcher.ALL_RUN_IDS
+        ],
+        "output_root": "old-output",
+        "screen_gate_output": "old-gate",
+        "scientific_field": "unchanged",
+    }
+    config = launcher.build_recovery_config(
+        base,
+        current_head=head,
+        output_root=tmp_path / "controls",
+        screen_gate_output=tmp_path / "gate.json",
+    )
+    assert config["runner_git_head"] == head
+    assert config["scientific_field"] == "unchanged"
+
+
+def test_authorization_consumes_exact_current_head_runner_receipt() -> None:
+    head = "c" * 40
+    receipt = _runner_receipt(head)
+    receipt_path = launcher.runner_verification_receipt_path(head)
+    authorization = launcher.build_launch_authorization(
+        {"git_head": "preflight-head"},
+        current_head=head,
+        historical_full_terminal_audit={
+            "status": "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"
+        },
+        historical_full_terminal_audit_path=launcher.FULL_TERMINAL_AUDIT,
+        runner_verification_receipt=receipt,
+        runner_verification_receipt_path=receipt_path,
+    )
+    assert authorization["authorized_git_head"] == head
+    assert authorization["runner_verification_receipt"]["path"] == str(
+        receipt_path
+    )
+    assert authorization["runner_verification_receipt"]["focused_tests"][
+        "group_passed_counts"
+    ] == receipt["focused_tests"]["group_passed_counts"]
+    assert authorization["v403_control_recovery"]["historical_full_git_head"] == (
+        launcher.HISTORICAL_FULL_GIT_HEAD
+    )
+    assert authorization["v403_control_recovery"]["current_git_head"] == head
+
+    wrong = _runner_receipt("d" * 40)
+    with pytest.raises(Exception, match="exact-HEAD clean PASS"):
+        launcher.validate_runner_verification_receipt(
+            wrong, current_head=head, receipt_path=receipt_path
+        )
 
 
 def test_launcher_and_scheduler_have_no_free_memory_launch_gate() -> None:
@@ -362,20 +486,35 @@ def test_controls_inventory_execution_failure_is_structured(
 def _patch_controls_prelaunch(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(launcher, "CONTROL_OUTPUT_ROOT", tmp_path / "controls")
-    monkeypatch.setattr(launcher, "RUNTIME_ROOT", tmp_path / "runner")
-    monkeypatch.setattr(launcher, "AUTHORIZATION_ROOT", tmp_path / "authorization")
-    monkeypatch.setattr(launcher, "LOG_ROOT", tmp_path / "logs")
-    monkeypatch.setattr(launcher, "TRANSITION_GATE", tmp_path / "gate/screen_gate.json")
+    monkeypatch.setattr(
+        launcher,
+        "control_family_paths",
+        lambda head: {
+            "output_root": tmp_path / "controls",
+            "runtime_root": tmp_path / "runner",
+            "authorization_root": tmp_path / "authorization",
+            "log_root": tmp_path / "logs",
+            "transition_gate": tmp_path / "gate/screen_gate.json",
+        },
+    )
+    monkeypatch.setattr(
+        launcher,
+        "validate_historical_full_terminal_audit",
+        lambda: {"status": "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"},
+    )
     monkeypatch.setattr(
         launcher,
         "validate_current_full_terminal",
-        lambda: {"summary": {"status": "TERMINAL"}},
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("canonical launch must not read historical full payload")
+        ),
     )
     monkeypatch.setattr(
         launcher,
         "validate_historical_c0_terminal",
-        lambda: {"status": "TERMINAL"},
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("canonical launch must not read historical C0 payload")
+        ),
     )
     monkeypatch.setattr(
         launcher,
@@ -480,3 +619,137 @@ def test_controls_existing_failure_evidence_requires_new_family(
     path.write_text("{}\n", encoding="utf-8")
     with pytest.raises(Exception, match="new retry family"):
         launcher.require_fresh_prelaunch_family(runtime_root)
+
+
+class _FakeProcess:
+    def __init__(self, *, pid: int, return_code: int) -> None:
+        self.pid = pid
+        self._return_code = return_code
+
+    def wait(self) -> int:
+        return self._return_code
+
+
+def _patch_scheduler_processes(
+    schedule: dict,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    first_return_code: int = 0,
+    double_terminal_first: bool = False,
+) -> list[str]:
+    outputs = {
+        job["run_id"]: Path(job["output_directory"])
+        for job in schedule["jobs"]
+    }
+    launched: list[str] = []
+
+    def popen(command, **kwargs):
+        run_id = command[command.index("--run-id") + 1]
+        launched.append(run_id)
+        _write_json(outputs[run_id] / "run_summary.json", {"run_id": run_id})
+        if double_terminal_first and len(launched) == 1:
+            _write_json(outputs[run_id] / "failure.json", {"run_id": run_id})
+        return _FakeProcess(
+            pid=1000 + len(launched),
+            return_code=first_return_code if len(launched) == 1 else 0,
+        )
+
+    monkeypatch.setattr(scheduler.subprocess, "Popen", popen)
+    monkeypatch.setattr(scheduler, "inspect_worktree_identity", lambda *a, **k: None)
+    return launched
+
+
+def test_scheduler_all_six_require_zero_return_and_unique_summary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    schedule = _schedule(tmp_path)
+    launched = _patch_scheduler_processes(schedule, monkeypatch)
+
+    scheduler.run(schedule)
+
+    runtime = json.loads((tmp_path / "runtime.json").read_text(encoding="utf-8"))
+    assert launched == list(launcher.CONTROL_RUN_IDS)
+    assert runtime["status"] == (
+        "XEDITCRITIC_V403_CONTROL_RECOVERY_ALL_SIX_SUMMARIES_TERMINAL"
+    )
+    assert runtime["first_terminal_failure"] is None
+    assert runtime["cross_root_adjudication_run"] is False
+    assert all(
+        row["status"] == "TERMINAL_SUMMARY"
+        and row["return_code"] == 0
+        and row["terminal_artifact_kind"] == "SUMMARY"
+        for row in runtime["jobs"].values()
+    )
+
+
+@pytest.mark.parametrize(
+    ("return_code", "double_terminal", "reason"),
+    [
+        (9, False, "JOB_NONZERO_RETURN_CODE"),
+        (0, True, "JOB_DOUBLE_TERMINAL_ARTIFACT"),
+    ],
+)
+def test_scheduler_summary_nonzero_or_double_terminal_is_technical_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    return_code: int,
+    double_terminal: bool,
+    reason: str,
+) -> None:
+    schedule = _schedule(tmp_path)
+    _patch_scheduler_processes(
+        schedule,
+        monkeypatch,
+        first_return_code=return_code,
+        double_terminal_first=double_terminal,
+    )
+
+    scheduler.run(schedule)
+
+    runtime = json.loads((tmp_path / "runtime.json").read_text(encoding="utf-8"))
+    first = launcher.CONTROL_RUN_IDS[0]
+    assert runtime["status"] == "XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE"
+    assert runtime["jobs"][first]["status"] == "TECHNICAL_FAILURE"
+    assert runtime["first_terminal_failure"]["run_id"] == first
+    assert runtime["first_terminal_failure"]["reason"] == reason
+    assert runtime["cross_root_adjudication_run"] is False
+
+
+def test_scheduler_worktree_drift_stops_later_popen_and_marks_pending(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    schedule = _schedule(tmp_path)
+    launched = _patch_scheduler_processes(schedule, monkeypatch)
+    inspections = {"count": 0}
+
+    def inspect(*args, **kwargs):
+        inspections["count"] += 1
+        if inspections["count"] == 1:
+            return None
+        return {
+            "reason": "WORKTREE_HEAD_MISMATCH",
+            "expected_git_head": "a" * 40,
+            "observed_git_head": "b" * 40,
+        }
+
+    monkeypatch.setattr(scheduler, "inspect_worktree_identity", inspect)
+
+    scheduler.run(schedule)
+
+    runtime = json.loads((tmp_path / "runtime.json").read_text(encoding="utf-8"))
+    assert launched == [launcher.CONTROL_RUN_IDS[0]]
+    assert runtime["first_terminal_failure"]["run_id"] == (
+        launcher.CONTROL_RUN_IDS[1]
+    )
+    assert runtime["first_terminal_failure"]["reason"] == "WORKTREE_HEAD_MISMATCH"
+    assert runtime["jobs"][launcher.CONTROL_RUN_IDS[0]]["status"] == (
+        "TERMINAL_SUMMARY"
+    )
+    assert runtime["jobs"][launcher.CONTROL_RUN_IDS[1]]["status"] == (
+        "TECHNICAL_FAILURE"
+    )
+    assert all(
+        runtime["jobs"][run_id]["status"]
+        == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+        for run_id in launcher.CONTROL_RUN_IDS[2:]
+    )

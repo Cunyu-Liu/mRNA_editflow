@@ -8,7 +8,10 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from core.route2_xeditflow_value_training_v4 import BASE_FLOW_SEEDS_V4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    validate_value_training_provenance_v4,
+)
 from scripts.route_a_v3.assemble_route2_xeditflow_final_seed_evidence_v4 import (
     METHODS_V4,
 )
@@ -51,6 +54,23 @@ def compose_final_comparison_manifest_v4(
         set(seed_rows) == set(BASE_FLOW_SEEDS_V4),
         "V4 final comparison seed-row inventory differs",
     )
+    expected_paths = config.get("expected_value_checkpoint_paths")
+    _require(
+        isinstance(expected_paths, Mapping)
+        and set(expected_paths) == {str(seed) for seed in BASE_FLOW_SEEDS_V4},
+        "V4 final value checkpoint inventory differs",
+    )
+    expected_paths = {str(seed): str(expected_paths[str(seed)]) for seed in BASE_FLOW_SEEDS_V4}
+    _require(
+        guidance_gate.get("selected_value_checkpoint_path")
+        == expected_paths["20260912"],
+        "V4 final screen value checkpoint differs from the frozen guidance gate",
+    )
+    guidance_provenance = validate_value_training_provenance_v4(
+        guidance_gate.get("selected_value_training_provenance", {}),
+        base_flow_training_seed=20260912,
+        value_checkpoint_path=expected_paths["20260912"],
+    )
     rows = []
     for seed in BASE_FLOW_SEEDS_V4:
         row = dict(seed_rows[seed])
@@ -72,6 +92,15 @@ def compose_final_comparison_manifest_v4(
             ),
             f"V4 final comparison seed row differs: {seed}",
         )
+        _require(
+            row.get("value_checkpoint_path") == expected_paths[str(seed)],
+            f"V4 final comparison value checkpoint path differs: {seed}",
+        )
+        row["value_training_provenance"] = validate_value_training_provenance_v4(
+            row.get("value_training_provenance", {}),
+            base_flow_training_seed=seed,
+            value_checkpoint_path=expected_paths[str(seed)],
+        )
         rows.append(row)
     _require(
         config.get("development_test_outcomes_accessed_after_atomic_test") is False
@@ -87,6 +116,9 @@ def compose_final_comparison_manifest_v4(
             float(guidance_gate["selected_temperature"]),
             float(guidance_gate["selected_beta_max"]),
         ],
+        "value_checkpoint_paths": expected_paths,
+        "guidance_screen_value_checkpoint_path": expected_paths["20260912"],
+        "guidance_screen_value_training_provenance": guidance_provenance,
         "seeds": rows,
         "additional_training_seed_authorized": False,
         "development_test_outcomes_accessed_after_atomic_test": False,

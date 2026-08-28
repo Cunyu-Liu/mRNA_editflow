@@ -47,8 +47,19 @@ def _config(tmp_path: Path) -> dict:
         "target_scaling_mode": "TRAIN_TASK_ROBUST",
         "candidate_control": "NONE",
         "seed": 17,
+        "parameter_initialization_seed": 17,
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "parameter_initialization_tensor_identity_scope": (
+            "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+        ),
         "physical_gpu_index": 6,
         "device": "cuda:6",
+        "cuda_available": True,
+        "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+        "a100_device_verified": True,
+        "bf16_supported": True,
+        "cpu_fallback_used": False,
+        "training_git_head": "a" * 40,
         "optimizer_name": "AdamW",
         "optimizer_fused": True,
         "training_precision": "FP32",
@@ -64,6 +75,9 @@ def _config(tmp_path: Path) -> dict:
         "expected_trainable_parameter_count": 9_000_000,
         "expected_frozen_pretrained_parameter_count": 113_000_000,
         "output_directory": str(tmp_path / "run"),
+        "training_summary_path": str(tmp_path / "run" / "run_summary.json"),
+        "checkpoint_path": str(tmp_path / "run" / "final_pass_8_checkpoint.pt"),
+        "training_attempt_path": str(tmp_path / "run" / "training_attempt.json"),
     }
 
 
@@ -119,6 +133,17 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert rows[0]["loss_aggregation_mode"] == "RECORD_WEIGHTED"
     assert rows[0]["generation_action_space"] == "SUB_PLUS_STOP"
     assert rows[0]["algorithmic_time_feature"] == "CONSUMED_EDIT_BUDGET_FRACTION"
+    assert rows[0]["parameter_initialization_seed"] == "17"
+    assert (
+        rows[0]["parameter_initialization_seed_applied_before_model_construction"]
+        == "True"
+    )
+    assert rows[0]["cuda_device_name"] == "NVIDIA A100-SXM4-80GB"
+    assert rows[0]["a100_device_verified"] == "True"
+    assert rows[0]["bf16_supported"] == "True"
+    assert rows[0]["cpu_fallback_used"] == "False"
+    assert rows[0]["training_git_head"] == "a" * 40
+    assert rows[0]["checkpoint_path"].endswith("final_pass_8_checkpoint.pt")
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"
 
 

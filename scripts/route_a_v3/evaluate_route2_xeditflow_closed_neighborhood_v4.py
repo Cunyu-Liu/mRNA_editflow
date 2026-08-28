@@ -288,7 +288,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             kappa=float(config["kappa"]),
             temperature=float(config["temperature"]),
             device=device,
-        )
+        )[0]
         if config["potential_kind"] == "SOFT_VALUE"
         else None
     )

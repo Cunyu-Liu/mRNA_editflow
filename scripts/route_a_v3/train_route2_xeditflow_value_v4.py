@@ -162,6 +162,29 @@ def _move(
     }
 
 
+def initialize_value_model_and_optimizer_v4(
+    *,
+    seed: int,
+    sizes: Mapping[str, int],
+    dropout: float,
+    device: torch.device,
+    learning_rate: float,
+    weight_decay: float,
+) -> tuple[XEditValueV4, torch.optim.Optimizer]:
+    """Seed before constructing either the value model or its optimizer."""
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    model = XEditValueV4(**dict(sizes), dropout=dropout).to(device)
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay,
+        fused=True,
+    )
+    return model, optimizer
+
+
 def train_value_v4(
     config: Mapping[str, Any], *, output_dir: Path
 ) -> dict[str, Any]:
@@ -188,28 +211,45 @@ def train_value_v4(
     physical_gpu = int(config["physical_gpu_index"])
     device = torch.device(str(config["device"]))
     torch.cuda.set_device(device)
-    _require(torch.cuda.is_bf16_supported(), "BF16 is unavailable on selected GPU")
+    bf16_supported = bool(torch.cuda.is_bf16_supported())
+    _require(bf16_supported, "BF16 is unavailable on selected GPU")
     cuda = cuda_device_observation(
         physical_gpu, require_physical_index_match=True
+    )
+    _require(
+        "A100" in str(cuda.get("cuda_device_name", "")),
+        "V4 value training requires an actual NVIDIA A100",
     )
     records = value_target_records_v4(target_payload)
     source_cache = SourceTokenCacheIndexV3(
         load_source_token_cache_v3(Path(config["source_token_cache_path"]))
     )
     seed = int(config["base_flow_training_seed"])
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    model = XEditValueV4(**sizes, dropout=float(config["dropout"])).to(device)
-    _require(next(model.parameters()).is_cuda, "V4 value parameters left CUDA")
-    optimizer = torch.optim.AdamW(
-        model.parameters(),
-        lr=float(config["learning_rate"]),
+    model, optimizer = initialize_value_model_and_optimizer_v4(
+        seed=seed,
+        sizes=sizes,
+        dropout=float(config["dropout"]),
+        device=device,
+        learning_rate=float(config["learning_rate"]),
         weight_decay=float(config["weight_decay"]),
-        fused=True,
     )
+    _require(next(model.parameters()).is_cuda, "V4 value parameters left CUDA")
     initial = model.scalar_head[-1].weight.detach().clone()
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir()
+    checkpoint_path = output_dir / "value_checkpoint.pt"
+    execution_provenance = {
+        "parameter_initialization_seed": seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "cuda_available": True,
+        "bf16_supported": bf16_supported,
+        "training_precision": "BF16",
+        "cpu_fallback_used": False,
+        "torch_device": str(device),
+        "physical_gpu_index": physical_gpu,
+        "value_checkpoint_path": str(checkpoint_path),
+        **cuda,
+    }
     (output_dir / "training_config.json").write_text(
         json.dumps(dict(config), indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -236,6 +276,7 @@ def train_value_v4(
         "optimizer_name": "AdamW",
         "optimizer_fused": True,
         "generation_action_space": "SUB+STOP",
+        **execution_provenance,
     }
     attempt_details = {
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -244,6 +285,7 @@ def train_value_v4(
         "critic_ensemble_size": 3,
         "trajectory_mode_count": 8,
         "trainable_parameter_count": model.trainable_parameter_count,
+        **execution_provenance,
         "development_test_outcomes_accessed_after_atomic_test": False,
         "new_final_evaluation_outcome_read_count": 0,
     }
@@ -337,15 +379,12 @@ def train_value_v4(
         "selected_pass": 8,
         "checkpoint_selection": "FINAL_PASS_8_NO_EPOCH_RESELECTION",
         "training_provenance": {
+            **execution_provenance,
             "optimizer_steps": optimizer_steps,
             "parameter_changed": True,
-            "cpu_fallback_used": False,
-            "torch_device": str(device),
-            "physical_gpu_index": physical_gpu,
-            **cuda,
         },
     }
-    torch.save(checkpoint, output_dir / "value_checkpoint.pt")
+    torch.save(checkpoint, checkpoint_path)
     result = {
         "schema_version": "route_a_v3_route2_xeditflow_value_training.v4",
         "status": "XEDITFLOW_V4_VALUE_TRAINING_COMPLETE",
@@ -361,12 +400,11 @@ def train_value_v4(
         "optimizer_steps": optimizer_steps,
         "trainable_parameter_count": model.trainable_parameter_count,
         "parameter_changed": True,
+        **execution_provenance,
         "final_train_huber": history[-1]["train_huber"],
         "history": history,
         "wall_time_seconds": time.time() - started,
         "peak_vram_mb": torch.cuda.max_memory_allocated(device) / 1024**2,
-        "training_precision": "BF16",
-        "cpu_fallback_used": False,
         "setflow_mode_is_fixed_trajectory_state": True,
         "independent_evaluator_used": False,
         "development_test_outcomes_accessed_after_atomic_test": False,

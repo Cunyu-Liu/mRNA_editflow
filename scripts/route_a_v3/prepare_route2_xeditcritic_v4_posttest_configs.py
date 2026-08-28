@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -115,6 +117,7 @@ def _runtime(
     train_count: int,
     validation_count: int,
     updates_per_pass: int,
+    runner_git_head: str,
     held_out_study: str | None = None,
     refit_manifest_path: str | None = None,
 ) -> dict[str, Any]:
@@ -134,6 +137,7 @@ def _runtime(
         "status": "FROZEN_POSTTEST_CONFIG_NOT_STARTED",
         "run_stage": stage,
         "training_seed": seed,
+        "posttest_runner_git_head": runner_git_head,
         "required_posttest_run_ids": run_ids,
         "posttest_protocol_path": str(
             REPO_ROOT
@@ -169,8 +173,15 @@ def _runtime(
 
 
 def prepare_refit_configs_v4(
-    protocol: Mapping[str, Any], base: Mapping[str, Any]
+    protocol: Mapping[str, Any],
+    base: Mapping[str, Any],
+    *,
+    runner_git_head: str,
 ) -> dict[str, Any]:
+    _require(
+        re.fullmatch(r"[0-9a-f]{40}", runner_git_head) is not None,
+        "Critic V4 posttest runner Git HEAD is invalid",
+    )
     require_v4_posttest_authority(protocol)
     records = _load_records(protocol)
     root = Path(protocol["all_development_refit"]["run_root"])
@@ -187,6 +198,7 @@ def prepare_refit_configs_v4(
             train_count=len(records),
             validation_count=0,
             updates_per_pass=updates,
+            runner_git_head=runner_git_head,
         )
         jobs.append(
             {
@@ -202,6 +214,7 @@ def prepare_refit_configs_v4(
         "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_job_manifest.v1",
         "status": "XEDITCRITIC_V4_REFIT_CONFIGS_PREPARED_NOT_STARTED",
         "required_seeds": list(CONFIRMATION_SEEDS_V4),
+        "runner_git_head": runner_git_head,
         "refit_pass_count": 8,
         "job_count": 3,
         "jobs": jobs,
@@ -215,7 +228,13 @@ def prepare_loso_configs_v4(
     protocol: Mapping[str, Any],
     base: Mapping[str, Any],
     refit: Mapping[str, Any],
+    *,
+    runner_git_head: str,
 ) -> dict[str, Any]:
+    _require(
+        re.fullmatch(r"[0-9a-f]{40}", runner_git_head) is not None,
+        "Critic V4 posttest runner Git HEAD is invalid",
+    )
     require_v4_posttest_authority(protocol)
     _require(
         refit.get("status") == "XEDITCRITIC_V4_ALL_DEVELOPMENT_REFIT_COMPLETE"
@@ -244,6 +263,7 @@ def prepare_loso_configs_v4(
                 train_count=len(train_records),
                 validation_count=study_counts[study],
                 updates_per_pass=updates,
+                runner_git_head=runner_git_head,
                 held_out_study=study,
                 refit_manifest_path=str(refit["manifest_path"]),
             )
@@ -264,6 +284,7 @@ def prepare_loso_configs_v4(
         "schema_version": "route_a_v3_route2_xeditcritic_v4_loso_job_manifest.v1",
         "status": "XEDITCRITIC_V4_LOSO_CONFIGS_PREPARED_NOT_STARTED",
         "required_seeds": list(CONFIRMATION_SEEDS_V4),
+        "runner_git_head": runner_git_head,
         "held_out_studies": list(LOSO_STUDIES_V4),
         "study_record_counts": dict(sorted(study_counts.items())),
         "refit_pass_count": 8,
@@ -316,14 +337,25 @@ def main() -> None:
     arguments = parser.parse_args()
     protocol = _read(arguments.protocol)
     base = _read(REPO_ROOT / protocol["screen_config"])
+    runner_git_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     if arguments.mode == "REFIT":
-        payload = prepare_refit_configs_v4(protocol, base)
+        payload = prepare_refit_configs_v4(
+            protocol, base, runner_git_head=runner_git_head
+        )
         output = Path(protocol["all_development_refit"]["runtime_config_root"])
     else:
         _require(arguments.refit_manifest is not None, "LOSO refit manifest is absent")
         refit = _read(arguments.refit_manifest)
         refit["manifest_path"] = str(arguments.refit_manifest)
-        payload = prepare_loso_configs_v4(protocol, base, refit)
+        payload = prepare_loso_configs_v4(
+            protocol, base, refit, runner_git_head=runner_git_head
+        )
         output = Path(protocol["test_preserving_loso"]["runtime_config_root"])
     write_manifest_v4(payload, output)
     print(json.dumps({key: value for key, value in payload.items() if key != "jobs"}, sort_keys=True))

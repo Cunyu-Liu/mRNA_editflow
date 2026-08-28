@@ -13,18 +13,19 @@ import subprocess
 from typing import Any, Mapping, Sequence
 
 
-TRAINING_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
-C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
-TRAINING_WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_v403_critic_rng_replay_20260827"
-)
+HISTORICAL_FULL_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
+HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 ORCHESTRATION_WORKTREE = Path(__file__).resolve().parents[2]
+TRAINING_WORKTREE = ORCHESTRATION_WORKTREE
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 BASE_CONFIG = (
     TRAINING_WORKTREE
     / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
+)
+FULL_TERMINAL_AUDIT = (
+    ORCHESTRATION_WORKTREE
+    / "audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json"
 )
 TRAINER = (
     TRAINING_WORKTREE
@@ -35,55 +36,21 @@ SCHEDULER = (
     / "scripts/route_a_v3/"
     "run_route2_xeditcritic_v403_control_recovery_scheduler.py"
 )
-PREFLIGHT = (
-    ROOT
-    / "experiments/xeditcritic_v4/screen_seed_20260907/"
-    "preflight_attempt_5/preflight.json"
-)
-SMOKE = (
-    ROOT
-    / "audits/xeditcritic_v4/"
-    f"v403_rng_replay_smoke_{TRAINING_GIT_HEAD}.json"
-)
+PREFLIGHT_RUNNER_GIT_HEAD = "107fa43d9990e4f72f989ca0cf417260bfb10de8"
 CURRENT_FULL_OUTPUT_ROOT = (
     ROOT
     / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_rng_replay_fix_{TRAINING_GIT_HEAD}"
+    f"screen_seed_20260907_v403_rng_replay_fix_{HISTORICAL_FULL_GIT_HEAD}"
 )
 CURRENT_FULL_RUNTIME = (
     ROOT
     / "experiments/xeditcritic_v4/"
-    f"v403_rng_replay_fix_runner_{TRAINING_GIT_HEAD}/runtime.json"
+    f"v403_rng_replay_fix_runner_{HISTORICAL_FULL_GIT_HEAD}/runtime.json"
 )
 HISTORICAL_C0_OUTPUT_ROOT = (
     ROOT
     / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v402_recovery_runner_{C0_GIT_HEAD}"
-)
-CONTROL_OUTPUT_ROOT = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_control_recovery_{TRAINING_GIT_HEAD}"
-)
-RUNTIME_ROOT = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"v403_control_recovery_runner_{TRAINING_GIT_HEAD}"
-)
-AUTHORIZATION_ROOT = (
-    ROOT
-    / "authorizations/xeditcritic_v4/"
-    f"v403_control_recovery_{TRAINING_GIT_HEAD}"
-)
-LOG_ROOT = (
-    ROOT
-    / "logs/xeditcritic_v4/"
-    f"v403_control_recovery_{TRAINING_GIT_HEAD}"
-)
-TRANSITION_GATE = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_cross_root_{TRAINING_GIT_HEAD}/screen_gate.json"
+    f"screen_seed_20260907_v402_recovery_runner_{HISTORICAL_C0_GIT_HEAD}"
 )
 
 ALL_RUN_IDS = (
@@ -140,6 +107,89 @@ FROZEN_FULL_SUMMARY_IDENTITY = {
     "effective_batch_size": 32,
     "physical_batch_size": 32,
 }
+RUNNER_VERIFICATION_RECEIPT_SCHEMA = (
+    "route_a_v3_route2_xedit_v403_successor_runner_verification_receipt.v1"
+)
+RUNNER_VERIFICATION_RECEIPT_PASS = (
+    "XEDIT_V403_SUCCESSOR_RUNNER_VERIFICATION_PASS"
+)
+FOCUSED_PROCESS_GROUP_COUNT = 8
+MIN_FOCUSED_TESTS = 203
+FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
+    (
+        "test_score_route2_xeditflow_closed_frozen_methods_v3.py",
+        "test_launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py",
+    ),
+    (
+        "test_transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py",
+        "test_route2_xeditcritic_v4_confirmation_runtime.py",
+    ),
+    (
+        "test_route2_xeditsetflow_s1.py",
+        "test_launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py",
+    ),
+    (
+        "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py",
+        "test_adjudicate_route2_xeditflow_guidance_screen_v4.py",
+    ),
+    (
+        "test_train_route2_xeditcritic_v4.py",
+        "test_run_route2_xeditcritic_v4_loso_scheduler.py",
+    ),
+    (
+        "test_run_route2_xedit_v4_confirmation_training_scheduler.py",
+        "test_run_route2_xedit_v4_confirmation_posttraining_scheduler.py",
+    ),
+    (
+        "test_launch_route2_xeditcritic_v403_controls_after_full.py",
+        "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py",
+        "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
+    ),
+    (
+        "test_xeditflow_v4_final_evidence_chain.py",
+        "test_export_route2_xeditflow_v4_terminal_training_ledger.py",
+    ),
+)
+V332_TEST_GLOB_MARKER = "*v332*.py"
+
+
+def control_family_paths(current_head: str) -> dict[str, Path]:
+    """Return the one-shot family roots bound to the new licensed HEAD."""
+
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
+        and current_head
+        not in {HISTORICAL_FULL_GIT_HEAD, HISTORICAL_C0_GIT_HEAD},
+        "control runner HEAD must be a new exact licensed HEAD",
+    )
+    return {
+        "output_root": (
+            ROOT
+            / "experiments/xeditcritic_v4/"
+            f"screen_seed_20260907_v403_control_recovery_{current_head}"
+        ),
+        "runtime_root": (
+            ROOT
+            / "experiments/xeditcritic_v4/"
+            f"v403_control_recovery_runner_{current_head}"
+        ),
+        "authorization_root": (
+            ROOT
+            / "authorizations/xeditcritic_v4/"
+            f"v403_control_recovery_{current_head}"
+        ),
+        "log_root": (
+            ROOT
+            / "logs/xeditcritic_v4/"
+            f"v403_control_recovery_{current_head}"
+        ),
+        "transition_gate": (
+            ROOT
+            / "experiments/xeditcritic_v4/"
+            f"screen_seed_20260907_v403_cross_root_controls_{current_head}/"
+            "screen_gate.json"
+        ),
+    }
 
 
 class XEditCriticV403ControlRecoveryLaunchError(RuntimeError):
@@ -195,6 +245,78 @@ def read_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(payload, dict), f"JSON artifact is not an object: {path}")
     return payload
+
+
+def runner_verification_receipt_path(current_head: str) -> Path:
+    return (
+        ROOT
+        / "audits/xedit_v4/"
+        f"v403_successor_runner_verification_{current_head}.json"
+    )
+
+
+def validate_runner_verification_receipt(
+    receipt: Mapping[str, Any], *, current_head: str, receipt_path: Path
+) -> None:
+    require(
+        receipt_path == runner_verification_receipt_path(current_head),
+        "control runner verification receipt path is not canonical",
+    )
+    require(
+        receipt.get("schema_version") == RUNNER_VERIFICATION_RECEIPT_SCHEMA
+        and receipt.get("status") == RUNNER_VERIFICATION_RECEIPT_PASS
+        and receipt.get("runner_git_head") == current_head
+        and receipt.get("worktree_clean") is True,
+        "control runner verification is not exact-HEAD clean PASS",
+    )
+    focused = receipt.get("focused_tests")
+    require(isinstance(focused, Mapping), "runner receipt lacks focused tests")
+    commands = focused.get("command")
+    group_counts = focused.get("group_passed_counts")
+    passed_count = focused.get("passed_count")
+    failed_count = focused.get("failed_count")
+    require(
+        focused.get("isolated_process_groups") is True
+        and isinstance(commands, list)
+        and len(commands) == FOCUSED_PROCESS_GROUP_COUNT
+        and all(isinstance(value, str) and value for value in commands)
+        and isinstance(group_counts, list)
+        and len(group_counts) == FOCUSED_PROCESS_GROUP_COUNT
+        and all(type(value) is int and value > 0 for value in group_counts)
+        and focused.get("passed") is True
+        and type(passed_count) is int
+        and passed_count >= MIN_FOCUSED_TESTS
+        and sum(group_counts) == passed_count
+        and type(failed_count) is int
+        and failed_count == 0,
+        "runner receipt focused cohort is failed or incomplete",
+    )
+    for group_index, required_markers in enumerate(
+        FOCUSED_GROUP_REQUIRED_TEST_MARKERS
+    ):
+        require(
+            all(
+                marker in commands[group_index]
+                for marker in required_markers
+            ),
+            "runner receipt focused group lacks required module coverage",
+        )
+    v332 = receipt.get("v332_tests")
+    require(isinstance(v332, Mapping), "runner receipt lacks V3.3.2 tests")
+    v332_command = v332.get("command")
+    require(
+        isinstance(v332_command, list)
+        and v332_command
+        and all(isinstance(value, str) and value for value in v332_command)
+        and any(V332_TEST_GLOB_MARKER in value for value in v332_command)
+        and v332.get("passed") is True
+        and type(v332.get("passed_count")) is int
+        and v332.get("passed_count") == 96
+        and type(v332.get("failed_count")) is int
+        and v332.get("failed_count") == 0,
+        "runner receipt V3.3.2 cohort is failed or incomplete",
+    )
+    require_zero_protected_reads(receipt, "control runner verification receipt")
 
 
 def write_atomic(path: Path, payload: Mapping[str, Any]) -> None:
@@ -359,7 +481,9 @@ def write_prelaunch_failure_evidence(
             "launcher": "controls",
             "failure_stage": failure_stage,
             "expected_head": expected_head,
-            "training_git_head": TRAINING_GIT_HEAD,
+            "training_git_head": expected_head,
+            "historical_full_git_head": HISTORICAL_FULL_GIT_HEAD,
+            "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
             **details,
             "error_type": type(error).__name__,
             "error": str(error),
@@ -368,6 +492,7 @@ def write_prelaunch_failure_evidence(
             "jobs_started": 0,
             "cpu_fallback_used": cpu_fallback_used,
             "free_memory_gate_applied": False,
+            "historical_terminal_payloads_read_before_cross_root": 0,
             "automatic_retry_attempted": False,
             "development_test_outcome_reads": 0,
             "new_final_evaluation_outcome_reads": 0,
@@ -394,6 +519,78 @@ def exact_terminal_kind(output_directory: Path) -> str | None:
     return "SUMMARY" if summary.exists() else "FAILURE"
 
 
+def validate_historical_full_terminal_audit(
+    path: Path = FULL_TERMINAL_AUDIT,
+) -> dict[str, Any]:
+    audit = read_json(path)
+    facts = audit.get("terminal_facts")
+    decision = audit.get("successor_decision")
+    boundary = audit.get("claim_boundary")
+    require(
+        audit.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v403_full_terminal.v1"
+        and audit.get("status")
+        == "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"
+        and audit.get("evidence_scope")
+        == "TERMINAL_FACTS_ALREADY_CONSUMED_BY_THE_LOW_FREQUENCY_HEARTBEAT_ONLY"
+        and audit.get("runtime_path") == str(CURRENT_FULL_RUNTIME)
+        and audit.get("output_root")
+        == str(CURRENT_FULL_OUTPUT_ROOT / "v4_full")
+        and audit.get("terminal_summary_path")
+        == str(CURRENT_FULL_OUTPUT_ROOT / "v4_full/run_summary.json"),
+        "tracked historical full terminal audit identity is invalid",
+    )
+    require(
+        isinstance(facts, Mapping)
+        and facts.get("runtime_status")
+        == "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL"
+        and facts.get("terminal_artifact_kind") == "SUMMARY"
+        and facts.get("run_id") == "v4_full"
+        and facts.get("seed") == FROZEN_FULL_SUMMARY_IDENTITY["seed"]
+        and facts.get("completed_passes")
+        == FROZEN_FULL_SUMMARY_IDENTITY["pass_count"]
+        and facts.get("selected_pass")
+        == FROZEN_FULL_SUMMARY_IDENTITY["selected_pass"]
+        and facts.get("optimizer_update_count")
+        == FROZEN_FULL_SUMMARY_IDENTITY["update_count"]
+        and facts.get("physical_batch_size")
+        == FROZEN_FULL_SUMMARY_IDENTITY["physical_batch_size"]
+        and facts.get("effective_batch_size")
+        == FROZEN_FULL_SUMMARY_IDENTITY["effective_batch_size"]
+        and facts.get("training_precision")
+        == "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE"
+        and type(facts.get("physical_gpu_index")) is int
+        and facts.get("physical_gpu_index") == 5
+        and facts.get("device_class") == "A100"
+        and facts.get("cuda_used") is True
+        and facts.get("cpu_fallback_used") is False
+        and facts.get("authorization_git_head") == HISTORICAL_FULL_GIT_HEAD
+        and int(facts.get("development_test_outcome_reads", -1)) == 0
+        and int(facts.get("new_final_evaluation_outcome_reads", -1)) == 0
+        and int(facts.get("protected_outcome_reads", -1)) == 0,
+        "tracked historical full terminal facts are invalid",
+    )
+    require(
+        isinstance(decision, Mapping)
+        and decision.get("controls_started") is False
+        and decision.get("controls_status") == "PAUSED_NOT_LAUNCHED"
+        and decision.get("reason")
+        == "CRITIC_CONTROLS_CANNOT_RESTORE_THE_ALREADY_FAILED_SETFLOW_DUAL_READINESS"
+        and decision.get("confirmation_or_posttest_authorized") is False
+        and decision.get("critic_terminal_summary_reinterpreted_as_final_science")
+        is False
+        and isinstance(boundary, Mapping)
+        and boundary.get("single_arm_terminal_summary_is_not_a_screen_pass")
+        is True
+        and boundary.get("single_arm_terminal_summary_is_not_final_scientific_evidence")
+        is True
+        and boundary.get("model_advantage_established") is False
+        and boundary.get("submission_ready") is False,
+        "tracked historical full claim boundary is invalid",
+    )
+    return audit
+
+
 def validate_current_full_terminal(
     output_root: Path | None = None,
     runtime_path: Path | None = None,
@@ -417,7 +614,7 @@ def validate_current_full_terminal(
         and runtime.get("terminal_artifact_kind") == "SUMMARY"
         and int(runtime.get("return_code", -1)) == 0
         and runtime.get("run_id") == "v4_full"
-        and runtime.get("git_head") == TRAINING_GIT_HEAD,
+        and runtime.get("git_head") == HISTORICAL_FULL_GIT_HEAD,
         "current V4.0.3 full runtime is not exact successful terminal",
     )
     require_zero_protected_reads(runtime, "current full runtime")
@@ -462,7 +659,7 @@ def validate_current_full_terminal(
         == "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
         and authorization.get("status")
         == "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED"
-        and authorization.get("authorized_git_head") == TRAINING_GIT_HEAD
+        and authorization.get("authorized_git_head") == HISTORICAL_FULL_GIT_HEAD
         and isinstance(authorized_run_ids, list)
         and "v4_full" in authorized_run_ids,
         "current full launch authorization identity is invalid",
@@ -516,8 +713,10 @@ def validate_historical_c0_terminal(
 
 def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]:
     require(
-        re.fullmatch(r"[0-9a-f]{40}", expected_orchestration_head) is not None,
-        "expected orchestration HEAD is invalid",
+        re.fullmatch(r"[0-9a-f]{40}", expected_orchestration_head) is not None
+        and expected_orchestration_head
+        not in {HISTORICAL_FULL_GIT_HEAD, HISTORICAL_C0_GIT_HEAD},
+        "expected control runner HEAD is not a new exact licensed HEAD",
     )
     require(
         PYTHON.is_file()
@@ -533,7 +732,10 @@ def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]
     training_head = command(
         ["git", "rev-parse", "HEAD"], cwd=TRAINING_WORKTREE
     ).stdout.strip()
-    require(training_head == TRAINING_GIT_HEAD, "training worktree HEAD changed")
+    require(
+        training_head == expected_orchestration_head,
+        "current control training worktree HEAD changed",
+    )
     require(
         not command(
             ["git", "status", "--porcelain"], cwd=TRAINING_WORKTREE
@@ -553,26 +755,20 @@ def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]
         ).stdout.strip(),
         "orchestration worktree is dirty",
     )
-    preflight = read_json(PREFLIGHT)
-    require(
-        preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS"
-        and preflight.get("passed") is True,
-        "frozen Critic preflight is not PASS",
+    receipt_path = runner_verification_receipt_path(
+        expected_orchestration_head
     )
-    require_zero_protected_reads(preflight, "frozen Critic preflight")
-    smoke = read_json(SMOKE)
-    require(
-        smoke.get("status")
-        == "XEDITCRITIC_V403_FULL_MODEL_RNG_REPLAY_SMOKE_PASS"
-        and smoke.get("git_head") == TRAINING_GIT_HEAD
-        and smoke.get("strict_replay_prediction_equal") is True
-        and smoke.get("retained_graph_prediction_equal_to_replay") is True
-        and smoke.get("retained_graph_parameter_gradients_equal_to_replay") is True
-        and smoke.get("retained_graph_rng_terminal_state_equal_to_replay") is True,
-        "exact f34 RNG replay smoke is absent or invalid",
+    receipt = read_json(receipt_path)
+    validate_runner_verification_receipt(
+        receipt,
+        current_head=expected_orchestration_head,
+        receipt_path=receipt_path,
     )
-    require_zero_protected_reads(smoke, "exact f34 RNG replay smoke")
-    return {"preflight": preflight, "smoke": smoke}
+    return {
+        "preflight": {"git_head": PREFLIGHT_RUNNER_GIT_HEAD},
+        "runner_verification_receipt": receipt,
+        "runner_verification_receipt_path": receipt_path,
+    }
 
 
 def cuda_bf16_probe_command(
@@ -621,15 +817,18 @@ def probe_cuda_bf16(
 
 def build_recovery_config(
     base: Mapping[str, Any],
-    output_root: Path = CONTROL_OUTPUT_ROOT,
-    screen_gate_output: Path = TRANSITION_GATE,
+    *,
+    current_head: str,
+    output_root: Path,
+    screen_gate_output: Path,
 ) -> dict[str, Any]:
     run_ids = tuple(str(row["run_id"]) for row in base["required_screen_runs"])
     require(run_ids == ALL_RUN_IDS, "frozen Critic eight-arm order changed")
     recovery = copy.deepcopy(dict(base))
+    recovery["runner_git_head"] = current_head
     recovery["output_root"] = str(output_root)
     recovery["screen_gate_output"] = str(screen_gate_output)
-    allowed = {"output_root", "screen_gate_output"}
+    allowed = {"runner_git_head", "output_root", "screen_gate_output"}
     require(
         {key: value for key, value in base.items() if key not in allowed}
         == {key: value for key, value in recovery.items() if key not in allowed},
@@ -641,38 +840,64 @@ def build_recovery_config(
 def build_launch_authorization(
     preflight: Mapping[str, Any],
     *,
-    expected_orchestration_head: str,
+    current_head: str,
+    historical_full_terminal_audit: Mapping[str, Any],
+    historical_full_terminal_audit_path: Path,
+    runner_verification_receipt: Mapping[str, Any],
+    runner_verification_receipt_path: Path,
 ) -> dict[str, Any]:
+    validate_runner_verification_receipt(
+        runner_verification_receipt,
+        current_head=current_head,
+        receipt_path=runner_verification_receipt_path,
+    )
     return {
         "schema_version": (
             "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
         ),
         "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
-        "authorized_git_head": TRAINING_GIT_HEAD,
+        "authorized_git_head": current_head,
         "preflight_runner_git_head": str(preflight["git_head"]),
+        "historical_full_terminal_audit": {
+            **dict(historical_full_terminal_audit),
+            "path": str(historical_full_terminal_audit_path),
+        },
+        "runner_verification_receipt": {
+            **dict(runner_verification_receipt),
+            "path": str(runner_verification_receipt_path),
+        },
         "authorized_run_ids": list(ALL_RUN_IDS),
         "barriers": {
             "all_five_c3_jobs_terminal": True,
             "c3_terminal_summaries_read_exactly_once": True,
-            "a100_current_head_focused_tests_passed": True,
-            "a100_current_head_v332_tests_passed": True,
+            "a100_current_head_focused_tests_passed": (
+                runner_verification_receipt["focused_tests"]["passed"]
+            ),
+            "a100_current_head_v332_tests_passed": (
+                runner_verification_receipt["v332_tests"]["passed"]
+            ),
             "bottom_six_cache_terminal_complete": True,
             "formal_parameter_preflight_passed": True,
             "formal_memory_preflight_passed": True,
             "cache_online_equivalence_passed": True,
         },
         "v403_control_recovery": {
-            "training_code_git_head": TRAINING_GIT_HEAD,
+            "historical_full_git_head": HISTORICAL_FULL_GIT_HEAD,
+            "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
+            "current_git_head": current_head,
+            "runner_git_head": current_head,
+            "training_code_git_head": current_head,
             "training_worktree": str(TRAINING_WORKTREE),
-            "orchestration_git_head": expected_orchestration_head,
+            "orchestration_git_head": current_head,
             "required_control_run_ids": list(CONTROL_RUN_IDS),
-            "current_full_exact_terminal_summary": True,
+            "historical_repaired_full_exact_terminal_summary": True,
             "historical_c0_exact_terminal_summary_reused": True,
             "full_retrained": False,
             "c0_retrained": False,
             "old_v402_stopped_process_resumed": False,
             "scientific_config_changed": False,
             "free_memory_gate_applied": False,
+            "historical_terminal_payloads_read_before_cross_root": 0,
         },
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
@@ -681,13 +906,15 @@ def build_launch_authorization(
 
 def build_control_schedule(
     *,
-    expected_orchestration_head: str,
+    current_head: str,
     config_path: Path,
     authorization_path: Path,
     cuda_bf16_inventory: Sequence[Mapping[str, Any]],
-    output_root: Path = CONTROL_OUTPUT_ROOT,
-    runtime_manifest: Path = RUNTIME_ROOT / "runtime.json",
-    log_root: Path = LOG_ROOT,
+    output_root: Path,
+    runtime_manifest: Path,
+    log_root: Path,
+    transition_gate: Path,
+    historical_full_terminal_audit_path: Path = FULL_TERMINAL_AUDIT,
 ) -> dict[str, Any]:
     gpu_indices = [
         int(row["physical_gpu_index"]) for row in cuda_bf16_inventory
@@ -703,7 +930,7 @@ def build_control_schedule(
         output_directory = output_root / run_id
         attempt_id = (
             "xeditcritic_v4_screen_seed20260907::"
-            f"{run_id}::v403_control_recovery_{TRAINING_GIT_HEAD}"
+            f"{run_id}::v403_control_recovery_{current_head}"
         )
         jobs.append(
             {
@@ -712,6 +939,7 @@ def build_control_schedule(
                 "output_directory": str(output_directory),
                 "log_path": str(log_root / f"{run_id}.log"),
                 "training_attempt_id": attempt_id,
+                "training_git_head": current_head,
                 "command": [
                     str(PYTHON),
                     str(TRAINER),
@@ -733,8 +961,12 @@ def build_control_schedule(
             "route_a_v3_route2_xeditcritic_v403_control_recovery_schedule.v1"
         ),
         "status": "XEDITCRITIC_V403_CONTROL_RECOVERY_SCHEDULED",
-        "orchestration_git_head": expected_orchestration_head,
-        "training_code_git_head": TRAINING_GIT_HEAD,
+        "historical_full_git_head": HISTORICAL_FULL_GIT_HEAD,
+        "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
+        "current_git_head": current_head,
+        "runner_git_head": current_head,
+        "orchestration_git_head": current_head,
+        "training_code_git_head": current_head,
         "training_worktree": str(TRAINING_WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "screen_config": str(config_path),
@@ -745,6 +977,10 @@ def build_control_schedule(
         "historical_c0_summary": str(
             HISTORICAL_C0_OUTPUT_ROOT / "c0_v4/run_summary.json"
         ),
+        "historical_full_terminal_audit": str(
+            historical_full_terminal_audit_path
+        ),
+        "cross_root_gate": str(transition_gate),
         "cuda_bf16_inventory": [dict(row) for row in cuda_bf16_inventory],
         "jobs": jobs,
         "full_retrained": False,
@@ -752,24 +988,30 @@ def build_control_schedule(
         "old_v402_stopped_process_resumed": False,
         "free_memory_gate_applied": False,
         "terminal_artifact_payloads_read_by_scheduler": 0,
+        "historical_terminal_payloads_read_before_cross_root": 0,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
 
 
 def launch(expected_orchestration_head: str) -> dict[str, Any]:
-    # This is intentionally first: a running/failed full causes no writes, probe,
-    # worker creation, or control process creation.
-    full = validate_current_full_terminal()
-    c0 = validate_historical_c0_terminal()
+    # Consume only the tracked heartbeat audit. Historical runtime and summary
+    # payloads remain closed until the cross-root transition.
+    full_terminal_audit = validate_historical_full_terminal_audit()
+    paths = control_family_paths(expected_orchestration_head)
+    output_root = paths["output_root"]
+    runtime_root = paths["runtime_root"]
+    authorization_root = paths["authorization_root"]
+    log_root = paths["log_root"]
+    transition_gate = paths["transition_gate"]
     for path, label in (
-        (CONTROL_OUTPUT_ROOT, "control output root"),
-        (RUNTIME_ROOT, "control runtime root"),
-        (AUTHORIZATION_ROOT, "control authorization root"),
-        (TRANSITION_GATE.parent, "cross-root gate root"),
+        (output_root, "control output root"),
+        (runtime_root, "control runtime root"),
+        (authorization_root, "control authorization root"),
+        (transition_gate.parent, "cross-root gate root"),
     ):
         require(not path.exists(), f"{label} already exists")
-    prelaunch_failure_path = require_fresh_prelaunch_family(RUNTIME_ROOT)
+    prelaunch_failure_path = require_fresh_prelaunch_family(runtime_root)
     source = validate_training_source(expected_orchestration_head)
     try:
         physical_gpu_inventory()
@@ -778,7 +1020,7 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
             prelaunch_failure_path,
             expected_head=expected_orchestration_head,
             failure_stage="INVENTORY",
-            runtime_root=RUNTIME_ROOT,
+            runtime_root=runtime_root,
             command_line=GPU_INVENTORY_COMMAND,
             error=error,
         )
@@ -791,36 +1033,51 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
             prelaunch_failure_path,
             expected_head=expected_orchestration_head,
             failure_stage="CUDA_BF16_PROBE",
-            runtime_root=RUNTIME_ROOT,
+            runtime_root=runtime_root,
             command_line=probe_command,
             error=error,
         )
         raise
-    config = build_recovery_config(read_json(BASE_CONFIG))
+    config = build_recovery_config(
+        read_json(BASE_CONFIG),
+        current_head=expected_orchestration_head,
+        output_root=output_root,
+        screen_gate_output=transition_gate,
+    )
     authorization = build_launch_authorization(
         source["preflight"],
-        expected_orchestration_head=expected_orchestration_head,
+        current_head=expected_orchestration_head,
+        historical_full_terminal_audit=full_terminal_audit,
+        historical_full_terminal_audit_path=FULL_TERMINAL_AUDIT,
+        runner_verification_receipt=source["runner_verification_receipt"],
+        runner_verification_receipt_path=source[
+            "runner_verification_receipt_path"
+        ],
     )
 
-    AUTHORIZATION_ROOT.mkdir(parents=True)
-    RUNTIME_ROOT.mkdir(parents=True)
-    LOG_ROOT.mkdir(parents=True)
-    config_path = AUTHORIZATION_ROOT / "screen_config.json"
-    authorization_path = AUTHORIZATION_ROOT / "launch_authorization.json"
-    schedule_path = RUNTIME_ROOT / "schedule.json"
-    runtime_path = RUNTIME_ROOT / "runtime.json"
+    authorization_root.mkdir(parents=True)
+    runtime_root.mkdir(parents=True)
+    log_root.mkdir(parents=True)
+    config_path = authorization_root / "screen_config.json"
+    authorization_path = authorization_root / "launch_authorization.json"
+    schedule_path = runtime_root / "schedule.json"
+    runtime_path = runtime_root / "runtime.json"
     write_atomic(config_path, config)
     write_atomic(authorization_path, authorization)
     schedule = build_control_schedule(
-        expected_orchestration_head=expected_orchestration_head,
+        current_head=expected_orchestration_head,
         config_path=config_path,
         authorization_path=authorization_path,
         cuda_bf16_inventory=inventory,
+        output_root=output_root,
         runtime_manifest=runtime_path,
+        log_root=log_root,
+        transition_gate=transition_gate,
+        historical_full_terminal_audit_path=FULL_TERMINAL_AUDIT,
     )
     write_atomic(schedule_path, schedule)
 
-    worker_log = (LOG_ROOT / "scheduler.log").open("w", encoding="utf-8")
+    worker_log = (log_root / "scheduler.log").open("w", encoding="utf-8")
     process = subprocess.Popen(
         [str(PYTHON), str(SCHEDULER), "--schedule", str(schedule_path)],
         cwd=ORCHESTRATION_WORKTREE,
@@ -835,14 +1092,20 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
             "route_a_v3_route2_xeditcritic_v403_control_recovery_launch.v1"
         ),
         "status": "XEDITCRITIC_V403_CONTROL_RECOVERY_LAUNCHED",
+        "historical_full_git_head": HISTORICAL_FULL_GIT_HEAD,
+        "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
+        "current_git_head": expected_orchestration_head,
+        "runner_git_head": expected_orchestration_head,
         "orchestration_git_head": expected_orchestration_head,
-        "training_code_git_head": TRAINING_GIT_HEAD,
+        "training_code_git_head": expected_orchestration_head,
         "scheduler_pid": process.pid,
         "required_control_run_ids": list(CONTROL_RUN_IDS),
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_path),
-        "current_full_terminal_status": full["summary"]["status"],
-        "historical_c0_terminal_status": c0["status"],
+        "historical_full_terminal_audit_path": str(FULL_TERMINAL_AUDIT),
+        "historical_full_terminal_audit_status": full_terminal_audit["status"],
+        "historical_c0_terminal_payload_read": False,
+        "historical_terminal_payloads_read_before_cross_root": 0,
         "full_retrained": False,
         "c0_retrained": False,
         "old_v402_stopped_process_resumed": False,
@@ -850,7 +1113,7 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
     }
-    write_atomic(RUNTIME_ROOT / "launch.json", result)
+    write_atomic(runtime_root / "launch.json", result)
     return result
 
 

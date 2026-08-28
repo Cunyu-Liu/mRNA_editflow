@@ -41,6 +41,40 @@ def run_logged(command: list[str], *, cwd: Path, log: Path) -> int:
         return process.wait()
 
 
+def inspect_worktree_identity(worktree: Path, expected_head: str) -> dict[str, Any] | None:
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=worktree,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    porcelain = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=worktree,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    observed_head = head.stdout.strip() if head.returncode == 0 else None
+    dirty = porcelain.stdout.splitlines() if porcelain.returncode == 0 else None
+    if (
+        head.returncode == 0
+        and porcelain.returncode == 0
+        and observed_head == expected_head
+        and dirty == []
+    ):
+        return None
+    return {
+        "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+        "expected_git_head": expected_head,
+        "observed_git_head": observed_head,
+        "head_return_code": int(head.returncode),
+        "porcelain_return_code": int(porcelain.returncode),
+        "porcelain_lines": dirty,
+    }
+
+
 def close_missing_job(job: dict[str, Any], *, return_code: int) -> str | None:
     terminal = exact_terminal(job["summary_path"], job["failure_path"])
     if terminal is not None:
@@ -134,6 +168,45 @@ def run(schedule: dict[str, Any]) -> None:
                         )
                     publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
                     return
+                identity_failure = inspect_worktree_identity(
+                    worktree, str(schedule["git_head"])
+                )
+                if identity_failure is not None:
+                    states[key].update(
+                        {
+                            "status": "TECHNICAL_FAILURE",
+                            "return_code": None,
+                            "terminal_artifact_kind": exact_terminal(
+                                job["summary_path"], job["failure_path"]
+                            ),
+                            "finished_unix_seconds": time.time(),
+                            **identity_failure,
+                        }
+                    )
+                    if not first_terminal_failure:
+                        first_terminal_failure.update(
+                            {
+                                "job_key": key,
+                                "seed": int(job["seed"]),
+                                "held_out_study": job["held_out_study"],
+                                "run_id": job["run_id"],
+                                "summary_path": job["summary_path"],
+                                "failure_path": job["failure_path"],
+                                "log_path": job["log_path"],
+                                **identity_failure,
+                            }
+                        )
+                    terminal_failure.set()
+                    for skipped in jobs[index + 1 :]:
+                        states[str(skipped["job_key"])].update(
+                            {
+                                "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                                "terminal_artifact_kind": None,
+                                "stop_reason": "EARLIER_LOSO_JOB_TECHNICAL_FAILURE",
+                            }
+                        )
+                    publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
+                    return
                 states[key].update(
                     {"status": "RUNNING", "started_unix_seconds": time.time()}
                 )
@@ -143,11 +216,8 @@ def run(schedule: dict[str, Any]) -> None:
             )
             terminal = close_missing_job(job, return_code=return_code)
             with lock:
-                status = (
-                    "TERMINAL_COMPLETE"
-                    if terminal is not None
-                    else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
-                )
+                succeeded = terminal == "SUMMARY" and return_code == 0
+                status = "TERMINAL_COMPLETE" if succeeded else "TECHNICAL_FAILURE"
                 states[key].update(
                     {
                         "status": status,
@@ -156,7 +226,7 @@ def run(schedule: dict[str, Any]) -> None:
                         "finished_unix_seconds": time.time(),
                     }
                 )
-                if terminal != "SUMMARY":
+                if not succeeded:
                     if not first_terminal_failure:
                         first_terminal_failure.update(
                             {
@@ -166,6 +236,11 @@ def run(schedule: dict[str, Any]) -> None:
                                 "run_id": job["run_id"],
                                 "return_code": int(return_code),
                                 "terminal_artifact_kind": terminal,
+                                "failure_reason": (
+                                    "NONZERO_RETURN_CODE_WITH_SUMMARY"
+                                    if terminal == "SUMMARY" and return_code != 0
+                                    else "NO_UNIQUE_SUCCESS_SUMMARY"
+                                ),
                                 "summary_path": job["summary_path"],
                                 "failure_path": job["failure_path"],
                                 "log_path": job["log_path"],
@@ -233,9 +308,10 @@ def run(schedule: dict[str, Any]) -> None:
             },
         )
     terminal = exact_terminal(str(summary), str(failure))
+    adjudication_succeeded = terminal == "SUMMARY" and return_code == 0
     adjudication.update(
         {
-            "status": "TERMINAL_COMPLETE" if terminal is not None else "TECHNICAL_FAILURE",
+            "status": "TERMINAL_COMPLETE" if adjudication_succeeded else "TECHNICAL_FAILURE",
             "return_code": int(return_code),
             "terminal_artifact_kind": terminal,
             "finished_unix_seconds": time.time(),
@@ -243,7 +319,7 @@ def run(schedule: dict[str, Any]) -> None:
     )
     publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
 
-    if terminal == "SUMMARY":
+    if adjudication_succeeded:
         spec = schedule["readiness"]
         readiness["status"] = "RUNNING"
         publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
@@ -266,16 +342,15 @@ def run(schedule: dict[str, Any]) -> None:
         readiness_terminal = exact_terminal(str(summary), str(failure))
         readiness_status = None
         guidance_authorized = False
-        if readiness_terminal == "SUMMARY":
+        readiness_succeeded = readiness_terminal == "SUMMARY" and return_code == 0
+        if readiness_succeeded:
             payload = json.loads(summary.read_text(encoding="utf-8"))
             readiness_status = payload.get("status")
             guidance_authorized = payload.get("guidance_authorized") is True
         readiness.update(
             {
                 "status": (
-                    "TERMINAL_COMPLETE"
-                    if readiness_terminal is not None
-                    else "TECHNICAL_FAILURE"
+                    "TERMINAL_COMPLETE" if readiness_succeeded else "TECHNICAL_FAILURE"
                 ),
                 "return_code": int(return_code),
                 "terminal_artifact_kind": readiness_terminal,
@@ -293,6 +368,38 @@ def run(schedule: dict[str, Any]) -> None:
             }
         )
 
+    if not adjudication_succeeded or not readiness.get("status") == "TERMINAL_COMPLETE":
+        failure_stage = (
+            "LOSO_ADJUDICATION" if not adjudication_succeeded else "READINESS"
+        )
+        failed_row = adjudication if not adjudication_succeeded else readiness
+        if not first_terminal_failure:
+            first_terminal_failure.update(
+                {
+                    "job_key": failure_stage,
+                    "failure_reason": (
+                        "NONZERO_RETURN_CODE_WITH_SUMMARY"
+                        if failed_row.get("terminal_artifact_kind") == "SUMMARY"
+                        and int(failed_row.get("return_code", 0)) != 0
+                        else "NO_UNIQUE_SUCCESS_SUMMARY"
+                    ),
+                    "return_code": failed_row.get("return_code"),
+                    "terminal_artifact_kind": failed_row.get(
+                        "terminal_artifact_kind"
+                    ),
+                }
+            )
+        if not adjudication_succeeded:
+            readiness.update(
+                {
+                    "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                    "terminal_artifact_kind": None,
+                    "guidance_authorized": False,
+                }
+            )
+        publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+        return
+
     exact_jobs = all(
         row.get("terminal_artifact_kind") in {"SUMMARY", "FAILURE"}
         for row in states.values()
@@ -301,8 +408,7 @@ def run(schedule: dict[str, Any]) -> None:
         "CRITIC_V4_READY_FOR_GUIDANCE"
         if exact_jobs and readiness.get("guidance_authorized") is True
         else "CRITIC_V4_NOT_READY_FOR_GUIDANCE"
-        if exact_jobs
-        and readiness.get("terminal_artifact_kind") in {"SUMMARY", "FAILURE"}
+        if exact_jobs and readiness.get("terminal_artifact_kind") == "SUMMARY"
         else "XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE"
     )
 

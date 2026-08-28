@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -24,7 +26,13 @@ def build_critic_confirmation_configs_v4(
     base: Mapping[str, Any],
     protocol: Mapping[str, Any],
     screen_gate: Mapping[str, Any],
+    *,
+    confirmation_runner_git_head: str,
 ) -> list[dict[str, Any]]:
+    _require(
+        re.fullmatch(r"[0-9a-f]{40}", confirmation_runner_git_head) is not None,
+        "Critic V4 confirmation runner Git HEAD is invalid",
+    )
     _require(
         base.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_screen_config.v1",
@@ -73,6 +81,7 @@ def build_critic_confirmation_configs_v4(
                 "status": "FROZEN_CONFIRMATION_CONFIG_NOT_STARTED",
                 "run_stage": "CONFIRMATION",
                 "training_seed": seed,
+                "confirmation_runner_git_head": confirmation_runner_git_head,
                 "required_confirmation_run_ids": ["v4_full", "c0_v4"],
                 "bootstrap_seed": int(
                     protocol["bootstrap_seed_by_training_seed"][str(seed)]
@@ -95,6 +104,16 @@ def materialize_critic_confirmation_configs_v4(
     configs: list[dict[str, Any]],
     protocol: Mapping[str, Any],
 ) -> dict[str, Any]:
+    runner_heads = {
+        str(config.get("confirmation_runner_git_head", ""))
+        for config in configs
+    }
+    _require(
+        len(runner_heads) == 1
+        and re.fullmatch(r"[0-9a-f]{40}", next(iter(runner_heads)))
+        is not None,
+        "Critic V4 confirmation config runner heads differ",
+    )
     config_root = Path(str(protocol["runtime_config_root"]))
     run_root = Path(str(protocol["run_root"]))
     staging = config_root.with_name(config_root.name + ".partial")
@@ -114,6 +133,7 @@ def materialize_critic_confirmation_configs_v4(
         "status": "THREE_MATCHED_CONFIRMATION_CONFIGS_PREPARED_NOT_STARTED",
         "required_run_ids": ["v4_full", "c0_v4"],
         "required_seeds": [config["training_seed"] for config in configs],
+        "confirmation_runner_git_head": next(iter(runner_heads)),
         "config_paths": paths,
         "development_test_authorized": False,
         "guidance_authorized": False,
@@ -136,7 +156,19 @@ def main() -> None:
     base = json.loads(arguments.base_config.read_text(encoding="utf-8"))
     protocol = json.loads(arguments.protocol.read_text(encoding="utf-8"))
     screen_gate = json.loads(arguments.screen_gate.read_text(encoding="utf-8"))
-    configs = build_critic_confirmation_configs_v4(base, protocol, screen_gate)
+    runner_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    configs = build_critic_confirmation_configs_v4(
+        base,
+        protocol,
+        screen_gate,
+        confirmation_runner_git_head=runner_head,
+    )
     manifest = materialize_critic_confirmation_configs_v4(configs, protocol)
     print(json.dumps(manifest, indent=2, sort_keys=True))
 

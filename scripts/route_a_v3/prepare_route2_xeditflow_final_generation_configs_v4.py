@@ -20,6 +20,7 @@ from core.route2_xeditflow_gate_v4 import (
 from core.route2_xeditflow_value_training_v4 import (
     BASE_FLOW_SEEDS_V4,
     CRITIC_SEEDS_V4,
+    validate_value_training_provenance_v4,
 )
 from core.route2_xeditsetflow_training_v4 import (
     EXPECTED_VALIDATION_SOURCE_RECORD_COUNT_V4,
@@ -375,6 +376,16 @@ def build_final_generation_configs_v4(
         / "value_models"
         / value_id
         / "value_checkpoint.pt"
+    )
+    _require(
+        guidance_gate.get("selected_value_checkpoint_path")
+        == str(screen_value_checkpoint),
+        "V4 final screen value checkpoint path differs from the frozen gate",
+    )
+    validate_value_training_provenance_v4(
+        guidance_gate.get("selected_value_training_provenance", {}),
+        base_flow_training_seed=20260912,
+        value_checkpoint_path=str(screen_value_checkpoint),
     )
     screen_gate_path = Path(frozen_screen_gate_path)
     strongest_timing_root = (
@@ -951,6 +962,7 @@ def build_final_generation_configs_v4(
             "schema_version": "route_a_v3_route2_xeditflow_final_seed_evidence_config.v4",
             "base_flow_training_seed": seed,
             "selected_combination": [kappa, temperature, beta_max],
+            "value_checkpoint_path": str(value_checkpoint),
             "methods": method_evidence_paths,
             "equal_wall_time_sensitivity_path": str(equal_wall_output),
             "full_independent_evaluator_path": str(
@@ -1012,6 +1024,10 @@ def build_final_generation_configs_v4(
     final_comparison_compose_config = {
         "schema_version": "route_a_v3_route2_xeditflow_final_comparison_compose_config.v4",
         "guidance_screen_gate_path": str(screen_gate_path),
+        "expected_value_checkpoint_paths": {
+            str(job["base_flow_training_seed"]): job["value_checkpoint_path"]
+            for job in seed_jobs
+        },
         "seed_manifest_row_paths": {
             str(seed): str(
                 output_root
@@ -1032,6 +1048,10 @@ def build_final_generation_configs_v4(
         "selected_combination": [kappa, temperature, beta_max],
         "screen_value_seed": 20260912,
         "screen_value_checkpoint_path": str(screen_value_checkpoint),
+        "value_checkpoint_paths": {
+            str(job["base_flow_training_seed"]): job["value_checkpoint_path"]
+            for job in seed_jobs
+        },
         "non_screen_value_training_seeds": [20260913, 20260914],
         "decoder_seed_base": 20261001,
         "same_decoder_seed_streams_across_methods_and_seeds": True,

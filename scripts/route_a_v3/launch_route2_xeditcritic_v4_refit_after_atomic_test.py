@@ -221,7 +221,13 @@ def refit_decision(
     return "LAUNCH_EXACT_THREE_REFITS"
 
 
-def validate_refit_manifest(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+def validate_refit_manifest(
+    payload: Mapping[str, Any], *, expected_head: str
+) -> list[dict[str, Any]]:
+    require(
+        payload.get("runner_git_head") == expected_head,
+        "Critic V4 refit manifest runner Git HEAD changed",
+    )
     require(
         payload.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_refit_job_manifest.v1"
@@ -318,7 +324,9 @@ def run(head: str) -> dict[str, Any]:
     trainer = WORKTREE / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
     command([str(PYTHON), str(prepare), "--protocol", str(protocol), "--mode", "REFIT"])
     manifest_path = config_root / "manifest.json"
-    jobs = validate_refit_manifest(read_json(manifest_path))
+    jobs = validate_refit_manifest(
+        read_json(manifest_path), expected_head=head
+    )
     command([str(PYTHON), str(authorize), "--protocol", str(protocol), "--stage", "REFIT"])
     authorization = Path(protocol_payload["all_development_refit"]["authorization_output"])
     authorized = read_json(authorization)

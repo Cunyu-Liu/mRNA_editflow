@@ -71,6 +71,15 @@ CRITIC_TRAINER = "train_route2_xeditcritic_v4.py"
 SETFLOW_TRAINER = "train_route2_xeditsetflow_v4.py"
 VALUE_TRAINER = "train_route2_xeditflow_value_v4.py"
 
+HISTORICAL_CRITIC_V402_C0_HEAD = (
+    "93703adec7a4c76b4466d3aaae8684620bee985a"
+)
+HISTORICAL_CRITIC_V403_FULL_HEAD = (
+    "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
+)
+CRITIC_TERMINAL_EVIDENCE_V1 = "v1"
+CRITIC_TERMINAL_EVIDENCE_V2 = "v2"
+
 CRITIC_SCREEN_RUN_IDS = (
     "c0_v4",
     "v4_full",
@@ -257,6 +266,7 @@ def _validate_schedule_and_training_jobs(
         job_key: str | None = None,
         historical_free_memory_gate_applied: bool = False,
         historical_free_memory_gate_policy: str | None = None,
+        critic_terminal_evidence_version: str | None = None,
     ) -> dict[str, Any]:
         key = job_key if job_key is not None else job.get("job_key")
         command = job.get("command")
@@ -308,6 +318,26 @@ def _validate_schedule_and_training_jobs(
                 expected_attempt_id == job.get("training_attempt_id"),
                 f"schedule and command training_attempt_id differ for {key}",
             )
+        if family.startswith("critic_"):
+            _require(
+                critic_terminal_evidence_version
+                in {
+                    CRITIC_TERMINAL_EVIDENCE_V1,
+                    CRITIC_TERMINAL_EVIDENCE_V2,
+                },
+                f"Critic terminal-evidence version is absent for {key}",
+            )
+            run_id = job.get("run_id")
+            _require(
+                isinstance(run_id, str) and bool(run_id),
+                f"Critic schedule run_id is invalid for {key}",
+            )
+        else:
+            _require(
+                critic_terminal_evidence_version is None,
+                f"non-Critic job declares Critic terminal evidence for {key}",
+            )
+            run_id = job.get("run_id")
         return {
             "family": family,
             "job_key": key,
@@ -322,6 +352,10 @@ def _validate_schedule_and_training_jobs(
             "failure_path": failure_path,
             "log_path": log_path,
             "expected_attempt_id": expected_attempt_id,
+            "run_id": run_id,
+            "critic_terminal_evidence_version": (
+                critic_terminal_evidence_version
+            ),
             "historical_free_memory_gate_applied": (
                 historical_free_memory_gate_applied
             ),
@@ -410,7 +444,8 @@ def _validate_schedule_and_training_jobs(
     elif schema == CRITIC_V402_RECOVERY_SCHEDULE_SCHEMA:
         head = _head(schedule.get("git_head"), "V4.0.2 recovery git_head")
         _require(
-            schedule.get("status") == "FROZEN_V402_RECOVERY_SCHEDULE",
+            head == HISTORICAL_CRITIC_V402_C0_HEAD
+            and schedule.get("status") == "FROZEN_V402_RECOVERY_SCHEDULE",
             "V4.0.2 recovery schedule is not frozen",
         )
         _require(
@@ -449,6 +484,11 @@ def _validate_schedule_and_training_jobs(
             "V4.0.2 recovery is not the exact ordered eight-arm package",
         )
         c0 = jobs[0]
+        _require(
+            c0.get("run_id") == "c0_v4"
+            and c0.get("job_key") == "critic:c0_v4",
+            "historical V4.0.2 C0 evidence identity differs",
+        )
         output = _path(c0.get("output_directory"), "V4.0.2 C0 output_directory")
         families["critic_screen"] = [
             normalized(
@@ -464,12 +504,16 @@ def _validate_schedule_and_training_jobs(
                 historical_free_memory_gate_policy=(
                     "TRAIN_ONLY_SMOKE_PEAK_PLUS_2_GIB"
                 ),
+                critic_terminal_evidence_version=(
+                    CRITIC_TERMINAL_EVIDENCE_V1
+                ),
             )
         ]
     elif schema == CRITIC_V403_FULL_RECOVERY_SCHEDULE_SCHEMA:
         head = _head(schedule.get("git_head"), "V4.0.3 full recovery git_head")
         _require(
-            schedule.get("status")
+            head == HISTORICAL_CRITIC_V403_FULL_HEAD
+            and schedule.get("status")
             == "XEDITCRITIC_V403_FULL_RECOVERY_SCHEDULED"
             and schedule.get("run_id") == "v4_full",
             "V4.0.3 full recovery schedule identity differs",
@@ -501,6 +545,9 @@ def _validate_schedule_and_training_jobs(
                 output_directory=output,
                 failure_path=output / "failure.json",
                 training_git_head=head,
+                critic_terminal_evidence_version=(
+                    CRITIC_TERMINAL_EVIDENCE_V1
+                ),
             )
         ]
     elif schema == CRITIC_V403_CONTROL_RECOVERY_SCHEDULE_SCHEMA:
@@ -575,6 +622,9 @@ def _validate_schedule_and_training_jobs(
                     failure_path=output / "failure.json",
                     training_git_head=training_head,
                     job_key=f"critic:{run_id}",
+                    critic_terminal_evidence_version=(
+                        CRITIC_TERMINAL_EVIDENCE_V2
+                    ),
                 )
             )
     elif schema == CONFIRMATION_SCHEDULE_SCHEMA:
@@ -605,6 +655,9 @@ def _validate_schedule_and_training_jobs(
                     output_directory=output,
                     failure_path=output / "failure.json",
                     training_git_head=head,
+                    critic_terminal_evidence_version=(
+                        CRITIC_TERMINAL_EVIDENCE_V2
+                    ),
                 )
             )
     elif schema == SETFLOW_V403_RECOVERED_CONFIRMATION_SCHEDULE_SCHEMA:
@@ -716,6 +769,9 @@ def _validate_schedule_and_training_jobs(
                         job.get("failure_path"), f"{family} failure_path"
                     ),
                     training_git_head=head,
+                    critic_terminal_evidence_version=(
+                        CRITIC_TERMINAL_EVIDENCE_V2
+                    ),
                 )
             )
     elif schema == GUIDANCE_SCHEDULE_SCHEMA:
@@ -835,17 +891,152 @@ def _attempt_seed(
     return config_seed
 
 
+def _critic_v1_legacy_identity(job: Mapping[str, Any]) -> bool:
+    schedule_schema = job.get("schedule_schema_version")
+    job_key = job.get("job_key")
+    head = job.get("training_git_head")
+    return (
+        schedule_schema == CRITIC_V402_RECOVERY_SCHEDULE_SCHEMA
+        and job_key == "critic:c0_v4"
+        and head == HISTORICAL_CRITIC_V402_C0_HEAD
+    ) or (
+        schedule_schema == CRITIC_V403_FULL_RECOVERY_SCHEDULE_SCHEMA
+        and job_key == "critic:v4_full"
+        and head == HISTORICAL_CRITIC_V403_FULL_HEAD
+    )
+
+
+def _critic_initialization_scope(run_id: str) -> str:
+    if run_id == "c0_v4":
+        return "NOT_CLAIMED_DIFFERENT_C0_ARCHITECTURE"
+    if run_id == "v4_no_cross":
+        return "NOT_CLAIMED_PARAMETER_MATCHED_DIFFERENT_MODULE"
+    return "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+
+
+def _validate_critic_v2_terminal_evidence(
+    job: Mapping[str, Any],
+    *,
+    config: Mapping[str, Any],
+    attempt: Mapping[str, Any],
+    summary: Mapping[str, Any],
+    seed: int,
+    output_directory: Path,
+    summary_path: Path,
+    checkpoint_path: Path,
+    attempt_path: Path,
+) -> None:
+    family = str(job["family"])
+    key = str(job["job_key"])
+    stage = family.removeprefix("critic_").upper()
+    run_id = str(job["run_id"])
+    gpu = int(job["physical_gpu_index"])
+    device = f"cuda:{gpu}"
+    head = str(job["training_git_head"])
+    expected_scope = _critic_initialization_scope(run_id)
+    runner_head_key = {
+        "SCREEN": "runner_git_head",
+        "CONFIRMATION": "confirmation_runner_git_head",
+        "REFIT": "posttest_runner_git_head",
+        "LOSO": "posttest_runner_git_head",
+    }[stage]
+    data_geometry = config.get("data_geometry")
+    update_budget = (
+        data_geometry.get("total_optimizer_updates")
+        if isinstance(data_geometry, Mapping)
+        else None
+    )
+
+    _require(
+        config.get(runner_head_key) == head,
+        f"Critic v2 config runner HEAD differs from schedule for {key}",
+    )
+    _require(
+        isinstance(update_budget, int)
+        and not isinstance(update_budget, bool)
+        and update_budget > 0
+        and summary.get("update_count") == update_budget
+        and attempt.get("optimizer_steps") == update_budget,
+        f"Critic v2 parameter-update budget differs for {key}",
+    )
+    _require(
+        summary.get("run_id") == run_id
+        and attempt.get("baseline_id")
+        == f"xeditcritic_v4_{run_id}_seed{seed}",
+        f"Critic v2 run identity differs for {key}",
+    )
+    for payload, label in ((summary, "summary"), (attempt, "training attempt")):
+        _require(
+            payload.get("parameter_initialization_seed") == seed
+            and payload.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True
+            and payload.get("parameter_initialization_tensor_identity_scope")
+            == expected_scope,
+            f"Critic v2 initialization provenance differs in {label} for {key}",
+        )
+        payload_device = (
+            payload.get("cuda_device")
+            if label == "summary"
+            else payload.get("device")
+        )
+        _require(
+            payload.get("cuda_available") is True
+            and payload_device == device
+            and isinstance(payload.get("cuda_device_name"), str)
+            and "A100" in str(payload.get("cuda_device_name"))
+            and payload.get("a100_device_verified") is True
+            and payload.get("bf16_supported") is True
+            and payload.get("cpu_fallback_used") is False
+            and payload.get("training_git_head") == head,
+            f"Critic v2 CUDA/BF16/HEAD provenance differs in {label} for {key}",
+        )
+
+    expected_paths = {
+        "output_directory": str(output_directory),
+        "training_summary_path": str(summary_path),
+        "checkpoint_path": str(checkpoint_path),
+        "training_attempt_path": str(attempt_path),
+    }
+    for payload, label in ((summary, "summary"), (attempt, "training attempt")):
+        _require(
+            all(payload.get(name) == value for name, value in expected_paths.items()),
+            f"Critic v2 terminal paths differ in {label} for {key}",
+        )
+    _require(
+        attempt.get("seed") == seed,
+        f"Critic v2 training-attempt seed differs for {key}",
+    )
+
+
 def _validate_summary(
-    family: str,
+    job: Mapping[str, Any],
     summary: Mapping[str, Any],
     *,
     output_directory: Path,
-) -> Path:
+) -> tuple[Path, str]:
+    family = str(job["family"])
     if family.startswith("critic_"):
         stage = family.removeprefix("critic_").upper()
+        evidence_version = job.get("critic_terminal_evidence_version")
+        if evidence_version == CRITIC_TERMINAL_EVIDENCE_V1:
+            _require(
+                _critic_v1_legacy_identity(job),
+                f"{family} v1 evidence is outside the exact historical jobs",
+            )
+        else:
+            _require(
+                evidence_version == CRITIC_TERMINAL_EVIDENCE_V2
+                and not _critic_v1_legacy_identity(job),
+                f"{family} terminal-evidence policy differs",
+            )
+        expected_schema = (
+            f"route_a_v3_route2_xeditcritic_v4_{stage.lower()}_run."
+            f"{evidence_version}"
+        )
         _require(
-            summary.get("schema_version")
-            == f"route_a_v3_route2_xeditcritic_v4_{stage.lower()}_run.v1"
+            summary.get("schema_version") == expected_schema
             and summary.get("status")
             == f"TERMINAL_XEDITCRITIC_V4_{stage}_RUN_COMPLETE"
             and summary.get("run_stage") == stage,
@@ -914,7 +1105,7 @@ def _validate_summary(
         checkpoint.parent == output_directory,
         f"{family} checkpoint is outside its output directory",
     )
-    return checkpoint
+    return checkpoint, str(summary.get("schema_version"))
 
 
 def _validate_attempt(job: Mapping[str, Any]) -> dict[str, Any]:
@@ -940,8 +1131,8 @@ def _validate_attempt(job: Mapping[str, Any]) -> dict[str, Any]:
     config = _read_json(config_path, f"training config for {key}")
     attempt = _read_json(attempt_path, f"training_attempt.json for {key}")
     summary = _read_json(summary_path, f"terminal summary for {key}")
-    checkpoint = _validate_summary(
-        family, summary, output_directory=output_directory
+    checkpoint, terminal_evidence_schema = _validate_summary(
+        job, summary, output_directory=output_directory
     )
     _require(checkpoint.is_file(), f"checkpoint is absent for {key}: {checkpoint}")
 
@@ -1007,6 +1198,22 @@ def _validate_attempt(job: Mapping[str, Any]) -> dict[str, Any]:
         f"training attempt is not BF16 for {key}",
     )
     seed = _attempt_seed(family, config, attempt, summary)
+    if (
+        family.startswith("critic_")
+        and job.get("critic_terminal_evidence_version")
+        == CRITIC_TERMINAL_EVIDENCE_V2
+    ):
+        _validate_critic_v2_terminal_evidence(
+            job,
+            config=config,
+            attempt=attempt,
+            summary=summary,
+            seed=seed,
+            output_directory=output_directory,
+            summary_path=summary_path,
+            checkpoint_path=checkpoint,
+            attempt_path=attempt_path,
+        )
 
     return {
         "attempt_id": attempt_id,
@@ -1028,6 +1235,7 @@ def _validate_attempt(job: Mapping[str, Any]) -> dict[str, Any]:
         "log_path": str(log_path),
         "checkpoint_path": str(checkpoint),
         "result_path": str(summary_path),
+        "terminal_evidence_schema_version": terminal_evidence_schema,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
         "historical_free_memory_gate_applied": job[

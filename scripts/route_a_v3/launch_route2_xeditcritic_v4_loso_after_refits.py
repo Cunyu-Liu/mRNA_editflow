@@ -205,7 +205,13 @@ def eligible_loso_gpus(
     return values
 
 
-def validate_loso_manifest(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+def validate_loso_manifest(
+    payload: Mapping[str, Any], *, expected_head: str
+) -> list[dict[str, Any]]:
+    require(
+        payload.get("runner_git_head") == expected_head,
+        "Critic V4 LOSO manifest runner Git HEAD changed",
+    )
     require(
         payload.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_loso_job_manifest.v1"
@@ -316,7 +322,9 @@ def run(head: str) -> dict[str, Any]:
         ]
     )
     manifest_path = loso_config_root / "manifest.json"
-    jobs = validate_loso_manifest(read_json(manifest_path))
+    jobs = validate_loso_manifest(
+        read_json(manifest_path), expected_head=head
+    )
     command(
         [
             str(PYTHON), str(authorize),

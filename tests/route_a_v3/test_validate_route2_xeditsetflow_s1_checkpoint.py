@@ -27,6 +27,40 @@ SCRIPT = ROOT / "scripts/route_a_v3/validate_route2_xeditsetflow_s1_checkpoint.p
 HEAD = "a" * 40
 
 
+def _matched_initialization(seed: int) -> dict:
+    return {
+        "schema_version": (
+            "route_a_v3_route2_xeditsetflow_v4_s1_matched_initialization.v1"
+        ),
+        "canonical_run_id": "v4_s1_full",
+        "projection_target_run_id": "v4_s1_single_mode",
+        "model_roles": {
+            "v4_s1_full": "CANONICAL_FULL_MODEL",
+            "v4_s1_single_mode": "PROJECTED_FROM_CANONICAL_FULL_MODE_ZERO",
+        },
+        "canonical_state_digest_algorithm": "sha256",
+        "canonical_state_digest_input_fields": ["name", "dtype", "shape", "bytes"],
+        "canonical_state_digest": f"{seed:064x}",
+        "canonical_state_tensor_count": 120,
+        "canonical_state_element_count": 2000,
+        "comparable_parameter_tensor_count": 80,
+        "comparable_parameter_element_count": 1000,
+        "comparable_buffer_tensor_count": 2,
+        "comparable_buffer_element_count": 10,
+        "comparable_tensor_count": 82,
+        "comparable_element_count": 1010,
+        "full_only_state_tensor_count": 38,
+        "full_only_state_element_count": 990,
+        "router_projection": {
+            "mode_router.weight": "canonical_full.mode_router.weight[0:1]",
+            "mode_router.bias": "canonical_full.mode_router.bias[0:1]",
+        },
+        "unmapped_target_names": [],
+        "mismatched_target_names": [],
+        "all_equal": True,
+    }
+
+
 def _training_summary(
     directory: Path,
     *,
@@ -44,6 +78,7 @@ def _training_summary(
         "active_responsibility_constraint_count": 1,
         "parameter_initialization_seed": seed,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": _matched_initialization(seed),
         "completed_passes": 10,
         "early_stopping_used": False,
         "update_geometry": {"pass_count": 10, "total_optimizer_updates": 100},
@@ -128,6 +163,24 @@ def test_s1_validation_waits_for_both_complete_training_packages(tmp_path: Path)
         require_training_package_terminal_s1(config)
 
 
+def test_s1_validation_rejects_cross_process_canonical_digest_drift(
+    tmp_path: Path,
+) -> None:
+    config = {
+        "output_root": str(tmp_path),
+        "training": {"screen_seed": 20260911},
+    }
+    for run_id in ("v4_s1_full", "v4_s1_single_mode"):
+        directory = tmp_path / run_id
+        directory.mkdir()
+        summary = _training_summary(directory, run_id=run_id)
+        if run_id == "v4_s1_single_mode":
+            summary["matched_initialization"]["canonical_state_digest"] = "f" * 64
+        (directory / "training_summary.json").write_text(json.dumps(summary))
+    with pytest.raises(SetFlowCheckpointValidationS1Error, match="canonical initialization differs"):
+        require_training_package_terminal_s1(config)
+
+
 def test_s1_training_provenance_binds_both_runs_to_one_head(tmp_path: Path) -> None:
     config = {
         "output_root": str(tmp_path),
@@ -209,6 +262,7 @@ def test_s1_validator_dispatches_confirmation_authority_and_retains_cuda_identit
     assert '"precision": "BF16"' in source
     assert '"cpu_fallback_used": False' in source
     assert '"parameter_initialization_seed"' in source
+    assert '"matched_initialization": training_matched_initialization' in source
 
 
 @pytest.mark.parametrize(
@@ -324,6 +378,7 @@ def test_s1_checkpoint_requires_exact_initialization_and_cuda_provenance(
         "active_responsibility_constraint_count": 1,
         "parameter_initialization_seed": 20260912,
         "parameter_initialization_seed_applied_before_model_construction": True,
+        "matched_initialization": _matched_initialization(20260912),
         "physical_gpu_index": 0,
         "torch_device": "cuda:0",
         "device_name": "NVIDIA A100-SXM4-80GB",

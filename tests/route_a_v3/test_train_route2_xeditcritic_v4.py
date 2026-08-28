@@ -10,6 +10,7 @@ import scripts.route_a_v3.train_route2_xeditcritic_v4 as trainer
 from scripts.route_a_v3.train_route2_xeditcritic_v4 import (
     XEditCriticTrainingV4RunnerError,
     _move,
+    _terminal_training_environment_v4,
     _write_atomic_terminal_v4,
     critic_v4_run_stage_seed,
     evaluation_index_batches_v4,
@@ -105,6 +106,51 @@ def test_all_training_stages_bind_frozen_physical_gpu_scope_before_cuda() -> Non
     assert source.index(
         "require_physical_gpu_scope_v4(config, physical_gpu_index)"
     ) < source.index("device = require_cuda(physical_gpu_index)")
+
+
+def test_seed_and_cuda_bf16_evidence_are_fixed_before_model_construction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = (
+        ROOT / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
+    ).read_text(encoding="utf-8")
+    assert source.index("_set_seed(training_seed)") < source.index(
+        "model, capacity = _build_model"
+    )
+    assert source.index("_set_seed(training_seed)") < source.index(
+        "optimizer, initial_learning_rates = _build_optimizer"
+    )
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(
+        torch.cuda, "get_device_name", lambda _device: "NVIDIA A100-SXM4-80GB"
+    )
+    monkeypatch.setattr(torch.cuda, "is_bf16_supported", lambda: True)
+    full = _terminal_training_environment_v4(
+        training_seed=20260908,
+        device=torch.device("cuda:0"),
+        training_git_head="a" * 40,
+        spec=screen_run_spec_v4(_config(), "v4_full"),
+    )
+    assert full["parameter_initialization_seed"] == 20260908
+    assert full["parameter_initialization_seed_applied_before_model_construction"] is True
+    assert full["cuda_available"] is True
+    assert full["a100_device_verified"] is True
+    assert full["bf16_supported"] is True
+    assert full["cpu_fallback_used"] is False
+    assert (
+        full["parameter_initialization_tensor_identity_scope"]
+        == "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+    )
+    no_cross = _terminal_training_environment_v4(
+        training_seed=20260908,
+        device=torch.device("cuda:0"),
+        training_git_head="a" * 40,
+        spec=screen_run_spec_v4(_config(), "v4_no_cross"),
+    )
+    assert (
+        no_cross["parameter_initialization_tensor_identity_scope"]
+        == "NOT_CLAIMED_PARAMETER_MATCHED_DIFFERENT_MODULE"
+    )
 
 
 def test_all_training_stages_require_clean_worktree_before_authorization(
@@ -268,6 +314,7 @@ def test_confirmation_authorization_is_exact_three_seed_full_c0_scope() -> None:
             "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_runtime.v1",
             "run_stage": "CONFIRMATION",
             "training_seed": 20260908,
+            "confirmation_runner_git_head": "head",
             "required_confirmation_run_ids": ["v4_full", "c0_v4"],
         }
     )
@@ -309,6 +356,18 @@ def test_confirmation_authorization_is_exact_three_seed_full_c0_scope() -> None:
         physical_batch_size=8,
         current_git_head="head",
     )
+    config["confirmation_runner_git_head"] = "drift"
+    with pytest.raises(XEditCriticTrainingV4RunnerError, match="scope"):
+        require_confirmation_launch_authorization_v4(
+            config,
+            authorization,
+            _preflight(),
+            screen_gate,
+            run_id="v4_full",
+            physical_batch_size=8,
+            current_git_head="head",
+        )
+    config["confirmation_runner_git_head"] = "head"
     with pytest.raises(XEditCriticTrainingV4RunnerError, match="scope"):
         critic_v4_run_stage_seed(config, "v4_no_moe")
     preflight = _preflight()
@@ -378,6 +437,7 @@ def test_posttest_launch_authorization_requires_atomic_test_and_exact_scope(
             "schema_version": "route_a_v3_route2_xeditcritic_v4_posttest_runtime.v1",
             "run_stage": "REFIT",
             "training_seed": 20260908,
+            "posttest_runner_git_head": "head",
             "required_posttest_run_ids": ["v4_full"],
             "held_out_study": None,
         }

@@ -752,6 +752,9 @@ def write_value_configs_v4(payload: Mapping[str, Any], output_dir: Path) -> None
             {
                 "combination_id": job["combination_id"],
                 "combination": list(job["combination"]),
+                "value_checkpoint_path": str(
+                    job["smc_config"]["value_checkpoint_path"]
+                ),
                 "smc_summary_path": str(
                     Path(job["smc_config"]["output_dir"]) / "run_summary.json"
                 ),

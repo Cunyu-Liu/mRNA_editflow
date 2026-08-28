@@ -35,6 +35,61 @@ BASE_FLOW_SEEDS_V4 = (20260912, 20260913, 20260914)
 MODE_IDS_V4 = tuple(range(8))
 
 
+def validate_value_training_provenance_v4(
+    provenance: Mapping[str, Any],
+    *,
+    base_flow_training_seed: int,
+    value_checkpoint_path: str,
+) -> dict[str, Any]:
+    """Validate the exact seed-first CUDA/A100/BF16 value-training lineage."""
+
+    seed = int(base_flow_training_seed)
+    _require(
+        int(provenance.get("parameter_initialization_seed", -1)) == seed
+        and provenance.get(
+            "parameter_initialization_seed_applied_before_model_construction"
+        )
+        is True,
+        "V4 value checkpoint lacks seed-before-model provenance",
+    )
+    physical_gpu = int(provenance.get("physical_gpu_index", -1))
+    _require(
+        physical_gpu in range(6)
+        and provenance.get("cuda_available") is True
+        and int(provenance.get("cuda_device_index", -1)) == physical_gpu
+        and str(provenance.get("torch_device")) == f"cuda:{physical_gpu}"
+        and provenance.get("cuda_parent_uuid_matches_declared_physical_index")
+        is True,
+        "V4 value checkpoint lacks exact physical CUDA provenance",
+    )
+    _require(
+        "A100" in str(provenance.get("cuda_device_name", ""))
+        and isinstance(provenance.get("cuda_device_uuid"), str)
+        and provenance.get("cuda_device_uuid") not in {"", "UNKNOWN"}
+        and isinstance(provenance.get("declared_physical_gpu_uuid"), str)
+        and provenance.get("declared_physical_gpu_uuid") not in {"", "UNKNOWN"}
+        and provenance.get("cuda_device_observation_error") in {None, ""},
+        "V4 value checkpoint lacks actual A100 identity",
+    )
+    _require(
+        provenance.get("bf16_supported") is True
+        and provenance.get("training_precision") == "BF16"
+        and provenance.get("cpu_fallback_used") is False,
+        "V4 value checkpoint lacks BF16/no-CPU provenance",
+    )
+    _require(
+        bool(str(value_checkpoint_path))
+        and provenance.get("value_checkpoint_path") == str(value_checkpoint_path),
+        "V4 value checkpoint path provenance differs",
+    )
+    _require(
+        provenance.get("parameter_changed") is True
+        and int(provenance.get("optimizer_steps", 0)) > 0,
+        "V4 value checkpoint lacks a parameter update",
+    )
+    return dict(provenance)
+
+
 def load_value_checkpoint_v4(
     path: Path,
     *,
@@ -42,8 +97,8 @@ def load_value_checkpoint_v4(
     kappa: float,
     temperature: float,
     device: torch.device,
-) -> XEditValueV4:
-    """Load only the frozen final-pass V4 scalar potential identity."""
+) -> tuple[XEditValueV4, dict[str, Any]]:
+    """Load the frozen final-pass scalar potential and verified training lineage."""
 
     checkpoint = torch.load(path, map_location="cpu", weights_only=False)
     _require(isinstance(checkpoint, Mapping), "V4 value checkpoint is not a mapping")
@@ -73,12 +128,11 @@ def load_value_checkpoint_v4(
         "V4 value checkpoint is not the frozen final pass",
     )
     provenance = checkpoint.get("training_provenance")
-    _require(
-        isinstance(provenance, Mapping)
-        and provenance.get("parameter_changed") is True
-        and int(provenance.get("optimizer_steps", 0)) > 0
-        and provenance.get("cpu_fallback_used") is False,
-        "V4 value checkpoint lacks a valid CUDA training update",
+    _require(isinstance(provenance, Mapping), "V4 value training provenance is absent")
+    verified_provenance = validate_value_training_provenance_v4(
+        provenance,
+        base_flow_training_seed=base_flow_training_seed,
+        value_checkpoint_path=str(path),
     )
     model_config = dict(checkpoint.get("model_config", {}))
     topology = {
@@ -124,7 +178,7 @@ def load_value_checkpoint_v4(
     _require(isinstance(state, Mapping), "V4 value checkpoint state is absent")
     model.load_state_dict(state, strict=True)
     model.eval()
-    return model
+    return model, verified_provenance
 
 
 def require_value_training_authorization_v4(

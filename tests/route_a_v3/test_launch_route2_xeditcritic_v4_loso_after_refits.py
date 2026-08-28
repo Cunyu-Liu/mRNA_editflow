@@ -9,6 +9,9 @@ import pytest
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_loso_after_refits as launcher
 
 
+RUNNER_HEAD = "e" * 40
+
+
 def _manifest() -> dict[str, object]:
     jobs = [
         {"seed": seed, "held_out_study": study, "run_id": run_id}
@@ -21,17 +24,27 @@ def _manifest() -> dict[str, object]:
         "status": "XEDITCRITIC_V4_LOSO_CONFIGS_PREPARED_NOT_STARTED",
         "required_seeds": list(launcher.SEEDS),
         "held_out_studies": list(launcher.STUDIES),
+        "runner_git_head": RUNNER_HEAD,
         "job_count": 42,
         "jobs": jobs,
     }
 
 
 def test_loso_manifest_is_exact_42_paired_jobs() -> None:
-    assert len(launcher.validate_loso_manifest(_manifest())) == 42
+    assert len(
+        launcher.validate_loso_manifest(_manifest(), expected_head=RUNNER_HEAD)
+    ) == 42
     payload = _manifest()
     payload["jobs"] = payload["jobs"][:-1]
     with pytest.raises(Exception, match="job set changed"):
-        launcher.validate_loso_manifest(payload)
+        launcher.validate_loso_manifest(payload, expected_head=RUNNER_HEAD)
+
+
+def test_loso_manifest_rejects_runner_head_drift() -> None:
+    payload = _manifest()
+    payload["runner_git_head"] = "f" * 40
+    with pytest.raises(Exception, match="runner Git HEAD"):
+        launcher.validate_loso_manifest(payload, expected_head=RUNNER_HEAD)
 
 
 def test_loso_gpu_selection_uses_frozen_protocol_order_without_memory_gate() -> None:

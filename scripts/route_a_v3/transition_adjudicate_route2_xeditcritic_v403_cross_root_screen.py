@@ -8,25 +8,23 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Any, Mapping
 
 
 TRAINING_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
-TRAINING_WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_v403_critic_rng_replay_20260827"
-)
-if str(TRAINING_WORKTREE) not in sys.path:
-    sys.path.insert(0, str(TRAINING_WORKTREE))
+WORKTREE = Path(__file__).resolve().parents[2]
+if str(WORKTREE) not in sys.path:
+    sys.path.insert(0, str(WORKTREE))
 
 from core.route2_xeditcritic_gate_v4 import evaluate_xeditcritic_v4_screen
 
 
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
 FROZEN_CONFIG = (
-    TRAINING_WORKTREE
+    WORKTREE
     / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
 )
 HISTORICAL_C0_OUTPUT_ROOT = (
@@ -44,24 +42,13 @@ CURRENT_FULL_RUNTIME = (
     / "experiments/xeditcritic_v4/"
     f"v403_rng_replay_fix_runner_{TRAINING_GIT_HEAD}/runtime.json"
 )
-CONTROL_OUTPUT_ROOT = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_control_recovery_{TRAINING_GIT_HEAD}"
-)
-CONTROL_RUNTIME = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"v403_control_recovery_runner_{TRAINING_GIT_HEAD}/runtime.json"
+FULL_TERMINAL_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json"
 )
 LEGACY_GATE = (
     ROOT
     / "experiments/xeditcritic_v4/screen_seed_20260907/screen_gate.json"
-)
-NEW_GATE = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_cross_root_{TRAINING_GIT_HEAD}/screen_gate.json"
 )
 
 ARM_ORDER = (
@@ -83,7 +70,7 @@ class ArmSource:
     source_role: str
 
 
-def default_arm_sources() -> dict[str, ArmSource]:
+def default_arm_sources(control_output_root: Path) -> dict[str, ArmSource]:
     result = {
         "c0_v4": ArmSource(
             HISTORICAL_C0_OUTPUT_ROOT / "c0_v4/run_summary.json",
@@ -97,8 +84,8 @@ def default_arm_sources() -> dict[str, ArmSource]:
     result.update(
         {
             run_id: ArmSource(
-                CONTROL_OUTPUT_ROOT / run_id / "run_summary.json",
-                "V403_REPAIRED_CONTROL_TERMINAL_SUMMARY",
+                control_output_root / run_id / "run_summary.json",
+                "CURRENT_HEAD_CONTROL_TERMINAL_SUMMARY",
             )
             for run_id in CONTROL_RUN_IDS
         }
@@ -147,32 +134,74 @@ def write_atomic_once(path: Path, payload: Mapping[str, Any]) -> None:
     os.replace(partial, path)
 
 
-def validate_full_runtime(path: Path = CURRENT_FULL_RUNTIME) -> dict[str, Any]:
-    runtime = read_json(path)
+def validate_full_terminal_audit(
+    path: Path = FULL_TERMINAL_AUDIT,
+) -> dict[str, Any]:
+    audit = read_json(path)
+    terminal_facts = audit.get("terminal_facts")
+    claim_boundary = audit.get("claim_boundary")
     require(
-        runtime.get("schema_version")
-        == "route_a_v3_route2_xeditcritic_v403_full_recovery_runtime.v1"
-        and runtime.get("status")
+        audit.get("schema_version")
+        == "route_a_v3_route2_xeditcritic_v403_full_terminal.v1"
+        and audit.get("status")
+        == "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"
+        and audit.get("evidence_scope")
+        == "TERMINAL_FACTS_ALREADY_CONSUMED_BY_THE_LOW_FREQUENCY_HEARTBEAT_ONLY"
+        and audit.get("runtime_path") == str(CURRENT_FULL_RUNTIME)
+        and audit.get("output_root")
+        == str(CURRENT_FULL_OUTPUT_ROOT / "v4_full")
+        and audit.get("terminal_summary_path")
+        == str(CURRENT_FULL_OUTPUT_ROOT / "v4_full/run_summary.json")
+        and isinstance(terminal_facts, Mapping)
+        and terminal_facts.get("authorization_git_head") == TRAINING_GIT_HEAD
+        and terminal_facts.get("runtime_status")
         == "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL"
-        and runtime.get("git_head") == TRAINING_GIT_HEAD
-        and runtime.get("run_id") == "v4_full"
-        and runtime.get("terminal_artifact_kind") == "SUMMARY"
-        and int(runtime.get("return_code", -1)) == 0,
-        "current V4.0.3 full runtime is not exact successful terminal",
+        and terminal_facts.get("run_id") == "v4_full"
+        and terminal_facts.get("terminal_artifact_kind") == "SUMMARY"
+        and terminal_facts.get("seed") == 20260907
+        and terminal_facts.get("completed_passes") == 8
+        and terminal_facts.get("selected_pass") == 8
+        and terminal_facts.get("optimizer_update_count") == 22416
+        and terminal_facts.get("physical_batch_size") == 32
+        and terminal_facts.get("effective_batch_size") == 32
+        and terminal_facts.get("cuda_used") is True
+        and terminal_facts.get("device_class") == "A100"
+        and terminal_facts.get("training_precision")
+        == "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE"
+        and terminal_facts.get("cpu_fallback_used") is False
+        and terminal_facts.get("protected_outcome_reads") == 0
+        and terminal_facts.get("development_test_outcome_reads") == 0
+        and terminal_facts.get("new_final_evaluation_outcome_reads") == 0
+        and isinstance(claim_boundary, Mapping)
+        and claim_boundary.get("single_arm_terminal_summary_is_not_a_screen_pass")
+        is True
+        and claim_boundary.get(
+            "single_arm_terminal_summary_is_not_final_scientific_evidence"
+        )
+        is True
+        and claim_boundary.get("model_advantage_established") is False
+        and claim_boundary.get("submission_ready") is False,
+        "recorded V4.0.3 full terminal audit is not exact",
     )
-    require_zero_protected_reads(runtime, "current full runtime")
-    return runtime
+    return audit
 
 
-def validate_control_runtime(path: Path = CONTROL_RUNTIME) -> dict[str, Any]:
+def validate_control_runtime(
+    path: Path, *, expected_control_runner_head: str
+) -> dict[str, Any]:
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", expected_control_runner_head) is not None
+        and expected_control_runner_head not in {TRAINING_GIT_HEAD, C0_GIT_HEAD},
+        "control runner HEAD must be a new exact licensed HEAD",
+    )
     runtime = read_json(path)
     require(
         runtime.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v403_control_recovery_runtime.v1"
         and runtime.get("status")
         == "XEDITCRITIC_V403_CONTROL_RECOVERY_ALL_SIX_SUMMARIES_TERMINAL"
-        and runtime.get("training_code_git_head") == TRAINING_GIT_HEAD,
-        "V4.0.3 repaired controls are not all exact terminal summaries",
+        and runtime.get("training_code_git_head") == expected_control_runner_head,
+        "current-HEAD controls are not all exact terminal summaries",
     )
     jobs = runtime.get("jobs")
     require(
@@ -206,7 +235,14 @@ def validate_control_runtime(path: Path = CONTROL_RUNTIME) -> dict[str, Any]:
 def collect_arm_summaries(
     config: Mapping[str, Any],
     arm_sources: Mapping[str, ArmSource],
+    *,
+    expected_control_runner_head: str,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", expected_control_runner_head) is not None
+        and expected_control_runner_head not in {TRAINING_GIT_HEAD, C0_GIT_HEAD},
+        "control runner HEAD must be a new exact licensed HEAD",
+    )
     frozen_order = tuple(
         str(row["run_id"]) for row in config["required_screen_runs"]
     )
@@ -226,9 +262,14 @@ def collect_arm_summaries(
             f"{run_id} is not exact terminal SUMMARY",
         )
         summary = read_json(summary_path)
+        historical = run_id in {"c0_v4", "v4_full"}
+        expected_schema = (
+            "route_a_v3_route2_xeditcritic_v4_screen_run.v1"
+            if historical
+            else "route_a_v3_route2_xeditcritic_v4_screen_run.v2"
+        )
         require(
-            summary.get("schema_version")
-            == "route_a_v3_route2_xeditcritic_v4_screen_run.v1"
+            summary.get("schema_version") == expected_schema
             and summary.get("status")
             == "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE"
             and summary.get("run_id") == run_id,
@@ -247,7 +288,13 @@ def collect_arm_summaries(
             f"{run_id} launch authorization is absent",
         )
         authorization = read_json(authorization_path)
-        expected_head = C0_GIT_HEAD if run_id == "c0_v4" else TRAINING_GIT_HEAD
+        expected_head = (
+            C0_GIT_HEAD
+            if run_id == "c0_v4"
+            else TRAINING_GIT_HEAD
+            if run_id == "v4_full"
+            else expected_control_runner_head
+        )
         authorized_run_ids = authorization.get("authorized_run_ids")
         require(
             authorization.get("schema_version")
@@ -265,6 +312,7 @@ def collect_arm_summaries(
         verified_head = str(authorization["authorized_git_head"])
         summaries[run_id] = summary
         provenance[run_id] = {
+            "run_id": run_id,
             "summary_path": str(summary_path),
             "training_git_head": verified_head,
             "source_role": source.source_role,
@@ -274,6 +322,7 @@ def collect_arm_summaries(
             ),
             "launch_authorization_status": str(authorization["status"]),
             "authorized_git_head": verified_head,
+            "legacy_terminal_summary": historical,
             "run_id_authorization_verified": True,
             "authorization_protected_outcome_reads_verified_zero": True,
         }
@@ -282,12 +331,14 @@ def collect_arm_summaries(
 
 def run(
     *,
+    expected_control_runner_head: str,
+    control_runtime_path: Path,
+    control_output_root: Path | None = None,
     config_path: Path = FROZEN_CONFIG,
     arm_sources: Mapping[str, ArmSource] | None = None,
-    full_runtime_path: Path = CURRENT_FULL_RUNTIME,
-    control_runtime_path: Path = CONTROL_RUNTIME,
+    full_terminal_audit_path: Path = FULL_TERMINAL_AUDIT,
     legacy_gate_path: Path = LEGACY_GATE,
-    output_path: Path = NEW_GATE,
+    output_path: Path,
 ) -> dict[str, Any]:
     require(
         output_path != legacy_gate_path,
@@ -306,11 +357,28 @@ def run(
         == "FROZEN_BEFORE_V4_PARAMETER_UPDATE_OR_VALIDATION_OUTCOME_READ",
         "frozen Critic V4 screen config identity changed",
     )
-    full_runtime = validate_full_runtime(full_runtime_path)
-    control_runtime = validate_control_runtime(control_runtime_path)
+    require(
+        config.get("runner_git_head") == expected_control_runner_head,
+        "current controls config runner HEAD differs from the licensed HEAD",
+    )
+    full_terminal_audit = validate_full_terminal_audit(
+        full_terminal_audit_path
+    )
+    control_runtime = validate_control_runtime(
+        control_runtime_path,
+        expected_control_runner_head=expected_control_runner_head,
+    )
+    if arm_sources is None:
+        require(
+            control_output_root is not None,
+            "current-HEAD control output root is required",
+        )
     summaries, provenance = collect_arm_summaries(
         config,
-        default_arm_sources() if arm_sources is None else arm_sources,
+        default_arm_sources(control_output_root)
+        if arm_sources is None
+        else arm_sources,
+        expected_control_runner_head=expected_control_runner_head,
     )
     reference = read_json(Path(str(config["c3_read_once_reference_adjudication"])))
     require(
@@ -329,6 +397,10 @@ def run(
             reference["c3_reference_task_macro_spearman"]
         ),
         preflight=preflight,
+        terminal_provenance=provenance,
+        expected_training_git_heads={
+            run_id: expected_control_runner_head for run_id in CONTROL_RUN_IDS
+        },
     )
     result["cross_root_transition"] = {
         "schema_version": (
@@ -337,15 +409,20 @@ def run(
         "ordered_run_ids": list(ARM_ORDER),
         "arm_sources": provenance,
         "historical_c0_git_head": C0_GIT_HEAD,
-        "repaired_full_and_controls_git_head": TRAINING_GIT_HEAD,
-        "full_runtime_path": str(full_runtime_path),
-        "full_runtime_status": full_runtime["status"],
+        "historical_full_git_head": TRAINING_GIT_HEAD,
+        "control_runner_git_head": expected_control_runner_head,
+        "full_terminal_audit_path": str(full_terminal_audit_path),
+        "full_terminal_audit_status": full_terminal_audit["status"],
+        "full_terminal_evidence_scope": full_terminal_audit[
+            "evidence_scope"
+        ],
         "control_runtime_path": str(control_runtime_path),
         "control_runtime_status": control_runtime["status"],
         "frozen_config_path": str(config_path),
         "legacy_gate_path": str(legacy_gate_path),
         "legacy_gate_preserved": True,
         "terminal_summary_payloads_read": 8,
+        "historical_terminal_payloads_read_before_cross_root": 0,
         "full_retrained": False,
         "c0_retrained": False,
         "old_v402_stopped_process_resumed": False,
@@ -361,8 +438,31 @@ def run(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.parse_args()
-    print(json.dumps(run(), indent=2, sort_keys=True))
+    parser.add_argument("--expected-control-runner-head", required=True)
+    parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--control-runtime", required=True, type=Path)
+    parser.add_argument("--control-output-root", required=True, type=Path)
+    parser.add_argument(
+        "--full-terminal-audit",
+        type=Path,
+        default=FULL_TERMINAL_AUDIT,
+    )
+    parser.add_argument("--output", required=True, type=Path)
+    arguments = parser.parse_args()
+    print(
+        json.dumps(
+            run(
+                expected_control_runner_head=arguments.expected_control_runner_head,
+                config_path=arguments.config,
+                control_runtime_path=arguments.control_runtime,
+                control_output_root=arguments.control_output_root,
+                full_terminal_audit_path=arguments.full_terminal_audit,
+                output_path=arguments.output,
+            ),
+            indent=2,
+            sort_keys=True,
+        )
+    )
 
 
 if __name__ == "__main__":

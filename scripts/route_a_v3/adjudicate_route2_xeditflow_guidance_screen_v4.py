@@ -17,6 +17,9 @@ from core.route2_xeditflow_gate_v4 import (
     GUIDANCE_GRID_V4,
     adjudicate_guidance_screen_v4,
 )
+from core.route2_xeditflow_value_training_v4 import (
+    validate_value_training_provenance_v4,
+)
 
 
 class GuidanceScreenAdjudicationV4Error(RuntimeError):
@@ -130,6 +133,16 @@ def assemble_screen_results_v4(
             == combination,
             f"V4 guidance result identity differs: {combination}",
         )
+        value_checkpoint_path = str(row.get("value_checkpoint_path", ""))
+        _require(
+            smc.get("value_checkpoint_path") == value_checkpoint_path,
+            f"V4 guidance value checkpoint path differs: {combination}",
+        )
+        value_training_provenance = validate_value_training_provenance_v4(
+            smc.get("value_training_provenance", {}),
+            base_flow_training_seed=20260912,
+            value_checkpoint_path=value_checkpoint_path,
+        )
         _require(
             all(
                 _protected(payload)
@@ -193,6 +206,8 @@ def assemble_screen_results_v4(
                 "source_macro_candidate_recovery"
             ],
             "total_forward_equivalents": maximum_compute,
+            "value_checkpoint_path": value_checkpoint_path,
+            "value_training_provenance": value_training_provenance,
             "setflow_mode_is_fixed_trajectory_state": smc[
                 "setflow_mode_is_fixed_trajectory_state"
             ],
@@ -217,9 +232,20 @@ def main() -> None:
         not args.output.exists(),
         f"terminal V4 guidance adjudication exists: {args.output}",
     )
-    gate = adjudicate_guidance_screen_v4(
-        assemble_screen_results_v4(_json(args.manifest))
+    results = assemble_screen_results_v4(_json(args.manifest))
+    gate = adjudicate_guidance_screen_v4(results)
+    selected = (
+        float(gate["selected_kappa"]),
+        float(gate["selected_temperature"]),
+        float(gate["selected_beta_max"]),
     )
+    selected_result = results[selected]
+    gate["selected_value_checkpoint_path"] = selected_result[
+        "value_checkpoint_path"
+    ]
+    gate["selected_value_training_provenance"] = selected_result[
+        "value_training_provenance"
+    ]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(gate, indent=2, sort_keys=True) + "\n",

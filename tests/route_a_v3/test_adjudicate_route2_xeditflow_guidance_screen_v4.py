@@ -20,6 +20,27 @@ def _component(value: float) -> str:
     return str(float(value)).replace(".", "p")
 
 
+def _value_provenance(path: str) -> dict:
+    return {
+        "parameter_initialization_seed": 20260912,
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "optimizer_steps": 10,
+        "parameter_changed": True,
+        "cuda_available": True,
+        "bf16_supported": True,
+        "training_precision": "BF16",
+        "cpu_fallback_used": False,
+        "torch_device": "cuda:4",
+        "physical_gpu_index": 4,
+        "cuda_device_index": 4,
+        "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+        "cuda_device_uuid": "GPU-actual",
+        "declared_physical_gpu_uuid": "actual",
+        "cuda_parent_uuid_matches_declared_physical_index": True,
+        "value_checkpoint_path": path,
+    }
+
+
 def _manifest(tmp_path):
     compute_path = tmp_path / "compute.jsonl"
     compute = {
@@ -48,6 +69,7 @@ def _manifest(tmp_path):
         )
         method = f"xeditflow_v4_guidance_screen_{combination_id}"
         root = tmp_path / str(index)
+        value_checkpoint_path = str(tmp_path / f"value_{index}.pt")
         common = {
             "method_id": method,
             "base_flow_training_seed": 20260912,
@@ -72,6 +94,10 @@ def _manifest(tmp_path):
                 ),
                 "setflow_mode_is_fixed_trajectory_state": True,
                 "free_action_ratio_head_used": False,
+                "value_checkpoint_path": value_checkpoint_path,
+                "value_training_provenance": _value_provenance(
+                    value_checkpoint_path
+                ),
             },
         )
         _write(
@@ -130,6 +156,7 @@ def _manifest(tmp_path):
             {
                 "combination_id": combination_id,
                 "combination": list(combination),
+                "value_checkpoint_path": value_checkpoint_path,
                 "smc_summary_path": str(smc),
                 "critic_summary_path": str(critic),
                 "matched_compute_path": str(compute_path),
@@ -154,6 +181,13 @@ def test_v4_adjudicator_reads_exact_terminal_grid_and_keeps_frozen_order(
     results = assemble_screen_results_v4(_manifest(tmp_path))
     assert set(results) == set(GUIDANCE_GRID_V4)
     assert all(row["total_forward_equivalents"] == 300 for row in results.values())
+    assert all(
+        row["value_training_provenance"][
+            "parameter_initialization_seed_applied_before_model_construction"
+        ]
+        is True
+        for row in results.values()
+    )
     assert max(
         results,
         key=lambda combination: results[combination]["closed_source_macro_ndcg"],
@@ -173,3 +207,15 @@ def test_v4_adjudicator_rejects_unreconciled_compute_or_protected_read(
     open(evaluator_path, "w", encoding="utf-8").write(json.dumps(evaluator))
     with pytest.raises(Exception, match="protected outcome"):
         assemble_screen_results_v4(changed)
+
+
+def test_v4_adjudicator_rejects_value_checkpoint_lineage_drift(tmp_path) -> None:
+    manifest = _manifest(tmp_path)
+    smc_path = manifest["guidance_result_paths"][0]["smc_summary_path"]
+    smc = json.loads(open(smc_path, encoding="utf-8").read())
+    smc["value_training_provenance"][
+        "parameter_initialization_seed_applied_before_model_construction"
+    ] = False
+    open(smc_path, "w", encoding="utf-8").write(json.dumps(smc))
+    with pytest.raises(Exception, match="seed-before-model"):
+        assemble_screen_results_v4(manifest)

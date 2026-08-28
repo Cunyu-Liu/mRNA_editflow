@@ -38,6 +38,10 @@ from core.route2_xeditsetflow_s1 import (
     build_setflow_screen_model_s1,
     screen_run_spec_s1,
 )
+from core.route2_xeditsetflow_gate_s1 import (
+    XEditSetFlowGateS1Error,
+    require_matched_initialization_evidence_s1,
+)
 from core.route2_xeditsetflow_sampling_v3 import (
     SetFlowGenerationMetadataV3,
     build_generation_metadata_v3,
@@ -80,6 +84,15 @@ class SetFlowCheckpointValidationS1Error(RuntimeError):
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise SetFlowCheckpointValidationS1Error(message)
+
+
+def _require_matched_initialization_s1(
+    payload: Mapping[str, Any], *, label: str
+) -> dict[str, Any]:
+    try:
+        return require_matched_initialization_evidence_s1(payload, label=label)
+    except XEditSetFlowGateS1Error as error:
+        raise SetFlowCheckpointValidationS1Error(str(error)) from error
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -167,6 +180,7 @@ def require_training_package_terminal_s1(
 ) -> dict[str, dict[str, Any]]:
     run_stage, training_seed = setflow_validation_stage_seed_s1(config)
     summaries: dict[str, dict[str, Any]] = {}
+    matched_initialization_by_run: dict[str, dict[str, Any]] = {}
     required_runs = (
         ("v4_s1_full", "v4_s1_single_mode")
         if run_stage == "SCREEN"
@@ -216,6 +230,12 @@ def require_training_package_terminal_s1(
             is True,
             f"SetFlow V4 S1 parameter initialization provenance changed: {required_run}",
         )
+        matched_initialization_by_run[required_run] = (
+            _require_matched_initialization_s1(
+                summary,
+                label=f"SetFlow V4 S1 terminal training summary {required_run}",
+            )
+        )
         update_geometry = summary.get("update_geometry")
         _require(
             int(summary.get("completed_passes", -1)) == 10
@@ -261,6 +281,12 @@ def require_training_package_terminal_s1(
             f"SetFlow V4 S1 checkpoint paths differ from the frozen run directory: {required_run}",
         )
         summaries[required_run] = summary
+    if run_stage == "SCREEN":
+        _require(
+            matched_initialization_by_run["v4_s1_full"]
+            == matched_initialization_by_run["v4_s1_single_mode"],
+            "SetFlow V4 S1 terminal full/single canonical initialization differs",
+        )
     return summaries
 
 
@@ -345,6 +371,18 @@ def load_checkpoint_s1(
         "SetFlow V4 S1 checkpoint path differs from the frozen run directory",
     )
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    training_matched_initialization = _require_matched_initialization_s1(
+        training_summary,
+        label="SetFlow V4 S1 selected training summary",
+    )
+    checkpoint_matched_initialization = _require_matched_initialization_s1(
+        checkpoint,
+        label="SetFlow V4 S1 selected checkpoint",
+    )
+    _require(
+        checkpoint_matched_initialization == training_matched_initialization,
+        "SetFlow V4 S1 checkpoint matched-initialization evidence changed",
+    )
     _require(
         checkpoint.get("schema_version")
         == "route_a_v3_route2_xeditsetflow_v4_s1_checkpoint.v1",
@@ -872,6 +910,7 @@ def validate_checkpoint(
                 "parameter_initialization_seed_applied_before_model_construction"
             ]
         ),
+        "matched_initialization": training_matched_initialization,
         "checkpoint_pass": checkpoint_pass,
         "checkpoint_path": str(checkpoint_path),
         "training_summary_path": str(training_summary_path),

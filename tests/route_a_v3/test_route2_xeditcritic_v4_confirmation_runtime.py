@@ -7,6 +7,7 @@ import pytest
 
 from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_confirmation import (
     collect_critic_confirmation_payloads_v4,
+    load_critic_confirmation_configs_v4,
 )
 from scripts.route_a_v3.authorize_route2_xeditcritic_v4_confirmation import (
     build_critic_confirmation_authorization_v4,
@@ -82,3 +83,46 @@ def test_terminal_collector_retains_failures_and_requires_both_matched_runs(
     (tmp_path / "seed_20260910" / "c0_v4" / "failure.json").unlink()
     with pytest.raises(RuntimeError, match="not exactly terminal"):
         collect_critic_confirmation_payloads_v4(configs)
+
+
+def test_config_loader_binds_head_seed_and_exact_paths(tmp_path: Path) -> None:
+    config_root = tmp_path / "configs"
+    run_root = tmp_path / "runs"
+    runner_head = "a" * 40
+    config_paths = []
+    config_root.mkdir()
+    for seed in (20260908, 20260909, 20260910):
+        path = config_root / f"seed_{seed}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "training_seed": seed,
+                    "run_stage": "CONFIRMATION",
+                    "required_confirmation_run_ids": ["v4_full", "c0_v4"],
+                    "confirmation_runner_git_head": runner_head,
+                    "output_root": str(run_root / f"seed_{seed}"),
+                }
+            ),
+            encoding="utf-8",
+        )
+        config_paths.append(str(path))
+    manifest = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_confirmation_config_manifest.v1",
+        "status": "THREE_MATCHED_CONFIRMATION_CONFIGS_PREPARED_NOT_STARTED",
+        "required_seeds": [20260908, 20260909, 20260910],
+        "required_run_ids": ["v4_full", "c0_v4"],
+        "confirmation_runner_git_head": runner_head,
+        "config_paths": config_paths,
+    }
+    configs = load_critic_confirmation_configs_v4(
+        manifest, runtime_config_root=config_root, run_root=run_root
+    )
+    assert set(configs) == {20260908, 20260909, 20260910}
+
+    drifted = json.loads((config_root / "seed_20260908.json").read_text())
+    drifted["output_root"] = str(run_root / "seed_20260909")
+    (config_root / "seed_20260908.json").write_text(json.dumps(drifted))
+    with pytest.raises(RuntimeError, match="configs changed"):
+        load_critic_confirmation_configs_v4(
+            manifest, runtime_config_root=config_root, run_root=run_root
+        )

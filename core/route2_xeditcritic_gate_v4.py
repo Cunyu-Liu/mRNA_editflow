@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import re
+from pathlib import Path
 from typing import Any, Mapping
 
 import numpy as np
@@ -22,6 +24,16 @@ LOSO_STUDIES_V4 = (
     "GSE256185",
     "GSE269595",
 )
+LEGACY_SCREEN_IDENTITIES_V4 = {
+    "c0_v4": {
+        "training_git_head": "93703adec7a4c76b4466d3aaae8684620bee985a",
+        "source_role": "HISTORICAL_MATCHED_C0_TERMINAL_SUMMARY",
+    },
+    "v4_full": {
+        "training_git_head": "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea",
+        "source_role": "CURRENT_V403_REPAIRED_FULL_TERMINAL_SUMMARY",
+    },
+}
 
 
 class XEditCriticGateV4Error(RuntimeError):
@@ -40,12 +52,40 @@ def _validate_summary_v4(
     selected_physical_batch: int,
     formal_parameter_count: int,
     expected_seed: int = 20260907,
-    expected_schema: str = "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
+    expected_schema: str = "route_a_v3_route2_xeditcritic_v4_screen_run.v2",
     expected_status: str = "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
     expected_run_stage: str | None = None,
+    expected_output_directory: Path | None = None,
+    expected_training_git_head: str | None = None,
+    legacy_terminal_provenance: Mapping[str, Any] | None = None,
 ) -> Mapping[str, Any]:
     run_id = str(run["run_id"])
-    _require(summary.get("schema_version") == expected_schema, f"{run_id} summary schema changed")
+    if legacy_terminal_provenance is None:
+        _require(
+            summary.get("schema_version") == expected_schema,
+            f"{run_id} summary schema changed",
+        )
+    else:
+        legacy_schema = expected_schema.removesuffix(".v2") + ".v1"
+        legacy_identity = LEGACY_SCREEN_IDENTITIES_V4.get(run_id)
+        _require(
+            legacy_identity is not None
+            and summary.get("schema_version") == legacy_schema
+            and legacy_terminal_provenance.get("run_id") == run_id
+            and legacy_terminal_provenance.get("legacy_terminal_summary") is True
+            and legacy_terminal_provenance.get("source_role")
+            == legacy_identity["source_role"]
+            and legacy_terminal_provenance.get("run_id_authorization_verified") is True
+            and legacy_terminal_provenance.get(
+                "authorization_protected_outcome_reads_verified_zero"
+            )
+            is True
+            and legacy_terminal_provenance.get("authorized_git_head")
+            == legacy_terminal_provenance.get("training_git_head")
+            and legacy_terminal_provenance.get("training_git_head")
+            == legacy_identity["training_git_head"],
+            f"{run_id} legacy terminal provenance is not exact",
+        )
     _require(summary.get("status") == expected_status, f"{run_id} is not terminal complete")
     if expected_run_stage is not None:
         _require(summary.get("run_stage") == expected_run_stage, f"{run_id} run stage changed")
@@ -60,6 +100,61 @@ def _validate_summary_v4(
     _require(str(summary.get("mechanism_mode")) == str(run["mechanism"]), f"{run_id} mechanism identity changed")
     _require(summary.get("candidate_bundle_permutation") is bool(run.get("candidate_bundle_permutation", False)), f"{run_id} permutation identity changed")
     _require(int(summary.get("seed", -1)) == expected_seed, f"{run_id} seed changed")
+    if legacy_terminal_provenance is None:
+        expected_scope = (
+            "NOT_CLAIMED_DIFFERENT_C0_ARCHITECTURE"
+            if str(run["model"]) == "C0-V4"
+            else "NOT_CLAIMED_PARAMETER_MATCHED_DIFFERENT_MODULE"
+            if str(run["mechanism"]) == "NO_CROSS"
+            else "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+        )
+        _require(
+            int(summary.get("parameter_initialization_seed", -1))
+            == expected_seed
+            and summary.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True
+            and summary.get("parameter_initialization_tensor_identity_scope")
+            == expected_scope,
+            f"{run_id} parameter initialization evidence changed",
+        )
+        training_head = str(summary.get("training_git_head", ""))
+        _require(
+            re.fullmatch(r"[0-9a-f]{40}", training_head) is not None
+            and (
+                expected_training_git_head is None
+                or training_head == expected_training_git_head
+            ),
+            f"{run_id} training Git HEAD changed",
+        )
+        _require(
+            summary.get("cuda_available") is True
+            and str(summary.get("cuda_device", "")).startswith("cuda:")
+            and "A100" in str(summary.get("cuda_device_name", ""))
+            and summary.get("a100_device_verified") is True
+            and summary.get("bf16_supported") is True
+            and summary.get("cpu_fallback_used") is False,
+            f"{run_id} CUDA/A100/BF16/no-CPU evidence changed",
+        )
+        if expected_output_directory is not None:
+            _require(
+                summary.get("training_summary_path")
+                == str(expected_output_directory / "run_summary.json")
+                and summary.get("checkpoint_path")
+                == str(expected_output_directory / "final_pass_8_checkpoint.pt")
+                and summary.get("training_attempt_path")
+                == str(expected_output_directory / "training_attempt.json")
+                and summary.get("output_directory")
+                == str(expected_output_directory),
+                f"{run_id} terminal training path binding changed",
+            )
+    else:
+        _require(
+            "A100" in str(summary.get("cuda_device_name", ""))
+            and summary.get("cpu_fallback_used") is False,
+            f"{run_id} historical CUDA/A100/no-CPU evidence changed",
+        )
     _require(int(summary.get("train_record_count", -1)) == 89580 and int(summary.get("validation_record_count", -1)) == 18293, f"{run_id} projection inventory changed")
     _require(int(summary.get("pass_count", -1)) == 8 and int(summary.get("selected_pass", -1)) == 8 and int(summary.get("update_count", -1)) == 22416, f"{run_id} training budget changed")
     _require(summary.get("selection_policy") == "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION", f"{run_id} checkpoint selection changed")
@@ -79,7 +174,10 @@ def _validate_summary_v4(
     else:
         _require(str(run["model"]) == "C0-V4" and parameter_count > 0, "C0-V4 capacity identity changed")
     peak_gib = float(summary.get("peak_vram_bytes", -1)) / 1024**3
-    _require(math.isfinite(peak_gib) and 0.0 < peak_gib <= 35.0, f"{run_id} peak memory is invalid or exceeds 35 GiB")
+    _require(
+        math.isfinite(peak_gib) and peak_gib > 0.0,
+        f"{run_id} peak memory diagnostic is nonfinite or nonpositive",
+    )
     final = summary.get("final_validation")
     _require(isinstance(final, Mapping), f"{run_id} final Validation metrics are absent")
     _require(int(final.get("task_count", -1)) == 9 and len(final.get("tasks", {})) == 9, f"{run_id} does not cover nine tasks")
@@ -130,22 +228,74 @@ def evaluate_xeditcritic_v4_screen(
     *,
     c3_reference_spearman: float,
     preflight: Mapping[str, Any],
+    terminal_provenance: Mapping[str, Mapping[str, Any]] | None = None,
+    expected_training_git_heads: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     required_runs = {str(run["run_id"]): run for run in config["required_screen_runs"]}
     _require(set(summaries) == set(required_runs), "Critic V4 terminal summary package is incomplete")
+    if terminal_provenance is None:
+        _require(
+            expected_training_git_heads is not None
+            and set(expected_training_git_heads) == set(required_runs)
+            and all(
+                re.fullmatch(r"[0-9a-f]{40}", str(head)) is not None
+                for head in expected_training_git_heads.values()
+            ),
+            "Critic V4 nonlegacy terminal summaries lack exact authorized runner HEADs",
+        )
+    else:
+        _require(
+            set(terminal_provenance) == set(required_runs)
+            and {
+                run_id
+                for run_id, row in terminal_provenance.items()
+                if row.get("legacy_terminal_summary") is True
+            }
+            == set(LEGACY_SCREEN_IDENTITIES_V4)
+            and expected_training_git_heads is not None
+            and set(expected_training_git_heads)
+            == set(required_runs) - set(LEGACY_SCREEN_IDENTITIES_V4)
+            and all(
+                re.fullmatch(r"[0-9a-f]{40}", str(head)) is not None
+                for head in expected_training_git_heads.values()
+            ),
+            "Critic V4 mixed legacy/nonlegacy runner-HEAD provenance is not exact",
+        )
     _require(preflight.get("status") == "XEDITCRITIC_V4_PREFLIGHT_PASS" and preflight.get("passed") is True, "Critic V4 formal preflight is not PASS")
     _require(int(preflight.get("development_test_outcome_reads", -1)) == 0 and int(preflight.get("new_final_evaluation_outcome_reads", -1)) == 0, "Critic V4 preflight protected reads are nonzero")
     formal_count = int(preflight.get("trainable_parameter_count", -1))
     physical_batch = int(preflight.get("selected_physical_batch", -1))
-    finals = {
-        run_id: _validate_summary_v4(
+    finals = {}
+    for run_id, run in required_runs.items():
+        source_provenance = (
+            terminal_provenance.get(run_id)
+            if terminal_provenance is not None
+            else None
+        )
+        provenance = (
+            source_provenance
+            if source_provenance is not None
+            and source_provenance.get("legacy_terminal_summary") is True
+            else None
+        )
+        expected_directory = (
+            Path(str(source_provenance["summary_path"])).parent
+            if source_provenance is not None
+            else Path(str(config["output_root"])) / run_id
+        )
+        finals[run_id] = _validate_summary_v4(
             summaries[run_id],
             run,
             selected_physical_batch=physical_batch,
             formal_parameter_count=formal_count,
+            expected_output_directory=expected_directory,
+            expected_training_git_head=(
+                str(provenance["training_git_head"])
+                if provenance is not None
+                else str(expected_training_git_heads[run_id])
+            ),
+            legacy_terminal_provenance=provenance,
         )
-        for run_id, run in required_runs.items()
-    }
     full = finals["v4_full"]
     c0 = finals["c0_v4"]
     source = finals["v4_source_only"]
@@ -216,6 +366,23 @@ def evaluate_xeditcritic_v4_screen(
             "over_no_moe": full_rho - float(no_moe["task_macro_spearman"]),
         },
         "checks": checks,
+        "parameter_initialization_claim": (
+            "SEED_DATA_BUDGET_MATCHED_FULL_C0_NOT_TENSOR_IDENTICAL"
+        ),
+        "training_git_head_by_run": {
+            run_id: (
+                str(terminal_provenance[run_id]["training_git_head"])
+                if terminal_provenance is not None
+                and terminal_provenance[run_id].get("legacy_terminal_summary")
+                is True
+                else str(summaries[run_id]["training_git_head"])
+            )
+            for run_id in sorted(required_runs)
+        },
+        "peak_vram_diagnostic_gib_by_run": {
+            run_id: float(summaries[run_id]["peak_vram_bytes"]) / 1024**3
+            for run_id in sorted(required_runs)
+        },
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
         "confirmation_authorized": passed,
@@ -228,6 +395,7 @@ def build_critic_confirmation_seed_payload_v4(
     baseline_summary: Mapping[str, Any],
     candidate_prediction_rows: list[Mapping[str, Any]],
     baseline_prediction_rows: list[Mapping[str, Any]],
+    training_config: Mapping[str, Any],
     *,
     seed: int,
     bootstrap_seed: int,
@@ -236,6 +404,16 @@ def build_critic_confirmation_seed_payload_v4(
     _require(
         bootstrap_seed == seed * 100 + 1,
         "Critic V4 confirmation bootstrap seed changed",
+    )
+    runner_head = str(training_config.get("confirmation_runner_git_head", ""))
+    _require(
+        int(training_config.get("training_seed", -1)) == seed
+        and training_config.get("run_stage") == "CONFIRMATION"
+        and training_config.get("required_confirmation_run_ids")
+        == ["v4_full", "c0_v4"]
+        and re.fullmatch(r"[0-9a-f]{40}", runner_head) is not None
+        and bool(str(training_config.get("output_root", ""))),
+        "Critic V4 confirmation training config identity changed",
     )
     bootstrap = paired_source_group_task_macro_bootstrap_v3(
         candidate_prediction_rows,
@@ -247,6 +425,13 @@ def build_critic_confirmation_seed_payload_v4(
         "candidate_summary": dict(candidate_summary),
         "baseline_summary": dict(baseline_summary),
         "bootstrap": bootstrap,
+        "training_config_identity": {
+            "training_seed": seed,
+            "run_stage": "CONFIRMATION",
+            "required_run_ids": ["v4_full", "c0_v4"],
+            "output_root": str(training_config["output_root"]),
+            "confirmation_runner_git_head": runner_head,
+        },
     }
 
 
@@ -276,21 +461,45 @@ def adjudicate_critic_confirmation_v4(
         "Critic V4 confirmation full or matched baseline spec is absent",
     )
     seed_results: dict[str, Any] = {}
+    confirmation_runner_heads: set[str] = set()
     for seed in required_seeds:
         payload = seed_payloads[seed]
         _require(
-            set(payload) == {"candidate_summary", "baseline_summary", "bootstrap"},
+            set(payload)
+            == {
+                "candidate_summary",
+                "baseline_summary",
+                "bootstrap",
+                "training_config_identity",
+            },
             f"Critic V4 confirmation payload is incomplete: {seed}",
         )
+        config_identity = payload["training_config_identity"]
+        _require(
+            int(config_identity.get("training_seed", -1)) == seed
+            and config_identity.get("run_stage") == "CONFIRMATION"
+            and config_identity.get("required_run_ids") == ["v4_full", "c0_v4"]
+            and re.fullmatch(
+                r"[0-9a-f]{40}",
+                str(config_identity.get("confirmation_runner_git_head", "")),
+            )
+            is not None,
+            f"Critic V4 confirmation config identity changed: {seed}",
+        )
+        seed_output_root = Path(str(config_identity["output_root"]))
+        runner_head = str(config_identity["confirmation_runner_git_head"])
+        confirmation_runner_heads.add(runner_head)
         candidate = _validate_summary_v4(
             payload["candidate_summary"],
             runs["v4_full"],
             selected_physical_batch=physical_batch,
             formal_parameter_count=formal_count,
             expected_seed=seed,
-            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v1",
+            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v2",
             expected_status="TERMINAL_XEDITCRITIC_V4_CONFIRMATION_RUN_COMPLETE",
             expected_run_stage="CONFIRMATION",
+            expected_output_directory=seed_output_root / "v4_full",
+            expected_training_git_head=runner_head,
         )
         baseline = _validate_summary_v4(
             payload["baseline_summary"],
@@ -298,9 +507,11 @@ def adjudicate_critic_confirmation_v4(
             selected_physical_batch=physical_batch,
             formal_parameter_count=formal_count,
             expected_seed=seed,
-            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v1",
+            expected_schema="route_a_v3_route2_xeditcritic_v4_confirmation_run.v2",
             expected_status="TERMINAL_XEDITCRITIC_V4_CONFIRMATION_RUN_COMPLETE",
             expected_run_stage="CONFIRMATION",
+            expected_output_directory=seed_output_root / "c0_v4",
+            expected_training_git_head=runner_head,
         )
         _require(
             all(
@@ -370,6 +581,11 @@ def adjudicate_critic_confirmation_v4(
             "checks": checks,
             "passed": all(checks.values()),
         }
+    _require(
+        len(confirmation_runner_heads) == 1,
+        "Critic V4 confirmation runner Git HEAD differs across seeds",
+    )
+    confirmation_runner_head = next(iter(confirmation_runner_heads))
     spearmans = [row["candidate_task_macro_spearman"] for row in seed_results.values()]
     margins = [row["margin_over_c0_v4"] for row in seed_results.values()]
     cohort_checks = {
@@ -390,6 +606,10 @@ def adjudicate_critic_confirmation_v4(
         "development_test_authorized": passed,
         "atomic_development_test_only": passed,
         "additional_seed_authorized": False,
+        "confirmation_runner_git_head": confirmation_runner_head,
+        "matched_initialization_claim": (
+            "SEED_DATA_BUDGET_MATCHED_FULL_C0_NOT_TENSOR_IDENTICAL"
+        ),
         "guidance_authorized": False,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,

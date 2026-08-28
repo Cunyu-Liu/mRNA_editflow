@@ -51,21 +51,43 @@ def test_refit_decision_rejects_receipt_with_test_metrics() -> None:
 
 
 def test_refit_manifest_is_exact_three_seed_full_only() -> None:
+    expected_head = "d" * 40
     payload = {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_job_manifest.v1",
         "status": "XEDITCRITIC_V4_REFIT_CONFIGS_PREPARED_NOT_STARTED",
         "required_seeds": [20260908, 20260909, 20260910],
         "refit_pass_count": 8,
+        "runner_git_head": expected_head,
         "job_count": 3,
         "jobs": [
             {"seed": seed, "run_id": "v4_full"}
             for seed in (20260908, 20260909, 20260910)
         ],
     }
-    assert len(launcher.validate_refit_manifest(payload)) == 3
+    assert len(
+        launcher.validate_refit_manifest(payload, expected_head=expected_head)
+    ) == 3
     payload["jobs"].append({"seed": 20260911, "run_id": "v4_full"})
     with pytest.raises(Exception, match="job set changed"):
-        launcher.validate_refit_manifest(payload)
+        launcher.validate_refit_manifest(payload, expected_head=expected_head)
+
+
+def test_refit_manifest_rejects_runner_head_drift() -> None:
+    expected_head = "d" * 40
+    payload = {
+        "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_job_manifest.v1",
+        "status": "XEDITCRITIC_V4_REFIT_CONFIGS_PREPARED_NOT_STARTED",
+        "required_seeds": [20260908, 20260909, 20260910],
+        "refit_pass_count": 8,
+        "runner_git_head": "e" * 40,
+        "job_count": 3,
+        "jobs": [
+            {"seed": seed, "run_id": "v4_full"}
+            for seed in (20260908, 20260909, 20260910)
+        ],
+    }
+    with pytest.raises(Exception, match="runner Git HEAD"):
+        launcher.validate_refit_manifest(payload, expected_head=expected_head)
 
 
 def test_refit_launcher_uses_formal_current_head_scheduler() -> None:

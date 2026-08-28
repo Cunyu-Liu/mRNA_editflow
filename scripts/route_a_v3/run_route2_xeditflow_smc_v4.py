@@ -211,7 +211,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         device=device,
     )
     _require(int(checkpoint.get("seed", -1)) == seed, "V4 SMC SetFlow seed differs")
-    value = load_value_checkpoint_v4(
+    value, value_training_provenance = load_value_checkpoint_v4(
         Path(config["value_checkpoint_path"]),
         base_flow_training_seed=seed,
         kappa=float(config["kappa"]),
@@ -402,6 +402,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         ),
         "method_id": str(config["method_id"]),
         "base_flow_training_seed": seed,
+        "value_checkpoint_path": str(config["value_checkpoint_path"]),
+        "value_training_provenance": value_training_provenance,
         "source_count": len(sources),
         "particle_count_per_round": 32,
         "candidate_cap_per_source": 32,

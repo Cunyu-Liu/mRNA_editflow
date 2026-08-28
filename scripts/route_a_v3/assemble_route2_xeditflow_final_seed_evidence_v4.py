@@ -16,7 +16,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from core.route2_xeditflow_value_training_v4 import BASE_FLOW_SEEDS_V4
+from core.route2_xeditflow_value_training_v4 import (
+    BASE_FLOW_SEEDS_V4,
+    validate_value_training_provenance_v4,
+)
 
 
 METHODS_V4 = {
@@ -171,6 +174,7 @@ def assemble_final_seed_evidence_v4(
     *,
     base_flow_training_seed: int,
     selected_combination: Sequence[float],
+    value_checkpoint_path: str,
     equal_wall_time_sensitivity: Mapping[str, Any],
     full_independent_evaluator: Mapping[str, Any],
     full_candidate_rows: Sequence[Mapping[str, Any]],
@@ -189,6 +193,19 @@ def assemble_final_seed_evidence_v4(
         "V4 final evidence selected combination differs",
     )
     _require(set(evidence) == METHODS_V4, "V4 final evidence method inventory differs")
+    expected_value_checkpoint_path = str(value_checkpoint_path)
+    full_generation = evidence.get("full_soft_value_smc", {}).get("generation", {})
+    _require(
+        isinstance(full_generation, Mapping)
+        and full_generation.get("value_checkpoint_path")
+        == expected_value_checkpoint_path,
+        "V4 final value checkpoint path differs",
+    )
+    value_training_provenance = validate_value_training_provenance_v4(
+        full_generation.get("value_training_provenance", {}),
+        base_flow_training_seed=seed,
+        value_checkpoint_path=expected_value_checkpoint_path,
+    )
     _require(
         equal_wall_time_sensitivity.get("status")
         == "XEDITFLOW_V4_EQUAL_WALL_TIME_SENSITIVITY_COMPLETE"
@@ -557,6 +574,8 @@ def assemble_final_seed_evidence_v4(
         "method_results": method_results,
         "paired_bootstrap": bootstrap,
         "equal_wall_time_sensitivity": dict(equal_wall_time_sensitivity),
+        "value_checkpoint_path": expected_value_checkpoint_path,
+        "value_training_provenance": value_training_provenance,
     }
 
 
@@ -593,6 +612,8 @@ def write_final_seed_evidence_v4(
         "methods": method_paths,
         "paired_bootstrap_path": str(bootstrap_path),
         "equal_wall_time_sensitivity_path": str(equal_wall_path),
+        "value_checkpoint_path": payload["value_checkpoint_path"],
+        "value_training_provenance": payload["value_training_provenance"],
     }
     (output_dir / "seed_manifest_row.json").write_text(
         json.dumps(row, indent=2, sort_keys=True) + "\n",
@@ -628,6 +649,7 @@ def main() -> None:
         evidence,
         base_flow_training_seed=int(config["base_flow_training_seed"]),
         selected_combination=config["selected_combination"],
+        value_checkpoint_path=str(config["value_checkpoint_path"]),
         equal_wall_time_sensitivity=_json(
             Path(config["equal_wall_time_sensitivity_path"])
         ),

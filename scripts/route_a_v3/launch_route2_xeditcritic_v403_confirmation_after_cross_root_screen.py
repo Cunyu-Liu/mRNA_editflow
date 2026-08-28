@@ -24,6 +24,8 @@ from scripts.route_a_v3.prepare_route2_xeditcritic_v4_confirmation_configs impor
 
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+# Historical repaired full provenance only. New controls and confirmation use
+# the exact current runner HEAD passed to this launcher.
 TRAINING_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 TRAINING_SEMANTICS_PREVIOUS_BASELINE_HEAD = (
     "a305d332c7cbde8066c57c30a330a1e63a0d3d0d"
@@ -43,10 +45,6 @@ TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
     "core/route2_xeditsetflow_training_v4.py",
 )
 C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
-TRAINING_WORKTREE = Path(
-    "/home/cunyuliu/mrna_editflow_goal/worktrees/"
-    "route_a_v3_route2_v403_critic_rng_replay_20260827"
-)
 BASE_CONFIG = (
     WORKTREE / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
 )
@@ -62,20 +60,10 @@ SCHEDULER = (
 LEGACY_GATE = (
     ROOT / "experiments/xeditcritic_v4/screen_seed_20260907/screen_gate.json"
 )
-CROSS_ROOT_GATE = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"screen_seed_20260907_v403_cross_root_{TRAINING_GIT_HEAD}/screen_gate.json"
-)
 FULL_RUNTIME = (
     ROOT
     / "experiments/xeditcritic_v4/"
     f"v403_rng_replay_fix_runner_{TRAINING_GIT_HEAD}/runtime.json"
-)
-CONTROL_RUNTIME = (
-    ROOT
-    / "experiments/xeditcritic_v4/"
-    f"v403_control_recovery_runner_{TRAINING_GIT_HEAD}/runtime.json"
 )
 ATTEMPT_RECEIPT = (
     ROOT
@@ -117,6 +105,10 @@ FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
         "test_route2_xeditsetflow_gate_s1.py",
         "test_run_route2_xeditsetflow_s1_screen_scheduler.py",
         "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
+        "test_route2_xeditsetflow_confirmation_s1.py",
+        "test_launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py",
+        "test_launch_route2_xeditsetflow_s1_confirmation_posttraining.py",
+        "test_adjudicate_route2_xeditsetflow_s1_confirmation.py",
     ),
     (
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py",
@@ -247,7 +239,32 @@ def write_new_atomic(path: Path, payload: Mapping[str, Any]) -> None:
     os.replace(partial, path)
 
 
-def expected_summary_paths() -> dict[str, Path]:
+def control_output_root(control_runner_head: str) -> Path:
+    return (
+        ROOT
+        / "experiments/xeditcritic_v4/"
+        f"screen_seed_20260907_v403_control_recovery_{control_runner_head}"
+    )
+
+
+def control_runtime_path(control_runner_head: str) -> Path:
+    return (
+        ROOT
+        / "experiments/xeditcritic_v4/"
+        f"v403_control_recovery_runner_{control_runner_head}/runtime.json"
+    )
+
+
+def cross_root_gate_path(control_runner_head: str) -> Path:
+    return (
+        ROOT
+        / "experiments/xeditcritic_v4/"
+        f"screen_seed_20260907_v403_cross_root_controls_{control_runner_head}/"
+        "screen_gate.json"
+    )
+
+
+def expected_summary_paths(control_runner_head: str) -> dict[str, Path]:
     historical = (
         ROOT
         / "experiments/xeditcritic_v4/"
@@ -258,11 +275,7 @@ def expected_summary_paths() -> dict[str, Path]:
         / "experiments/xeditcritic_v4/"
         f"screen_seed_20260907_v403_rng_replay_fix_{TRAINING_GIT_HEAD}"
     )
-    controls = (
-        ROOT
-        / "experiments/xeditcritic_v4/"
-        f"screen_seed_20260907_v403_control_recovery_{TRAINING_GIT_HEAD}"
-    )
+    controls = control_output_root(control_runner_head)
     result = {
         "c0_v4": historical / "c0_v4/run_summary.json",
         "v4_full": full / "v4_full/run_summary.json",
@@ -281,14 +294,36 @@ def expected_source_role(run_id: str) -> str:
         return "HISTORICAL_MATCHED_C0_TERMINAL_SUMMARY"
     if run_id == "v4_full":
         return "CURRENT_V403_REPAIRED_FULL_TERMINAL_SUMMARY"
-    return "V403_REPAIRED_CONTROL_TERMINAL_SUMMARY"
+    return "CURRENT_HEAD_CONTROL_TERMINAL_SUMMARY"
 
 
-def expected_source_head(run_id: str) -> str:
-    return C0_GIT_HEAD if run_id == "c0_v4" else TRAINING_GIT_HEAD
+def expected_source_head(run_id: str, control_runner_head: str) -> str:
+    return (
+        C0_GIT_HEAD
+        if run_id == "c0_v4"
+        else TRAINING_GIT_HEAD
+        if run_id == "v4_full"
+        else control_runner_head
+    )
+
+
+def control_runner_head_from_gate(payload: Mapping[str, Any]) -> str:
+    transition = payload.get("cross_root_transition")
+    head = str(
+        transition.get("control_runner_git_head", "")
+        if isinstance(transition, Mapping)
+        else ""
+    )
+    require(
+        re.fullmatch(r"[0-9a-f]{40}", head) is not None
+        and head not in {TRAINING_GIT_HEAD, C0_GIT_HEAD},
+        "cross-root gate lacks a new exact controls runner HEAD",
+    )
+    return head
 
 
 def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
+    control_runner_head = control_runner_head_from_gate(payload)
     require(
         payload.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_screen_gate.v1"
@@ -315,22 +350,20 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
         == "route_a_v3_route2_xeditcritic_v403_cross_root_input.v1"
         and transition.get("ordered_run_ids") == list(ARM_ORDER)
         and transition.get("historical_c0_git_head") == C0_GIT_HEAD
-        and transition.get("repaired_full_and_controls_git_head")
-        == TRAINING_GIT_HEAD
+        and transition.get("historical_full_git_head") == TRAINING_GIT_HEAD
+        and transition.get("control_runner_git_head") == control_runner_head
         and transition.get("full_runtime_path") == str(FULL_RUNTIME)
         and transition.get("full_runtime_status")
         == "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL"
-        and transition.get("control_runtime_path") == str(CONTROL_RUNTIME)
+        and transition.get("control_runtime_path")
+        == str(control_runtime_path(control_runner_head))
         and transition.get("control_runtime_status")
         == (
             "XEDITCRITIC_V403_CONTROL_RECOVERY_"
             "ALL_SIX_SUMMARIES_TERMINAL"
         )
-        and transition.get("frozen_config_path")
-        == str(
-            TRAINING_WORKTREE
-            / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
-        )
+        and isinstance(transition.get("frozen_config_path"), str)
+        and bool(str(transition.get("frozen_config_path")).strip())
         and transition.get("legacy_gate_path") == str(LEGACY_GATE)
         and transition.get("legacy_gate_preserved") is True
         and int(transition.get("terminal_summary_payloads_read", -1)) == 8
@@ -344,7 +377,7 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
         transition, label="cross-root transition provenance"
     )
     arm_sources = transition.get("arm_sources")
-    summary_paths = expected_summary_paths()
+    summary_paths = expected_summary_paths(control_runner_head)
     require(
         isinstance(arm_sources, Mapping)
         and set(arm_sources.keys()) == set(ARM_ORDER),
@@ -352,7 +385,7 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
     )
     for run_id in ARM_ORDER:
         row = arm_sources[run_id]
-        expected_head = expected_source_head(run_id)
+        expected_head = expected_source_head(run_id, control_runner_head)
         require(
             isinstance(row, Mapping)
             and row.get("summary_path") == str(summary_paths[run_id])
@@ -380,13 +413,14 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
 def load_and_validate_source_authorizations(
     gate: Mapping[str, Any],
 ) -> dict[str, dict[str, Any]]:
+    control_runner_head = control_runner_head_from_gate(gate)
     arm_sources = gate["cross_root_transition"]["arm_sources"]
     authorizations: dict[str, dict[str, Any]] = {}
     for run_id in ARM_ORDER:
         path = Path(str(arm_sources[run_id]["launch_authorization_path"]))
         require(path.is_file(), f"source authorization is absent for {run_id}: {path}")
         authorization = read_json(path)
-        expected_head = expected_source_head(run_id)
+        expected_head = expected_source_head(run_id, control_runner_head)
         authorized_run_ids = authorization.get("authorized_run_ids")
         barriers = authorization.get("barriers")
         require(
@@ -413,6 +447,8 @@ def load_and_validate_source_authorizations(
 
 def derive_confirmation_protocol(
     base_protocol: Mapping[str, Any],
+    *,
+    control_runner_head: str,
 ) -> dict[str, Any]:
     require(
         base_protocol.get("schema_version")
@@ -431,7 +467,9 @@ def derive_confirmation_protocol(
         base_protocol, label="base confirmation protocol"
     )
     derived = dict(base_protocol)
-    derived["screen_gate_path"] = str(CROSS_ROOT_GATE)
+    derived["screen_gate_path"] = str(
+        cross_root_gate_path(control_runner_head)
+    )
     require(
         all(
             derived[key] == value
@@ -607,11 +645,23 @@ def build_confirmation_configs(
     base_config: Mapping[str, Any],
     base_protocol: Mapping[str, Any],
     gate: Mapping[str, Any],
+    *,
+    runner_head: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     validate_cross_root_gate(gate)
-    protocol = derive_confirmation_protocol(base_protocol)
+    require(
+        control_runner_head_from_gate(gate) == runner_head,
+        "confirmation runner HEAD differs from the controls runner HEAD",
+    )
+    screen_gate_path = cross_root_gate_path(runner_head)
+    protocol = derive_confirmation_protocol(
+        base_protocol, control_runner_head=runner_head
+    )
     configs = build_critic_confirmation_configs_v4(
-        base_config, protocol, gate
+        base_config,
+        protocol,
+        gate,
+        confirmation_runner_git_head=runner_head,
     )
     require(
         [int(config["training_seed"]) for config in configs]
@@ -626,9 +676,10 @@ def build_confirmation_configs(
             and config.get("status")
             == "FROZEN_CONFIRMATION_CONFIG_NOT_STARTED"
             and config.get("run_stage") == "CONFIRMATION"
+            and config.get("confirmation_runner_git_head") == runner_head
             and config.get("required_confirmation_run_ids")
             == ["v4_full", "c0_v4"]
-            and config.get("screen_gate_path") == str(CROSS_ROOT_GATE)
+            and config.get("screen_gate_path") == str(screen_gate_path)
             and config.get("output_root")
             == str(Path(str(protocol["run_root"])) / f"seed_{seed}")
             and config.get("required_confirmation_seeds")
@@ -673,10 +724,11 @@ def materialize_config_package(
         "required_run_ids": ["v4_full", "c0_v4"],
         "required_seeds": list(CONFIRMATION_SEEDS),
         "config_paths": paths,
-        "runner_git_head": runner_head,
-        "screen_gate_path": str(CROSS_ROOT_GATE),
+        "confirmation_runner_git_head": runner_head,
+        "screen_gate_path": str(cross_root_gate_path(runner_head)),
         "historical_c0_git_head": C0_GIT_HEAD,
-        "repaired_full_and_controls_git_head": TRAINING_GIT_HEAD,
+        "historical_full_git_head": TRAINING_GIT_HEAD,
+        "control_runner_git_head": runner_head,
         "legacy_screen_gate_preserved": True,
         "launch_attempt_receipt": str(ATTEMPT_RECEIPT),
         "development_test_authorized": False,
@@ -706,11 +758,12 @@ def validate_manifest(
         and manifest.get("required_run_ids") == ["v4_full", "c0_v4"]
         and manifest.get("required_seeds") == list(CONFIRMATION_SEEDS)
         and len(manifest.get("config_paths", [])) == 3
-        and manifest.get("runner_git_head") == runner_head
-        and manifest.get("screen_gate_path") == str(CROSS_ROOT_GATE)
+        and manifest.get("confirmation_runner_git_head") == runner_head
+        and manifest.get("screen_gate_path")
+        == str(cross_root_gate_path(runner_head))
         and manifest.get("historical_c0_git_head") == C0_GIT_HEAD
-        and manifest.get("repaired_full_and_controls_git_head")
-        == TRAINING_GIT_HEAD
+        and manifest.get("historical_full_git_head") == TRAINING_GIT_HEAD
+        and manifest.get("control_runner_git_head") == runner_head
         and manifest.get("legacy_screen_gate_preserved") is True
         and manifest.get("launch_attempt_receipt") == str(ATTEMPT_RECEIPT),
         "Critic V4.0.3 confirmation manifest changed",
@@ -727,9 +780,11 @@ def validate_manifest(
             config.get("schema_version")
             == "route_a_v3_route2_xeditcritic_v4_confirmation_runtime.v1"
             and config.get("run_stage") == "CONFIRMATION"
+            and config.get("confirmation_runner_git_head") == runner_head
             and config.get("required_confirmation_run_ids")
             == ["v4_full", "c0_v4"]
-            and config.get("screen_gate_path") == str(CROSS_ROOT_GATE)
+            and config.get("screen_gate_path")
+            == str(cross_root_gate_path(runner_head))
             and config.get("required_confirmation_seeds")
             == list(CONFIRMATION_SEEDS)
             and config.get("additional_seed_authorized") is False
@@ -758,6 +813,10 @@ def build_confirmation_authorization(
         "Critic confirmation runner Git HEAD is invalid",
     )
     validate_cross_root_gate(gate)
+    require(
+        control_runner_head_from_gate(gate) == runner_head,
+        "confirmation runner HEAD differs from the controls runner HEAD",
+    )
     validate_runner_verification_receipt(
         runner_verification_receipt,
         runner_head=runner_head,
@@ -772,7 +831,7 @@ def build_confirmation_authorization(
         barriers = authorization.get("barriers")
         require(
             authorization.get("authorized_git_head")
-            == expected_source_head(run_id)
+            == expected_source_head(run_id, runner_head)
             and isinstance(barriers, Mapping)
             and all(barriers.get(key) is True for key in SOURCE_BARRIERS),
             f"Critic confirmation source barriers changed for {run_id}",
@@ -792,12 +851,13 @@ def build_confirmation_authorization(
         "authorized_git_head": runner_head,
         "authorized_seeds": list(CONFIRMATION_SEEDS),
         "authorized_run_ids": ["v4_full", "c0_v4"],
-        "cross_root_screen_gate_path": str(CROSS_ROOT_GATE),
+        "cross_root_screen_gate_path": str(cross_root_gate_path(runner_head)),
         "legacy_screen_gate_path": str(LEGACY_GATE),
         "legacy_screen_gate_preserved": True,
         "ordered_screen_run_ids": list(ARM_ORDER),
         "historical_c0_git_head": C0_GIT_HEAD,
-        "repaired_full_and_controls_git_head": TRAINING_GIT_HEAD,
+        "historical_full_git_head": TRAINING_GIT_HEAD,
+        "control_runner_git_head": runner_head,
         "source_authorization_paths": {
             run_id: gate["cross_root_transition"]["arm_sources"][run_id][
                 "launch_authorization_path"
@@ -1017,18 +1077,19 @@ def build_schedule(
         ),
         "status": "FROZEN_CONFIRMATION_TRAINING_SCHEDULE",
         "git_head": runner_head,
-        "experiment_head": TRAINING_GIT_HEAD,
+        "experiment_head": runner_head,
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "eligible_components": ["critic"],
         "config_manifest": str(manifest_path),
         "confirmation_authorization": str(authorization_path),
-        "cross_root_screen_gate": str(CROSS_ROOT_GATE),
+        "cross_root_screen_gate": str(cross_root_gate_path(runner_head)),
         "legacy_screen_gate": str(LEGACY_GATE),
         "legacy_screen_gate_preserved": True,
         "launch_attempt_receipt": str(ATTEMPT_RECEIPT),
         "historical_c0_git_head": C0_GIT_HEAD,
-        "repaired_full_and_controls_git_head": TRAINING_GIT_HEAD,
+        "historical_full_git_head": TRAINING_GIT_HEAD,
+        "control_runner_git_head": runner_head,
         "required_seeds": list(CONFIRMATION_SEEDS),
         "required_run_ids": ["v4_full", "c0_v4"],
         "gpu_memory_diagnostics_before_launch": {
@@ -1055,14 +1116,15 @@ def run(current_head: str) -> dict[str, Any]:
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None,
         "expected current Git HEAD is invalid",
     )
-    require(CROSS_ROOT_GATE != LEGACY_GATE, "cross-root gate aliases legacy gate")
+    cross_root_gate = cross_root_gate_path(current_head)
+    require(cross_root_gate != LEGACY_GATE, "cross-root gate aliases legacy gate")
     for path, label in (
         (PYTHON, "formal Python"),
         (BASE_CONFIG, "Critic screen config"),
         (BASE_PROTOCOL, "Critic confirmation protocol"),
         (TRAINER, "Critic trainer"),
         (SCHEDULER, "confirmation scheduler"),
-        (CROSS_ROOT_GATE, "fixed cross-root PASS gate"),
+        (cross_root_gate, "fixed cross-root PASS gate"),
     ):
         require(path.is_file(), f"{label} is absent: {path}")
     require(
@@ -1079,7 +1141,7 @@ def run(current_head: str) -> dict[str, Any]:
         "A100 runner worktree is dirty",
     )
 
-    gate = read_json(CROSS_ROOT_GATE)
+    gate = read_json(cross_root_gate)
     runner_receipt_path = runner_verification_receipt_path(current_head)
     require(
         runner_receipt_path.is_file(),
@@ -1105,7 +1167,10 @@ def run(current_head: str) -> dict[str, Any]:
     )
     require_zero_protected_reads(preflight, label="frozen Critic preflight")
     protocol, configs = build_confirmation_configs(
-        base_config, base_protocol, gate
+        base_config,
+        base_protocol,
+        gate,
+        runner_head=current_head,
     )
     authorization = build_confirmation_authorization(
         gate,
@@ -1144,7 +1209,7 @@ def run(current_head: str) -> dict[str, Any]:
                 ),
                 "status": "STOPPED_BEFORE_CONFIRMATION_LAUNCH_CUDA_FAILURE",
                 "runner_git_head": current_head,
-                "cross_root_screen_gate": str(CROSS_ROOT_GATE),
+                "cross_root_screen_gate": str(cross_root_gate),
                 "training_semantics": training_semantics,
                 "runner_verification_receipt": str(runner_receipt_path),
                 "error_type": type(error).__name__,
@@ -1165,11 +1230,12 @@ def run(current_head: str) -> dict[str, Any]:
             ),
             "status": "XEDITCRITIC_V403_CONFIRMATION_ATTEMPT_CONSUMED",
             "runner_git_head": current_head,
-            "cross_root_screen_gate": str(CROSS_ROOT_GATE),
+            "cross_root_screen_gate": str(cross_root_gate),
             "legacy_screen_gate": str(LEGACY_GATE),
             "legacy_screen_gate_preserved": True,
             "historical_c0_git_head": C0_GIT_HEAD,
-            "repaired_full_and_controls_git_head": TRAINING_GIT_HEAD,
+            "historical_full_git_head": TRAINING_GIT_HEAD,
+            "control_runner_git_head": current_head,
             "training_semantics": training_semantics,
             "runner_verification_receipt": str(runner_receipt_path),
             "required_seeds": list(CONFIRMATION_SEEDS),
@@ -1237,15 +1303,17 @@ def run(current_head: str) -> dict[str, Any]:
         ),
         "status": "XEDITCRITIC_V403_CONFIRMATION_SCHEDULER_LAUNCHED",
         "runner_git_head": current_head,
-        "training_git_head": TRAINING_GIT_HEAD,
+        "training_git_head": current_head,
         "historical_c0_git_head": C0_GIT_HEAD,
+        "historical_full_git_head": TRAINING_GIT_HEAD,
+        "control_runner_git_head": current_head,
         "scheduler_pid": process.pid,
         "schedule_path": str(schedule_path),
         "runtime_manifest": str(runtime_manifest),
         "scheduler_log": str(scheduler_log),
         "config_manifest": str(manifest_path),
         "confirmation_authorization": str(authorization_path),
-        "cross_root_screen_gate": str(CROSS_ROOT_GATE),
+        "cross_root_screen_gate": str(cross_root_gate),
         "launch_attempt_receipt": str(ATTEMPT_RECEIPT),
         "runner_verification_receipt": str(runner_receipt_path),
         "required_seeds": list(CONFIRMATION_SEEDS),

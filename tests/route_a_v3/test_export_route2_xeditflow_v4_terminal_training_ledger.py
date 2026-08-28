@@ -13,6 +13,8 @@ MODULE_PATH = (
     ROOT
     / "scripts/route_a_v3/export_route2_xeditflow_v4_terminal_training_ledger.py"
 )
+HISTORICAL_C0_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
+HISTORICAL_FULL_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 
 
 def _load_module():
@@ -54,6 +56,8 @@ def _training_artifact(
     seed: int | None = None,
     run_id: str | None = None,
     attempt_id: str | None = None,
+    critic_evidence_version: str | None = None,
+    held_out_study: str | None = None,
 ) -> dict[str, Any]:
     seed = seed if seed is not None else 100_000 + index
     job_key = job_key or f"{family}:{index:02d}"
@@ -67,10 +71,15 @@ def _training_artifact(
     if family.startswith("critic_"):
         trainer = "train_route2_xeditcritic_v4.py"
         stage = family.removeprefix("critic_").upper()
+        critic_evidence_version = critic_evidence_version or "v2"
+        assert critic_evidence_version in {"v1", "v2"}
         summary_path = output / "run_summary.json"
         checkpoint_path = output / "final_pass_8_checkpoint.pt"
         summary = {
-            "schema_version": f"route_a_v3_route2_xeditcritic_v4_{stage.lower()}_run.v1",
+            "schema_version": (
+                f"route_a_v3_route2_xeditcritic_v4_{stage.lower()}_run."
+                f"{critic_evidence_version}"
+            ),
             "status": f"TERMINAL_XEDITCRITIC_V4_{stage}_RUN_COMPLETE",
             "run_stage": stage,
             "run_id": run_id,
@@ -89,6 +98,48 @@ def _training_artifact(
             if family == "critic_screen"
             else {"training_seed": seed}
         )
+        if critic_evidence_version == "v2":
+            update_budget = 22_416
+            runner_head_key = {
+                "SCREEN": "runner_git_head",
+                "CONFIRMATION": "confirmation_runner_git_head",
+                "REFIT": "posttest_runner_git_head",
+                "LOSO": "posttest_runner_git_head",
+            }[stage]
+            config[runner_head_key] = head
+            config["data_geometry"] = {
+                "total_optimizer_updates": update_budget
+            }
+            initialization_scope = (
+                "NOT_CLAIMED_DIFFERENT_C0_ARCHITECTURE"
+                if run_id == "c0_v4"
+                else (
+                    "NOT_CLAIMED_PARAMETER_MATCHED_DIFFERENT_MODULE"
+                    if run_id == "v4_no_cross"
+                    else "SHARED_V4_CONSTRUCTOR_WITHIN_IDENTICAL_ARCHITECTURE"
+                )
+            )
+            summary.update(
+                {
+                    "parameter_initialization_seed": seed,
+                    "parameter_initialization_seed_applied_before_model_construction": True,
+                    "parameter_initialization_tensor_identity_scope": initialization_scope,
+                    "cuda_available": True,
+                    "cuda_device": f"cuda:{gpu}",
+                    "a100_device_verified": True,
+                    "bf16_supported": True,
+                    "training_git_head": head,
+                    "output_directory": str(output),
+                    "training_summary_path": str(summary_path),
+                    "training_attempt_path": str(
+                        output / "training_attempt.json"
+                    ),
+                    "update_count": update_budget,
+                }
+            )
+        if held_out_study is not None:
+            config["held_out_study"] = held_out_study
+            summary["held_out_study"] = held_out_study
         attempt_seed: int | str = seed
         checkpoint_paths = [checkpoint_path]
     elif family.startswith("setflow_"):
@@ -152,6 +203,29 @@ def _training_artifact(
         "output_directory": str(output),
         "evaluation_record_count": 0,
     }
+    if family.startswith("critic_") and critic_evidence_version == "v2":
+        initialization_scope = summary[
+            "parameter_initialization_tensor_identity_scope"
+        ]
+        attempt.update(
+            {
+                "baseline_id": f"xeditcritic_v4_{run_id}_seed{seed}",
+                "parameter_initialization_seed": seed,
+                "parameter_initialization_seed_applied_before_model_construction": True,
+                "parameter_initialization_tensor_identity_scope": initialization_scope,
+                "cuda_available": True,
+                "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+                "a100_device_verified": True,
+                "bf16_supported": True,
+                "cpu_fallback_used": False,
+                "training_git_head": head,
+                "training_summary_path": str(summary_path),
+                "checkpoint_path": str(checkpoint_path),
+                "training_attempt_path": str(output / "training_attempt.json"),
+                "optimizer_steps": update_budget,
+            }
+        )
+        summary["checkpoint_path"] = str(checkpoint_path)
     _write_json(config_path, config)
     _write_json(output / "training_attempt.json", attempt)
     _write_json(summary_path, summary)
@@ -187,6 +261,8 @@ def _training_artifact(
         "failure": failure_path,
         "command": command,
         "attempt_id": attempt["attempt_id"],
+        "critic_evidence_version": critic_evidence_version,
+        "held_out_study": held_out_study,
     }
 
 
@@ -219,8 +295,8 @@ def _final_nontraining_job(root: Path, key: str, *, gpu: int | None = None) -> d
 
 def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> dict[str, Any]:
     head = "a" * 40
-    c0_head = "b" * 40
-    critic_training_head = "f" * 40
+    c0_head = HISTORICAL_C0_HEAD
+    critic_training_head = HISTORICAL_FULL_HEAD
     paths = {
         "critic_screen_v402": tmp_path / "schedules" / "critic_v402.json",
         "critic_screen_full": tmp_path / "schedules" / "critic_v403_full.json",
@@ -263,7 +339,9 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
     critic_screen = []
     for index, run_id in enumerate(critic_run_ids):
         ordinal += 1
-        row_head = c0_head if index == 0 else critic_training_head
+        row_head = (
+            c0_head if index == 0 else critic_training_head if index == 1 else head
+        )
         gpu = 5 if index == 0 else (3 if index == 1 else index - 2)
         attempt_id = (
             None
@@ -280,6 +358,7 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
             seed=20260907,
             run_id=run_id,
             attempt_id=attempt_id,
+            critic_evidence_version="v1" if index < 2 else "v2",
         )
         if attempt_id is not None:
             row["command"].extend(["--training-attempt-id", attempt_id])
@@ -310,7 +389,12 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
         artifacts["setflow_screen"].append(row)
 
     artifacts["critic_confirmation"] = []
-    for index, seed in enumerate(range(20260917, 20260923)):
+    confirmation_specs = [
+        (seed, run_id)
+        for seed in (20260908, 20260909, 20260910)
+        for run_id in ("v4_full", "c0_v4")
+    ]
+    for index, (seed, run_id) in enumerate(confirmation_specs):
         ordinal += 1
         artifacts["critic_confirmation"].append(
             _training_artifact(
@@ -319,9 +403,9 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
                 index=ordinal,
                 gpu=index,
                 head=head,
-                job_key=f"critic:{seed}:v4_full",
+                job_key=f"critic:{seed}:{run_id}",
                 seed=seed,
-                run_id="v4_full",
+                run_id=run_id,
             )
         )
 
@@ -341,12 +425,55 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
             )
         )
 
-    for family in (
-        "critic_refit",
-        "critic_loso",
-        "guidance_value",
-        "final_value",
-    ):
+    artifacts["critic_refit"] = []
+    for index, seed in enumerate((20260908, 20260909, 20260910)):
+        ordinal += 1
+        artifacts["critic_refit"].append(
+            _training_artifact(
+                tmp_path,
+                family="critic_refit",
+                index=ordinal,
+                gpu=index,
+                head=head,
+                job_key=f"critic_refit:{seed}:v4_full",
+                seed=seed,
+                run_id="v4_full",
+            )
+        )
+
+    loso_studies = (
+        "GSE200304",
+        "GSE114002",
+        "GSE149487",
+        "GSE217518",
+        "GSE186455",
+        "GSE256185",
+        "GSE269595",
+    )
+    artifacts["critic_loso"] = []
+    loso_specs = [
+        (seed, study, run_id)
+        for seed in (20260908, 20260909, 20260910)
+        for study in loso_studies
+        for run_id in ("v4_full", "c0_v4")
+    ]
+    for index, (seed, study, run_id) in enumerate(loso_specs):
+        ordinal += 1
+        artifacts["critic_loso"].append(
+            _training_artifact(
+                tmp_path,
+                family="critic_loso",
+                index=ordinal,
+                gpu=index % 6,
+                head=head,
+                job_key=f"critic_loso:{seed}:{study}:{run_id}",
+                seed=seed,
+                run_id=run_id,
+                held_out_study=study,
+            )
+        )
+
+    for family in ("guidance_value", "final_value"):
         count = family_counts[family]
         rows = []
         for index in range(count):
@@ -443,7 +570,14 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
 
     controls = artifacts["critic_screen"][2:]
     control_config = tmp_path / "configs" / "critic_controls_screen.json"
-    _write_json(control_config, {"training": {"screen_seed": 20260907}})
+    _write_json(
+        control_config,
+        {
+            "training": {"screen_seed": 20260907},
+            "runner_git_head": head,
+            "data_geometry": {"total_optimizer_updates": 22_416},
+        },
+    )
     _write_json(
         paths["critic_screen_controls"],
         {
@@ -452,8 +586,12 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
             ),
             "status": "XEDITCRITIC_V403_CONTROL_RECOVERY_SCHEDULED",
             "orchestration_git_head": head,
-            "training_code_git_head": critic_training_head,
-            "training_worktree": "/home/synthetic/f34_training_worktree",
+            "current_git_head": head,
+            "runner_git_head": head,
+            "training_code_git_head": head,
+            "historical_full_git_head": critic_training_head,
+            "historical_c0_git_head": c0_head,
+            "training_worktree": "/home/synthetic/current_training_worktree",
             "screen_config": str(control_config),
             "cuda_bf16_inventory": [
                 {
@@ -672,7 +810,7 @@ def _make_package(tmp_path: Path, *, gate_status: str = "XEDITFLOW_V4_PASS") -> 
                     "seed": row["seed"],
                     "run_id": row["run_id"],
                     **(
-                        {"held_out_study": f"study_{row['seed']}"}
+                        {"held_out_study": row["held_out_study"]}
                         if family == "critic_loso"
                         else {}
                     ),
@@ -981,8 +1119,19 @@ def test_exports_real_recovered_multischedule_lineage(tmp_path: Path) -> None:
         "critic_v403_controls.json",
     ]
     assert [row["code_commit"] for row in critic_screen] == [
-        "b" * 40,
-        *("f" * 40 for _ in range(7)),
+        HISTORICAL_C0_HEAD,
+        HISTORICAL_FULL_HEAD,
+        *("a" * 40 for _ in range(6)),
+    ]
+    assert [
+        row["terminal_evidence_schema_version"] for row in critic_screen
+    ] == [
+        "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
+        "route_a_v3_route2_xeditcritic_v4_screen_run.v1",
+        *(
+            "route_a_v3_route2_xeditcritic_v4_screen_run.v2"
+            for _ in range(6)
+        ),
     ]
     assert sum(
         row["historical_free_memory_gate_applied"] for row in critic_screen
@@ -1025,6 +1174,16 @@ def test_exports_real_recovered_multischedule_lineage(tmp_path: Path) -> None:
         "setflow_recovered_confirmation.json"
     }
     assert {row["code_commit"] for row in setflow_confirmation} == {"a" * 40}
+    for family in ("critic_confirmation", "critic_refit", "critic_loso"):
+        rows = [
+            row
+            for row in result["training_attempts"]
+            if row["family"] == family
+        ]
+        stage = family.removeprefix("critic_")
+        assert {
+            row["terminal_evidence_schema_version"] for row in rows
+        } == {f"route_a_v3_route2_xeditcritic_v4_{stage}_run.v2"}
 
 
 def test_running_final_runtime_reads_no_inventory_summary_receipt_or_adjudication(
@@ -1080,10 +1239,156 @@ def test_rejects_training_commit_from_wrong_lineage_head(
     package = _make_package(tmp_path)
     if lineage == "controls":
         target = package["artifacts"]["critic_screen"][2]["attempt"]
-        _mutate(target, lambda value: value.update(code_commit="a" * 40))
+        _mutate(target, lambda value: value.update(code_commit="b" * 40))
     else:
         target = package["artifacts"]["setflow_confirmation"][0]["attempt"]
         _mutate(target, lambda value: value.update(code_commit="d" * 40))
+    with pytest.raises(module.XEditFlowV4TerminalTrainingLedgerError):
+        _export(module, package)
+    assert not package["output"].exists()
+
+
+def test_rejects_v1_for_not_yet_launched_critic_controls(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    package = _make_package(tmp_path)
+    control = package["artifacts"]["critic_screen"][2]
+    _mutate(
+        control["summary"],
+        lambda value: value.update(
+            schema_version=(
+                "route_a_v3_route2_xeditcritic_v4_screen_run.v1"
+            )
+        ),
+    )
+    with pytest.raises(
+        module.XEditFlowV4TerminalTrainingLedgerError,
+        match="terminal summary differs",
+    ):
+        _export(module, package)
+    assert not package["output"].exists()
+
+
+@pytest.mark.parametrize(
+    "drift",
+    (
+        "summary_initialization_seed",
+        "attempt_before_model",
+        "summary_initialization_scope",
+        "summary_cuda_device",
+        "summary_a100",
+        "attempt_bf16",
+        "summary_cpu_fallback",
+        "summary_training_head",
+        "config_runner_head",
+        "summary_run_id",
+        "summary_output_path",
+        "summary_summary_path",
+        "summary_checkpoint_path",
+        "summary_attempt_path",
+        "attempt_output_path",
+        "attempt_summary_path",
+        "attempt_checkpoint_path",
+        "attempt_attempt_path",
+        "summary_update_count",
+        "attempt_optimizer_steps",
+        "config_update_budget_missing",
+    ),
+)
+def test_rejects_critic_v2_terminal_evidence_drift(
+    tmp_path: Path, drift: str
+) -> None:
+    module = _load_module()
+    package = _make_package(tmp_path)
+    target = package["artifacts"]["critic_confirmation"][0]
+    wrong_path = str(tmp_path / "wrong" / "artifact")
+    if drift == "summary_initialization_seed":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(
+                parameter_initialization_seed=20260910
+            ),
+        )
+    elif drift == "attempt_before_model":
+        _mutate(
+            target["attempt"],
+            lambda value: value.update(
+                parameter_initialization_seed_applied_before_model_construction=False
+            ),
+        )
+    elif drift == "summary_initialization_scope":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(
+                parameter_initialization_tensor_identity_scope="DRIFT"
+            ),
+        )
+    elif drift == "summary_cuda_device":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(cuda_device="cpu"),
+        )
+    elif drift == "summary_a100":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(a100_device_verified=False),
+        )
+    elif drift == "attempt_bf16":
+        _mutate(
+            target["attempt"],
+            lambda value: value.update(bf16_supported=False),
+        )
+    elif drift == "summary_cpu_fallback":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(cpu_fallback_used=True),
+        )
+    elif drift == "summary_training_head":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(training_git_head="e" * 40),
+        )
+    elif drift == "config_runner_head":
+        _mutate(
+            target["config"],
+            lambda value: value.update(confirmation_runner_git_head="e" * 40),
+        )
+    elif drift == "summary_run_id":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(run_id="c0_v4"),
+        )
+    elif drift == "summary_update_count":
+        _mutate(
+            target["summary"],
+            lambda value: value.update(update_count=22_415),
+        )
+    elif drift == "attempt_optimizer_steps":
+        _mutate(
+            target["attempt"],
+            lambda value: value.update(optimizer_steps=22_415),
+        )
+    elif drift == "config_update_budget_missing":
+        _mutate(
+            target["config"],
+            lambda value: value.pop("data_geometry"),
+        )
+    else:
+        payload_name, field = {
+            "summary_output_path": ("summary", "output_directory"),
+            "summary_summary_path": ("summary", "training_summary_path"),
+            "summary_checkpoint_path": ("summary", "checkpoint_path"),
+            "summary_attempt_path": ("summary", "training_attempt_path"),
+            "attempt_output_path": ("attempt", "output_directory"),
+            "attempt_summary_path": ("attempt", "training_summary_path"),
+            "attempt_checkpoint_path": ("attempt", "checkpoint_path"),
+            "attempt_attempt_path": ("attempt", "training_attempt_path"),
+        }[drift]
+        _mutate(
+            target[payload_name],
+            lambda value: value.update({field: wrong_path}),
+        )
     with pytest.raises(module.XEditFlowV4TerminalTrainingLedgerError):
         _export(module, package)
     assert not package["output"].exists()

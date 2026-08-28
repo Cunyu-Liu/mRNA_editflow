@@ -101,6 +101,10 @@ def _source_audit() -> dict:
 
 
 def _gate() -> dict:
+    checkpoint_path = str(
+        Path(_protocol()["guidance_screen_output_root"])
+        / "value_models/kappa_0p5_temperature_1p0/value_checkpoint.pt"
+    )
     return {
         "schema_version": "route_a_v3_route2_xeditflow_v4_guidance_screen_gate.v1",
         "status": "XEDITFLOW_V4_GUIDANCE_SCREEN_FROZEN",
@@ -109,6 +113,25 @@ def _gate() -> dict:
         "selected_kappa": 0.5,
         "selected_temperature": 1.0,
         "selected_beta_max": 2.0,
+        "selected_value_checkpoint_path": checkpoint_path,
+        "selected_value_training_provenance": {
+            "parameter_initialization_seed": 20260912,
+            "parameter_initialization_seed_applied_before_model_construction": True,
+            "optimizer_steps": 10,
+            "parameter_changed": True,
+            "cuda_available": True,
+            "bf16_supported": True,
+            "training_precision": "BF16",
+            "cpu_fallback_used": False,
+            "torch_device": "cuda:0",
+            "physical_gpu_index": 0,
+            "cuda_device_index": 0,
+            "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+            "cuda_device_uuid": "GPU-actual",
+            "declared_physical_gpu_uuid": "actual",
+            "cuda_parent_uuid_matches_declared_physical_index": True,
+            "value_checkpoint_path": checkpoint_path,
+        },
     }
 
 
@@ -162,6 +185,9 @@ def test_v4_final_configs_freeze_one_screen_value_and_two_seed_local_values() ->
         20260914,
     ]
     assert payload["selected_combination"] == [0.5, 1.0, 2.0]
+    assert payload["value_checkpoint_paths"]["20260912"] == _gate()[
+        "selected_value_checkpoint_path"
+    ]
     assert payload["terminal_critic_forwards_by_member"] == [8, 4, 2]
     assert payload["strongest_timing_config"]["seed"] == 20260816
     jobs = {row["base_flow_training_seed"]: row for row in payload["seed_jobs"]}
@@ -181,6 +207,9 @@ def test_v4_final_configs_freeze_one_screen_value_and_two_seed_local_values() ->
         assert job["value_training_config"]["checkpoint_selection"] == (
             "FINAL_PASS_8_NO_EPOCH_RESELECTION"
         )
+        assert job["final_seed_evidence_config"]["value_checkpoint_path"] == job[
+            "value_checkpoint_path"
+        ]
 
 
 def test_v4_final_configs_match_methods_compute_and_rerank_boundaries() -> None:

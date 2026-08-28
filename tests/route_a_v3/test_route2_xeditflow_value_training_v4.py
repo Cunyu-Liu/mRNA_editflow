@@ -204,7 +204,7 @@ def test_v4_value_collation_and_model_gradient_include_trajectory_mode() -> None
     assert model(batch).shape == (2,)
 
 
-def _checkpoint() -> dict:
+def _checkpoint(path) -> dict:
     model_config = {
         "assay_count": 2,
         "context_count": 2,
@@ -233,9 +233,22 @@ def _checkpoint() -> dict:
         "selected_pass": 8,
         "checkpoint_selection": "FINAL_PASS_8_NO_EPOCH_RESELECTION",
         "training_provenance": {
+            "parameter_initialization_seed": 20260912,
+            "parameter_initialization_seed_applied_before_model_construction": True,
             "optimizer_steps": 10,
             "parameter_changed": True,
+            "cuda_available": True,
+            "bf16_supported": True,
+            "training_precision": "BF16",
             "cpu_fallback_used": False,
+            "torch_device": "cuda:4",
+            "physical_gpu_index": 4,
+            "cuda_device_index": 4,
+            "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+            "cuda_device_uuid": "GPU-actual",
+            "declared_physical_gpu_uuid": "actual",
+            "cuda_parent_uuid_matches_declared_physical_index": True,
+            "value_checkpoint_path": str(path),
         },
     }
 
@@ -244,8 +257,8 @@ def test_v4_value_checkpoint_loader_requires_frozen_identity(
     tmp_path,
 ) -> None:
     path = tmp_path / "value.pt"
-    torch.save(_checkpoint(), path)
-    model = load_value_checkpoint_v4(
+    torch.save(_checkpoint(path), path)
+    model, provenance = load_value_checkpoint_v4(
         path,
         base_flow_training_seed=20260912,
         kappa=0.5,
@@ -254,10 +267,42 @@ def test_v4_value_checkpoint_loader_requires_frozen_identity(
     )
     assert isinstance(model, XEditValueV4)
     assert model.training is False
-    changed = _checkpoint()
+    assert provenance["parameter_initialization_seed_applied_before_model_construction"]
+    changed = _checkpoint(path)
     changed["selected_pass"] = 6
     torch.save(changed, path)
     with pytest.raises(Exception, match="frozen final pass"):
+        load_value_checkpoint_v4(
+            path,
+            base_flow_training_seed=20260912,
+            kappa=0.5,
+            temperature=1.0,
+            device=torch.device("cpu"),
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        (
+            "parameter_initialization_seed_applied_before_model_construction",
+            False,
+            "seed-before-model",
+        ),
+        ("bf16_supported", False, "BF16/no-CPU"),
+        ("cuda_device_name", "NVIDIA H100", "actual A100"),
+        ("cuda_parent_uuid_matches_declared_physical_index", False, "physical CUDA"),
+        ("value_checkpoint_path", "/wrong/value.pt", "path provenance"),
+    ),
+)
+def test_v4_value_checkpoint_loader_rejects_training_provenance_drift(
+    tmp_path, field: str, value: object, message: str
+) -> None:
+    path = tmp_path / "value.pt"
+    checkpoint = _checkpoint(path)
+    checkpoint["training_provenance"][field] = value
+    torch.save(checkpoint, path)
+    with pytest.raises(Exception, match=message):
         load_value_checkpoint_v4(
             path,
             base_flow_training_seed=20260912,

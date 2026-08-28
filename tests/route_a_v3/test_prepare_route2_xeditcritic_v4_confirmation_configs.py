@@ -12,6 +12,7 @@ from scripts.route_a_v3.prepare_route2_xeditcritic_v4_confirmation_configs impor
 
 
 ROOT = Path(__file__).resolve().parents[2]
+RUNNER_HEAD = "a" * 40
 
 
 def _json(path: Path) -> dict:
@@ -38,6 +39,7 @@ def test_confirmation_configs_are_exact_matched_three_seed_package() -> None:
             / "configs/route_a_v3_route2_xeditcritic_v4_confirmation_protocol_v1.json"
         ),
         _screen_gate(),
+        confirmation_runner_git_head=RUNNER_HEAD,
     )
     assert [config["training_seed"] for config in configs] == [
         20260908,
@@ -54,6 +56,9 @@ def test_confirmation_configs_are_exact_matched_three_seed_package() -> None:
         2026091001,
     ]
     assert all(config["development_test_outcomes_accessed"] is False for config in configs)
+    assert {config["confirmation_runner_git_head"] for config in configs} == {
+        RUNNER_HEAD
+    }
 
 
 def test_confirmation_configs_reject_no_go_or_test_authorization() -> None:
@@ -64,11 +69,21 @@ def test_confirmation_configs_reject_no_go_or_test_authorization() -> None:
     gate = _screen_gate()
     gate["status"] = "XEDITCRITIC_V4_SCREEN_NO_GO"
     with pytest.raises(RuntimeError):
-        build_critic_confirmation_configs_v4(base, protocol, gate)
+        build_critic_confirmation_configs_v4(
+            base,
+            protocol,
+            gate,
+            confirmation_runner_git_head=RUNNER_HEAD,
+        )
     gate = _screen_gate()
     gate["development_test_authorized"] = True
     with pytest.raises(RuntimeError):
-        build_critic_confirmation_configs_v4(base, protocol, gate)
+        build_critic_confirmation_configs_v4(
+            base,
+            protocol,
+            gate,
+            confirmation_runner_git_head=RUNNER_HEAD,
+        )
 
 
 def test_critic_confirmation_config_package_is_atomically_published(
@@ -80,11 +95,17 @@ def test_critic_confirmation_config_package_is_atomically_published(
     )
     protocol["runtime_config_root"] = str(tmp_path / "configs")
     protocol["run_root"] = str(tmp_path / "runs")
-    configs = build_critic_confirmation_configs_v4(base, protocol, _screen_gate())
+    configs = build_critic_confirmation_configs_v4(
+        base,
+        protocol,
+        _screen_gate(),
+        confirmation_runner_git_head=RUNNER_HEAD,
+    )
     manifest = materialize_critic_confirmation_configs_v4(configs, protocol)
     root = Path(protocol["runtime_config_root"])
     assert not root.with_name(root.name + ".partial").exists()
     assert json.loads((root / "manifest.json").read_text()) == manifest
+    assert manifest["confirmation_runner_git_head"] == RUNNER_HEAD
     assert all(Path(path).is_file() for path in manifest["config_paths"])
 
     stale_protocol = dict(protocol)

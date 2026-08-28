@@ -10,6 +10,11 @@ import pytest
 
 import scripts.route_a_v3.launch_route2_xedit_v4_confirmation_posttraining_after_terminal as posttraining
 import scripts.route_a_v3.launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen as launcher
+from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_confirmation import (
+    load_critic_confirmation_configs_v4,
+)
+
+CONTROL_HEAD = "c" * 40
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -32,16 +37,18 @@ def _source_authorization(run_id: str, head: str) -> dict:
     }
 
 
-def _gate(tmp_path: Path) -> dict:
+def _gate(tmp_path: Path, *, control_head: str = CONTROL_HEAD) -> dict:
     arm_sources = {}
     for run_id in launcher.ARM_ORDER:
-        head = launcher.expected_source_head(run_id)
+        head = launcher.expected_source_head(run_id, control_head)
         authorization_path = tmp_path / "authorizations" / f"{run_id}.json"
         _write_json(
             authorization_path, _source_authorization(run_id, head)
         )
         arm_sources[run_id] = {
-            "summary_path": str(launcher.expected_summary_paths()[run_id]),
+            "summary_path": str(
+                launcher.expected_summary_paths(control_head)[run_id]
+            ),
             "training_git_head": head,
             "source_role": launcher.expected_source_role(run_id),
             "launch_authorization_path": str(authorization_path),
@@ -74,22 +81,20 @@ def _gate(tmp_path: Path) -> dict:
             "ordered_run_ids": list(launcher.ARM_ORDER),
             "arm_sources": arm_sources,
             "historical_c0_git_head": launcher.C0_GIT_HEAD,
-            "repaired_full_and_controls_git_head": (
-                launcher.TRAINING_GIT_HEAD
-            ),
+            "historical_full_git_head": launcher.TRAINING_GIT_HEAD,
+            "control_runner_git_head": control_head,
             "full_runtime_path": str(launcher.FULL_RUNTIME),
             "full_runtime_status": (
                 "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL"
             ),
-            "control_runtime_path": str(launcher.CONTROL_RUNTIME),
+            "control_runtime_path": str(
+                launcher.control_runtime_path(control_head)
+            ),
             "control_runtime_status": (
                 "XEDITCRITIC_V403_CONTROL_RECOVERY_"
                 "ALL_SIX_SUMMARIES_TERMINAL"
             ),
-            "frozen_config_path": str(
-                launcher.TRAINING_WORKTREE
-                / "configs/route_a_v3_route2_xeditcritic_v4_screen_v1.json"
-            ),
+            "frozen_config_path": str(launcher.BASE_CONFIG),
             "legacy_gate_path": str(launcher.LEGACY_GATE),
             "legacy_gate_preserved": True,
             "terminal_summary_payloads_read": 8,
@@ -161,7 +166,11 @@ def _focused_test_commands() -> list[str]:
         "test_validate_route2_xeditsetflow_s1_checkpoint.py "
         "test_route2_xeditsetflow_gate_s1.py "
         "test_run_route2_xeditsetflow_s1_screen_scheduler.py "
-        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
+        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py "
+        "test_route2_xeditsetflow_confirmation_s1.py "
+        "test_launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py "
+        "test_launch_route2_xeditsetflow_s1_confirmation_posttraining.py "
+        "test_adjudicate_route2_xeditsetflow_s1_confirmation.py",
         "python -m pytest -q "
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
         "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
@@ -228,8 +237,11 @@ def test_fixed_cross_root_pass_and_all_eight_authorizations_are_accepted(
     )
     assert all(
         authorizations[run_id]["authorized_git_head"]
-        == launcher.TRAINING_GIT_HEAD
-        for run_id in launcher.ARM_ORDER[1:]
+        == CONTROL_HEAD
+        for run_id in launcher.CONTROL_RUN_IDS
+    )
+    assert authorizations["v4_full"]["authorized_git_head"] == (
+        launcher.TRAINING_GIT_HEAD
     )
 
 
@@ -319,11 +331,14 @@ def test_confirmation_configs_change_only_the_screen_gate_binding(
 ) -> None:
     base_config, base_protocol = _base_inputs()
     gate = _gate(tmp_path)
+    runner_head = "c" * 40
     derived, configs = launcher.build_confirmation_configs(
-        base_config, base_protocol, gate
+        base_config, base_protocol, gate, runner_head=runner_head
     )
     assert base_protocol["screen_gate_path"] == str(launcher.LEGACY_GATE)
-    assert derived["screen_gate_path"] == str(launcher.CROSS_ROOT_GATE)
+    assert derived["screen_gate_path"] == str(
+        launcher.cross_root_gate_path(runner_head)
+    )
     assert all(
         derived[key] == value
         for key, value in base_protocol.items()
@@ -333,7 +348,8 @@ def test_confirmation_configs_change_only_the_screen_gate_binding(
         launcher.CONFIRMATION_SEEDS
     )
     assert all(
-        config["screen_gate_path"] == str(launcher.CROSS_ROOT_GATE)
+        config["screen_gate_path"]
+        == str(launcher.cross_root_gate_path(runner_head))
         and config["required_confirmation_run_ids"]
         == ["v4_full", "c0_v4"]
         for config in configs
@@ -579,8 +595,12 @@ def test_manifest_is_standard_consumer_shape_and_binds_exact_runner(
     tmp_path: Path,
 ) -> None:
     base_config, base_protocol = _base_inputs()
+    runner_head = "c" * 40
     protocol, configs = launcher.build_confirmation_configs(
-        base_config, base_protocol, _gate(tmp_path)
+        base_config,
+        base_protocol,
+        _gate(tmp_path),
+        runner_head=runner_head,
     )
     protocol = copy.deepcopy(protocol)
     protocol["runtime_config_root"] = str(tmp_path / "configs")
@@ -588,7 +608,6 @@ def test_manifest_is_standard_consumer_shape_and_binds_exact_runner(
     for config in configs:
         seed = int(config["training_seed"])
         config["output_root"] = str(tmp_path / "runs" / f"seed_{seed}")
-    runner_head = "c" * 40
     manifest = launcher.materialize_config_package(
         configs, protocol, runner_head=runner_head
     )
@@ -598,13 +617,22 @@ def test_manifest_is_standard_consumer_shape_and_binds_exact_runner(
         "route_a_v3_route2_xeditcritic_v4_confirmation_config_manifest.v1"
     )
     assert manifest["required_run_ids"] == ["v4_full", "c0_v4"]
-    assert manifest["screen_gate_path"] == str(launcher.CROSS_ROOT_GATE)
+    assert manifest["confirmation_runner_git_head"] == runner_head
+    assert manifest["screen_gate_path"] == str(
+        launcher.cross_root_gate_path(runner_head)
+    )
+    loaded = load_critic_confirmation_configs_v4(
+        manifest,
+        runtime_config_root=Path(protocol["runtime_config_root"]),
+        run_root=Path(protocol["run_root"]),
+    )
+    assert set(loaded) == set(launcher.CONFIRMATION_SEEDS)
 
 
 def test_authorization_is_trainer_and_posttraining_compatible(
     tmp_path: Path,
 ) -> None:
-    gate = _gate(tmp_path)
+    gate = _gate(tmp_path, control_head="d" * 40)
     source = launcher.load_and_validate_source_authorizations(gate)
     runner_head = "d" * 40
     receipt = _runner_receipt(runner_head)
