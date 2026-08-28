@@ -67,6 +67,48 @@ def require(condition: bool, message: str) -> None:
         raise XEditSetFlowS1ConfirmationPosttrainingLaunchError(message)
 
 
+def canonical_training_lineage_paths_s1(
+    protocol: Mapping[str, Any], *, expected_head: str
+) -> dict[str, Path]:
+    training_root = format_output_path(
+        protocol, "training_runtime_root_template", expected_head
+    )
+    config_root = format_output_path(
+        protocol, "runtime_config_root_template", expected_head
+    )
+    return {
+        "training_schedule": training_root / "schedule.json",
+        "config_manifest": config_root / "manifest.json",
+        "confirmation_authorization": format_output_path(
+            protocol, "authorization_output_template", expected_head
+        ),
+        "training_runtime": training_root / "runtime.json",
+    }
+
+
+def require_canonical_training_lineage_s1(
+    canonical: Mapping[str, Path],
+    *,
+    training_schedule_path: Path,
+    bindings: Mapping[str, Any] | None = None,
+) -> None:
+    require(
+        training_schedule_path == canonical["training_schedule"],
+        "S1 posttraining training schedule path is not canonical",
+    )
+    if bindings is None:
+        return
+    require(
+        Path(str(bindings.get("config_manifest_path")))
+        == canonical["config_manifest"]
+        and Path(str(bindings.get("confirmation_authorization_path")))
+        == canonical["confirmation_authorization"]
+        and Path(str(bindings.get("training_runtime_path")))
+        == canonical["training_runtime"],
+        "S1 posttraining input lineage paths are not canonical",
+    )
+
+
 def validate_training_schedule_s1(
     schedule: Mapping[str, Any], *, expected_head: str
 ) -> tuple[dict[str, Any], dict[int, dict[str, Any]]]:
@@ -221,7 +263,14 @@ def validate_successful_training_package_s1(
             == "PENDING_TERMINAL_OUTCOME_FREE_VALIDATION_GENERATION"
             and summary.get("validation_generation_during_training") is False
             and summary.get("parameter_changed") is True
-            and int(summary.get("optimizer_update_count", 0)) > 0,
+            and int(summary.get("optimizer_update_count", 0)) > 0
+            and int(summary.get("optimizer_update_count", -1))
+            == int(summary.get("update_geometry", {}).get("total_optimizer_updates", -2))
+            and summary.get("parameter_initialization_seed") == seed
+            and summary.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True,
             f"S1 seed {seed} training summary identity changed",
         )
         require(
@@ -229,6 +278,8 @@ def validate_successful_training_package_s1(
             and summary.get("torch_device") == f"cuda:{gpu}"
             and "A100" in str(summary.get("device_name", ""))
             and summary.get("training_precision") == "BF16"
+            and summary.get("cuda_available") is True
+            and summary.get("bf16_supported") is True
             and summary.get("cpu_fallback_used") is False,
             f"S1 seed {seed} was not trained on its bound A100 CUDA/BF16 GPU",
         )
@@ -259,15 +310,30 @@ def validate_successful_training_package_s1(
             and training_config.get("selected_model") == CONFIRMATION_RUN_ID
             and training_config.get("screen_provenance")
             == config.get("screen_provenance")
+            and training_config.get("parameter_initialization_seed") == seed
+            and training_config.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True
             and training_config.get("device") == f"cuda:{gpu}"
             and "A100" in str(training_config.get("device_name", "")),
             f"S1 seed {seed} training config provenance changed",
         )
         attempt_id = str(attempt.get("attempt_id", ""))
+        attempt_details = attempt.get("details")
         require(
             attempt.get("code_commit") == expected_head
             and attempt.get("status") == "COMPLETED"
-            and attempt_id.endswith(f"_runner_{expected_head}"),
+            and attempt_id.endswith(f"_runner_{expected_head}")
+            and isinstance(attempt_details, Mapping)
+            and attempt_details.get("parameter_initialization_seed") == seed
+            and attempt_details.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True
+            and attempt_details.get("cuda_available") is True
+            and attempt_details.get("bf16_supported") is True
+            and attempt_details.get("cpu_fallback_used") is False,
             f"S1 seed {seed} training attempt is not unique and HEAD-bound",
         )
         protected_reads_zero(training_config, label=f"seed {seed} training config")
@@ -598,63 +664,25 @@ def run(expected_head: str, training_schedule_path: Path) -> dict[str, Any]:
         (ADJUDICATOR, "S1 confirmation adjudicator"),
         (POSTTRAINING_SCHEDULER, "generic confirmation posttraining scheduler"),
         (TRAINING_SCHEDULER, "generic confirmation training scheduler"),
-        (training_schedule_path, "S1 confirmation training schedule"),
     ):
         require(path.is_file(), f"{label} is absent: {path}")
     require_exact_pushed_clean_head(expected_head)
 
     protocol = read_json(PROTOCOL)
-    schedule = read_json(training_schedule_path)
-    bindings, schedule_jobs = validate_training_schedule_s1(
-        schedule, expected_head=expected_head
+    canonical = canonical_training_lineage_paths_s1(
+        protocol, expected_head=expected_head
     )
-    manifest_path = Path(str(bindings["config_manifest_path"]))
-    authorization_path = Path(str(bindings["confirmation_authorization_path"]))
-    training_runtime_path = Path(str(bindings["training_runtime_path"]))
-    for path, label in (
-        (manifest_path, "config manifest"),
-        (authorization_path, "confirmation authorization"),
-        (training_runtime_path, "training runtime"),
-    ):
-        require(path.is_file(), f"S1 {label} is absent: {path}")
-    manifest = read_json(manifest_path)
-    configs = validate_manifest_s1(manifest, protocol, runner_head=expected_head)
-    authorization = read_json(authorization_path)
-    validate_authorization_s1(
-        authorization,
-        read_json(configs[CONFIRMATION_SEEDS[0]]),
-        runner_head=expected_head,
+    require_canonical_training_lineage_s1(
+        canonical, training_schedule_path=training_schedule_path
     )
-    training_runtime = read_json(training_runtime_path)
-    packages = validate_successful_training_package_s1(
-        training_runtime,
-        schedule_jobs,
-        configs,
-        expected_head=expected_head,
+    runtime_root = format_output_path(
+        protocol, "posttraining_runtime_root_template", expected_head
     )
-
-    runtime_root = Path(str(bindings["posttraining_runtime_root"]))
-    log_root = Path(str(bindings["posttraining_log_root"]))
-    gate = Path(str(bindings["confirmation_gate_output"]))
-    require(
-        runtime_root
-        == format_output_path(
-            protocol, "posttraining_runtime_root_template", expected_head
-        )
-        and log_root
-        == format_output_path(protocol, "posttraining_log_root_template", expected_head)
-        and gate
-        == format_output_path(
-            protocol, "confirmation_gate_output_template", expected_head
-        ),
-        "S1 posttraining output family differs from frozen protocol",
+    log_root = format_output_path(
+        protocol, "posttraining_log_root_template", expected_head
     )
-    inventory, _ = build_validation_inventory_s1(
-        configs,
-        packages,
-        tuple(range(6)),
-        authorization_path=authorization_path,
-        log_root=log_root,
+    gate = format_output_path(
+        protocol, "confirmation_gate_output_template", expected_head
     )
     prelaunch_failure = runtime_root.with_name(runtime_root.name + ".failed.json")
     require_fresh_posttraining_targets_s1(
@@ -662,7 +690,7 @@ def run(expected_head: str, training_schedule_path: Path) -> dict[str, Any]:
         log_root=log_root,
         gate=gate,
         prelaunch_failure=prelaunch_failure,
-        inventory=inventory,
+        inventory=(),
     )
     gpu_policy = protocol.get("gpu_policy")
     require(
@@ -680,6 +708,62 @@ def run(expected_head: str, training_schedule_path: Path) -> dict[str, Any]:
         configured_gpus=physical_gpus,
         failure_path=prelaunch_failure,
         runtime_root=runtime_root,
+    )
+
+    for path, label in (
+        (training_schedule_path, "training schedule"),
+        (canonical["config_manifest"], "config manifest"),
+        (canonical["confirmation_authorization"], "confirmation authorization"),
+        (canonical["training_runtime"], "training runtime"),
+    ):
+        require(path.is_file(), f"S1 {label} is absent: {path}")
+    schedule = read_json(training_schedule_path)
+    bindings, schedule_jobs = validate_training_schedule_s1(
+        schedule, expected_head=expected_head
+    )
+    manifest_path = Path(str(bindings["config_manifest_path"]))
+    authorization_path = Path(str(bindings["confirmation_authorization_path"]))
+    training_runtime_path = Path(str(bindings["training_runtime_path"]))
+    require_canonical_training_lineage_s1(
+        canonical,
+        training_schedule_path=training_schedule_path,
+        bindings=bindings,
+    )
+    manifest = read_json(manifest_path)
+    configs = validate_manifest_s1(manifest, protocol, runner_head=expected_head)
+    authorization = read_json(authorization_path)
+    validate_authorization_s1(
+        authorization,
+        read_json(configs[CONFIRMATION_SEEDS[0]]),
+        runner_head=expected_head,
+    )
+    training_runtime = read_json(training_runtime_path)
+    packages = validate_successful_training_package_s1(
+        training_runtime,
+        schedule_jobs,
+        configs,
+        expected_head=expected_head,
+    )
+
+    require(
+        Path(str(bindings["posttraining_runtime_root"])) == runtime_root
+        and Path(str(bindings["posttraining_log_root"])) == log_root
+        and Path(str(bindings["confirmation_gate_output"])) == gate,
+        "S1 posttraining output family differs from frozen protocol",
+    )
+    inventory, _ = build_validation_inventory_s1(
+        configs,
+        packages,
+        tuple(range(6)),
+        authorization_path=authorization_path,
+        log_root=log_root,
+    )
+    require_fresh_posttraining_targets_s1(
+        runtime_root=runtime_root,
+        log_root=log_root,
+        gate=gate,
+        prelaunch_failure=prelaunch_failure,
+        inventory=inventory,
     )
     posttraining_schedule = build_posttraining_schedule_s1(
         training_schedule_path,

@@ -36,16 +36,18 @@ from scripts.route_a_v3.launch_route2_xeditcritic_v403_confirmation_after_cross_
     validate_runner_verification_receipt as validate_shared_runner_verification_receipt,
 )
 from scripts.route_a_v3.launch_route2_xeditsetflow_s1_screen_after_v403_terminal import (
+    CONFIG as SCREEN_CONFIG,
     GPU_INVENTORY_COMMAND,
     XEditSetFlowS1GpuError,
     cuda_bf16_probe,
     expected_receipt_paths,
     gpu_diagnostics,
+    validate_repo_fact_audits,
 )
 
 
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
-BRANCH = "route-a-v3-s1-confirmation-prep-20260828"
+BRANCH = "route-a-v3-v403-no-vram-gate-20260827"
 PROTOCOL = (
     WORKTREE
     / "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json"
@@ -67,6 +69,29 @@ S1_FOCUSED_TEST_MARKERS = (
     "test_launch_route2_xeditsetflow_s1_confirmation_posttraining.py",
     "test_adjudicate_route2_xeditsetflow_s1_confirmation.py",
 )
+
+
+def require_seed_valid_screen_head_s1(
+    repair_audit: Mapping[str, Any], *, screen_head: str
+) -> None:
+    affected = repair_audit.get("affected_family")
+    defect = repair_audit.get("defect")
+    require(
+        repair_audit.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair.v1"
+        and repair_audit.get("status")
+        == "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY"
+        and isinstance(affected, Mapping)
+        and isinstance(defect, Mapping),
+        "S1 seed-initialization repair audit is absent",
+    )
+    require(
+        not (
+            affected.get("runner_git_head") == screen_head
+            and defect.get("affected_family_can_authorize_successor") is False
+        ),
+        "S1 screen HEAD has uncontrolled parameter initialization and cannot authorize confirmation",
+    )
 
 
 class XEditSetFlowS1ConfirmationLaunchError(RuntimeError):
@@ -242,15 +267,26 @@ def validate_screen_runtime_terminal_s1(
         require(isinstance(queues, list), f"S1 screen {label} queues are absent")
         jobs = [job for queue in queues for job in queue.get("jobs", [])]
         require(
-            len(jobs) == len(runtime_rows),
+            len(jobs) == len(runtime_rows)
+            and {str(job.get("job_key")) for job in jobs} == set(runtime_rows),
             f"S1 screen {label} schedule/runtime inventory differs",
         )
         for job in jobs:
             key = str(job.get("job_key"))
             summary = Path(str(job.get("terminal_summary")))
             failure = Path(str(job.get("terminal_failure")))
+            runtime_row = runtime_rows[key]
             require(
-                key in runtime_rows
+                Path(str(runtime_row.get("terminal_summary"))) == summary
+                and Path(str(runtime_row.get("terminal_failure"))) == failure
+                and runtime_row.get("run_id") == job.get("run_id")
+                and int(runtime_row.get("physical_gpu_index", -1))
+                == int(job.get("physical_gpu_index", -2))
+                and (
+                    "checkpoint_pass" not in job
+                    or int(runtime_row.get("checkpoint_pass", -1))
+                    == int(job.get("checkpoint_pass", -2))
+                )
                 and summary.is_file()
                 and not failure.exists()
                 and not summary.with_suffix(summary.suffix + ".partial").exists()
@@ -258,6 +294,7 @@ def validate_screen_runtime_terminal_s1(
                 f"S1 screen {label} job is not uniquely SUMMARY-terminal: {key}",
             )
     adjudication = runtime.get("adjudication")
+    adjudication_failure = Path(str(adjudication_spec.get("failure_path")))
     require(
         isinstance(adjudication, Mapping)
         and adjudication.get("status") == "TERMINAL_COMPLETE"
@@ -266,6 +303,17 @@ def validate_screen_runtime_terminal_s1(
         and adjudication.get("gate_present") is True
         and adjudication.get("failure_present") is False,
         "S1 screen adjudication is not exact terminal",
+    )
+    require(
+        Path(str(adjudication.get("gate_path"))) == gate_path
+        and Path(str(adjudication.get("failure_path"))) == adjudication_failure
+        and gate_path.is_file()
+        and not adjudication_failure.exists()
+        and not gate_path.with_suffix(gate_path.suffix + ".partial").exists()
+        and not adjudication_failure.with_suffix(
+            adjudication_failure.suffix + ".partial"
+        ).exists(),
+        "S1 screen adjudication terminal paths are not uniquely bound",
     )
     require(
         gate.get("status") == "XEDITSETFLOW_V4_S1_SCREEN_PASS",
@@ -765,46 +813,37 @@ def run(
         "S1 base screen config path is not a tracked worktree file",
     )
     base = read_json(base_path)
+    require(
+        base_path.resolve() == SCREEN_CONFIG.resolve(),
+        "S1 confirmation base config is not the canonical screen config",
+    )
+    repo_audits = validate_repo_fact_audits(base)
+    require_seed_valid_screen_head_s1(
+        repo_audits["s1_seed_initialization_repair"], screen_head=SCREEN_HEAD
+    )
     provenance = protocol.get("screen_provenance")
     require(isinstance(provenance, Mapping), "S1 screen provenance is absent")
     screen_schedule_path = Path(str(provenance["schedule_path"]))
+    require(
+        Path(str(provenance.get("runtime_path"))) == screen_runtime_path,
+        "explicit S1 screen runtime differs from frozen protocol provenance",
+    )
     screen_runtime_config_path = Path(str(provenance["runtime_config_path"]))
     screen_authorization_path = Path(str(provenance["authorization_path"]))
     screen_gate_path = Path(str(provenance["screen_gate_path"]))
-    for path, label in (
-        (screen_schedule_path, "screen schedule"),
-        (screen_runtime_config_path, "screen runtime config"),
-        (screen_authorization_path, "screen authorization"),
-        (screen_gate_path, "screen gate"),
-    ):
-        require(path.is_file(), f"S1 {label} is absent: {path}")
-    screen_schedule = read_json(screen_schedule_path)
-    require(
-        Path(str(screen_schedule.get("runtime_manifest", "")))
-        == screen_runtime_path,
-        "explicit S1 screen runtime differs from the frozen schedule",
-    )
-    require(screen_runtime_path.is_file(), f"S1 screen runtime is absent: {screen_runtime_path}")
-    screen_runtime = read_json(screen_runtime_path)
-    screen_runtime_config = read_json(screen_runtime_config_path)
-    screen_authorization = read_json(screen_authorization_path)
-    screen_gate = read_json(screen_gate_path)
-    screen_barrier = validate_screen_bundle_s1(
-        base,
-        protocol,
-        screen_schedule,
-        screen_runtime,
-        screen_runtime_config,
-        screen_authorization,
-        screen_gate,
-        screen_schedule_path=screen_schedule_path,
-        screen_runtime_path=screen_runtime_path,
-        screen_runtime_config_path=screen_runtime_config_path,
-        screen_authorization_path=screen_authorization_path,
-        screen_gate_path=screen_gate_path,
-    )
 
     canonical_shared, canonical_setflow = expected_receipt_paths(expected_head)
+    require(
+        format_output_path(
+            protocol, "shared_runner_verification_receipt_template", expected_head
+        )
+        == canonical_shared
+        and format_output_path(
+            protocol, "setflow_runner_verification_receipt_template", expected_head
+        )
+        == canonical_setflow,
+        "S1 confirmation protocol receipt paths are not canonical",
+    )
     receipts = consume_confirmation_receipts_s1(
         expected_head,
         shared_receipt_path or canonical_shared,
@@ -867,6 +906,39 @@ def run(
         selected_gpus=selected_gpus,
         failure_path=failure_path,
         family_roots=(config_root, training_root, posttraining_root),
+    )
+
+    for path, label in (
+        (screen_schedule_path, "screen schedule"),
+        (screen_runtime_path, "screen runtime"),
+        (screen_runtime_config_path, "screen runtime config"),
+        (screen_authorization_path, "screen authorization"),
+        (screen_gate_path, "screen gate"),
+    ):
+        require(path.is_file(), f"S1 {label} is absent: {path}")
+    screen_schedule = read_json(screen_schedule_path)
+    require(
+        Path(str(screen_schedule.get("runtime_manifest", "")))
+        == screen_runtime_path,
+        "explicit S1 screen runtime differs from the frozen schedule",
+    )
+    screen_runtime = read_json(screen_runtime_path)
+    screen_runtime_config = read_json(screen_runtime_config_path)
+    screen_authorization = read_json(screen_authorization_path)
+    screen_gate = read_json(screen_gate_path)
+    screen_barrier = validate_screen_bundle_s1(
+        base,
+        protocol,
+        screen_schedule,
+        screen_runtime,
+        screen_runtime_config,
+        screen_authorization,
+        screen_gate,
+        screen_schedule_path=screen_schedule_path,
+        screen_runtime_path=screen_runtime_path,
+        screen_runtime_config_path=screen_runtime_config_path,
+        screen_authorization_path=screen_authorization_path,
+        screen_gate_path=screen_gate_path,
     )
 
     configs_payload = build_confirmation_configs_s1(

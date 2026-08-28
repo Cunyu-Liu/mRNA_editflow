@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol.v1",
-  "status": "FROZEN_PROSPECTIVE_AFTER_S1_SCREEN_PASS_BEFORE_CONFIRMATION_PARAMETER_UPDATE_OR_VALIDATION_READ",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_S1_SCREEN_TERMINAL_OR_CONFIRMATION_OUTCOME_READ",
   "base_screen_config": "configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json",
   "selected_model": "v4_s1_full",
   "required_seeds": [20260912, 20260913, 20260914],
@@ -24,6 +24,7 @@
   "screen_provenance": {
     "screen_runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
     "schedule_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/schedule.json",
+    "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json",
     "runtime_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime_config.json",
     "authorization_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8.json",
     "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/screen_gate.json",
@@ -41,7 +42,9 @@
     "posttraining_log_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/s1_confirmation_posttraining_{runner_git_head}",
     "confirmation_gate_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_confirmation_posttraining_{runner_git_head}/confirmation_gate.json",
     "authorization_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_confirmation_{runner_git_head}.json",
-    "prelaunch_failure_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_confirmation_{runner_git_head}.failed.json"
+    "prelaunch_failure_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_confirmation_{runner_git_head}.failed.json",
+    "shared_runner_verification_receipt_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xedit_v4/v403_successor_runner_verification_{runner_git_head}.json",
+    "setflow_runner_verification_receipt_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/confirmation_v403_recovered_runner_verification_{runner_git_head}.json"
   },
   "training_policy": {
     "passes": 10,

@@ -11,6 +11,60 @@ import scripts.route_a_v3.launch_route2_xeditsetflow_s1_confirmation_posttrainin
 HEAD = "b" * 40
 
 
+def _protocol(tmp_path: Path) -> dict:
+    return {
+        "runner_outputs": {
+            "training_runtime_root_template": str(
+                tmp_path / "training_{runner_git_head}"
+            ),
+            "runtime_config_root_template": str(
+                tmp_path / "configs_{runner_git_head}"
+            ),
+            "authorization_output_template": str(
+                tmp_path / "authorization_{runner_git_head}.json"
+            ),
+        }
+    }
+
+
+def test_posttraining_rejects_copied_schedule_and_noncanonical_lineage(
+    tmp_path: Path,
+) -> None:
+    canonical = launcher.canonical_training_lineage_paths_s1(
+        _protocol(tmp_path), expected_head=HEAD
+    )
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationPosttrainingLaunchError,
+        match="schedule path is not canonical",
+    ):
+        launcher.require_canonical_training_lineage_s1(
+            canonical,
+            training_schedule_path=tmp_path / "copied_schedule.json",
+        )
+    bindings = {
+        "config_manifest_path": str(canonical["config_manifest"]),
+        "confirmation_authorization_path": str(
+            canonical["confirmation_authorization"]
+        ),
+        "training_runtime_path": str(canonical["training_runtime"]),
+    }
+    launcher.require_canonical_training_lineage_s1(
+        canonical,
+        training_schedule_path=canonical["training_schedule"],
+        bindings=bindings,
+    )
+    bindings["config_manifest_path"] = str(tmp_path / "copied_manifest.json")
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationPosttrainingLaunchError,
+        match="input lineage paths are not canonical",
+    ):
+        launcher.require_canonical_training_lineage_s1(
+            canonical,
+            training_schedule_path=canonical["training_schedule"],
+            bindings=bindings,
+        )
+
+
 def _config_paths(tmp_path: Path) -> dict[int, Path]:
     result = {}
     for seed in launcher.CONFIRMATION_SEEDS:

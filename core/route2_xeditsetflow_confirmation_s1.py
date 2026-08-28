@@ -26,7 +26,7 @@ CONFIRMATION_RUNTIME_SCHEMA = (
     "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_runtime.v1"
 )
 CONFIRMATION_PROTOCOL_STATUS = (
-    "FROZEN_PROSPECTIVE_AFTER_S1_SCREEN_PASS_BEFORE_CONFIRMATION_PARAMETER_UPDATE_OR_VALIDATION_READ"
+    "FROZEN_PROSPECTIVE_BEFORE_S1_SCREEN_TERMINAL_OR_CONFIRMATION_OUTCOME_READ"
 )
 CONFIRMATION_RUNTIME_STATUS = "FROZEN_S1_CONFIRMATION_CONFIG_NOT_STARTED"
 OBJECTIVE_IDENTITY = (
@@ -213,6 +213,8 @@ def validate_screen_pass_barrier_s1(
     _require(
         provenance.get("screen_runner_git_head") == SCREEN_HEAD
         and Path(str(provenance.get("schedule_path"))) == screen_schedule_path
+        and Path(str(provenance.get("runtime_path")))
+        == Path(str(screen_schedule.get("runtime_manifest")))
         and Path(str(provenance.get("runtime_config_path")))
         == screen_runtime_config_path
         and Path(str(provenance.get("authorization_path")))
@@ -321,6 +323,52 @@ def validate_screen_pass_barrier_s1(
         run_id: _normalize_checkpoint_rows(rows_payload[run_id], run_id)
         for run_id in SCREEN_RUN_IDS
     }
+    checkpoint_check_keys = {
+        "common_nll_at_most_2_06809",
+        "recovery_at_least_0_35",
+        "top_k_recovery_at_least_0_20",
+        "unique_candidate_rate_at_least_0_90",
+        "hard_legality_100pct",
+        "edit_budget_violation_zero",
+        "candidate_budget_violation_zero",
+        "trajectory_replay_failure_zero",
+        "numerical_failure_zero",
+        "small_graph_exact",
+    }
+    for run_id, rows in normalized_rows.items():
+        for checkpoint_pass, row in rows.items():
+            checks = row.get("checks")
+            _require(
+                row.get("run_id") == run_id
+                and int(row.get("checkpoint_pass", -1)) == checkpoint_pass
+                and isinstance(checks, Mapping)
+                and set(checks) == checkpoint_check_keys
+                and all(isinstance(value, bool) for value in checks.values()),
+                f"S1 screen checkpoint gate row identity changed: {run_id} pass {checkpoint_pass}",
+            )
+            expected_threshold_checks = {
+                "common_nll_at_most_2_06809": float(
+                    row["common_validation_set_marginal_nll"]
+                )
+                <= 2.06809,
+                "recovery_at_least_0_35": float(
+                    row["source_macro_candidate_recovery_rate"]
+                )
+                >= 0.35,
+                "top_k_recovery_at_least_0_20": float(
+                    row["source_macro_measured_top_k_recovery_at_k"]
+                )
+                >= 0.20,
+                "unique_candidate_rate_at_least_0_90": float(
+                    row["source_macro_unique_candidate_rate"]
+                )
+                >= 0.90,
+            }
+            _require(
+                all(checks[key] is value for key, value in expected_threshold_checks.items())
+                and row.get("eligible") is all(checks.values()),
+                f"S1 screen checkpoint gate checks disagree with frozen rows: {run_id} pass {checkpoint_pass}",
+            )
     recomputed_decisions = {
         run_id: select_checkpoint_s1(normalized_rows[run_id])
         for run_id in SCREEN_RUN_IDS
@@ -341,6 +389,46 @@ def validate_screen_pass_barrier_s1(
         and int(screen_gate.get("selected_checkpoint_pass", -1))
         == int(full_selected.get("checkpoint_pass", -2)),
         "S1 screen selected checkpoint provenance is inconsistent",
+    )
+    reference = base.get("terminal_f2_reference")
+    _require(
+        isinstance(reference, Mapping)
+        and screen_gate.get("terminal_f2_reference") == dict(reference),
+        "S1 screen terminal F2 reference provenance changed",
+    )
+    expected_screen_checks = {
+        "full_has_eligible_checkpoint": True,
+        "single_mode_has_eligible_checkpoint": True,
+        "recovery_margin_over_terminal_f2_at_least_0_05": float(
+            full_selected["source_macro_candidate_recovery_rate"]
+        )
+        - float(reference["source_macro_recovery"])
+        >= 0.05,
+        "top_k_margin_over_terminal_f2_at_least_0_03": float(
+            full_selected["source_macro_measured_top_k_recovery_at_k"]
+        )
+        - float(reference["source_macro_top_k_recovery"])
+        >= 0.03,
+        "unique_margin_over_terminal_f2_at_least_0_15": float(
+            full_selected["source_macro_unique_candidate_rate"]
+        )
+        - float(reference["source_macro_unique_candidate_rate"])
+        >= 0.15,
+        "recovery_margin_over_single_mode_at_least_0_03": float(
+            full_selected["source_macro_candidate_recovery_rate"]
+        )
+        - float(single_selected["source_macro_candidate_recovery_rate"])
+        >= 0.03,
+        "unique_margin_over_single_mode_at_least_0_05": float(
+            full_selected["source_macro_unique_candidate_rate"]
+        )
+        - float(single_selected["source_macro_unique_candidate_rate"])
+        >= 0.05,
+    }
+    _require(
+        screen_gate.get("screen_checks") == expected_screen_checks
+        and all(expected_screen_checks.values()),
+        "S1 screen PASS checks disagree with frozen rows or margins",
     )
 
     output_root = Path(str(screen_runtime_config.get("output_root")))
@@ -389,6 +477,7 @@ def validate_screen_pass_barrier_s1(
     return {
         "screen_runner_git_head": SCREEN_HEAD,
         "schedule_path": str(screen_schedule_path),
+        "runtime_path": str(provenance["runtime_path"]),
         "runtime_config_path": str(screen_runtime_config_path),
         "authorization_path": str(screen_authorization_path),
         "screen_gate_path": str(screen_gate_path),
@@ -521,6 +610,28 @@ def materialize_confirmation_configs_s1(
     ):
         _require(not path.exists(), f"S1 confirmation {label} exists: {path}")
         partial = path.with_name(path.name + ".partial")
+        _require(
+            not partial.exists(),
+            f"S1 confirmation partial {label} exists: {partial}",
+        )
+    for path, label in (
+        (
+            _format_path(
+                outputs["authorization_output_template"],
+                confirmation_runner_git_head,
+            ),
+            "authorization",
+        ),
+        (
+            _format_path(
+                outputs["prelaunch_failure_template"],
+                confirmation_runner_git_head,
+            ),
+            "prelaunch failure",
+        ),
+    ):
+        _require(not path.exists(), f"S1 confirmation {label} exists: {path}")
+        partial = path.with_suffix(path.suffix + ".partial")
         _require(
             not partial.exists(),
             f"S1 confirmation partial {label} exists: {partial}",

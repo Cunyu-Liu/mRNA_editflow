@@ -49,7 +49,18 @@ def _row(checkpoint_pass: int, *, full: bool) -> dict:
             if full
             else 0.90 + checkpoint_pass / 20000
         ),
-        "checks": {"all": True},
+        "checks": {
+            "common_nll_at_most_2_06809": True,
+            "recovery_at_least_0_35": True,
+            "top_k_recovery_at_least_0_20": True,
+            "unique_candidate_rate_at_least_0_90": True,
+            "hard_legality_100pct": True,
+            "edit_budget_violation_zero": True,
+            "candidate_budget_violation_zero": True,
+            "trajectory_replay_failure_zero": True,
+            "numerical_failure_zero": True,
+            "small_graph_exact": True,
+        },
         "eligible": True,
     }
 
@@ -58,12 +69,14 @@ def _bundle(tmp_path: Path) -> dict:
     protocol = copy.deepcopy(PROTOCOL)
     family = tmp_path / f"s1_screen_seed_20260911_runner_{SCREEN_HEAD}"
     schedule_path = family / "schedule.json"
+    runtime_path = family / "runtime.json"
     runtime_config_path = family / "runtime_config.json"
     authorization_path = tmp_path / f"s1_screen_seed_20260911_runner_{SCREEN_HEAD}.json"
     gate_path = family / "screen_gate.json"
     protocol["screen_provenance"].update(
         {
             "schedule_path": str(schedule_path),
+            "runtime_path": str(runtime_path),
             "runtime_config_path": str(runtime_config_path),
             "authorization_path": str(authorization_path),
             "screen_gate_path": str(gate_path),
@@ -82,6 +95,12 @@ def _bundle(tmp_path: Path) -> dict:
             ),
             "confirmation_gate_output_template": str(
                 tmp_path / "posttraining_{runner_git_head}" / "confirmation_gate.json"
+            ),
+            "authorization_output_template": str(
+                tmp_path / "authorizations" / "s1_confirmation_{runner_git_head}.json"
+            ),
+            "prelaunch_failure_template": str(
+                tmp_path / "audits" / "s1_confirmation_{runner_git_head}.failed.json"
             ),
         }
     )
@@ -135,6 +154,16 @@ def _bundle(tmp_path: Path) -> dict:
         "screen_seed": 20260911,
         "checkpoint_rows": rows,
         "checkpoint_decisions": decisions,
+        "terminal_f2_reference": copy.deepcopy(BASE["terminal_f2_reference"]),
+        "screen_checks": {
+            "full_has_eligible_checkpoint": True,
+            "single_mode_has_eligible_checkpoint": True,
+            "recovery_margin_over_terminal_f2_at_least_0_05": True,
+            "top_k_margin_over_terminal_f2_at_least_0_03": True,
+            "unique_margin_over_terminal_f2_at_least_0_15": True,
+            "recovery_margin_over_single_mode_at_least_0_03": True,
+            "unique_margin_over_single_mode_at_least_0_05": True,
+        },
         "selected_checkpoint_pass": selected_pass,
         "successor_protocol_required": True,
         "s1_mechanics_screen_passed": True,
@@ -170,6 +199,7 @@ def _bundle(tmp_path: Path) -> dict:
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_screen_schedule.v1",
         "status": "FROZEN_XEDITSETFLOW_V4_S1_SCREEN_SCHEDULE",
         "git_head": SCREEN_HEAD,
+        "runtime_manifest": str(runtime_path),
         "runtime_config": str(runtime_config_path),
         "authorization": str(authorization_path),
         "objective_identity": OBJECTIVE_IDENTITY,
@@ -299,6 +329,14 @@ def test_head_path_objective_and_checkpoint_decision_drift_are_rejected(
     bundle = _bundle(tmp_path / "selected")
     bundle["gate"]["selected_checkpoint_pass"] = 4
     mutations.append(bundle)
+    bundle = _bundle(tmp_path / "runtime")
+    bundle["schedule"]["runtime_manifest"] = str(tmp_path / "wrong_runtime.json")
+    mutations.append(bundle)
+    bundle = _bundle(tmp_path / "screen_checks")
+    bundle["gate"]["screen_checks"][
+        "recovery_margin_over_single_mode_at_least_0_03"
+    ] = False
+    mutations.append(bundle)
     for changed in mutations:
         with pytest.raises(XEditSetFlowConfirmationS1Error):
             _build(changed)
@@ -331,7 +369,13 @@ def test_config_package_is_atomic_and_final_or_partial_family_evidence_forbids_r
             confirmation_runner_git_head=confirmation_head,
         )
 
-    for target in ("partial", "training_final", "posttraining_partial"):
+    for target in (
+        "partial",
+        "training_final",
+        "posttraining_partial",
+        "authorization_final",
+        "prelaunch_partial",
+    ):
         isolated = _bundle(tmp_path / target)
         isolated_configs = _build(isolated, confirmation_head=confirmation_head)
         outputs = isolated["protocol"]["runner_outputs"]
@@ -344,12 +388,25 @@ def test_config_package_is_atomic_and_final_or_partial_family_evidence_forbids_r
             evidence = Path(outputs["training_runtime_root_template"].format(
                 runner_git_head=confirmation_head
             ))
-        else:
+        elif target == "posttraining_partial":
             path = Path(outputs["posttraining_runtime_root_template"].format(
                 runner_git_head=confirmation_head
             ))
             evidence = path.with_name(path.name + ".partial")
-        evidence.mkdir(parents=True)
+        elif target == "authorization_final":
+            evidence = Path(outputs["authorization_output_template"].format(
+                runner_git_head=confirmation_head
+            ))
+        else:
+            path = Path(outputs["prelaunch_failure_template"].format(
+                runner_git_head=confirmation_head
+            ))
+            evidence = path.with_suffix(path.suffix + ".partial")
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        if target in {"partial", "training_final", "posttraining_partial"}:
+            evidence.mkdir()
+        else:
+            evidence.write_text("{}\n")
         with pytest.raises(XEditSetFlowConfirmationS1Error):
             materialize_confirmation_configs_s1(
                 isolated_configs,

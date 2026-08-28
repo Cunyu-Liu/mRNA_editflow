@@ -11,6 +11,10 @@ import scripts.route_a_v3.launch_route2_xeditsetflow_s1_confirmation_after_scree
 HEAD = "a" * 40
 
 
+def test_confirmation_launcher_is_bound_to_the_permitted_execution_branch() -> None:
+    assert launcher.BRANCH == "route-a-v3-v403-no-vram-gate-20260827"
+
+
 def _protocol(tmp_path: Path) -> dict:
     return {
         "runner_outputs": {
@@ -63,6 +67,8 @@ def _configs(tmp_path: Path) -> dict[int, Path]:
 def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
     runtime_path = tmp_path / "runtime.json"
     gate_path = tmp_path / "screen_gate.json"
+    gate_path.write_text("{}\n")
+    adjudication_failure = tmp_path / "screen_gate.failed.json"
     training_queues = []
     validation_queues = []
     training_states = {}
@@ -76,6 +82,8 @@ def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
         key = f"training:{run_id}"
         job = {
             "job_key": key,
+            "run_id": run_id,
+            "physical_gpu_index": index,
             "terminal_summary": str(summary),
             "terminal_failure": str(failure),
         }
@@ -84,6 +92,10 @@ def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
             "status": "TERMINAL_COMPLETE",
             "terminal_artifact_kind": "SUMMARY",
             "return_code": 0,
+            "run_id": run_id,
+            "physical_gpu_index": index,
+            "terminal_summary": str(summary),
+            "terminal_failure": str(failure),
         }
     for index in range(8):
         output = tmp_path / f"validation_{index}"
@@ -94,6 +106,9 @@ def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
         key = f"validation:{index}"
         job = {
             "job_key": key,
+            "run_id": "v4_s1_full" if index < 4 else "v4_s1_single_mode",
+            "checkpoint_pass": (4, 6, 8, 10)[index % 4],
+            "physical_gpu_index": index % 6,
             "terminal_summary": str(summary),
             "terminal_failure": str(failure),
         }
@@ -104,12 +119,20 @@ def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
             "status": "TERMINAL_COMPLETE",
             "terminal_artifact_kind": "SUMMARY",
             "return_code": 0,
+            "run_id": job["run_id"],
+            "checkpoint_pass": job["checkpoint_pass"],
+            "physical_gpu_index": job["physical_gpu_index"],
+            "terminal_summary": str(summary),
+            "terminal_failure": str(failure),
         }
     schedule = {
         "runtime_manifest": str(runtime_path),
         "training_queues": training_queues,
         "validation_queues": validation_queues,
-        "adjudication": {"gate_path": str(gate_path)},
+        "adjudication": {
+            "gate_path": str(gate_path),
+            "failure_path": str(adjudication_failure),
+        },
     }
     runtime = {
         "schema_version": (
@@ -130,6 +153,8 @@ def _terminal_screen(tmp_path: Path) -> tuple[dict, dict, dict, Path, Path]:
             "return_code": 0,
             "gate_present": True,
             "failure_present": False,
+            "gate_path": str(gate_path),
+            "failure_path": str(adjudication_failure),
         },
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
@@ -198,6 +223,36 @@ def test_screen_runtime_requires_exact_two_plus_eight_zero_exit_unique_summaries
             gate,
             runtime_path=runtime_path,
             gate_path=gate_path,
+        )
+    first["return_code"] = 0
+    first["terminal_summary"] = str(tmp_path / "wrong_seed_summary.json")
+    with pytest.raises(launcher.XEditSetFlowS1ConfirmationLaunchError):
+        launcher.validate_screen_runtime_terminal_s1(
+            schedule,
+            runtime,
+            gate,
+            runtime_path=runtime_path,
+            gate_path=gate_path,
+        )
+
+
+def test_known_unseeded_screen_head_cannot_authorize_confirmation() -> None:
+    repair = {
+        "schema_version": (
+            "route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair.v1"
+        ),
+        "status": (
+            "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY"
+        ),
+        "affected_family": {"runner_git_head": launcher.SCREEN_HEAD},
+        "defect": {"affected_family_can_authorize_successor": False},
+    }
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError,
+        match="uncontrolled parameter initialization",
+    ):
+        launcher.require_seed_valid_screen_head_s1(
+            repair, screen_head=launcher.SCREEN_HEAD
         )
 
 

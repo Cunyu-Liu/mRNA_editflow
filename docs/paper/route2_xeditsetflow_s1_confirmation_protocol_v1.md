@@ -8,6 +8,19 @@ Development TEST outcome, or new Evaluation outcome was used to choose this
 design. It is subordinate to the tracked Route 2 master protocol and does not
 reinterpret the completed V4.0.3 SetFlow scientific NO_GO.
 
+A later static implementation audit found that screen runner HEAD
+`930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8` set the declared seed only after
+constructing randomly initialized model layers. Its full and single-mode arms
+ran in separate processes, so their nominal seed did not establish matched
+parameter initialization. That family remains immutable execution evidence,
+and any nominal gate it writes is not a successor authority for this protocol.
+The confirmation design below remains prospectively frozen, but it can be
+activated only by a new independent screen family that applies the same seed
+before model construction. The retry must keep seed `20260911`, both arms,
+weight `0.05`, all thresholds, and every other frozen screen setting unchanged;
+it is a technical correction, not an extra seed, sweep, or reinterpretation of
+the original evidence.
+
 ## Decision and question
 
 The confirmation question is deliberately narrow: if the already frozen S1
@@ -54,6 +67,9 @@ following:
 - screen seed `20260911`, objective
   `XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY`, fixed weight
   `0.05`, and a selected screen checkpoint in `{4,6,8,10}`;
+- every successful screen training summary and checkpoint records
+  `parameter_initialization_seed=20260911` and
+  `parameter_initialization_seed_applied_before_model_construction=true`;
 - Development TEST and new Evaluation outcome reads both equal zero.
 
 The screen-selected pass and both screen checkpoint decisions are frozen into
@@ -76,6 +92,9 @@ S1 architecture and objective:
 - ten complete passes, physical and effective state batch `32`, source repeat
   cap `4`, no early stopping, and no Validation generation during training;
 - only passes `4`, `6`, `8`, and `10` are saved;
+- each confirmation seed is applied to CPU and CUDA RNG state before any model
+  layer is constructed, and that ordering is recorded in the attempt,
+  checkpoints, training summary, and Validation lineage;
 - active S1 responsibility constraints must be positive in every successful
   confirmation training summary.
 
