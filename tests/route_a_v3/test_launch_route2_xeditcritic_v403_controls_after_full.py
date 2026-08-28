@@ -8,6 +8,10 @@ import pytest
 
 import scripts.route_a_v3.launch_route2_xeditcritic_v403_controls_after_full as launcher
 import scripts.route_a_v3.run_route2_xeditcritic_v403_control_recovery_scheduler as scheduler
+from scripts.route_a_v3 import (
+    transition_adjudicate_route2_xeditcritic_v403_cross_root_screen
+    as cross_root_transition,
+)
 
 
 def test_control_scheduler_popen_failure_is_durable_and_one_shot(
@@ -167,6 +171,48 @@ def _runner_receipt(head: str) -> dict:
     }
 
 
+def _prior_oom_terminal_receipt() -> dict:
+    return {
+        "schema_version": launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_SCHEMA,
+        "status": launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_STATUS,
+        "terminal_class": "TECHNICAL_FAILURE_TERMINAL",
+        "old_current_git_head": launcher.PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "old_runner_git_head": launcher.PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "old_orchestration_git_head": launcher.PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "old_training_code_git_head": launcher.PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "old_runtime_path": str(launcher.PRIOR_FAILED_CONTROL_RUNTIME),
+        "old_runtime_status": (
+            "XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE"
+        ),
+        "scheduler_pid": 123,
+        "scheduler_process_gone": True,
+        "ordered_control_run_ids": list(launcher.CONTROL_RUN_IDS),
+        "terminal_jobs": list(launcher.CONTROL_RUN_IDS),
+        "technical_failure_run_ids": list(launcher.CONTROL_RUN_IDS[:3]),
+        "terminal_summary_run_ids": list(launcher.CONTROL_RUN_IDS[3:]),
+        "first_terminal_failure": {
+            "run_id": launcher.CONTROL_RUN_IDS[0],
+            "reason": "JOB_TERMINAL_FAILURE_ARTIFACT",
+        },
+        "cross_root_adjudication_run": False,
+        "cross_root_gate_path": "/absent/screen_gate.json",
+        "cross_root_gate_absent": True,
+        "free_memory_gate_applied": False,
+        "terminal_artifact_payloads_read_by_transition": 0,
+        "historical_terminal_payloads_read_before_cross_root": 0,
+        "successor_authorized": False,
+        "same_family_retry_authorized": False,
+        "new_independent_retry_eligible": True,
+        "old_family_artifacts_read_only": True,
+        "old_runtime_read_count_this_transition": 1,
+        "gpu_inventory_or_probe_executed": False,
+        "gpu_or_model_execution_started": False,
+        "protected_outcome_payload_read": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
 def _schedule(tmp_path: Path, *, head: str = "a" * 40) -> dict:
     return launcher.build_control_schedule(
         current_head=head,
@@ -177,6 +223,9 @@ def _schedule(tmp_path: Path, *, head: str = "a" * 40) -> dict:
         runtime_manifest=tmp_path / "runtime.json",
         log_root=tmp_path / "logs",
         transition_gate=tmp_path / "cross_root/screen_gate.json",
+        prior_control_oom_terminal_receipt_path=(
+            launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT
+        ),
     )
 
 
@@ -184,6 +233,11 @@ def test_invalid_tracked_full_audit_stops_without_historical_payload_read(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls = {"probe": 0, "spawn": 0}
+    prior_receipt_path = tmp_path / "prior_oom_terminal_receipt.json"
+    _write_json(prior_receipt_path, _prior_oom_terminal_receipt())
+    monkeypatch.setattr(
+        launcher, "PRIOR_CONTROL_OOM_TERMINAL_RECEIPT", prior_receipt_path
+    )
 
     monkeypatch.setattr(
         launcher,
@@ -221,13 +275,68 @@ def test_invalid_tracked_full_audit_stops_without_historical_payload_read(
     monkeypatch.setattr(launcher.subprocess, "Popen", forbidden_spawn)
 
     with pytest.raises(Exception, match="tracked historical full terminal audit"):
-        launcher.launch("a" * 40)
+        launcher.launch(
+            "a" * 40,
+            prior_terminal_receipt_path=prior_receipt_path,
+        )
 
     assert calls == {"probe": 0, "spawn": 0}
     assert not (tmp_path / "controls").exists()
     assert not (tmp_path / "runner").exists()
     assert not (tmp_path / "auth").exists()
     assert not (tmp_path / "gate").exists()
+
+
+@pytest.mark.parametrize("receipt_exists", [False, True])
+def test_prior_oom_receipt_is_first_admission_evidence_and_has_no_side_effect(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    receipt_exists: bool,
+) -> None:
+    receipt_path = tmp_path / "canonical_oom_terminal_receipt.json"
+    if receipt_exists:
+        receipt = _prior_oom_terminal_receipt()
+        receipt["new_independent_retry_eligible"] = False
+        _write_json(receipt_path, receipt)
+    monkeypatch.setattr(
+        launcher, "PRIOR_CONTROL_OOM_TERMINAL_RECEIPT", receipt_path
+    )
+
+    def forbidden(label: str):
+        def fail(*args, **kwargs):
+            raise AssertionError(f"{label} ran before prior OOM receipt admission")
+
+        return fail
+
+    monkeypatch.setattr(
+        launcher,
+        "validate_historical_full_terminal_audit",
+        forbidden("historical full audit"),
+    )
+    monkeypatch.setattr(
+        launcher, "control_family_paths", forbidden("family path creation")
+    )
+    monkeypatch.setattr(
+        launcher, "validate_training_source", forbidden("current-HEAD preflight")
+    )
+    monkeypatch.setattr(
+        launcher, "physical_gpu_inventory", forbidden("GPU inventory")
+    )
+    monkeypatch.setattr(
+        launcher, "probe_cuda_bf16", forbidden("CUDA/BF16 probe")
+    )
+    monkeypatch.setattr(
+        launcher.subprocess, "Popen", forbidden("scheduler launch")
+    )
+    before = set(tmp_path.iterdir())
+
+    with pytest.raises(Exception):
+        launcher.launch(
+            "a" * 40,
+            prior_terminal_receipt_path=receipt_path,
+        )
+
+    assert set(tmp_path.iterdir()) == before
 
 
 def test_tracked_full_terminal_audit_is_strict_and_payload_closed(
@@ -355,6 +464,25 @@ def test_schedule_is_exactly_six_fresh_controls_from_current_head(
     assert [job["physical_gpu_index"] for job in schedule["jobs"]] == list(
         range(6)
     )
+    assert [job["wave_index"] for job in schedule["jobs"]] == [0, 0, 0, 1, 1, 1]
+    assert schedule["control_waves"] == [
+        list(launcher.CONTROL_RUN_IDS[:3]),
+        list(launcher.CONTROL_RUN_IDS[3:]),
+    ]
+    assert schedule["wave1_requires_wave0_all_summaries"] is True
+    assert schedule["retry_ordinal"] == 1
+    assert schedule["retry_identity"] == launcher.CONTROL_RETRY_IDENTITY
+    assert schedule["prior_family_reused"] is False
+    assert schedule["all_six_controls_retrained"] is True
+    assert all(
+        job["process_environment"]
+        == {"PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"}
+        for job in schedule["jobs"]
+    )
+    assert all(
+        launcher.CONTROL_RETRY_IDENTITY in job["training_attempt_id"]
+        for job in schedule["jobs"]
+    )
     assert all(
         job["command"][:2] == [str(launcher.PYTHON), str(launcher.TRAINER)]
         for job in schedule["jobs"]
@@ -394,13 +522,29 @@ def test_schedule_rejects_missing_control_or_full_injection(tmp_path: Path) -> N
         scheduler.validate_schedule(schedule)
 
 
+def test_schedule_rejects_wave_or_allocator_drift(tmp_path: Path) -> None:
+    schedule = _schedule(tmp_path)
+    schedule["control_waves"] = [list(launcher.CONTROL_RUN_IDS)]
+    with pytest.raises(Exception, match="wave policy"):
+        scheduler.validate_schedule(schedule)
+
+    schedule = _schedule(tmp_path)
+    schedule["jobs"][0]["process_environment"] = {}
+    with pytest.raises(Exception, match="allocator binding"):
+        scheduler.validate_schedule(schedule)
+
+
 def test_current_head_family_paths_and_v2_config_are_exact(tmp_path: Path) -> None:
     head = "b" * 40
     paths = launcher.control_family_paths(head)
-    assert paths["output_root"].name.endswith(head)
-    assert paths["runtime_root"].name == f"v403_control_recovery_runner_{head}"
+    assert paths["output_root"].name == (
+        f"screen_seed_20260907_v403_control_recovery_retry1_{head}"
+    )
+    assert paths["runtime_root"].name == (
+        f"v403_control_recovery_retry1_runner_{head}"
+    )
     assert paths["transition_gate"].parent.name == (
-        f"screen_seed_20260907_v403_cross_root_controls_{head}"
+        f"screen_seed_20260907_v403_cross_root_controls_retry1_{head}"
     )
     base = {
         "required_screen_runs": [
@@ -427,6 +571,10 @@ def test_authorization_consumes_exact_current_head_runner_receipt() -> None:
     authorization = launcher.build_launch_authorization(
         {"git_head": "preflight-head"},
         current_head=head,
+        prior_control_oom_terminal_receipt=_prior_oom_terminal_receipt(),
+        prior_control_oom_terminal_receipt_path=(
+            launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT
+        ),
         historical_full_terminal_audit={
             "status": "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED"
         },
@@ -445,11 +593,40 @@ def test_authorization_consumes_exact_current_head_runner_receipt() -> None:
         launcher.HISTORICAL_FULL_GIT_HEAD
     )
     assert authorization["v403_control_recovery"]["current_git_head"] == head
+    assert authorization["v403_control_recovery"]["retry_ordinal"] == 1
+    assert authorization["v403_control_recovery"]["prior_family_reused"] is False
+    assert authorization["prior_control_oom_terminal_receipt"]["path"] == str(
+        launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT
+    )
 
     wrong = _runner_receipt("d" * 40)
     with pytest.raises(Exception, match="exact-HEAD clean PASS"):
         launcher.validate_runner_verification_receipt(
             wrong, current_head=head, receipt_path=receipt_path
+        )
+
+
+def test_retry_requires_canonical_non_authorizing_old_oom_terminal_receipt(
+    tmp_path: Path,
+) -> None:
+    receipt = _prior_oom_terminal_receipt()
+    launcher.validate_prior_control_oom_terminal_receipt(
+        receipt,
+        receipt_path=launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+    )
+
+    receipt["same_family_retry_authorized"] = True
+    with pytest.raises(Exception, match="independent retry"):
+        launcher.validate_prior_control_oom_terminal_receipt(
+            receipt,
+            receipt_path=launcher.PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+        )
+
+    receipt = _prior_oom_terminal_receipt()
+    with pytest.raises(Exception, match="not canonical"):
+        launcher.validate_prior_control_oom_terminal_receipt(
+            receipt,
+            receipt_path=tmp_path / "copied_receipt.json",
         )
 
 
@@ -538,7 +715,12 @@ def test_controls_inventory_execution_failure_is_structured(
 
 def _patch_controls_prelaunch(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+) -> Path:
+    prior_receipt_path = tmp_path / "prior_oom_terminal_receipt.json"
+    _write_json(prior_receipt_path, _prior_oom_terminal_receipt())
+    monkeypatch.setattr(
+        launcher, "PRIOR_CONTROL_OOM_TERMINAL_RECEIPT", prior_receipt_path
+    )
     monkeypatch.setattr(
         launcher,
         "control_family_paths",
@@ -581,12 +763,13 @@ def _patch_controls_prelaunch(
             AssertionError("Popen must not run after prelaunch failure")
         ),
     )
+    return prior_receipt_path
 
 
 def test_controls_inventory_failure_stops_before_probe_runtime_or_popen(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _patch_controls_prelaunch(tmp_path, monkeypatch)
+    prior_receipt_path = _patch_controls_prelaunch(tmp_path, monkeypatch)
     error = launcher.XEditCriticV403GpuInventoryError(
         "missing configured GPU",
         reason="PHYSICAL_GPU_INVENTORY_INCOMPLETE",
@@ -608,7 +791,10 @@ def test_controls_inventory_failure_stops_before_probe_runtime_or_popen(
     )
 
     with pytest.raises(launcher.XEditCriticV403GpuInventoryError):
-        launcher.launch("d" * 40)
+        launcher.launch(
+            "d" * 40,
+            prior_terminal_receipt_path=prior_receipt_path,
+        )
 
     runtime_root = tmp_path / "runner"
     evidence_path = launcher.sibling_failure_path(runtime_root)
@@ -633,7 +819,7 @@ def test_controls_inventory_failure_stops_before_probe_runtime_or_popen(
 def test_controls_cuda_probe_failure_preserves_observed_cpu_fallback(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _patch_controls_prelaunch(tmp_path, monkeypatch)
+    prior_receipt_path = _patch_controls_prelaunch(tmp_path, monkeypatch)
     monkeypatch.setattr(
         launcher,
         "physical_gpu_inventory",
@@ -649,7 +835,10 @@ def test_controls_cuda_probe_failure_preserves_observed_cpu_fallback(
     )
 
     with pytest.raises(launcher.XEditCriticV403CudaBf16ProbeError):
-        launcher.launch("e" * 40)
+        launcher.launch(
+            "e" * 40,
+            prior_terminal_receipt_path=prior_receipt_path,
+        )
 
     runtime_root = tmp_path / "runner"
     evidence = json.loads(
@@ -689,6 +878,7 @@ def _patch_scheduler_processes(
     *,
     first_return_code: int = 0,
     double_terminal_first: bool = False,
+    observed_environments: list[dict[str, str]] | None = None,
 ) -> list[str]:
     outputs = {
         job["run_id"]: Path(job["output_directory"])
@@ -699,6 +889,8 @@ def _patch_scheduler_processes(
     def popen(command, **kwargs):
         run_id = command[command.index("--run-id") + 1]
         launched.append(run_id)
+        if observed_environments is not None:
+            observed_environments.append(dict(kwargs["env"]))
         _write_json(outputs[run_id] / "run_summary.json", {"run_id": run_id})
         if double_terminal_first and len(launched) == 1:
             _write_json(outputs[run_id] / "failure.json", {"run_id": run_id})
@@ -716,7 +908,12 @@ def test_scheduler_all_six_require_zero_return_and_unique_summary(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     schedule = _schedule(tmp_path)
-    launched = _patch_scheduler_processes(schedule, monkeypatch)
+    environments: list[dict[str, str]] = []
+    launched = _patch_scheduler_processes(
+        schedule,
+        monkeypatch,
+        observed_environments=environments,
+    )
 
     scheduler.run(schedule)
 
@@ -727,11 +924,29 @@ def test_scheduler_all_six_require_zero_return_and_unique_summary(
     )
     assert runtime["first_terminal_failure"] is None
     assert runtime["cross_root_adjudication_run"] is False
+    assert runtime["retry_ordinal"] == 1
+    assert runtime["control_waves"] == [
+        list(launcher.CONTROL_RUN_IDS[:3]),
+        list(launcher.CONTROL_RUN_IDS[3:]),
+    ]
+    assert len(environments) == 6
+    assert all(
+        environment["PYTORCH_CUDA_ALLOC_CONF"]
+        == "expandable_segments:True"
+        for environment in environments
+    )
     assert all(
         row["status"] == "TERMINAL_SUMMARY"
         and row["return_code"] == 0
         and row["terminal_artifact_kind"] == "SUMMARY"
         for row in runtime["jobs"].values()
+    )
+    accepted = cross_root_transition.validate_control_runtime(
+        tmp_path / "runtime.json",
+        expected_control_runner_head="a" * 40,
+    )
+    assert accepted["status"] == (
+        "XEDITCRITIC_V403_CONTROL_RECOVERY_ALL_SIX_SUMMARIES_TERMINAL"
     )
 
 
@@ -761,11 +976,61 @@ def test_scheduler_summary_nonzero_or_double_terminal_is_technical_failure(
 
     runtime = json.loads((tmp_path / "runtime.json").read_text(encoding="utf-8"))
     first = launcher.CONTROL_RUN_IDS[0]
+    assert [
+        run_id
+        for run_id in launcher.CONTROL_RUN_IDS
+        if runtime["jobs"][run_id].get("training_pid") is not None
+    ] == list(launcher.CONTROL_RUN_IDS[:3])
     assert runtime["status"] == "XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE"
     assert runtime["jobs"][first]["status"] == "TECHNICAL_FAILURE"
     assert runtime["first_terminal_failure"]["run_id"] == first
     assert runtime["first_terminal_failure"]["reason"] == reason
     assert runtime["cross_root_adjudication_run"] is False
+    assert all(
+        runtime["jobs"][run_id]["status"]
+        == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+        for run_id in launcher.CONTROL_RUN_IDS[3:]
+    )
+
+
+def test_scheduler_waits_for_wave0_before_launching_wave1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    schedule = _schedule(tmp_path)
+    outputs = {
+        job["run_id"]: Path(job["output_directory"])
+        for job in schedule["jobs"]
+    }
+    events: list[str] = []
+
+    class Process:
+        def __init__(self, run_id: str, pid: int) -> None:
+            self.run_id = run_id
+            self.pid = pid
+
+        def wait(self) -> int:
+            events.append(f"wait:{self.run_id}")
+            return 0
+
+    def popen(command, **kwargs):
+        run_id = command[command.index("--run-id") + 1]
+        events.append(f"launch:{run_id}")
+        _write_json(outputs[run_id] / "run_summary.json", {"run_id": run_id})
+        return Process(run_id, 2000 + len(events))
+
+    monkeypatch.setattr(scheduler.subprocess, "Popen", popen)
+    monkeypatch.setattr(
+        scheduler, "inspect_worktree_identity", lambda *a, **k: None
+    )
+
+    scheduler.run(schedule)
+
+    first_wave = list(launcher.CONTROL_RUN_IDS[:3])
+    second_wave = list(launcher.CONTROL_RUN_IDS[3:])
+    assert events[:3] == [f"launch:{run_id}" for run_id in first_wave]
+    assert events[3:6] == [f"wait:{run_id}" for run_id in first_wave]
+    assert events[6:9] == [f"launch:{run_id}" for run_id in second_wave]
+    assert events[9:12] == [f"wait:{run_id}" for run_id in second_wave]
 
 
 def test_scheduler_worktree_drift_stops_later_popen_and_marks_pending(

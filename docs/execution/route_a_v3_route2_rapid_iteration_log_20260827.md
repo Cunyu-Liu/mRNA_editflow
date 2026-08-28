@@ -957,3 +957,55 @@ or terminal artifacts.
   TEST/new Evaluation outcome, and launched no GPU. It is engineering evidence,
   not Critic/SetFlow readiness or an excellent Development result;
   `submission_ready=false` remains.
+
+## Iteration 17 — Isolate the Critic controls CUDA-OOM retry
+
+- Formal launch evidence: licensed clean pushed HEAD
+  `ebf99ebf8a253ad27e311e555121d328df8fae10` passed eight isolated focused
+  groups 158/17/149/27/22/10/110/92 (585/585 total) and the exact V3.3.2
+  cohort 96/96. Both exact-HEAD receipts were materialized and accepted before
+  the Critic and corrected SetFlow launchers created their independent
+  families. The Critic scheduler started all six controls on physical GPUs
+  0–5; SetFlow full/single started concurrently on GPUs 0/1. No free-memory
+  query, ranking, filter or threshold was used.
+- Technical failure: source-only on GPU0, edit-metadata-only on GPU1 and
+  no-candidate-sequence on GPU2 each wrote a unique CUDA OOM failure. The
+  first immutable failure is source-only with return code 1. At the first
+  low-frequency failure window the other three controls were already in
+  flight on GPUs 3/4/5 and therefore continued naturally; no pending job was
+  started after the failure became observable. Cross-root adjudication and
+  confirmation are forbidden for this technically incomplete package. The
+  three OOM artifacts are technical evidence, not a scientific NO-GO, and
+  Development TEST/new Evaluation reads remain 0.
+- Causal scope: two failed controls shared GPU0/1 with the independent SetFlow
+  jobs; all three failures were CUDA allocator-capacity failures, while the
+  exact amount of fragmentation is not inferred from the terminal evidence.
+  The retry does not convert these diagnostics into a memory gate. It leaves
+  model architecture, forward/loss, data, sampler, seed 20260907, batch 32,
+  passes, optimizer-update budget and scientific thresholds unchanged. The
+  only allocator change is the documented PyTorch
+  `expandable_segments:True` mode.
+- Retry isolation: a new canonical transition will be the sole old-runtime
+  reader once that scheduler reaches exact technical terminal. It validates
+  the six-arm inventory, terminal uniqueness, scheduler exit, unchanged first
+  failure, absent cross-root gate and protected reads 0, then writes one
+  immutable receipt with same-family and scientific-successor authorization
+  false and new-independent-retry eligibility true. It never reads the old
+  failure or summary payloads.
+- Fixed multi-GPU waves: retry1 uses a new exact HEAD and disjoint output,
+  runtime, authorization, log, gate and attempt identities. All six current
+  controls are retrained under that one HEAD. Wave 0 launches the original
+  GPU0/1/2 arms concurrently; only three exact successful summaries permit
+  wave 1 to launch the original GPU3/4/5 arms concurrently. A wave-0 first
+  failure marks all wave-1 jobs `NOT_RUN_AFTER_TERMINAL_FAILURE`; already
+  running jobs finish naturally. The mapping is literal and makes no live
+  memory decision.
+- Execution boundary: implementation occurs only on prep branch
+  `route-a-v3-v403-controls-oom-retry-prep-20260828`. It may be committed,
+  tested and pushed there but cannot launch GPU work. Corrected SetFlow keeps
+  the licensed main worktree frozen at Y3. After SetFlow and the old Critic
+  package are exact terminal, main may fast-forward only, push the prep HEAD,
+  run the complete eight-group focused cohort and exact 96 V3.3.2 tests, and
+  materialize new dual receipts before one retry launch. None of the present
+  engineering work is Critic readiness, Guidance evidence or an excellent
+  Development result.

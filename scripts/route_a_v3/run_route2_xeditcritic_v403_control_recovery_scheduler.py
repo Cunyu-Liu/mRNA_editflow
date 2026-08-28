@@ -16,6 +16,10 @@ from typing import Any, Mapping
 
 HISTORICAL_FULL_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
+PRIOR_FAILED_CONTROL_GIT_HEAD = "ebf99ebf8a253ad27e311e555121d328df8fae10"
+CONTROL_RETRY_ORDINAL = 1
+CONTROL_RETRY_IDENTITY = "v403_control_recovery_retry1"
+PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
 TRAINING_WORKTREE = Path(__file__).resolve().parents[2]
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 TRAINER = TRAINING_WORKTREE / "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
@@ -32,6 +36,20 @@ CONTROL_RUN_IDS = (
     "v4_no_moe",
 )
 PHYSICAL_GPU_INDICES = (0, 1, 2, 3, 4, 5)
+CONTROL_WAVES = (
+    CONTROL_RUN_IDS[:3],
+    CONTROL_RUN_IDS[3:],
+)
+PRIOR_FAILED_CONTROL_RUNTIME = (
+    Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+    / "experiments/xeditcritic_v4/"
+    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}/runtime.json"
+)
+PRIOR_CONTROL_OOM_TERMINAL_RECEIPT = (
+    Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+    / "audits/xeditcritic_v4/"
+    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}_oom_terminal.json"
+)
 
 
 class XEditCriticV403ControlRecoverySchedulerError(RuntimeError):
@@ -148,8 +166,12 @@ def validate_schedule(schedule: Mapping[str, Any]) -> None:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
         and current_head
-        not in {HISTORICAL_FULL_GIT_HEAD, HISTORICAL_C0_GIT_HEAD},
-        "control runner HEAD must be a new exact licensed HEAD",
+        not in {
+            HISTORICAL_FULL_GIT_HEAD,
+            HISTORICAL_C0_GIT_HEAD,
+            PRIOR_FAILED_CONTROL_GIT_HEAD,
+        },
+        "control retry runner HEAD must be a new exact licensed HEAD",
     )
     require(
         schedule.get("historical_full_git_head") == HISTORICAL_FULL_GIT_HEAD
@@ -161,6 +183,22 @@ def validate_schedule(schedule: Mapping[str, Any]) -> None:
         and Path(str(schedule.get("historical_full_terminal_audit")))
         == FULL_TERMINAL_AUDIT,
         "historical provenance or current control runner binding is invalid",
+    )
+    require(
+        schedule.get("retry_ordinal") == CONTROL_RETRY_ORDINAL
+        and schedule.get("retry_identity") == CONTROL_RETRY_IDENTITY
+        and schedule.get("prior_failed_control_git_head")
+        == PRIOR_FAILED_CONTROL_GIT_HEAD
+        and Path(str(schedule.get("prior_failed_control_runtime")))
+        == PRIOR_FAILED_CONTROL_RUNTIME
+        and Path(str(schedule.get("prior_control_oom_terminal_receipt")))
+        == PRIOR_CONTROL_OOM_TERMINAL_RECEIPT
+        and schedule.get("control_waves")
+        == [list(wave) for wave in CONTROL_WAVES]
+        and schedule.get("wave1_requires_wave0_all_summaries") is True
+        and schedule.get("pytorch_cuda_alloc_conf")
+        == PYTORCH_CUDA_ALLOC_CONF,
+        "V4.0.3 control retry identity or frozen wave policy is invalid",
     )
     jobs = schedule.get("jobs")
     require(isinstance(jobs, list), "V4.0.3 control jobs are absent")
@@ -178,6 +216,19 @@ def validate_schedule(schedule: Mapping[str, Any]) -> None:
         and len({str(job.get("training_attempt_id")) for job in jobs}) == 6,
         "V4.0.3 control output directories or attempt ids are not unique",
     )
+    require(
+        [int(job.get("wave_index", -1)) for job in jobs]
+        == [0, 0, 0, 1, 1, 1]
+        and all(
+            str(job.get("training_attempt_id", "")).endswith(
+                f"::{CONTROL_RETRY_IDENTITY}_{current_head}"
+            )
+            and job.get("process_environment")
+            == {"PYTORCH_CUDA_ALLOC_CONF": PYTORCH_CUDA_ALLOC_CONF}
+            for job in jobs
+        ),
+        "V4.0.3 control retry job wave, attempt, or allocator binding changed",
+    )
     config_path = str(schedule.get("screen_config"))
     authorization_path = str(schedule.get("launch_authorization"))
     require(
@@ -190,6 +241,10 @@ def validate_schedule(schedule: Mapping[str, Any]) -> None:
             == authorization_path
             and _command_value(job["command"], "--run-id")
             == str(job["run_id"])
+            and _command_value(job["command"], "--physical-gpu-index")
+            == str(job["physical_gpu_index"])
+            and _command_value(job["command"], "--training-attempt-id")
+            == str(job["training_attempt_id"])
             for job in jobs
         ),
         "V4.0.3 control command is not bound to the current licensed trainer",
@@ -212,6 +267,8 @@ def validate_schedule(schedule: Mapping[str, Any]) -> None:
         schedule.get("full_retrained") is False
         and schedule.get("c0_retrained") is False
         and schedule.get("old_v402_stopped_process_resumed") is False
+        and schedule.get("prior_family_reused") is False
+        and schedule.get("all_six_controls_retrained") is True
         and schedule.get("free_memory_gate_applied") is False
         and int(schedule.get("terminal_artifact_payloads_read_by_scheduler", -1)) == 0
         and int(
@@ -242,6 +299,7 @@ def run(schedule: Mapping[str, Any]) -> None:
             "log_path": str(job["log_path"]),
             "training_attempt_id": str(job["training_attempt_id"]),
             "training_git_head": str(job["training_git_head"]),
+            "wave_index": int(job["wave_index"]),
         }
         for job in schedule["jobs"]
     }
@@ -263,13 +321,27 @@ def run(schedule: Mapping[str, Any]) -> None:
                 "orchestration_git_head": schedule["orchestration_git_head"],
                 "training_code_git_head": current_head,
                 "training_worktree": str(worktree),
+                "retry_ordinal": CONTROL_RETRY_ORDINAL,
+                "retry_identity": CONTROL_RETRY_IDENTITY,
+                "prior_failed_control_git_head": PRIOR_FAILED_CONTROL_GIT_HEAD,
+                "prior_failed_control_runtime": str(
+                    PRIOR_FAILED_CONTROL_RUNTIME
+                ),
+                "prior_control_oom_terminal_receipt": str(
+                    PRIOR_CONTROL_OOM_TERMINAL_RECEIPT
+                ),
                 "ordered_control_run_ids": list(CONTROL_RUN_IDS),
+                "control_waves": [list(wave) for wave in CONTROL_WAVES],
+                "wave1_requires_wave0_all_summaries": True,
+                "pytorch_cuda_alloc_conf": PYTORCH_CUDA_ALLOC_CONF,
                 "jobs": states,
                 "first_terminal_failure": first_terminal_failure or None,
                 "cross_root_adjudication_run": False,
                 "full_retrained": False,
                 "c0_retrained": False,
                 "old_v402_stopped_process_resumed": False,
+                "prior_family_reused": False,
+                "all_six_controls_retrained": True,
                 "free_memory_gate_applied": False,
                 "terminal_artifact_payloads_read_by_scheduler": 0,
                 "historical_terminal_payloads_read_before_cross_root": 0,
@@ -308,99 +380,175 @@ def run(schedule: Mapping[str, Any]) -> None:
                     }
                 )
 
+    jobs_by_run_id = {
+        str(job["run_id"]): job for job in schedule["jobs"]
+    }
     publish("XEDITCRITIC_V403_CONTROL_RECOVERY_STARTING")
-    processes: dict[str, tuple[subprocess.Popen[str], Any]] = {}
-    for job in schedule["jobs"]:
-        run_id = str(job["run_id"])
-        with lock:
-            if terminal_failure.is_set():
-                states[run_id].update(
-                    status="NOT_RUN_AFTER_TERMINAL_FAILURE",
-                    terminal_artifact_kind=None,
-                    stop_reason="EARLIER_CONTROL_JOB_TECHNICAL_FAILURE",
+
+    for wave_index, wave_run_ids in enumerate(CONTROL_WAVES):
+        if terminal_failure.is_set():
+            with lock:
+                mark_pending_not_run()
+            break
+
+        wave_processes: dict[str, tuple[subprocess.Popen[str], Any]] = {}
+        for run_id in wave_run_ids:
+            job = jobs_by_run_id[run_id]
+            with lock:
+                if terminal_failure.is_set():
+                    states[run_id].update(
+                        status="NOT_RUN_AFTER_TERMINAL_FAILURE",
+                        terminal_artifact_kind=None,
+                        stop_reason="EARLIER_CONTROL_JOB_TECHNICAL_FAILURE",
+                    )
+                    continue
+                output = Path(str(job["output_directory"]))
+                if output.exists():
+                    terminal, issue = terminal_observation(output)
+                    states[run_id].update(
+                        status="TECHNICAL_FAILURE",
+                        terminal_artifact_kind=terminal,
+                        finished_unix_seconds=time.time(),
+                    )
+                    record_failure(
+                        run_id,
+                        issue or "PREEXISTING_OUTPUT_DIRECTORY",
+                        terminal,
+                    )
+                    continue
+                inspection = inspect_worktree_identity(
+                    worktree, expected_head=current_head
                 )
-                continue
-            output = Path(str(job["output_directory"]))
-            if output.exists():
-                terminal, issue = terminal_observation(output)
+                if inspection is not None:
+                    terminal = publish_scheduler_prelaunch_failure(
+                        job, inspection=inspection
+                    )
+                    states[run_id].update(
+                        status="TECHNICAL_FAILURE",
+                        terminal_artifact_kind=terminal,
+                        finished_unix_seconds=time.time(),
+                        worktree_inspection=dict(inspection),
+                    )
+                    record_failure(
+                        run_id,
+                        str(inspection["reason"]),
+                        terminal,
+                        inspection=inspection,
+                    )
+                    continue
+                log = Path(str(job["log_path"]))
+                log.parent.mkdir(parents=True, exist_ok=True)
+                stream = None
+                try:
+                    stream = log.open("w", encoding="utf-8")
+                    process_environment = os.environ.copy()
+                    process_environment.update(job["process_environment"])
+                    process = subprocess.Popen(
+                        list(job["command"]),
+                        cwd=worktree,
+                        stdout=stream,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        start_new_session=True,
+                        env=process_environment,
+                    )
+                except Exception as error:
+                    if stream is not None:
+                        stream.close()
+                    inspection = {
+                        "reason": "JOB_PROCESS_LAUNCH_FAILED",
+                        "error_type": type(error).__name__,
+                        "error": str(error),
+                    }
+                    terminal = publish_scheduler_prelaunch_failure(
+                        job, inspection=inspection
+                    )
+                    states[run_id].update(
+                        status="TECHNICAL_FAILURE",
+                        terminal_artifact_kind=terminal,
+                        finished_unix_seconds=time.time(),
+                        worktree_inspection=inspection,
+                    )
+                    record_failure(
+                        run_id,
+                        "JOB_PROCESS_LAUNCH_FAILED",
+                        terminal,
+                        inspection=inspection,
+                    )
+                    continue
+                wave_processes[run_id] = (process, stream)
                 states[run_id].update(
-                    status="TECHNICAL_FAILURE", terminal_artifact_kind=terminal,
+                    status="RUNNING",
+                    training_pid=process.pid,
+                    started_unix_seconds=time.time(),
+                    launched_wave_index=wave_index,
+                )
+                publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+
+        if terminal_failure.is_set():
+            with lock:
+                mark_pending_not_run()
+        publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+
+        # Every process in a started wave is allowed to reach its natural
+        # terminal state.  No job in the next wave is spawned until all three
+        # current-wave processes have been observed.
+        for run_id in wave_run_ids:
+            process_stream = wave_processes.get(run_id)
+            if process_stream is None:
+                continue
+            job = jobs_by_run_id[run_id]
+            process, stream = process_stream
+            try:
+                return_code = process.wait()
+            finally:
+                stream.close()
+            kind, issue = terminal_observation(
+                Path(str(job["output_directory"]))
+            )
+            successful = kind == "SUMMARY" and return_code == 0
+            with lock:
+                states[run_id].update(
+                    status=(
+                        "TERMINAL_SUMMARY"
+                        if successful
+                        else "TECHNICAL_FAILURE"
+                    ),
+                    return_code=return_code,
+                    terminal_artifact_kind=kind,
                     finished_unix_seconds=time.time(),
                 )
-                record_failure(run_id, issue or "PREEXISTING_OUTPUT_DIRECTORY", terminal)
-                continue
-            inspection = inspect_worktree_identity(worktree, expected_head=current_head)
-            if inspection is not None:
-                terminal = publish_scheduler_prelaunch_failure(job, inspection=inspection)
-                states[run_id].update(
-                    status="TECHNICAL_FAILURE", terminal_artifact_kind=terminal,
-                    finished_unix_seconds=time.time(), worktree_inspection=dict(inspection),
-                )
-                record_failure(run_id, str(inspection["reason"]), terminal, inspection=inspection)
-                continue
-            log = Path(str(job["log_path"]))
-            log.parent.mkdir(parents=True, exist_ok=True)
-            stream = None
-            try:
-                stream = log.open("w", encoding="utf-8")
-                process = subprocess.Popen(
-                    list(job["command"]), cwd=worktree, stdout=stream,
-                    stderr=subprocess.STDOUT, text=True, start_new_session=True,
-                )
-            except Exception as error:
-                if stream is not None:
-                    stream.close()
-                inspection = {
-                    "reason": "JOB_PROCESS_LAUNCH_FAILED",
-                    "error_type": type(error).__name__, "error": str(error),
-                }
-                terminal = publish_scheduler_prelaunch_failure(job, inspection=inspection)
-                states[run_id].update(
-                    status="TECHNICAL_FAILURE", terminal_artifact_kind=terminal,
-                    finished_unix_seconds=time.time(), worktree_inspection=inspection,
-                )
-                record_failure(run_id, "JOB_PROCESS_LAUNCH_FAILED", terminal, inspection=inspection)
-                continue
-            processes[run_id] = (process, stream)
-            states[run_id].update(
-                status="RUNNING", training_pid=process.pid,
-                started_unix_seconds=time.time(),
-            )
-            publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+                if not successful:
+                    reason = (
+                        "JOB_NONZERO_RETURN_CODE"
+                        if kind == "SUMMARY" and return_code != 0
+                        else "JOB_TERMINAL_FAILURE_ARTIFACT"
+                        if kind == "FAILURE"
+                        else f"JOB_{issue}"
+                    )
+                    record_failure(run_id, reason, kind, int(return_code))
+                publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
 
-    if terminal_failure.is_set():
         with lock:
-            mark_pending_not_run()
-    publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
-
-    for job in schedule["jobs"]:
-        run_id = str(job["run_id"])
-        process_stream = processes.get(run_id)
-        if process_stream is None:
-            continue
-        process, stream = process_stream
-        try:
-            return_code = process.wait()
-        finally:
-            stream.close()
-        kind, issue = terminal_observation(Path(str(job["output_directory"])))
-        successful = kind == "SUMMARY" and return_code == 0
-        with lock:
-            states[run_id].update(
-                status="TERMINAL_SUMMARY" if successful else "TECHNICAL_FAILURE",
-                return_code=return_code, terminal_artifact_kind=kind,
-                finished_unix_seconds=time.time(),
+            if terminal_failure.is_set():
+                mark_pending_not_run()
+                publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+                break
+            wave_succeeded = all(
+                states[run_id].get("status") == "TERMINAL_SUMMARY"
+                and states[run_id].get("terminal_artifact_kind") == "SUMMARY"
+                and int(states[run_id].get("return_code", -1)) == 0
+                for run_id in wave_run_ids
             )
-            if not successful:
-                reason = (
-                    "JOB_NONZERO_RETURN_CODE"
-                    if kind == "SUMMARY" and return_code != 0
-                    else "JOB_TERMINAL_FAILURE_ARTIFACT"
-                    if kind == "FAILURE"
-                    else f"JOB_{issue}"
+            if not wave_succeeded:
+                record_failure(
+                    wave_run_ids[0],
+                    "WAVE_DID_NOT_REACH_EXACT_ALL_SUMMARIES",
+                    states[wave_run_ids[0]].get("terminal_artifact_kind"),
                 )
-                record_failure(run_id, reason, kind, int(return_code))
-            publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+                mark_pending_not_run()
+                publish("XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING")
+                break
 
     with lock:
         if terminal_failure.is_set():

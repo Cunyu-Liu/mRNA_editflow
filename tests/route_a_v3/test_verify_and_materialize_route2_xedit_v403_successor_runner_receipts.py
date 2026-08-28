@@ -91,6 +91,9 @@ def _write_json(path: Path, payload: dict) -> None:
 def test_full_eight_group_contract_is_exactly_shared_and_direct_test_is_group8(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    oom_terminal_marker = (
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py"
+    )
     groups = verifier.require_exact_focused_group_contract()
     assert groups == (
         verifier.critic_confirmation.FOCUSED_GROUP_REQUIRED_TEST_MARKERS
@@ -100,6 +103,8 @@ def test_full_eight_group_contract_is_exactly_shared_and_direct_test_is_group8(
     )
     assert len(groups) == 8
     commands = verifier.focused_group_arguments()
+    assert oom_terminal_marker in groups[6]
+    assert oom_terminal_marker in " ".join(commands[6])
     assert verifier.DIRECT_TEST_MODULE not in " ".join(commands[0])
     assert verifier.DIRECT_TEST_MODULE in " ".join(commands[7])
 

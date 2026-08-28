@@ -15,6 +15,10 @@ from typing import Any, Mapping, Sequence
 
 HISTORICAL_FULL_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
+PRIOR_FAILED_CONTROL_GIT_HEAD = "ebf99ebf8a253ad27e311e555121d328df8fae10"
+CONTROL_RETRY_ORDINAL = 1
+CONTROL_RETRY_IDENTITY = "v403_control_recovery_retry1"
+PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
 ORCHESTRATION_WORKTREE = Path(__file__).resolve().parents[2]
 TRAINING_WORKTREE = ORCHESTRATION_WORKTREE
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
@@ -46,6 +50,23 @@ CURRENT_FULL_RUNTIME = (
     ROOT
     / "experiments/xeditcritic_v4/"
     f"v403_rng_replay_fix_runner_{HISTORICAL_FULL_GIT_HEAD}/runtime.json"
+)
+PRIOR_FAILED_CONTROL_RUNTIME = (
+    ROOT
+    / "experiments/xeditcritic_v4/"
+    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}/runtime.json"
+)
+PRIOR_CONTROL_OOM_TERMINAL_RECEIPT = (
+    ROOT
+    / "audits/xeditcritic_v4/"
+    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}_oom_terminal.json"
+)
+PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_SCHEMA = (
+    "route_a_v3_route2_xeditcritic_v403_control_recovery_"
+    "oom_terminal_receipt.v1"
+)
+PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_STATUS = (
+    "XEDITCRITIC_V403_CONTROL_RECOVERY_OOM_TERMINAL_RECORDED"
 )
 HISTORICAL_C0_OUTPUT_ROOT = (
     ROOT
@@ -154,39 +175,44 @@ V332_TEST_GLOB_MARKER = "*v332*.py"
 
 
 def control_family_paths(current_head: str) -> dict[str, Path]:
-    """Return the one-shot family roots bound to the new licensed HEAD."""
+    """Return the independent retry1 roots bound to the new licensed HEAD."""
 
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
         and current_head
-        not in {HISTORICAL_FULL_GIT_HEAD, HISTORICAL_C0_GIT_HEAD},
-        "control runner HEAD must be a new exact licensed HEAD",
+        not in {
+            HISTORICAL_FULL_GIT_HEAD,
+            HISTORICAL_C0_GIT_HEAD,
+            PRIOR_FAILED_CONTROL_GIT_HEAD,
+        },
+        "control retry runner HEAD must be a new exact licensed HEAD",
     )
     return {
         "output_root": (
             ROOT
             / "experiments/xeditcritic_v4/"
-            f"screen_seed_20260907_v403_control_recovery_{current_head}"
+            f"screen_seed_20260907_{CONTROL_RETRY_IDENTITY}_{current_head}"
         ),
         "runtime_root": (
             ROOT
             / "experiments/xeditcritic_v4/"
-            f"v403_control_recovery_runner_{current_head}"
+            f"{CONTROL_RETRY_IDENTITY}_runner_{current_head}"
         ),
         "authorization_root": (
             ROOT
             / "authorizations/xeditcritic_v4/"
-            f"v403_control_recovery_{current_head}"
+            f"{CONTROL_RETRY_IDENTITY}_{current_head}"
         ),
         "log_root": (
             ROOT
             / "logs/xeditcritic_v4/"
-            f"v403_control_recovery_{current_head}"
+            f"{CONTROL_RETRY_IDENTITY}_{current_head}"
         ),
         "transition_gate": (
             ROOT
             / "experiments/xeditcritic_v4/"
-            f"screen_seed_20260907_v403_cross_root_controls_{current_head}/"
+            "screen_seed_20260907_v403_cross_root_controls_"
+            f"retry1_{current_head}/"
             "screen_gate.json"
         ),
     }
@@ -245,6 +271,80 @@ def read_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(payload, dict), f"JSON artifact is not an object: {path}")
     return payload
+
+
+def validate_prior_control_oom_terminal_receipt(
+    receipt: Mapping[str, Any], *, receipt_path: Path
+) -> None:
+    """Accept only the canonical closed old family as retry1 provenance."""
+
+    require(
+        receipt_path == PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+        "prior Critic controls OOM terminal receipt path is not canonical",
+    )
+    first_failure = receipt.get("first_terminal_failure")
+    require(
+        receipt.get("schema_version")
+        == PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_SCHEMA
+        and receipt.get("status")
+        == PRIOR_CONTROL_OOM_TERMINAL_RECEIPT_STATUS
+        and receipt.get("terminal_class") == "TECHNICAL_FAILURE_TERMINAL"
+        and receipt.get("old_runtime_path")
+        == str(PRIOR_FAILED_CONTROL_RUNTIME)
+        and receipt.get("old_runtime_status")
+        == "XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE"
+        and receipt.get("old_current_git_head")
+        == PRIOR_FAILED_CONTROL_GIT_HEAD
+        and receipt.get("old_runner_git_head")
+        == PRIOR_FAILED_CONTROL_GIT_HEAD
+        and receipt.get("old_orchestration_git_head")
+        == PRIOR_FAILED_CONTROL_GIT_HEAD
+        and receipt.get("old_training_code_git_head")
+        == PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "prior Critic controls OOM receipt identity is invalid",
+    )
+    technical_failure_run_ids = receipt.get("technical_failure_run_ids")
+    terminal_summary_run_ids = receipt.get("terminal_summary_run_ids")
+    require(
+        receipt.get("ordered_control_run_ids") == list(CONTROL_RUN_IDS)
+        and isinstance(receipt.get("terminal_jobs"), list)
+        and len(receipt["terminal_jobs"]) == len(CONTROL_RUN_IDS)
+        and isinstance(technical_failure_run_ids, list)
+        and bool(technical_failure_run_ids)
+        and isinstance(terminal_summary_run_ids, list)
+        and not (set(technical_failure_run_ids) & set(terminal_summary_run_ids))
+        and set(technical_failure_run_ids) | set(terminal_summary_run_ids)
+        == set(CONTROL_RUN_IDS)
+        and isinstance(first_failure, Mapping)
+        and first_failure.get("run_id") == CONTROL_RUN_IDS[0]
+        and first_failure.get("run_id") in technical_failure_run_ids,
+        "prior Critic controls OOM terminal inventory is invalid",
+    )
+    require(
+        receipt.get("scheduler_process_gone") is True
+        and receipt.get("cross_root_adjudication_run") is False
+        and receipt.get("cross_root_gate_absent") is True
+        and receipt.get("free_memory_gate_applied") is False
+        and int(receipt.get("terminal_artifact_payloads_read_by_transition", -1))
+        == 0
+        and int(
+            receipt.get(
+                "historical_terminal_payloads_read_before_cross_root", -1
+            )
+        )
+        == 0
+        and receipt.get("successor_authorized") is False
+        and receipt.get("same_family_retry_authorized") is False
+        and receipt.get("new_independent_retry_eligible") is True
+        and receipt.get("old_family_artifacts_read_only") is True
+        and int(receipt.get("old_runtime_read_count_this_transition", -1))
+        == 1
+        and receipt.get("gpu_inventory_or_probe_executed") is False
+        and receipt.get("gpu_or_model_execution_started") is False
+        and receipt.get("protected_outcome_payload_read") is False,
+        "prior Critic controls OOM receipt does not authorize an independent retry",
+    )
+    require_zero_protected_reads(receipt, "prior Critic controls OOM receipt")
 
 
 def runner_verification_receipt_path(current_head: str) -> Path:
@@ -804,8 +904,12 @@ def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]
     require(
         re.fullmatch(r"[0-9a-f]{40}", expected_orchestration_head) is not None
         and expected_orchestration_head
-        not in {HISTORICAL_FULL_GIT_HEAD, HISTORICAL_C0_GIT_HEAD},
-        "expected control runner HEAD is not a new exact licensed HEAD",
+        not in {
+            HISTORICAL_FULL_GIT_HEAD,
+            HISTORICAL_C0_GIT_HEAD,
+            PRIOR_FAILED_CONTROL_GIT_HEAD,
+        },
+        "expected control retry runner HEAD is not a new exact licensed HEAD",
     )
     require(
         PYTHON.is_file()
@@ -930,11 +1034,17 @@ def build_launch_authorization(
     preflight: Mapping[str, Any],
     *,
     current_head: str,
+    prior_control_oom_terminal_receipt: Mapping[str, Any],
+    prior_control_oom_terminal_receipt_path: Path,
     historical_full_terminal_audit: Mapping[str, Any],
     historical_full_terminal_audit_path: Path,
     runner_verification_receipt: Mapping[str, Any],
     runner_verification_receipt_path: Path,
 ) -> dict[str, Any]:
+    validate_prior_control_oom_terminal_receipt(
+        prior_control_oom_terminal_receipt,
+        receipt_path=prior_control_oom_terminal_receipt_path,
+    )
     validate_runner_verification_receipt(
         runner_verification_receipt,
         current_head=current_head,
@@ -955,6 +1065,10 @@ def build_launch_authorization(
             **dict(runner_verification_receipt),
             "path": str(runner_verification_receipt_path),
         },
+        "prior_control_oom_terminal_receipt": {
+            **dict(prior_control_oom_terminal_receipt),
+            "path": str(prior_control_oom_terminal_receipt_path),
+        },
         "authorized_run_ids": list(ALL_RUN_IDS),
         "barriers": {
             "all_five_c3_jobs_terminal": True,
@@ -969,6 +1083,9 @@ def build_launch_authorization(
             "formal_parameter_preflight_passed": True,
             "formal_memory_preflight_passed": True,
             "cache_online_equivalence_passed": True,
+            "prior_oom_family_exact_technical_terminal": True,
+            "same_family_retry_forbidden": True,
+            "new_independent_retry_eligible": True,
         },
         "v403_control_recovery": {
             "historical_full_git_head": HISTORICAL_FULL_GIT_HEAD,
@@ -985,6 +1102,19 @@ def build_launch_authorization(
             "c0_retrained": False,
             "old_v402_stopped_process_resumed": False,
             "scientific_config_changed": False,
+            "retry_ordinal": CONTROL_RETRY_ORDINAL,
+            "retry_identity": CONTROL_RETRY_IDENTITY,
+            "prior_failed_control_git_head": PRIOR_FAILED_CONTROL_GIT_HEAD,
+            "prior_failed_control_runtime": str(
+                PRIOR_FAILED_CONTROL_RUNTIME
+            ),
+            "prior_family_reused": False,
+            "all_six_controls_retrained": True,
+            "wave_order": [
+                list(CONTROL_RUN_IDS[:3]),
+                list(CONTROL_RUN_IDS[3:]),
+            ],
+            "pytorch_cuda_alloc_conf": PYTORCH_CUDA_ALLOC_CONF,
             "free_memory_gate_applied": False,
             "historical_terminal_payloads_read_before_cross_root": 0,
         },
@@ -1003,6 +1133,7 @@ def build_control_schedule(
     runtime_manifest: Path,
     log_root: Path,
     transition_gate: Path,
+    prior_control_oom_terminal_receipt_path: Path,
     historical_full_terminal_audit_path: Path = FULL_TERMINAL_AUDIT,
 ) -> dict[str, Any]:
     gpu_indices = [
@@ -1013,13 +1144,13 @@ def build_control_schedule(
         "CUDA/BF16 inventory does not cover physical GPUs 0-5",
     )
     jobs = []
-    for run_id, physical_gpu_index in zip(
+    for job_index, (run_id, physical_gpu_index) in enumerate(zip(
         CONTROL_RUN_IDS, PHYSICAL_GPU_INDICES, strict=True
-    ):
+    )):
         output_directory = output_root / run_id
         attempt_id = (
             "xeditcritic_v4_screen_seed20260907::"
-            f"{run_id}::v403_control_recovery_{current_head}"
+            f"{run_id}::{CONTROL_RETRY_IDENTITY}_{current_head}"
         )
         jobs.append(
             {
@@ -1029,6 +1160,10 @@ def build_control_schedule(
                 "log_path": str(log_root / f"{run_id}.log"),
                 "training_attempt_id": attempt_id,
                 "training_git_head": current_head,
+                "wave_index": job_index // 3,
+                "process_environment": {
+                    "PYTORCH_CUDA_ALLOC_CONF": PYTORCH_CUDA_ALLOC_CONF,
+                },
                 "command": [
                     str(PYTHON),
                     str(TRAINER),
@@ -1057,6 +1192,19 @@ def build_control_schedule(
         "orchestration_git_head": current_head,
         "training_code_git_head": current_head,
         "training_worktree": str(TRAINING_WORKTREE),
+        "retry_ordinal": CONTROL_RETRY_ORDINAL,
+        "retry_identity": CONTROL_RETRY_IDENTITY,
+        "prior_failed_control_git_head": PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "prior_failed_control_runtime": str(PRIOR_FAILED_CONTROL_RUNTIME),
+        "prior_control_oom_terminal_receipt": str(
+            prior_control_oom_terminal_receipt_path
+        ),
+        "control_waves": [
+            list(CONTROL_RUN_IDS[:3]),
+            list(CONTROL_RUN_IDS[3:]),
+        ],
+        "wave1_requires_wave0_all_summaries": True,
+        "pytorch_cuda_alloc_conf": PYTORCH_CUDA_ALLOC_CONF,
         "runtime_manifest": str(runtime_manifest),
         "screen_config": str(config_path),
         "launch_authorization": str(authorization_path),
@@ -1075,6 +1223,8 @@ def build_control_schedule(
         "full_retrained": False,
         "c0_retrained": False,
         "old_v402_stopped_process_resumed": False,
+        "prior_family_reused": False,
+        "all_six_controls_retrained": True,
         "free_memory_gate_applied": False,
         "terminal_artifact_payloads_read_by_scheduler": 0,
         "historical_terminal_payloads_read_before_cross_root": 0,
@@ -1083,7 +1233,23 @@ def build_control_schedule(
     }
 
 
-def launch(expected_orchestration_head: str) -> dict[str, Any]:
+def launch(
+    expected_orchestration_head: str,
+    *,
+    prior_terminal_receipt_path: Path = PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+) -> dict[str, Any]:
+    # The canonical closure of the failed package is the first old-family
+    # admission evidence.  No historical producer audit, current-HEAD check,
+    # GPU probe, or family path is consumed before it passes.
+    require(
+        prior_terminal_receipt_path == PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+        "prior Critic controls OOM terminal receipt path is not canonical",
+    )
+    prior_terminal_receipt = read_json(prior_terminal_receipt_path)
+    validate_prior_control_oom_terminal_receipt(
+        prior_terminal_receipt,
+        receipt_path=prior_terminal_receipt_path,
+    )
     # Consume only the tracked heartbeat audit. Historical runtime and summary
     # payloads remain closed until the cross-root transition.
     full_terminal_audit = validate_historical_full_terminal_audit()
@@ -1136,6 +1302,8 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
     authorization = build_launch_authorization(
         source["preflight"],
         current_head=expected_orchestration_head,
+        prior_control_oom_terminal_receipt=prior_terminal_receipt,
+        prior_control_oom_terminal_receipt_path=prior_terminal_receipt_path,
         historical_full_terminal_audit=full_terminal_audit,
         historical_full_terminal_audit_path=FULL_TERMINAL_AUDIT,
         runner_verification_receipt=source["runner_verification_receipt"],
@@ -1162,6 +1330,7 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
         runtime_manifest=runtime_path,
         log_root=log_root,
         transition_gate=transition_gate,
+        prior_control_oom_terminal_receipt_path=prior_terminal_receipt_path,
         historical_full_terminal_audit_path=FULL_TERMINAL_AUDIT,
     )
     write_atomic(schedule_path, schedule)
@@ -1198,6 +1367,23 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
         "runner_git_head": expected_orchestration_head,
         "orchestration_git_head": expected_orchestration_head,
         "training_code_git_head": expected_orchestration_head,
+        "retry_ordinal": CONTROL_RETRY_ORDINAL,
+        "retry_identity": CONTROL_RETRY_IDENTITY,
+        "prior_failed_control_git_head": PRIOR_FAILED_CONTROL_GIT_HEAD,
+        "prior_failed_control_runtime": str(PRIOR_FAILED_CONTROL_RUNTIME),
+        "prior_control_oom_terminal_receipt": str(
+            prior_terminal_receipt_path
+        ),
+        "prior_control_oom_terminal_receipt_status": (
+            prior_terminal_receipt["status"]
+        ),
+        "prior_family_reused": False,
+        "all_six_controls_retrained": True,
+        "control_waves": [
+            list(CONTROL_RUN_IDS[:3]),
+            list(CONTROL_RUN_IDS[3:]),
+        ],
+        "pytorch_cuda_alloc_conf": PYTORCH_CUDA_ALLOC_CONF,
         "scheduler_pid": process.pid,
         "required_control_run_ids": list(CONTROL_RUN_IDS),
         "schedule_path": str(schedule_path),
@@ -1220,10 +1406,18 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-orchestration-head", required=True)
+    parser.add_argument(
+        "--prior-terminal-receipt",
+        type=Path,
+        default=PRIOR_CONTROL_OOM_TERMINAL_RECEIPT,
+    )
     arguments = parser.parse_args()
     print(
         json.dumps(
-            launch(arguments.expected_orchestration_head),
+            launch(
+                arguments.expected_orchestration_head,
+                prior_terminal_receipt_path=arguments.prior_terminal_receipt,
+            ),
             indent=2,
             sort_keys=True,
         )

@@ -243,6 +243,7 @@ def _focused_test_commands() -> list[str]:
         "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
         "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py "
         "test_launch_route2_xeditcritic_v403_controls_after_full.py "
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py "
         "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py "
         "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py "
         "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
@@ -351,6 +352,48 @@ def test_sort_keys_persisted_pass_gate_round_trip_preserves_semantic_arm_order(
         persisted
     )
     assert tuple(authorizations) == launcher.ARM_ORDER
+
+
+def test_cross_root_gate_consumes_frozen_retry1_control_paths(
+    tmp_path: Path,
+) -> None:
+    control_head = "c" * 40
+    gate = _gate(tmp_path, control_head=control_head)
+    runtime_path, output_root = launcher.control_lineage_paths_from_gate(gate)
+    assert runtime_path == launcher.control_runtime_path(control_head)
+    assert output_root == launcher.control_output_root(control_head)
+    assert launcher.CONTROL_RETRY_IDENTITY in str(runtime_path)
+    assert launcher.CONTROL_RETRY_IDENTITY in str(output_root)
+    assert "cross_root_controls_retry1" in str(
+        launcher.cross_root_gate_path(control_head)
+    )
+    launcher.validate_cross_root_gate(gate)
+
+
+@pytest.mark.parametrize("legacy_path", ["runtime", "output"])
+def test_cross_root_gate_rejects_legacy_control_family_paths(
+    tmp_path: Path, legacy_path: str
+) -> None:
+    control_head = "c" * 40
+    gate = _gate(tmp_path, control_head=control_head)
+    transition = gate["cross_root_transition"]
+    if legacy_path == "runtime":
+        transition["control_runtime_path"] = str(
+            launcher.ROOT
+            / "experiments/xeditcritic_v4/"
+            f"v403_control_recovery_runner_{control_head}/runtime.json"
+        )
+    else:
+        run_id = "v4_no_cross"
+        transition["arm_sources"][run_id]["summary_path"] = str(
+            launcher.ROOT
+            / "experiments/xeditcritic_v4/"
+            f"screen_seed_20260907_v403_control_recovery_{control_head}/"
+            f"{run_id}/run_summary.json"
+        )
+
+    with pytest.raises(Exception, match="frozen retry1"):
+        launcher.validate_cross_root_gate(gate)
 
 
 @pytest.mark.parametrize(
@@ -869,6 +912,29 @@ def test_runner_receipt_requires_each_s1_focused_marker(
     receipt["focused_tests"]["command"][2] = receipt["focused_tests"][
         "command"
     ][2].replace(marker, "")
+
+    with pytest.raises(
+        Exception, match="lacks required test-module coverage"
+    ):
+        launcher.validate_runner_verification_receipt(
+            receipt,
+            runner_head=runner_head,
+            receipt_path=launcher.runner_verification_receipt_path(
+                runner_head
+            ),
+        )
+
+
+def test_runner_receipt_requires_controls_oom_terminal_marker() -> None:
+    marker = (
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py"
+    )
+    assert marker in launcher.FOCUSED_GROUP_REQUIRED_TEST_MARKERS[6]
+    runner_head = "c" * 40
+    receipt = _runner_receipt(runner_head)
+    receipt["focused_tests"]["command"][6] = receipt["focused_tests"][
+        "command"
+    ][6].replace(marker, "")
 
     with pytest.raises(
         Exception, match="lacks required test-module coverage"

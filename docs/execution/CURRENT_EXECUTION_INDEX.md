@@ -60,46 +60,42 @@ readiness 时仍严禁进入 value target 或 Guidance。SetFlow 的旧科学 NO
 - `audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`
 - `audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`
 
-当前唯一活跃游标是已经从 clean、已推送 exact HEAD
-`930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8` 启动的独立 SetFlow V4-S1 mechanics family：
+旧 SetFlow V4-S1 930 family 已按用户明确指令停止，并精确收敛为
+`XEDITSETFLOW_V4_S1_SCREEN_TECHNICAL_FAILURE`。其 canonical invalidation receipt 为
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8_terminal_invalidation.json`；
+`successor_authorized=false`、`same_family_retry_authorized=false`、protected reads=0。旧 930 runtime、
+launcher 与 transition 永久结案，不再读取或重用。
 
-`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json`。
+许可主分支已 clean、push 到 exact HEAD
+`ebf99ebf8a253ad27e311e555121d328df8fae10`。该 HEAD 的正式准入为八组 focused
+158/17/149/27/22/10/110/92，共 585/585 PASS，V3.3.2 为 96/96 PASS，shared 与 SetFlow 双 receipt 已由
+真实 consumers 接受。它从两个独立 one-shot launcher 启动了当前两条活跃执行：
 
-该 family 与 corrected independent retry 共用的冻结 mechanics 配置身份是
-`configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`；retry 只修复初始化执行与证据，
-不改变该配置中的 objective、weight、seed、预算或阈值。
+1. corrected SetFlow S1 runtime：
+   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/runtime.json`。
+   full/single 固定 GPU0/1 并发，后续八项 Validation 覆盖 GPU0–5；seed-before-model、matched
+   initialization、objective、weight 0.05、十 passes、batch 32、checkpoints 4/6/8/10、891×32 cohort 与
+   全部科学阈值保持冻结。
+2. Critic controls runtime：
+   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_control_recovery_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/runtime.json`。
+   六臂曾固定 GPU0–5 同时启动；GPU0/1/2 的 source-only、edit-metadata-only 与
+   no-candidate-sequence 已产生不可覆盖 CUDA OOM failure，GPU3/4/5 三臂按包级语义自然收尾。该 package
+   已失去科学完整性，最终只能是技术失败；严禁运行 cross-root adjudication 或 confirmation，也不得把 OOM
+   写成科学 NO-GO。显存数值只作失败诊断，不得成为 gate、排序或筛卡依据。
 
-它是主合同下的前瞻性从属修订，不覆盖旧 V4.0.3 NO-GO。canonical launcher 已经消费一次；同一
-family 禁止重新启动、覆盖或手工接续。该 family 继续自然收尾，但后续静态审计发现其 trainer 在模型构造后
-才应用名义 seed，因此 `v4_s1_full` 与 `v4_s1_single_mode` 的参数初始化并未由 screen seed
-20260911 精确控制，也没有建立可审计的 matched initialization。冻结审计为
-`audits/route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair_v1.json`。无论该旧 family 最终
-形式 gate 为 PASS 或 NO-GO，它都不得授权 confirmation 或其他 successor；其终态只作为不可覆盖的失效
-执行证据保留。
+Critic 技术重试代码只在独立 prep 分支
+`route-a-v3-v403-controls-oom-retry-prep-20260828`、worktree
+`/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_v403_controls_oom_retry_prep_20260828` 开发；该分支不是 GPU
+执行入口。新实现先由唯一 transition 将旧 package 的精确技术终态冻结成不可覆盖 receipt，再允许新 HEAD、
+新根目录、retry index 1 的六臂完整重跑。调度固定为 GPU0–2 第一波、GPU3–5 第二波；第一波全部精确成功才
+启动第二波，仍是一臂一卡、多 GPU 并行。子进程使用 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+减少 allocator 碎片；不查询 `memory.free`、不等待/排序/筛卡、不设显存阈值。模型、trainer、数据、seed、
+batch、passes、更新预算和科学 gate 均不得改变。
 
-修复代码和新 S1-bound confirmation 链只在独立准备分支
-`route-a-v3-s1-confirmation-prep-20260828` 开发。该分支不是执行入口。旧 930 family 精确终态后，修复才可
-合入第 2 节许可分支，并在新的 clean pushed HEAD 上完成八组 focused、96 项 V3.3.2 与双 receipt。随后只
-允许建立一个新的独立 retry family，仍使用 seed 20260911、原两臂、weight 0.05、原 checkpoints 和未降低
-的全部阈值；禁止增加 screen seed、扫描 weight 或覆盖旧 artifacts。
-
-准备分支的旧候选 `b7f7c122299e71380aadef015498490e5e8dfeba` 已被候选准入与静态审阅否决，禁止
-快进或启动：其 focused preflight 为 530 PASS/2 FAIL，且随后确认 Critic one-shot process launch、Atomic
-TEST pre-access、cross-root transition、refit/LOSO barrier 的技术失败证据仍不闭合。新不可变代码基线为
-`f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66` 的 audit-only 候选
-`70652f5579fe227a831e887b0fa0ee91f63cde02` 又被启动就绪审计前瞻 supersede：它没有在 canonical S1
-launcher 内强制旧 930 exact-terminal，也没有正式八组 focused、96 项 V3.3.2 与双 receipt 的仓库内 producer，
-因此禁止作为执行入口。新的不可变代码基线是
-`7b4a445d3979aa7f832c52a16bd5bd67885e10b7`；它补齐 terminal-invalidation receipt 与一次性正式准入工具，
-但仍必须先由本文件所在的 audit-only successor HEAD 提交并推送，之后等待旧 930 family 精确终态和主工作树
-正式全量准入。
-
-监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。旧 930 游标的唯一读取入口改为准备
-工作树中的 `transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py`：RUNNING 时只返回极简状态且
-不写文件；两个精确终态之一成立时一次读取必要 terminal artifacts、确认 scheduler 已退出并原子写不可覆盖
-terminal-invalidation receipt。receipt 或 `.partial` 已存在时必须在读取 runtime 前停止。人工执行阶段不得循环
-轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变
-运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
+监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。每个活跃 runtime 每窗口最多读取
+一次；不做分钟级轮询或 tail。旧 Critic package 精确终态后只运行一次新的 OOM terminal transition，receipt
+或 `.partial` 已存在时禁止重读。等待期间只做不读取 protected outcomes、不改变活跃 artifacts 的文档、
+静态审计、CPU-native 单元测试和数据契约核查。
 
 ## 4. 唯一阶段图
 
@@ -107,19 +103,20 @@ terminal-invalidation receipt。receipt 或 `.partial` 已存在时必须在读�
 旧 SetFlow V4.0.3 recovered screen ──> XEDITSETFLOW_V4_SCREEN_NO_GO（冻结、只读）
 旧 Critic C0=937 + repaired full=f34 ──> 历史 v1 terminal producer（只读、非 screen PASS）
 
-SetFlow V4-S1 旧 930 family（seed 初始化缺陷，继续自然收尾）
-    └─> 终态证据只读；无论形式 gate 如何均不得授权 successor
+SetFlow V4-S1 旧 930 family ──> 技术终态 invalidated（冻结、只读）
 
 ┌─ Critic 第一关键路径（与基础 SetFlow 并行）
-│  └─> current-HEAD 六 controls，物理 GPU 0–5 一臂一卡并发，全部 v2
-│      └─> historical C0/full + current controls 的 mixed 八臂 cross-root gate
-│          ├─> 科学 NO_GO：停止 Critic 科学分支
-│          └─> PASS
-│              └─> 三 seed full/matched-C0，六 job 六卡并发 confirmation
-│                  └─> 一次 atomic frozen Development TEST
-│                      └─> 三 seed refit（三卡并发）
-│                          └─> 42-job LOSO（多卡队列）
-│                              └─> Critic frozen readiness
+│  └─> Y3 六 controls：GPU0/1/2 OOM，GPU3/4/5 自然收尾
+│      └─> 精确技术终态 + immutable OOM receipt；禁止 adjudication
+│          └─> 新 HEAD retry1：GPU0–2 / GPU3–5 两个固定三卡 waves，六臂全重跑
+│              └─> historical C0/full + retry1 controls 的 mixed 八臂 cross-root gate
+│                  ├─> 科学 NO_GO：停止 Critic 科学分支
+│                  └─> PASS
+│                      └─> 三 seed full/matched-C0，六 job 六卡并发 confirmation
+│                          └─> 一次 atomic frozen Development TEST
+│                              └─> 三 seed refit（三卡并发）
+│                                  └─> 42-job LOSO（多卡队列）
+│                                      └─> Critic frozen readiness
 │
 └─ SetFlow V4-S1 corrected independent retry
    └─> seed-before-model、canonical-full 投影的 matched full/single initialization
@@ -145,6 +142,7 @@ Critic frozen readiness + SetFlow G0_READY
 ### 终态转接与正式准入
 
 - `transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py`
+- `transition_record_route2_xeditcritic_v403_controls_oom_terminal.py`
 - `verify_and_materialize_route2_xedit_v403_successor_runner_receipts.py`
 
 第一项是 heartbeat 对旧 930 S1 runtime 的唯一 reader。它只在旧 family 为精确科学终态或精确技术终态、
@@ -153,7 +151,12 @@ Critic frozen readiness + SetFlow G0_READY
 `successor_authorized=false`、`same_family_retry_authorized=false`，只证明旧 family 已结束且不能作为科学
 后继依据。
 
-第二项只在主许可分支 fast-forward、push 到新的 clean exact HEAD 后运行一次。它从严格 Critic 与 SetFlow
+第二项是旧 Critic controls runtime 的唯一 terminal reader。它只接受包级精确技术终态、六臂全部非
+RUNNING/PENDING、scheduler 已退出、唯一 terminal artifact、first failure 不变、无 cross-root gate、protected
+reads=0；receipt 永久保持 `successor_authorized=false`、`same_family_retry_authorized=false`，只把新的独立
+retry family 标记为 eligible。它不读取旧 failure/summary payload，也不运行 GPU 或模型。
+
+第三项只在主许可分支 fast-forward、push 到新的 clean exact HEAD 后运行一次。它从严格 Critic 与 SetFlow
 consumer 的同一八组 marker 构造八个隔离 pytest 进程并发执行，使用实际 PASS 数而非旧固定计数；全部通过后
 才运行字面量 `tests/route_a_v3/*v332*.py` 并要求精确 96/0。随后它在 canonical `/mnt` audit 路径原子物化
 shared 与 SetFlow 两份不同 schema/status、相同实际证据的 receipt，并调用 Critic controls 与 corrected S1
@@ -203,11 +206,13 @@ Guidance 只能消费真正达到 `XEDITSETFLOW_V4_G0_READY` 的 posttraining sc
 - `launch_route2_xeditcritic_v4_refit_after_atomic_test.py`
 - `launch_route2_xeditcritic_v4_loso_after_refits.py`
 
-Critic controls 现在是独立第一优先级，不再等待 SetFlow screen 通过。canonical controls launcher 只消费
-仓库冻结的 full-terminal audit、当前 clean exact HEAD 和该 HEAD 的 shared runner receipt；启动前不重读旧
-full runtime/summary、C0 summary、旧 preflight 或 smoke payload。六个 controls 固定分配到物理 GPU 0–5，
-不按显存排序、筛卡或设置阈值。任一 technical first failure 只允许已在飞臂自然收尾，禁止再启动 pending，
-且不得运行 cross-root 科学裁决。
+当前 Y3 controls family 已因三项 CUDA OOM 进入技术失败语义，禁止重入。新 HEAD 的 canonical controls launcher
+必须先消费 immutable OOM terminal receipt，再消费仓库冻结的 full-terminal audit、clean exact HEAD 与该 HEAD
+的 shared runner receipt；它不重读旧 runtime/failure/summary payload。retry1 使用全新 output/runtime/
+authorization/log/gate roots与 attempt IDs，六个 controls 固定分配到物理 GPU0–5，但按 GPU0–2、GPU3–5 两个
+三卡 waves 运行。第一波任一技术失败时第二波全部 `NOT_RUN_AFTER_TERMINAL_FAILURE`；已在飞臂自然收尾。
+`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 仅改变 allocator 行为，不改变模型数学或科学协议。
+launcher/scheduler 禁止读取、排序、筛选或等待空闲显存，`free_memory_gate_applied=false` 必须贯穿全部证据。
 
 六 controls 精确终态后，transition 才一次消费 C0、full 与六 controls 的八份 summary 并执行 mixed-provenance
 gate；历史 v1 例外严格只有 C0=937 和 full=f34。screen PASS 后，confirmation 的三个 seed

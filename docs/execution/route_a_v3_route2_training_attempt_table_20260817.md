@@ -4314,3 +4314,27 @@ failure counters=0；相对 F2 margins 0.05/0.03/0.15 与 full-over-single margi
 receipt 后 one-shot 启动。训练和 GPU Validation 必须真实 CUDA/BF16、禁止 CPU fallback；显存仅诊断，不筛卡、
 不排序、不设 threshold/gate。当前记录仅为 protocol/runner freeze，无 S1 性能结果；S1 screen PASS 也不能直接称
 优秀 Development 结果。审计：`audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json`。
+
+## Critic V4.0.3 current-HEAD controls CUDA-OOM package（2026-08-28）
+
+正式 family 绑定 clean pushed HEAD `ebf99ebf8a253ad27e311e555121d328df8fae10`、screen seed 20260907、
+physical/effective batch 32、原六个 controls、原训练预算与未降低科学阈值。launcher 在完整 585/585 focused、
+96/96 V3.3.2 与 shared receipt 后一次消费，六臂固定 GPU0–5 启动，`free_memory_gate_applied=false`，
+Development TEST/new Evaluation reads=0。
+
+source-only、edit-metadata-only 与 no-candidate-sequence 分别在 GPU0/1/2 写出唯一 CUDA OOM failure；
+首失败为 source-only、return code 1。candidate-bundle-permutation、no-cross 与 no-MoE 已在 GPU3/4/5 在飞，
+按包级首失败语义自然收尾。该 package 技术上不完整，禁止 cross-root 科学裁决、confirmation 或同 family 重试；
+不得把 OOM 写成科学 NO-GO。三份失败中的显存数字只保留为诊断，不成为筛卡、排序、等待或阈值。
+
+## Critic V4.0.3 controls retry1 engineering freeze（2026-08-28）
+
+新 prep branch `route-a-v3-v403-controls-oom-retry-prep-20260828` 从 Y3 建立。retry1 只改变终态 lineage、
+包级调度和 PyTorch allocator：旧 package 精确技术终态先冻结为不可覆盖 receipt；新 HEAD 下全六臂完整重跑；
+GPU0–2 为第一固定三卡 wave，GPU3–5 为第二固定三卡 wave；第一波全部 SUMMARY 才允许第二波；子进程固定
+`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`。模型、forward/loss、数据、sampler、seed、batch、passes、
+optimizer updates 与科学 gate 均不变，不查询 `memory.free`，不设显存 gate。
+
+prep 分支只允许 CPU-native 工程测试和 push。必须等活跃 SetFlow 与旧 Critic package 精确终态，许可主分支
+fast-forward 到新 clean pushed HEAD，并重新通过完整八组 focused、精确 96 V3.3.2 与双 receipts 后，才允许
+创建一次新的 retry1 GPU family。当前没有 retry 性能结果，也不构成 Critic readiness 或优秀 Development 结论。

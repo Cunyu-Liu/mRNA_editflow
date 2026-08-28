@@ -165,6 +165,7 @@ def _focused_test_commands() -> list[str]:
         "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
         "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py "
         "test_launch_route2_xeditcritic_v403_controls_after_full.py "
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py "
         "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py "
         "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py "
         "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
@@ -394,6 +395,24 @@ def test_recovered_authorization_requires_each_s1_focused_marker(
     receipt["focused_tests"]["command"][2] = receipt["focused_tests"][
         "command"
     ][2].replace(marker, "")
+
+    with pytest.raises(
+        Exception, match="lacks required test-module coverage"
+    ):
+        require_runner_verification_receipt_v403(
+            receipt, current_runner_head="c" * 40
+        )
+
+
+def test_recovered_authorization_requires_controls_oom_terminal_marker() -> None:
+    marker = (
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py"
+    )
+    assert marker in FOCUSED_GROUP_REQUIRED_TEST_MARKERS[6]
+    receipt = _runner_receipt()
+    receipt["focused_tests"]["command"][6] = receipt["focused_tests"][
+        "command"
+    ][6].replace(marker, "")
 
     with pytest.raises(
         Exception, match="lacks required test-module coverage"

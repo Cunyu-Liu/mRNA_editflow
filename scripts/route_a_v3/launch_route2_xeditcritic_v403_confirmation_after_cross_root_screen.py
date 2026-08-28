@@ -30,6 +30,7 @@ REPAIRED_SCREEN_PROVENANCE_GIT_HEAD = (
     "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 )
 HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
+CONTROL_RETRY_IDENTITY = "v403_control_recovery_retry1"
 TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD = (
     "708e2843b4b4a6f36796db5c21b6e99469138f3b"
 )
@@ -246,6 +247,7 @@ FOCUSED_GROUP_REQUIRED_TEST_MARKERS = (
         "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py",
         "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py",
         "test_launch_route2_xeditcritic_v403_controls_after_full.py",
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py",
         "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py",
         "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py",
         "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
@@ -456,7 +458,7 @@ def control_output_root(control_runner_head: str) -> Path:
     return (
         ROOT
         / "experiments/xeditcritic_v4/"
-        f"screen_seed_20260907_v403_control_recovery_{control_runner_head}"
+        f"screen_seed_20260907_{CONTROL_RETRY_IDENTITY}_{control_runner_head}"
     )
 
 
@@ -464,7 +466,7 @@ def control_runtime_path(control_runner_head: str) -> Path:
     return (
         ROOT
         / "experiments/xeditcritic_v4/"
-        f"v403_control_recovery_runner_{control_runner_head}/runtime.json"
+        f"{CONTROL_RETRY_IDENTITY}_runner_{control_runner_head}/runtime.json"
     )
 
 
@@ -472,12 +474,17 @@ def cross_root_gate_path(control_runner_head: str) -> Path:
     return (
         ROOT
         / "experiments/xeditcritic_v4/"
-        f"screen_seed_20260907_v403_cross_root_controls_{control_runner_head}/"
+        "screen_seed_20260907_v403_cross_root_controls_"
+        f"retry1_{control_runner_head}/"
         "screen_gate.json"
     )
 
 
-def expected_summary_paths(control_runner_head: str) -> dict[str, Path]:
+def expected_summary_paths(
+    control_runner_head: str,
+    *,
+    actual_control_output_root: Path | None = None,
+) -> dict[str, Path]:
     historical = (
         ROOT
         / "experiments/xeditcritic_v4/"
@@ -489,7 +496,11 @@ def expected_summary_paths(control_runner_head: str) -> dict[str, Path]:
         "screen_seed_20260907_v403_rng_replay_fix_"
         f"{REPAIRED_SCREEN_PROVENANCE_GIT_HEAD}"
     )
-    controls = control_output_root(control_runner_head)
+    controls = (
+        control_output_root(control_runner_head)
+        if actual_control_output_root is None
+        else actual_control_output_root
+    )
     result = {
         "c0_v4": historical / "c0_v4/run_summary.json",
         "v4_full": full / "v4_full/run_summary.json",
@@ -540,8 +551,63 @@ def control_runner_head_from_gate(payload: Mapping[str, Any]) -> str:
     return head
 
 
+def control_lineage_paths_from_gate(
+    payload: Mapping[str, Any],
+) -> tuple[Path, Path]:
+    """Consume the frozen retry1 runtime and output paths from the gate."""
+
+    control_runner_head = control_runner_head_from_gate(payload)
+    transition = payload.get("cross_root_transition")
+    require(
+        isinstance(transition, Mapping),
+        "cross-root gate lacks transition provenance",
+    )
+    runtime_value = transition.get("control_runtime_path")
+    require(
+        isinstance(runtime_value, str) and bool(runtime_value.strip()),
+        "cross-root gate lacks the frozen control runtime path",
+    )
+    runtime_path = Path(runtime_value)
+    require(
+        runtime_path.is_absolute()
+        and runtime_path == control_runtime_path(control_runner_head),
+        "cross-root gate control runtime path is not the frozen retry1 family",
+    )
+    arm_sources = transition.get("arm_sources")
+    require(
+        isinstance(arm_sources, Mapping),
+        "cross-root gate lacks frozen arm-source paths",
+    )
+    output_roots: set[Path] = set()
+    for run_id in CONTROL_RUN_IDS:
+        row = arm_sources.get(run_id)
+        summary_value = (
+            row.get("summary_path") if isinstance(row, Mapping) else None
+        )
+        require(
+            isinstance(summary_value, str) and bool(summary_value.strip()),
+            f"cross-root gate lacks the frozen summary path for {run_id}",
+        )
+        summary_path = Path(summary_value)
+        require(
+            summary_path.is_absolute()
+            and summary_path.name == "run_summary.json"
+            and summary_path.parent.name == run_id,
+            f"cross-root gate summary path shape changed for {run_id}",
+        )
+        output_roots.add(summary_path.parent.parent)
+    require(
+        output_roots == {control_output_root(control_runner_head)},
+        "cross-root gate control summary paths do not bind the frozen retry1 output root",
+    )
+    return runtime_path, next(iter(output_roots))
+
+
 def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
     control_runner_head = control_runner_head_from_gate(payload)
+    actual_control_runtime, actual_control_output_root = (
+        control_lineage_paths_from_gate(payload)
+    )
     require(
         payload.get("schema_version")
         == "route_a_v3_route2_xeditcritic_v4_screen_gate.v1"
@@ -576,7 +642,7 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
         and transition.get("full_runtime_status")
         == "XEDITCRITIC_V403_FULL_RECOVERY_TERMINAL"
         and transition.get("control_runtime_path")
-        == str(control_runtime_path(control_runner_head))
+        == str(actual_control_runtime)
         and transition.get("control_runtime_status")
         == (
             "XEDITCRITIC_V403_CONTROL_RECOVERY_"
@@ -597,7 +663,10 @@ def validate_cross_root_gate(payload: Mapping[str, Any]) -> None:
         transition, label="cross-root transition provenance"
     )
     arm_sources = transition.get("arm_sources")
-    summary_paths = expected_summary_paths(control_runner_head)
+    summary_paths = expected_summary_paths(
+        control_runner_head,
+        actual_control_output_root=actual_control_output_root,
+    )
     require(
         isinstance(arm_sources, Mapping)
         and set(arm_sources.keys()) == set(ARM_ORDER),
