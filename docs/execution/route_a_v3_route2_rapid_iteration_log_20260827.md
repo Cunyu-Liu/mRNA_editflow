@@ -670,3 +670,76 @@ or terminal artifacts.
 - Next gate: the containing repair commit must rerun all eight isolated focused
   groups and the exact 96 V3.3.2 tests. Only a wholly passing new HEAD may create
   the two receipts, be pushed, or launch S1.
+
+## Iteration 13 — Fail closed on unmatched S1 initialization and prepare an independent seeded retry
+
+- Active execution fact: the S1 canonical launcher consumed exactly once from
+  clean pushed HEAD `930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8` and created the
+  independent screen family
+  `s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8`.
+  It contains exactly two training jobs and eight checkpoint Validation jobs,
+  with the frozen objective, weight 0.05, seed 20260911, passes 4/6/8/10,
+  batch 32, CUDA/A100/BF16-only policy, no CPU fallback, zero protected reads,
+  and no free-memory gate. The two-hour heartbeat remains its only monitor.
+- Late static defect: review of the exact trainer used by that family established
+  that the model was constructed before `torch.manual_seed` and
+  `torch.cuda.manual_seed_all` were applied. Because full and single-mode were
+  separate processes, the nominal screen seed did not control parameter
+  initialization or provide auditable matched initialization. This is a real
+  scientific-execution defect independent of any observed metric. The frozen
+  repository evidence is
+  `audits/route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair_v1.json`.
+- Immutable-family disposition: the 930 family is not killed, relaunched, or
+  overwritten; already-started jobs may naturally reach terminal. Its runtime,
+  summaries, failures, and gate remain immutable evidence. However, even a
+  formally emitted screen PASS cannot authorize confirmation or any successor.
+  The canonical confirmation launcher explicitly rejects the audit field
+  `affected_family_can_authorize_successor=false`. A formal NO-GO is likewise
+  not converted into a corrected scientific conclusion.
+- Corrected screen protocol: after the old family reaches exact terminal, the
+  repair may enter the permitted execution branch only as a new clean pushed
+  HEAD. One independent retry family will reuse exactly seed 20260911, the same
+  full and single-mode arms, objective, weight 0.05, ten passes, batch 32,
+  checkpoint passes, 891×32 Validation and unchanged absolute/F2/single-mode
+  margins. There is no additional screen seed, weight sweep, threshold reduction
+  or artifact overwrite. CPU and CUDA seeds are now applied before any model
+  construction and are recorded through training, checkpoint, Validation and
+  gate lineage.
+- S1-bound confirmation freeze: preparation commits
+  `02e77f5f`, `95f38aec`, `a66f0c5e`, `82567f68`, `26234264`, `69e9af4f`,
+  `16f595db4b83dd67197a8487f7d1f5302fc771b1` and
+  `409e2d30` implement a prospective confirmation protocol, helper, exact
+  three-seed training launcher, exact 12-job posttraining launcher and atomic
+  adjudicator. Confirmation is intentionally locked until a future corrected
+  screen HEAD/path is prospectively bound and reaches exact PASS. It trains only
+  `v4_s1_full` at seeds 20260912/20260913/20260914, does not retrain
+  single-mode, and does not preselect a confirmation checkpoint.
+- Lineage and scheduler repair: launcher authorization is bound to the permitted
+  execution branch rather than the preparation branch. Screen runtime jobs are
+  bound to their exact schedule job keys, run IDs, GPUs, checkpoint passes and
+  terminal paths. Posttraining accepts only the canonical training schedule,
+  manifest, authorization and runtime paths. GPU 0–5 inventory and required
+  CUDA/BF16 probes complete before any live screen/training family is consumed
+  or new family is materialized. GPU memory remains diagnostic only. Existing
+  final, failure, authorization, prelaunch or partial evidence closes a family;
+  first technical failure stops future pending launches without relabeling a
+  scientific result.
+- Engineering verification: the seed/CUDA lineage modules passed 52 focused
+  test nodes; the tracked seed-repair audit and corrected-screen launcher tests
+  passed 9/9; the integrated S1 preparation suite passed 122/122; and after the
+  final canonical-path/preflight changes the four directly affected modules
+  passed 28/28. An independent static reviewer found no remaining launch or
+  lineage blocker and separately ran 25/25 directly affected tests. These are
+  CPU-native engineering checks, not model Validation or scientific evidence.
+- Publication gate: the preparation branch is not an execution entry and this
+  iteration creates no new `/mnt` family. After the old family terminal, the
+  repair must be merged into `route-a-v3-v403-no-vram-gate-20260827`, committed
+  and pushed, then pass all eight isolated focused groups and exactly 96 V3.3.2
+  tests. Only the resulting exact HEAD may receive both runner receipts and
+  launch the corrected screen retry.
+- Protected scope and conclusion: this preparation read no active runtime,
+  training log, metric, curve, Development TEST outcome or new Evaluation
+  outcome and launched no GPU job. It prevents an unmatched screen from being
+  promoted; it does not claim a model-quality result. Excellent Development
+  evidence still requires terminal Final adjudication with frozen
+  `XEDITFLOW_V4_PASS`, and `submission_ready=false` remains.

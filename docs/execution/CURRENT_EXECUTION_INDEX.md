@@ -53,10 +53,24 @@
 - `audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json`
 - `audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json`
 
-当前新入口是独立的 SetFlow V4-S1 mechanics family。它是主合同下的前瞻性从属修订，不是旧 V4.0.3
-重试，也不覆盖旧 NO-GO。配置为
-`configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`；任何真实启动仍必须等待包含实现的
-clean、已推送 exact HEAD 完成全量准入与双 receipt。
+当前唯一活跃游标是已经从 clean、已推送 exact HEAD
+`930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8` 启动的独立 SetFlow V4-S1 mechanics family：
+
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json`。
+
+它是主合同下的前瞻性从属修订，不覆盖旧 V4.0.3 NO-GO。canonical launcher 已经消费一次；同一
+family 禁止重新启动、覆盖或手工接续。该 family 继续自然收尾，但后续静态审计发现其 trainer 在模型构造后
+才应用名义 seed，因此 `v4_s1_full` 与 `v4_s1_single_mode` 的参数初始化并未由 screen seed
+20260911 精确控制，也没有建立可审计的 matched initialization。冻结审计为
+`audits/route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair_v1.json`。无论该旧 family 最终
+形式 gate 为 PASS 或 NO-GO，它都不得授权 confirmation 或其他 successor；其终态只作为不可覆盖的失效
+执行证据保留。
+
+修复代码和新 S1-bound confirmation 链只在独立准备分支
+`route-a-v3-s1-confirmation-prep-20260828` 开发。该分支不是执行入口。旧 930 family 精确终态后，修复才可
+合入第 2 节许可分支，并在新的 clean pushed HEAD 上完成八组 focused、96 项 V3.3.2 与双 receipt。随后只
+允许建立一个新的独立 retry family，仍使用 seed 20260911、原两臂、weight 0.05、原 checkpoints 和未降低
+的全部阈值；禁止增加 screen seed、扫描 weight 或覆盖旧 artifacts。
 
 监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。人工执行阶段不得循环轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
 
@@ -66,10 +80,13 @@ clean、已推送 exact HEAD 完成全量准入与双 receipt。
 旧 SetFlow V4.0.3 recovered screen ──> XEDITSETFLOW_V4_SCREEN_NO_GO（冻结、只读）
 旧 Critic V4.0.3 full ──> terminal SUMMARY（controls 暂停、非 screen PASS）
 
-SetFlow V4-S1 prospective freeze
-    └─> v4_s1_full + v4_s1_single_mode（seed 20260911）
+SetFlow V4-S1 旧 930 family（seed 初始化缺陷，继续自然收尾）
+    └─> 终态证据只读；无论形式 gate 如何均不得授权 successor
+
+SetFlow V4-S1 corrected independent retry（尚未启动）
+    └─> seed-before-model 的 matched v4_s1_full + v4_s1_single_mode（seed 20260911）
         └─> checkpoints 4/6/8/10 的冻结 891×32 outcome-free Validation
-            ├─> XEDITSETFLOW_V4_S1_SCREEN_NO_GO：该新方法 family 终止
+            ├─> XEDITSETFLOW_V4_S1_SCREEN_NO_GO：该 corrected family 终止
             └─> XEDITSETFLOW_V4_S1_SCREEN_PASS
                 └─> 仅允许新 S1-bound 三 seed confirmation；旧 V4.0.3 launcher 禁用
                     └─> 后续仍须逐级重获 SetFlow G0_READY、Critic readiness、
@@ -92,6 +109,19 @@ S1 只新增 fixed-weight 0.05 的跨状态候选 mode-responsibility forward KL
 停梯度，约束同一 occurrence/canonical candidate 的 compatible nonroot、nonstructural states，归约严格为
 state→candidate→occurrence。原 V4 架构、sampler、seed 20260911、十 passes、batch 32、checkpoints
 4/6/8/10、891×32 Validation 与全部绝对/相对 gate 不变；不存在 weight sweep 或额外 screen seed。
+
+旧 930 family 的上述 launcher 已消费完毕，禁止再次调用。corrected retry 只能在新 exact HEAD、完整准入和
+新 family 路径下消费一次。修复要求 CPU/CUDA seed 在任何模型构造之前应用，并把初始化 seed、应用顺序、
+CUDA/A100/BF16 与 no-CPU-fallback 证据贯穿 training summary、checkpoint、Validation 和 gate。
+
+- `launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py`
+- `launch_route2_xeditsetflow_s1_confirmation_posttraining.py`
+- `adjudicate_route2_xeditsetflow_s1_confirmation.py`
+
+这三个 S1-bound confirmation 入口已在准备分支实现，但当前保持硬锁定：旧 930 family 被显式拒绝，只有
+corrected retry 的 exact screen HEAD/path 在未来 commit 中前瞻冻结、并产生精确 PASS 后才能启用。训练固定
+三个 `v4_s1_full` seeds 20260912/20260913/20260914；posttraining 固定 3×4 个 Validation，不重训
+single-mode，不追加 seed，不预选 confirmation checkpoint。
 
 - `launch_route2_xeditsetflow_v403_recovered_confirmation.py`
 - `launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py`
