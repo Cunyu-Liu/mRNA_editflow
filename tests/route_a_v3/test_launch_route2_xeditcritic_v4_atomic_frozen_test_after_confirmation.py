@@ -9,6 +9,54 @@ import pytest
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation as launcher
 
 
+def test_atomic_wrapper_popen_failure_is_durable_and_one_shot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    family = tmp_path / "atomic_family"
+    family.mkdir()
+    protocol = family / "runtime_protocol.json"
+    job = family / "job.json"
+    for path in (protocol, job):
+        path.write_text("{}\n", encoding="utf-8")
+    failure = family / "scheduler_launch.failed.json"
+
+    def fail(*args, **kwargs):
+        raise OSError("atomic wrapper spawn failed")
+
+    monkeypatch.setattr(launcher.subprocess, "Popen", fail)
+    arguments = {
+        "failure_path": failure,
+        "expected_head": "a" * 40,
+        "command_line": ["python", "wrapper.py", "--job", str(job)],
+        "job_path": job,
+        "runtime_path": family / "runtime.json",
+        "wrapper_log": family / "wrapper.log",
+        "created_artifacts": {"runtime_protocol": protocol, "job": job},
+    }
+    with pytest.raises(
+        launcher.XEditCriticV4AtomicTestLaunchError,
+        match="durable technical failure",
+    ):
+        launcher.spawn_wrapper_with_failure_evidence(**arguments)
+
+    payload = json.loads(failure.read_text(encoding="utf-8"))
+    assert payload["status"] == (
+        "XEDITCRITIC_V4_ATOMIC_TEST_WRAPPER_LAUNCH_TECHNICAL_FAILURE"
+    )
+    assert payload["wrapper_started"] is False
+    assert payload["gpu_job_started"] is False
+    assert payload["development_test_access_started"] is False
+    assert payload["development_test_access_event_count"] == 0
+    assert "job_pid" not in payload
+    assert not (family / "decision.json").exists()
+
+    with pytest.raises(
+        launcher.XEditCriticV4AtomicTestLaunchError,
+        match="already exists",
+    ):
+        launcher.spawn_wrapper_with_failure_evidence(**arguments)
+
+
 def _posttraining(*, eligible: bool, terminal: str = "SUMMARY") -> dict[str, object]:
     return {
         "eligible_components": ["critic"] if eligible else ["setflow"],

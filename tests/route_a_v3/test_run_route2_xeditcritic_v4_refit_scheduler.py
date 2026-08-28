@@ -230,6 +230,180 @@ def test_refit_worktree_drift_stops_before_popen(
     assert not marker.exists()
 
 
+def test_refit_job_spawn_exception_writes_failure_and_stops(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(scheduler, "inspect_worktree_identity", lambda *_: None)
+    monkeypatch.setattr(
+        scheduler,
+        "run_logged",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            FileNotFoundError("trainer spawn failed")
+        ),
+    )
+    runtime = tmp_path / "runtime.json"
+    failure = tmp_path / "run/failure.json"
+    manifest = tmp_path / "adjudication.json"
+    job = {
+        "job_key": "refit:20260908:v4_full",
+        "seed": 20260908,
+        "summary_path": str(tmp_path / "run/run_summary.json"),
+        "failure_path": str(failure),
+        "log_path": str(tmp_path / "run.log"),
+        "command": ["missing-trainer"],
+    }
+    scheduler.run(
+        {
+            "git_head": "f" * 40,
+            "worktree": str(tmp_path),
+            "runtime_manifest": str(runtime),
+            "gpu_queues": [{"physical_gpu_index": 0, "jobs": [job]}],
+            "adjudication": {
+                "manifest_path": str(manifest),
+                "failure_path": str(tmp_path / "adjudication.failed.json"),
+                "log_path": str(tmp_path / "adjudication.log"),
+                "command": _writer(manifest, {"loso_authorized": True}, 0),
+            },
+        }
+    )
+
+    payload = json.loads(runtime.read_text(encoding="utf-8"))
+    evidence = json.loads(failure.read_text(encoding="utf-8"))
+    assert payload["status"] == "XEDITCRITIC_V4_REFIT_TECHNICAL_FAILURE"
+    assert payload["jobs"][job["job_key"]]["status"] == "TECHNICAL_FAILURE"
+    assert payload["jobs"][job["job_key"]]["return_code"] is None
+    assert payload["adjudication"]["status"] == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+    assert payload["first_terminal_failure"]["failure_reason"] == (
+        "PROCESS_SPAWN_EXCEPTION"
+    )
+    assert evidence["failure_stage"] == "FORMAL_REFIT_JOB_SPAWN"
+    assert evidence["return_code"] is None
+    assert evidence["exception_type"] == "FileNotFoundError"
+    assert evidence["exception_message"] == "trainer spawn failed"
+    assert evidence["development_test_outcome_reads"] == 0
+    assert evidence["new_final_evaluation_outcome_reads"] == 0
+    assert not manifest.exists()
+
+
+def test_refit_adjudication_spawn_exception_is_technical(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(scheduler, "inspect_worktree_identity", lambda *_: None)
+    original_run_logged = scheduler.run_logged
+
+    def fail_adjudication(command, *, cwd, log):
+        if log.name == "adjudication.log":
+            raise OSError("adjudication spawn failed")
+        return original_run_logged(command, cwd=cwd, log=log)
+
+    monkeypatch.setattr(scheduler, "run_logged", fail_adjudication)
+    runtime = tmp_path / "runtime.json"
+    summary = tmp_path / "run/run_summary.json"
+    adjudication_failure = tmp_path / "adjudication.failed.json"
+    job = {
+        "job_key": "refit:20260908:v4_full",
+        "seed": 20260908,
+        "summary_path": str(summary),
+        "failure_path": str(tmp_path / "run/failure.json"),
+        "log_path": str(tmp_path / "run.log"),
+        "command": _writer(summary, {}, 0),
+    }
+    scheduler.run(
+        {
+            "git_head": "1" * 40,
+            "worktree": str(tmp_path),
+            "runtime_manifest": str(runtime),
+            "gpu_queues": [{"physical_gpu_index": 0, "jobs": [job]}],
+            "adjudication": {
+                "manifest_path": str(tmp_path / "adjudication.json"),
+                "failure_path": str(adjudication_failure),
+                "log_path": str(tmp_path / "adjudication.log"),
+                "command": ["missing-adjudicator"],
+            },
+        }
+    )
+
+    payload = json.loads(runtime.read_text(encoding="utf-8"))
+    evidence = json.loads(adjudication_failure.read_text(encoding="utf-8"))
+    assert payload["status"] == "XEDITCRITIC_V4_REFIT_TECHNICAL_FAILURE"
+    assert payload["jobs"][job["job_key"]]["status"] == "TERMINAL_COMPLETE"
+    assert payload["adjudication"]["status"] == "TECHNICAL_FAILURE"
+    assert payload["adjudication"]["return_code"] is None
+    assert payload["first_terminal_failure"]["job_key"] == "REFIT_ADJUDICATION"
+    assert evidence["failure_stage"] == "REFIT_ADJUDICATION_SPAWN"
+    assert evidence["return_code"] is None
+    assert evidence["exception_type"] == "OSError"
+    assert evidence["exception_message"] == "adjudication spawn failed"
+    assert evidence["development_test_outcome_reads_during_refit"] == 0
+    assert evidence["new_final_evaluation_outcome_reads"] == 0
+
+
+def test_refit_adjudication_identity_drift_writes_failure_before_spawn(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity_calls = 0
+
+    def identity(*_):
+        nonlocal identity_calls
+        identity_calls += 1
+        if identity_calls == 1:
+            return None
+        return {
+            "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+            "expected_git_head": "2" * 40,
+            "observed_git_head": "3" * 40,
+            "head_return_code": 0,
+            "porcelain_return_code": 0,
+            "porcelain_lines": [],
+        }
+
+    monkeypatch.setattr(scheduler, "inspect_worktree_identity", identity)
+    runtime = tmp_path / "runtime.json"
+    summary = tmp_path / "run/run_summary.json"
+    marker = tmp_path / "adjudication-launched"
+    adjudication_failure = tmp_path / "adjudication.failed.json"
+    job = {
+        "job_key": "refit:20260908:v4_full",
+        "seed": 20260908,
+        "summary_path": str(summary),
+        "failure_path": str(tmp_path / "run/failure.json"),
+        "log_path": str(tmp_path / "run.log"),
+        "command": _writer(summary, {}, 0),
+    }
+    scheduler.run(
+        {
+            "git_head": "2" * 40,
+            "worktree": str(tmp_path),
+            "runtime_manifest": str(runtime),
+            "gpu_queues": [{"physical_gpu_index": 0, "jobs": [job]}],
+            "adjudication": {
+                "manifest_path": str(tmp_path / "adjudication.json"),
+                "failure_path": str(adjudication_failure),
+                "log_path": str(tmp_path / "adjudication.log"),
+                "command": _writer(marker, {}, 0),
+            },
+        }
+    )
+
+    payload = json.loads(runtime.read_text(encoding="utf-8"))
+    evidence = json.loads(adjudication_failure.read_text(encoding="utf-8"))
+    assert payload["status"] == "XEDITCRITIC_V4_REFIT_TECHNICAL_FAILURE"
+    assert payload["adjudication"]["status"] == "TECHNICAL_FAILURE"
+    assert payload["adjudication"]["return_code"] is None
+    assert payload["first_terminal_failure"]["job_key"] == "REFIT_ADJUDICATION"
+    assert payload["first_terminal_failure"]["failure_reason"] == (
+        "SCHEDULE_WORKTREE_IDENTITY_DRIFT"
+    )
+    assert evidence["failure_stage"] == (
+        "REFIT_ADJUDICATION_WORKTREE_IDENTITY"
+    )
+    assert evidence["return_code"] is None
+    assert not marker.exists()
+
+
 def test_refit_exact_terminal_rejects_double_artifact(tmp_path: Path) -> None:
     summary = tmp_path / "summary.json"
     failure = tmp_path / "failure.json"

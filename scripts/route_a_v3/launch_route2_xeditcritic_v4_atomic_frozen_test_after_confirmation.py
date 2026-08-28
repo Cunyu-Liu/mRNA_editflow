@@ -80,6 +80,94 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def write_wrapper_launch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    command_line: Sequence[str],
+    job_path: Path,
+    runtime_path: Path,
+    created_artifacts: Mapping[str, Path],
+    error: Exception,
+) -> None:
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "Critic atomic TEST wrapper launch failure evidence already exists; "
+        "use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditcritic_v4_atomic_test_"
+                "wrapper_launch_failure.v1"
+            ),
+            "status": (
+                "XEDITCRITIC_V4_ATOMIC_TEST_WRAPPER_LAUNCH_TECHNICAL_FAILURE"
+            ),
+            "failure_stage": "JOB_WRAPPER_PROCESS_LAUNCH",
+            "expected_git_head": expected_head,
+            "worktree": str(WORKTREE),
+            "wrapper_command": list(command_line),
+            "job_path": str(job_path),
+            "intended_runtime_manifest": str(runtime_path),
+            "created_artifact_paths": {
+                key: str(value) for key, value in created_artifacts.items()
+            },
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "wrapper_started": False,
+            "gpu_job_started": False,
+            "development_test_access_started": False,
+            "development_test_access_event_count": 0,
+            "automatic_retry_attempted": False,
+            "free_memory_gate_applied": False,
+            "cpu_fallback_used": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
+
+
+def spawn_wrapper_with_failure_evidence(
+    *,
+    failure_path: Path,
+    expected_head: str,
+    command_line: Sequence[str],
+    job_path: Path,
+    runtime_path: Path,
+    wrapper_log: Path,
+    created_artifacts: Mapping[str, Path],
+) -> subprocess.Popen[str]:
+    stream = wrapper_log.open("w", encoding="utf-8")
+    try:
+        process = subprocess.Popen(
+            list(command_line),
+            cwd=WORKTREE,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    except Exception as error:
+        stream.close()
+        write_wrapper_launch_failure_evidence(
+            failure_path,
+            expected_head=expected_head,
+            command_line=command_line,
+            job_path=job_path,
+            runtime_path=runtime_path,
+            created_artifacts=created_artifacts,
+            error=error,
+        )
+        raise XEditCriticV4AtomicTestLaunchError(
+            "Critic atomic TEST wrapper process could not start; durable "
+            f"technical failure evidence: {failure_path}"
+        ) from error
+    stream.close()
+    return process
+
+
 def sibling_failure_path(runtime_root: Path) -> Path:
     return runtime_root.with_name(runtime_root.name + ".failed.json")
 
@@ -326,15 +414,20 @@ def run(head: str) -> dict[str, Any]:
     job_path = runtime_root / "job.json"
     write_atomic(job_path, job)
     wrapper_log = log_root / "job_wrapper.log"
-    stream = wrapper_log.open("w", encoding="utf-8")
-    process = subprocess.Popen(
-        [str(PYTHON), str(JOB_RUNNER), "--job", str(job_path)],
-        cwd=WORKTREE,
-        stdout=stream,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
+    wrapper_command = [str(PYTHON), str(JOB_RUNNER), "--job", str(job_path)]
+    process = spawn_wrapper_with_failure_evidence(
+        failure_path=runtime_root / "scheduler_launch.failed.json",
+        expected_head=head,
+        command_line=wrapper_command,
+        job_path=job_path,
+        runtime_path=job_runtime,
+        wrapper_log=wrapper_log,
+        created_artifacts={
+            "runtime_protocol": runtime_protocol_path,
+            "job": job_path,
+            "wrapper_log": wrapper_log,
+        },
     )
-    stream.close()
     result = {
         "schema_version": "route_a_v3_route2_xeditcritic_v4_atomic_test_launch.v1",
         "status": "XEDITCRITIC_V4_EXACT_ATOMIC_TEST_LAUNCHED",

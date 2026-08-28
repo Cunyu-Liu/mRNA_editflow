@@ -10,6 +10,59 @@ import scripts.route_a_v3.launch_route2_xeditcritic_v403_controls_after_full as 
 import scripts.route_a_v3.run_route2_xeditcritic_v403_control_recovery_scheduler as scheduler
 
 
+def test_control_scheduler_popen_failure_is_durable_and_one_shot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    family = tmp_path / "control_family"
+    family.mkdir()
+    schedule = family / "schedule.json"
+    authorization = family / "authorization.json"
+    schedule.write_text("{}\n", encoding="utf-8")
+    authorization.write_text("{}\n", encoding="utf-8")
+    failure = family / "scheduler_launch.failed.json"
+    launch = family / "launch.json"
+
+    def fail(*args, **kwargs):
+        raise OSError("control scheduler spawn failed")
+
+    monkeypatch.setattr(launcher.subprocess, "Popen", fail)
+    arguments = {
+        "failure_path": failure,
+        "expected_head": "a" * 40,
+        "command_line": ["python", "scheduler.py", "--schedule", str(schedule)],
+        "schedule_path": schedule,
+        "runtime_path": family / "runtime.json",
+        "worker_log_path": family / "scheduler.log",
+        "created_artifacts": {
+            "launch_authorization": authorization,
+            "schedule": schedule,
+        },
+    }
+    with pytest.raises(
+        launcher.XEditCriticV403ControlRecoveryLaunchError,
+        match="durable technical failure",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+    payload = json.loads(failure.read_text(encoding="utf-8"))
+    assert payload["status"] == (
+        "XEDITCRITIC_V403_CONTROL_SCHEDULER_LAUNCH_TECHNICAL_FAILURE"
+    )
+    assert payload["error_type"] == "OSError"
+    assert payload["scheduler_started"] is False
+    assert payload["gpu_job_started"] is False
+    assert payload["development_test_outcome_reads"] == 0
+    assert payload["created_artifact_paths"]["schedule"] == str(schedule)
+    assert "scheduler_pid" not in payload
+    assert not launch.exists()
+
+    with pytest.raises(
+        launcher.XEditCriticV403ControlRecoveryLaunchError,
+        match="already exists",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+
 def _write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")

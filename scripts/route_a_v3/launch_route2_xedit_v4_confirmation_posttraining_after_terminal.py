@@ -10,7 +10,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
 WORKTREE = Path(__file__).resolve().parents[2]
@@ -78,6 +78,93 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     partial = path.with_suffix(path.suffix + ".partial")
     partial.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     os.replace(partial, path)
+
+
+def write_scheduler_launch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    created_artifacts: Mapping[str, Path],
+    error: Exception,
+) -> None:
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "V4 confirmation posttraining scheduler launch failure evidence "
+        "already exists; use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xedit_v4_confirmation_posttraining_"
+                "scheduler_launch_failure.v1"
+            ),
+            "status": (
+                "V4_CONFIRMATION_POSTTRAINING_SCHEDULER_LAUNCH_"
+                "TECHNICAL_FAILURE"
+            ),
+            "failure_stage": "SCHEDULER_PROCESS_LAUNCH",
+            "expected_git_head": expected_head,
+            "worktree": str(WORKTREE),
+            "scheduler_command": list(command_line),
+            "schedule_path": str(schedule_path),
+            "intended_runtime_manifest": str(runtime_path),
+            "created_artifact_paths": {
+                key: str(value) for key, value in created_artifacts.items()
+            },
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "free_memory_gate_applied": False,
+            "cpu_fallback_used": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
+
+
+def spawn_scheduler_with_failure_evidence(
+    *,
+    failure_path: Path,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    scheduler_log: Path,
+    created_artifacts: Mapping[str, Path],
+) -> subprocess.Popen[str]:
+    stream = scheduler_log.open("w", encoding="utf-8")
+    try:
+        process = subprocess.Popen(
+            list(command_line),
+            cwd=WORKTREE,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    except Exception as error:
+        stream.close()
+        write_scheduler_launch_failure_evidence(
+            failure_path,
+            expected_head=expected_head,
+            command_line=command_line,
+            schedule_path=schedule_path,
+            runtime_path=runtime_path,
+            created_artifacts=created_artifacts,
+            error=error,
+        )
+        raise XEditV4ConfirmationPosttrainingLaunchError(
+            "V4 confirmation posttraining scheduler process could not start; "
+            f"durable technical failure evidence: {failure_path}"
+        ) from error
+    stream.close()
+    return process
 
 
 def gpu_free_memory_mib() -> dict[int, int]:
@@ -492,15 +579,24 @@ def run(head: str) -> dict[str, Any]:
     }
     write_atomic(schedule_path, schedule)
     coordinator_log = log_root / "coordinator.log"
-    stream = coordinator_log.open("w", encoding="utf-8")
-    process = subprocess.Popen(
-        [str(PYTHON), str(POSTTRAINING_SCHEDULER), "--schedule", str(schedule_path)],
-        cwd=WORKTREE,
-        stdout=stream,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
+    scheduler_command = [
+        str(PYTHON),
+        str(POSTTRAINING_SCHEDULER),
+        "--schedule",
+        str(schedule_path),
+    ]
+    process = spawn_scheduler_with_failure_evidence(
+        failure_path=runtime_root / "scheduler_launch.failed.json",
+        expected_head=head,
+        command_line=scheduler_command,
+        schedule_path=schedule_path,
+        runtime_path=runtime_manifest,
+        scheduler_log=coordinator_log,
+        created_artifacts={
+            "schedule": schedule_path,
+            "scheduler_log": coordinator_log,
+        },
     )
-    stream.close()
     launch = {
         "schema_version": "route_a_v3_route2_xedit_v4_confirmation_posttraining_launch.v1",
         "status": "V4_CONFIRMATION_POSTTRAINING_COORDINATOR_LAUNCHED",

@@ -347,6 +347,87 @@ def write_new_atomic(path: Path, payload: Mapping[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def write_scheduler_launch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    created_artifacts: Mapping[str, Path],
+    error: Exception,
+) -> None:
+    write_new_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditcritic_v403_cross_root_confirmation_"
+                "scheduler_launch_failure.v1"
+            ),
+            "status": (
+                "XEDITCRITIC_V403_CONFIRMATION_SCHEDULER_LAUNCH_"
+                "TECHNICAL_FAILURE"
+            ),
+            "failure_stage": "SCHEDULER_PROCESS_LAUNCH",
+            "expected_git_head": expected_head,
+            "worktree": str(WORKTREE),
+            "scheduler_command": list(command_line),
+            "schedule_path": str(schedule_path),
+            "intended_runtime_manifest": str(runtime_path),
+            "created_artifact_paths": {
+                key: str(value) for key, value in created_artifacts.items()
+            },
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "free_memory_gate_applied": False,
+            "cpu_fallback_used": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
+
+
+def spawn_scheduler_with_failure_evidence(
+    *,
+    failure_path: Path,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    scheduler_log: Path,
+    created_artifacts: Mapping[str, Path],
+) -> subprocess.Popen[str]:
+    stream = scheduler_log.open("w", encoding="utf-8")
+    try:
+        process = subprocess.Popen(
+            list(command_line),
+            cwd=WORKTREE,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    except Exception as error:
+        stream.close()
+        write_scheduler_launch_failure_evidence(
+            failure_path,
+            expected_head=expected_head,
+            command_line=command_line,
+            schedule_path=schedule_path,
+            runtime_path=runtime_path,
+            created_artifacts=created_artifacts,
+            error=error,
+        )
+        raise XEditCriticV403ConfirmationLaunchError(
+            "Critic confirmation scheduler process could not start; durable "
+            f"technical failure evidence: {failure_path}"
+        ) from error
+    stream.close()
+    return process
+
+
 def control_output_root(control_runner_head: str) -> Path:
     return (
         ROOT
@@ -1545,15 +1626,27 @@ def run(current_head: str) -> dict[str, Any]:
     )
     write_new_atomic(schedule_path, schedule)
     scheduler_log = log_root / "scheduler.log"
-    stream = scheduler_log.open("w", encoding="utf-8")
-    process = subprocess.Popen(
-        [str(PYTHON), str(SCHEDULER), "--schedule", str(schedule_path)],
-        cwd=WORKTREE,
-        stdout=stream,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
+    scheduler_command = [
+        str(PYTHON),
+        str(SCHEDULER),
+        "--schedule",
+        str(schedule_path),
+    ]
+    process = spawn_scheduler_with_failure_evidence(
+        failure_path=runtime_root / "scheduler_launch.failed.json",
+        expected_head=current_head,
+        command_line=scheduler_command,
+        schedule_path=schedule_path,
+        runtime_path=runtime_manifest,
+        scheduler_log=scheduler_log,
+        created_artifacts={
+            "launch_attempt_receipt": ATTEMPT_RECEIPT,
+            "config_manifest": manifest_path,
+            "confirmation_authorization": authorization_path,
+            "schedule": schedule_path,
+            "scheduler_log": scheduler_log,
+        },
     )
-    stream.close()
     launch = {
         "schema_version": (
             "route_a_v3_route2_xeditcritic_v403_"

@@ -20,6 +20,13 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def write_failure_once(path: Path, payload: dict[str, Any]) -> None:
+    partial = path.with_suffix(path.suffix + ".partial")
+    if path.exists() or partial.exists():
+        return
+    write_atomic(path, payload)
+
+
 def exact_terminal(summary_path: str, failure_path: str) -> str | None:
     summary = Path(summary_path)
     failure = Path(failure_path)
@@ -98,6 +105,75 @@ def close_missing_job(job: dict[str, Any], *, return_code: int) -> str | None:
             },
         )
     return exact_terminal(job["summary_path"], job["failure_path"])
+
+
+def close_job_spawn_failure(
+    job: dict[str, Any], *, error: Exception
+) -> str | None:
+    summary = Path(job["summary_path"])
+    failure = Path(job["failure_path"])
+    if not summary.exists() and not failure.exists():
+        write_failure_once(
+            failure,
+            {
+                "schema_version": "route_a_v3_route2_xeditcritic_v4_loso_run_failure.v1",
+                "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+                "run_stage": "LOSO",
+                "run_id": job["run_id"],
+                "seed": int(job["seed"]),
+                "held_out_study": job["held_out_study"],
+                "return_code": None,
+                "failure_stage": "FORMAL_LOSO_JOB_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
+        )
+    return exact_terminal(job["summary_path"], job["failure_path"])
+
+
+def write_barrier_failure(
+    spec: dict[str, Any],
+    *,
+    barrier: str,
+    failure_stage: str,
+    error: Exception | None = None,
+    identity_failure: dict[str, Any] | None = None,
+) -> str | None:
+    summary = Path(spec["summary_path"])
+    failure = Path(spec["failure_path"])
+    if not summary.exists() and not failure.exists():
+        if barrier == "LOSO_ADJUDICATION":
+            schema = (
+                "route_a_v3_route2_xeditcritic_v4_"
+                "loso_adjudication_failure.v1"
+            )
+            protected = {"development_test_outcome_reads_during_loso": 0}
+        else:
+            schema = "route_a_v3_route2_xeditcritic_v4_readiness_failure.v1"
+            protected = {
+                "development_test_outcome_reads_after_atomic_test": 0
+            }
+        payload: dict[str, Any] = {
+            "schema_version": schema,
+            "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+            "return_code": None,
+            "failure_stage": failure_stage,
+            **protected,
+            "new_final_evaluation_outcome_reads": 0,
+        }
+        if error is not None:
+            payload.update(
+                {
+                    "exception_type": type(error).__name__,
+                    "exception_message": str(error),
+                }
+            )
+        if identity_failure is not None:
+            payload.update(identity_failure)
+        write_failure_once(failure, payload)
+    return exact_terminal(str(summary), str(failure))
 
 
 def run(schedule: dict[str, Any]) -> None:
@@ -211,9 +287,55 @@ def run(schedule: dict[str, Any]) -> None:
                     {"status": "RUNNING", "started_unix_seconds": time.time()}
                 )
                 publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
-            return_code = run_logged(
-                list(job["command"]), cwd=worktree, log=Path(job["log_path"])
-            )
+            try:
+                return_code = run_logged(
+                    list(job["command"]),
+                    cwd=worktree,
+                    log=Path(job["log_path"]),
+                )
+            except Exception as error:
+                terminal = close_job_spawn_failure(job, error=error)
+                with lock:
+                    states[key].update(
+                        {
+                            "status": "TECHNICAL_FAILURE",
+                            "return_code": None,
+                            "terminal_artifact_kind": terminal,
+                            "failure_stage": "FORMAL_LOSO_JOB_SPAWN",
+                            "exception_type": type(error).__name__,
+                            "exception_message": str(error),
+                            "finished_unix_seconds": time.time(),
+                        }
+                    )
+                    if not first_terminal_failure:
+                        first_terminal_failure.update(
+                            {
+                                "job_key": key,
+                                "seed": int(job["seed"]),
+                                "held_out_study": job["held_out_study"],
+                                "run_id": job["run_id"],
+                                "return_code": None,
+                                "terminal_artifact_kind": terminal,
+                                "failure_reason": "PROCESS_SPAWN_EXCEPTION",
+                                "failure_stage": "FORMAL_LOSO_JOB_SPAWN",
+                                "exception_type": type(error).__name__,
+                                "exception_message": str(error),
+                                "summary_path": job["summary_path"],
+                                "failure_path": job["failure_path"],
+                                "log_path": job["log_path"],
+                            }
+                        )
+                    terminal_failure.set()
+                    for skipped in jobs[index + 1 :]:
+                        states[str(skipped["job_key"])].update(
+                            {
+                                "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                                "terminal_artifact_kind": None,
+                                "stop_reason": "EARLIER_LOSO_JOB_TECHNICAL_FAILURE",
+                            }
+                        )
+                    publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
+                return
             terminal = close_missing_job(job, return_code=return_code)
             with lock:
                 succeeded = terminal == "SUMMARY" and return_code == 0
@@ -289,11 +411,93 @@ def run(schedule: dict[str, Any]) -> None:
         return
 
     spec = schedule["loso_adjudication"]
+    identity_failure = inspect_worktree_identity(
+        worktree, str(schedule["git_head"])
+    )
+    if identity_failure is not None:
+        terminal = write_barrier_failure(
+            spec,
+            barrier="LOSO_ADJUDICATION",
+            failure_stage="LOSO_ADJUDICATION_WORKTREE_IDENTITY",
+            identity_failure=identity_failure,
+        )
+        adjudication.update(
+            {
+                "status": "TECHNICAL_FAILURE",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "finished_unix_seconds": time.time(),
+                **identity_failure,
+            }
+        )
+        readiness.update(
+            {
+                "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                "terminal_artifact_kind": None,
+                "guidance_authorized": False,
+            }
+        )
+        first_terminal_failure.update(
+            {
+                "job_key": "LOSO_ADJUDICATION",
+                "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "summary_path": spec["summary_path"],
+                "failure_path": spec["failure_path"],
+                "log_path": spec["log_path"],
+                **identity_failure,
+            }
+        )
+        publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+        return
     adjudication["status"] = "RUNNING"
     publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
-    return_code = run_logged(
-        list(spec["command"]), cwd=worktree, log=Path(spec["log_path"])
-    )
+    try:
+        return_code = run_logged(
+            list(spec["command"]), cwd=worktree, log=Path(spec["log_path"])
+        )
+    except Exception as error:
+        terminal = write_barrier_failure(
+            spec,
+            barrier="LOSO_ADJUDICATION",
+            failure_stage="LOSO_ADJUDICATION_SPAWN",
+            error=error,
+        )
+        adjudication.update(
+            {
+                "status": "TECHNICAL_FAILURE",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "failure_stage": "LOSO_ADJUDICATION_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "finished_unix_seconds": time.time(),
+            }
+        )
+        readiness.update(
+            {
+                "status": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+                "terminal_artifact_kind": None,
+                "guidance_authorized": False,
+            }
+        )
+        first_terminal_failure.update(
+            {
+                "job_key": "LOSO_ADJUDICATION",
+                "failure_reason": "PROCESS_SPAWN_EXCEPTION",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "summary_path": spec["summary_path"],
+                "failure_path": spec["failure_path"],
+                "log_path": spec["log_path"],
+                "failure_stage": "LOSO_ADJUDICATION_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+            }
+        )
+        publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+        return
     summary = Path(spec["summary_path"])
     failure = Path(spec["failure_path"])
     if not summary.exists() and not failure.exists():
@@ -321,11 +525,83 @@ def run(schedule: dict[str, Any]) -> None:
 
     if adjudication_succeeded:
         spec = schedule["readiness"]
+        identity_failure = inspect_worktree_identity(
+            worktree, str(schedule["git_head"])
+        )
+        if identity_failure is not None:
+            readiness_terminal = write_barrier_failure(
+                spec,
+                barrier="READINESS",
+                failure_stage="READINESS_WORKTREE_IDENTITY",
+                identity_failure=identity_failure,
+            )
+            readiness.update(
+                {
+                    "status": "TECHNICAL_FAILURE",
+                    "return_code": None,
+                    "terminal_artifact_kind": readiness_terminal,
+                    "guidance_authorized": False,
+                    "finished_unix_seconds": time.time(),
+                    **identity_failure,
+                }
+            )
+            first_terminal_failure.update(
+                {
+                    "job_key": "READINESS",
+                    "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+                    "return_code": None,
+                    "terminal_artifact_kind": readiness_terminal,
+                    "summary_path": spec["summary_path"],
+                    "failure_path": spec["failure_path"],
+                    "log_path": spec["log_path"],
+                    **identity_failure,
+                }
+            )
+            publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+            return
         readiness["status"] = "RUNNING"
         publish("XEDITCRITIC_V4_LOSO_SCHEDULER_RUNNING")
-        return_code = run_logged(
-            list(spec["command"]), cwd=worktree, log=Path(spec["log_path"])
-        )
+        try:
+            return_code = run_logged(
+                list(spec["command"]),
+                cwd=worktree,
+                log=Path(spec["log_path"]),
+            )
+        except Exception as error:
+            readiness_terminal = write_barrier_failure(
+                spec,
+                barrier="READINESS",
+                failure_stage="READINESS_SPAWN",
+                error=error,
+            )
+            readiness.update(
+                {
+                    "status": "TECHNICAL_FAILURE",
+                    "return_code": None,
+                    "terminal_artifact_kind": readiness_terminal,
+                    "guidance_authorized": False,
+                    "failure_stage": "READINESS_SPAWN",
+                    "exception_type": type(error).__name__,
+                    "exception_message": str(error),
+                    "finished_unix_seconds": time.time(),
+                }
+            )
+            first_terminal_failure.update(
+                {
+                    "job_key": "READINESS",
+                    "failure_reason": "PROCESS_SPAWN_EXCEPTION",
+                    "return_code": None,
+                    "terminal_artifact_kind": readiness_terminal,
+                    "summary_path": spec["summary_path"],
+                    "failure_path": spec["failure_path"],
+                    "log_path": spec["log_path"],
+                    "failure_stage": "READINESS_SPAWN",
+                    "exception_type": type(error).__name__,
+                    "exception_message": str(error),
+                }
+            )
+            publish("XEDITCRITIC_V4_LOSO_TECHNICAL_FAILURE")
+            return
         summary = Path(spec["summary_path"])
         failure = Path(spec["failure_path"])
         if not summary.exists() and not failure.exists():

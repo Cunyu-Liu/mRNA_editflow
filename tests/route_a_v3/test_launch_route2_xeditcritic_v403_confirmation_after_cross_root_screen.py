@@ -17,6 +17,60 @@ from scripts.route_a_v3.adjudicate_route2_xeditcritic_v4_confirmation import (
 CONTROL_HEAD = "c" * 40
 
 
+def test_confirmation_scheduler_popen_failure_is_durable_and_one_shot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    family = tmp_path / "confirmation_family"
+    family.mkdir()
+    schedule = family / "schedule.json"
+    attempt = family / "attempt.json"
+    authorization = family / "authorization.json"
+    for path in (schedule, attempt, authorization):
+        path.write_text("{}\n", encoding="utf-8")
+    failure = family / "scheduler_launch.failed.json"
+
+    def fail(*args, **kwargs):
+        raise OSError("confirmation scheduler spawn failed")
+
+    monkeypatch.setattr(launcher.subprocess, "Popen", fail)
+    arguments = {
+        "failure_path": failure,
+        "expected_head": "a" * 40,
+        "command_line": ["python", "scheduler.py", "--schedule", str(schedule)],
+        "schedule_path": schedule,
+        "runtime_path": family / "runtime.json",
+        "scheduler_log": family / "scheduler.log",
+        "created_artifacts": {
+            "launch_attempt_receipt": attempt,
+            "confirmation_authorization": authorization,
+            "schedule": schedule,
+        },
+    }
+    with pytest.raises(
+        launcher.XEditCriticV403ConfirmationLaunchError,
+        match="durable technical failure",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+    payload = json.loads(failure.read_text(encoding="utf-8"))
+    assert payload["status"] == (
+        "XEDITCRITIC_V403_CONFIRMATION_SCHEDULER_LAUNCH_TECHNICAL_FAILURE"
+    )
+    assert payload["scheduler_started"] is False
+    assert payload["gpu_job_started"] is False
+    assert payload["created_artifact_paths"]["launch_attempt_receipt"] == str(
+        attempt
+    )
+    assert "scheduler_pid" not in payload
+    assert not (family / "launch.json").exists()
+
+    with pytest.raises(
+        launcher.XEditCriticV403ConfirmationLaunchError,
+        match="already exists",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+
 def _write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
@@ -1003,5 +1057,7 @@ def test_gate_and_provenance_validation_precede_one_shot_write_and_launch() -> N
     attempt_write = run_source.index(
         "write_new_atomic(\n        ATTEMPT_RECEIPT"
     )
-    scheduler_launch = run_source.index("process = subprocess.Popen(")
+    scheduler_launch = run_source.index(
+        "process = spawn_scheduler_with_failure_evidence("
+    )
     assert gate_validation < provenance_validation < attempt_write < scheduler_launch

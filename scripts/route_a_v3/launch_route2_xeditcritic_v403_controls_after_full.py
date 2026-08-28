@@ -330,6 +330,95 @@ def write_atomic(path: Path, payload: Mapping[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def write_scheduler_launch_failure_evidence(
+    path: Path,
+    *,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    created_artifacts: Mapping[str, Path],
+    error: Exception,
+) -> None:
+    """Persist the one-shot family when its scheduler process cannot start."""
+
+    require(
+        not path.exists()
+        and not path.with_suffix(path.suffix + ".partial").exists(),
+        "Critic control scheduler launch failure evidence already exists; "
+        "use a new retry family",
+    )
+    write_atomic(
+        path,
+        {
+            "schema_version": (
+                "route_a_v3_route2_xeditcritic_v403_control_"
+                "scheduler_launch_failure.v1"
+            ),
+            "status": (
+                "XEDITCRITIC_V403_CONTROL_SCHEDULER_LAUNCH_TECHNICAL_FAILURE"
+            ),
+            "failure_stage": "SCHEDULER_PROCESS_LAUNCH",
+            "expected_git_head": expected_head,
+            "worktree": str(ORCHESTRATION_WORKTREE),
+            "scheduler_command": list(command_line),
+            "schedule_path": str(schedule_path),
+            "intended_runtime_manifest": str(runtime_path),
+            "created_artifact_paths": {
+                key: str(value) for key, value in created_artifacts.items()
+            },
+            "error_type": type(error).__name__,
+            "error": str(error),
+            "scheduler_started": False,
+            "gpu_job_started": False,
+            "automatic_retry_attempted": False,
+            "free_memory_gate_applied": False,
+            "cpu_fallback_used": False,
+            "development_test_outcome_reads": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        },
+    )
+
+
+def spawn_scheduler_with_failure_evidence(
+    *,
+    failure_path: Path,
+    expected_head: str,
+    command_line: Sequence[str],
+    schedule_path: Path,
+    runtime_path: Path,
+    worker_log_path: Path,
+    created_artifacts: Mapping[str, Path],
+) -> subprocess.Popen[str]:
+    stream = worker_log_path.open("w", encoding="utf-8")
+    try:
+        process = subprocess.Popen(
+            list(command_line),
+            cwd=ORCHESTRATION_WORKTREE,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            text=True,
+            start_new_session=True,
+        )
+    except Exception as error:
+        stream.close()
+        write_scheduler_launch_failure_evidence(
+            failure_path,
+            expected_head=expected_head,
+            command_line=command_line,
+            schedule_path=schedule_path,
+            runtime_path=runtime_path,
+            created_artifacts=created_artifacts,
+            error=error,
+        )
+        raise XEditCriticV403ControlRecoveryLaunchError(
+            "Critic control scheduler process could not start; durable "
+            f"technical failure evidence: {failure_path}"
+        ) from error
+    stream.close()
+    return process
+
+
 def command(
     arguments: Sequence[str], *, cwd: Path
 ) -> subprocess.CompletedProcess[str]:
@@ -1077,16 +1166,27 @@ def launch(expected_orchestration_head: str) -> dict[str, Any]:
     )
     write_atomic(schedule_path, schedule)
 
-    worker_log = (log_root / "scheduler.log").open("w", encoding="utf-8")
-    process = subprocess.Popen(
-        [str(PYTHON), str(SCHEDULER), "--schedule", str(schedule_path)],
-        cwd=ORCHESTRATION_WORKTREE,
-        stdout=worker_log,
-        stderr=subprocess.STDOUT,
-        text=True,
-        start_new_session=True,
+    scheduler_command = [
+        str(PYTHON),
+        str(SCHEDULER),
+        "--schedule",
+        str(schedule_path),
+    ]
+    scheduler_log = log_root / "scheduler.log"
+    process = spawn_scheduler_with_failure_evidence(
+        failure_path=runtime_root / "scheduler_launch.failed.json",
+        expected_head=expected_orchestration_head,
+        command_line=scheduler_command,
+        schedule_path=schedule_path,
+        runtime_path=runtime_path,
+        worker_log_path=scheduler_log,
+        created_artifacts={
+            "screen_config": config_path,
+            "launch_authorization": authorization_path,
+            "schedule": schedule_path,
+            "scheduler_log": scheduler_log,
+        },
     )
-    worker_log.close()
     result = {
         "schema_version": (
             "route_a_v3_route2_xeditcritic_v403_control_recovery_launch.v1"

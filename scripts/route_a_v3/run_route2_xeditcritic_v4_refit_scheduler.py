@@ -20,6 +20,13 @@ def write_atomic(path: Path, payload: dict[str, Any]) -> None:
     os.replace(partial, path)
 
 
+def write_failure_once(path: Path, payload: dict[str, Any]) -> None:
+    partial = path.with_suffix(path.suffix + ".partial")
+    if path.exists() or partial.exists():
+        return
+    write_atomic(path, payload)
+
+
 def exact_terminal(summary_path: str, failure_path: str) -> str | None:
     summary = Path(summary_path)
     failure = Path(failure_path)
@@ -97,6 +104,62 @@ def close_missing_job(job: dict[str, Any], *, return_code: int) -> str | None:
             },
         )
     return exact_terminal(job["summary_path"], job["failure_path"])
+
+
+def close_job_spawn_failure(
+    job: dict[str, Any], *, error: Exception
+) -> str | None:
+    summary = Path(job["summary_path"])
+    failure = Path(job["failure_path"])
+    if not summary.exists() and not failure.exists():
+        write_failure_once(
+            failure,
+            {
+                "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_run_failure.v1",
+                "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+                "run_stage": "REFIT",
+                "run_id": "v4_full",
+                "seed": int(job["seed"]),
+                "return_code": None,
+                "failure_stage": "FORMAL_REFIT_JOB_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
+        )
+    return exact_terminal(job["summary_path"], job["failure_path"])
+
+
+def write_adjudication_failure(
+    spec: dict[str, Any],
+    *,
+    failure_stage: str,
+    error: Exception | None = None,
+    identity_failure: dict[str, Any] | None = None,
+) -> str | None:
+    manifest = Path(spec["manifest_path"])
+    failure = Path(spec["failure_path"])
+    if not manifest.exists() and not failure.exists():
+        payload: dict[str, Any] = {
+            "schema_version": "route_a_v3_route2_xeditcritic_v4_refit_adjudication_failure.v1",
+            "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+            "return_code": None,
+            "failure_stage": failure_stage,
+            "development_test_outcome_reads_during_refit": 0,
+            "new_final_evaluation_outcome_reads": 0,
+        }
+        if error is not None:
+            payload.update(
+                {
+                    "exception_type": type(error).__name__,
+                    "exception_message": str(error),
+                }
+            )
+        if identity_failure is not None:
+            payload.update(identity_failure)
+        write_failure_once(failure, payload)
+    return exact_terminal(str(manifest), str(failure))
 
 
 def run(schedule: dict[str, Any]) -> None:
@@ -208,9 +271,38 @@ def run(schedule: dict[str, Any]) -> None:
                     {"status": "RUNNING", "started_unix_seconds": time.time()}
                 )
                 publish("XEDITCRITIC_V4_REFIT_SCHEDULER_RUNNING")
-            return_code = run_logged(
-                list(job["command"]), cwd=worktree, log=Path(job["log_path"])
-            )
+            try:
+                return_code = run_logged(
+                    list(job["command"]),
+                    cwd=worktree,
+                    log=Path(job["log_path"]),
+                )
+            except Exception as error:
+                terminal = close_job_spawn_failure(job, error=error)
+                with lock:
+                    states[key].update(
+                        {
+                            "status": "TECHNICAL_FAILURE",
+                            "return_code": None,
+                            "terminal_artifact_kind": terminal,
+                            "failure_stage": "FORMAL_REFIT_JOB_SPAWN",
+                            "exception_type": type(error).__name__,
+                            "exception_message": str(error),
+                            "finished_unix_seconds": time.time(),
+                        }
+                    )
+                    record_failure(
+                        job,
+                        reason="PROCESS_SPAWN_EXCEPTION",
+                        return_code=None,
+                        terminal_artifact_kind=terminal,
+                        failure_stage="FORMAL_REFIT_JOB_SPAWN",
+                        exception_type=type(error).__name__,
+                        exception_message=str(error),
+                    )
+                    mark_not_run(jobs, index + 1)
+                    publish("XEDITCRITIC_V4_REFIT_SCHEDULER_RUNNING")
+                return
             terminal = close_missing_job(job, return_code=return_code)
             with lock:
                 succeeded = terminal == "SUMMARY" and return_code == 0
@@ -264,11 +356,77 @@ def run(schedule: dict[str, Any]) -> None:
         return
 
     spec = schedule["adjudication"]
+    identity_failure = inspect_worktree_identity(
+        worktree, str(schedule["git_head"])
+    )
+    if identity_failure is not None:
+        terminal = write_adjudication_failure(
+            spec,
+            failure_stage="REFIT_ADJUDICATION_WORKTREE_IDENTITY",
+            identity_failure=identity_failure,
+        )
+        adjudication.update(
+            {
+                "status": "TECHNICAL_FAILURE",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "finished_unix_seconds": time.time(),
+                **identity_failure,
+            }
+        )
+        first_terminal_failure.update(
+            {
+                "job_key": "REFIT_ADJUDICATION",
+                "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "summary_path": spec["manifest_path"],
+                "failure_path": spec["failure_path"],
+                "log_path": spec["log_path"],
+                **identity_failure,
+            }
+        )
+        publish("XEDITCRITIC_V4_REFIT_TECHNICAL_FAILURE")
+        return
     adjudication["status"] = "RUNNING"
     publish("XEDITCRITIC_V4_REFIT_SCHEDULER_RUNNING")
-    return_code = run_logged(
-        list(spec["command"]), cwd=worktree, log=Path(spec["log_path"])
-    )
+    try:
+        return_code = run_logged(
+            list(spec["command"]), cwd=worktree, log=Path(spec["log_path"])
+        )
+    except Exception as error:
+        terminal = write_adjudication_failure(
+            spec,
+            failure_stage="REFIT_ADJUDICATION_SPAWN",
+            error=error,
+        )
+        adjudication.update(
+            {
+                "status": "TECHNICAL_FAILURE",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "failure_stage": "REFIT_ADJUDICATION_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "finished_unix_seconds": time.time(),
+            }
+        )
+        first_terminal_failure.update(
+            {
+                "job_key": "REFIT_ADJUDICATION",
+                "failure_reason": "PROCESS_SPAWN_EXCEPTION",
+                "return_code": None,
+                "terminal_artifact_kind": terminal,
+                "summary_path": spec["manifest_path"],
+                "failure_path": spec["failure_path"],
+                "log_path": spec["log_path"],
+                "failure_stage": "REFIT_ADJUDICATION_SPAWN",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+            }
+        )
+        publish("XEDITCRITIC_V4_REFIT_TECHNICAL_FAILURE")
+        return
     manifest = Path(spec["manifest_path"])
     failure = Path(spec["failure_path"])
     if not manifest.exists() and not failure.exists():

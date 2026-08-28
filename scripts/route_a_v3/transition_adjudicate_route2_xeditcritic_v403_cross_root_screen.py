@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -132,6 +133,66 @@ def write_atomic_once(path: Path, payload: Mapping[str, Any]) -> None:
         encoding="utf-8",
     )
     os.replace(partial, path)
+
+
+def transition_failure_path(output_path: Path) -> Path:
+    return output_path.with_suffix(".failed.json")
+
+
+def write_transition_failure_once(
+    path: Path, payload: Mapping[str, Any]
+) -> None:
+    require(
+        not path.exists(),
+        "cross-root Critic V4 technical failure evidence already exists",
+    )
+    partial = path.with_suffix(path.suffix + ".partial")
+    require(
+        not partial.exists(),
+        "partial cross-root Critic V4 technical failure evidence already exists",
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    partial.write_text(
+        json.dumps(dict(payload), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
+def inspect_worktree_identity(
+    worktree: Path, expected_head: str
+) -> dict[str, Any] | None:
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=worktree,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    porcelain = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=worktree,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    observed_head = head.stdout.strip() if head.returncode == 0 else None
+    dirty = porcelain.stdout.splitlines() if porcelain.returncode == 0 else None
+    if (
+        head.returncode == 0
+        and porcelain.returncode == 0
+        and observed_head == expected_head
+        and dirty == []
+    ):
+        return None
+    return {
+        "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+        "expected_git_head": expected_head,
+        "observed_git_head": observed_head,
+        "head_return_code": int(head.returncode),
+        "porcelain_return_code": int(porcelain.returncode),
+        "porcelain_lines": dirty,
+    }
 
 
 def validate_full_terminal_audit(
@@ -329,7 +390,7 @@ def collect_arm_summaries(
     return summaries, provenance
 
 
-def run(
+def _run_once(
     *,
     expected_control_runner_head: str,
     control_runtime_path: Path,
@@ -339,6 +400,7 @@ def run(
     full_terminal_audit_path: Path = FULL_TERMINAL_AUDIT,
     legacy_gate_path: Path = LEGACY_GATE,
     output_path: Path,
+    failure_context: dict[str, Any],
 ) -> dict[str, Any]:
     require(
         output_path != legacy_gate_path,
@@ -348,6 +410,12 @@ def run(
     require(
         not output_path.with_suffix(output_path.suffix + ".partial").exists(),
         "partial cross-root Critic V4 screen gate already exists",
+    )
+    failure_context.update(
+        {
+            "failure_stage": "FROZEN_CONFIG_VALIDATION",
+            "terminal_summary_payload_consumption": "NOT_STARTED",
+        }
     )
     config = read_json(config_path)
     require(
@@ -361,9 +429,11 @@ def run(
         config.get("runner_git_head") == expected_control_runner_head,
         "current controls config runner HEAD differs from the licensed HEAD",
     )
+    failure_context["failure_stage"] = "FULL_TERMINAL_AUDIT_VALIDATION"
     full_terminal_audit = validate_full_terminal_audit(
         full_terminal_audit_path
     )
+    failure_context["failure_stage"] = "CONTROL_RUNTIME_VALIDATION"
     control_runtime = validate_control_runtime(
         control_runtime_path,
         expected_control_runner_head=expected_control_runner_head,
@@ -373,12 +443,24 @@ def run(
             control_output_root is not None,
             "current-HEAD control output root is required",
         )
+    failure_context.update(
+        {
+            "failure_stage": "EIGHT_ARM_TERMINAL_SUMMARY_CONSUMPTION",
+            "terminal_summary_payload_consumption": "MAY_HAVE_BEEN_PARTIAL",
+        }
+    )
     summaries, provenance = collect_arm_summaries(
         config,
         default_arm_sources(control_output_root)
         if arm_sources is None
         else arm_sources,
         expected_control_runner_head=expected_control_runner_head,
+    )
+    failure_context.update(
+        {
+            "failure_stage": "REFERENCE_AND_PREFLIGHT_VALIDATION",
+            "terminal_summary_payload_consumption": "EXACTLY_EIGHT",
+        }
     )
     reference = read_json(Path(str(config["c3_read_once_reference_adjudication"])))
     require(
@@ -390,6 +472,7 @@ def run(
     preflight = read_json(Path(str(config["preflight_output"])))
     require_zero_protected_reads(preflight, "frozen Critic preflight")
 
+    failure_context["failure_stage"] = "SCIENTIFIC_GATE_EVALUATION"
     result = evaluate_xeditcritic_v4_screen(
         config,
         summaries,
@@ -432,8 +515,122 @@ def run(
     }
     result["development_test_outcome_reads"] = 0
     result["new_final_evaluation_outcome_reads"] = 0
+    failure_context["failure_stage"] = "CROSS_ROOT_GATE_WRITE"
     write_atomic_once(output_path, result)
     return result
+
+
+def run(
+    *,
+    expected_control_runner_head: str,
+    control_runtime_path: Path,
+    control_output_root: Path | None = None,
+    config_path: Path = FROZEN_CONFIG,
+    arm_sources: Mapping[str, ArmSource] | None = None,
+    full_terminal_audit_path: Path = FULL_TERMINAL_AUDIT,
+    legacy_gate_path: Path = LEGACY_GATE,
+    output_path: Path,
+) -> dict[str, Any]:
+    output_partial = output_path.with_suffix(output_path.suffix + ".partial")
+    failure_path = transition_failure_path(output_path)
+    failure_partial = failure_path.with_suffix(failure_path.suffix + ".partial")
+    require(
+        not output_path.exists(),
+        "new cross-root Critic V4 screen gate already exists",
+    )
+    require(
+        not output_partial.exists(),
+        "partial cross-root Critic V4 screen gate already exists",
+    )
+    require(
+        not failure_path.exists(),
+        "cross-root Critic V4 technical failure evidence already exists",
+    )
+    require(
+        not failure_partial.exists(),
+        "partial cross-root Critic V4 technical failure evidence already exists",
+    )
+
+    identity_failure = inspect_worktree_identity(
+        WORKTREE, expected_control_runner_head
+    )
+    if identity_failure is not None:
+        error = XEditCriticV403CrossRootAdjudicationError(
+            "cross-root Critic worktree is not the schedule-fixed clean HEAD"
+        )
+        write_transition_failure_once(
+            failure_path,
+            {
+                "schema_version": (
+                    "route_a_v3_route2_xeditcritic_v403_cross_root_"
+                    "technical_failure.v1"
+                ),
+                "status": (
+                    "XEDITCRITIC_V403_CROSS_ROOT_SCREEN_TECHNICAL_FAILURE"
+                ),
+                "failure_stage": "PRE_PAYLOAD_WORKTREE_IDENTITY",
+                "failure_reason": identity_failure["failure_reason"],
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "worktree": str(WORKTREE),
+                "expected_control_runner_head": expected_control_runner_head,
+                "output_path": str(output_path),
+                "terminal_summary_payload_consumption": "NOT_STARTED",
+                "scientific_adjudication_completed": False,
+                "confirmation_authorized": False,
+                "same_family_retry_authorized": False,
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+                **identity_failure,
+            },
+        )
+        raise error
+
+    failure_context: dict[str, Any] = {
+        "failure_stage": "INPUT_VALIDATION",
+        "terminal_summary_payload_consumption": "NOT_STARTED",
+    }
+    try:
+        return _run_once(
+            expected_control_runner_head=expected_control_runner_head,
+            control_runtime_path=control_runtime_path,
+            control_output_root=control_output_root,
+            config_path=config_path,
+            arm_sources=arm_sources,
+            full_terminal_audit_path=full_terminal_audit_path,
+            legacy_gate_path=legacy_gate_path,
+            output_path=output_path,
+            failure_context=failure_context,
+        )
+    except Exception as error:
+        write_transition_failure_once(
+            failure_path,
+            {
+                "schema_version": (
+                    "route_a_v3_route2_xeditcritic_v403_cross_root_"
+                    "technical_failure.v1"
+                ),
+                "status": (
+                    "XEDITCRITIC_V403_CROSS_ROOT_SCREEN_TECHNICAL_FAILURE"
+                ),
+                "failure_stage": failure_context["failure_stage"],
+                "failure_reason": "CROSS_ROOT_TRANSITION_EXCEPTION",
+                "exception_type": type(error).__name__,
+                "exception_message": str(error),
+                "worktree": str(WORKTREE),
+                "expected_control_runner_head": expected_control_runner_head,
+                "output_path": str(output_path),
+                "terminal_summary_payload_consumption": failure_context[
+                    "terminal_summary_payload_consumption"
+                ],
+                "scientific_adjudication_completed": False,
+                "confirmation_authorized": False,
+                "same_family_retry_authorized": False,
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
+        )
+        raise
 
 
 def main() -> None:

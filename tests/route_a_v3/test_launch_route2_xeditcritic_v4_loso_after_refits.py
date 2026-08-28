@@ -9,6 +9,50 @@ import pytest
 import scripts.route_a_v3.launch_route2_xeditcritic_v4_loso_after_refits as launcher
 
 
+def test_loso_scheduler_popen_failure_is_durable_and_one_shot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    family = tmp_path / "loso_family"
+    family.mkdir()
+    schedule = family / "schedule.json"
+    schedule.write_text("{}\n", encoding="utf-8")
+    failure = family / "scheduler_launch.failed.json"
+
+    def fail(*args, **kwargs):
+        raise OSError("LOSO scheduler spawn failed")
+
+    monkeypatch.setattr(launcher.subprocess, "Popen", fail)
+    arguments = {
+        "failure_path": failure,
+        "expected_head": "a" * 40,
+        "command_line": ["python", "scheduler.py", "--schedule", str(schedule)],
+        "schedule_path": schedule,
+        "runtime_path": family / "runtime.json",
+        "scheduler_log": family / "scheduler.log",
+        "created_artifacts": {"schedule": schedule},
+    }
+    with pytest.raises(
+        launcher.XEditCriticV4LosoLaunchError,
+        match="durable technical failure",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+    payload = json.loads(failure.read_text(encoding="utf-8"))
+    assert payload["status"] == (
+        "XEDITCRITIC_V4_LOSO_SCHEDULER_LAUNCH_TECHNICAL_FAILURE"
+    )
+    assert payload["scheduler_started"] is False
+    assert payload["gpu_job_started"] is False
+    assert "scheduler_pid" not in payload
+    assert not (family / "launch.json").exists()
+
+    with pytest.raises(
+        launcher.XEditCriticV4LosoLaunchError,
+        match="already exists",
+    ):
+        launcher.spawn_scheduler_with_failure_evidence(**arguments)
+
+
 RUNNER_HEAD = "e" * 40
 
 

@@ -219,6 +219,9 @@ def _write_barriers(tmp_path: Path) -> tuple[Path, Path]:
 def test_gate_is_not_called_until_all_eight_exact_summaries_exist(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        transition, "inspect_worktree_identity", lambda *_: None
+    )
     config_path, _ = _config(tmp_path)
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
@@ -247,11 +250,41 @@ def test_gate_is_not_called_until_all_eight_exact_summaries_exist(
     assert calls == []
     assert not output.exists()
     assert not output.with_suffix(".json.partial").exists()
+    failure_path = transition.transition_failure_path(output)
+    failure = json.loads(failure_path.read_text(encoding="utf-8"))
+    assert failure["status"] == (
+        "XEDITCRITIC_V403_CROSS_ROOT_SCREEN_TECHNICAL_FAILURE"
+    )
+    assert failure["terminal_summary_payload_consumption"] == (
+        "MAY_HAVE_BEEN_PARTIAL"
+    )
+    assert failure["same_family_retry_authorized"] is False
+
+    monkeypatch.setattr(
+        transition,
+        "read_json",
+        lambda *_: (_ for _ in ()).throw(
+            AssertionError("terminal payload must not be reread")
+        ),
+    )
+    with pytest.raises(Exception, match="technical failure evidence already exists"):
+        transition.run(
+            expected_control_runner_head=CONTROL_HEAD,
+            config_path=config_path,
+            arm_sources=sources,
+            full_terminal_audit_path=full_terminal_audit,
+            control_runtime_path=control_runtime,
+            legacy_gate_path=tmp_path / "legacy_gate.json",
+            output_path=output,
+        )
 
 
 def test_complete_cross_root_package_calls_frozen_gate_once_and_preserves_old_gate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        transition, "inspect_worktree_identity", lambda *_: None
+    )
     config_path, config = _config(tmp_path)
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
@@ -362,11 +395,15 @@ def test_complete_cross_root_package_calls_frozen_gate_once_and_preserves_old_ga
     assert result["new_final_evaluation_outcome_reads"] == 0
     assert legacy_gate.read_text(encoding="utf-8") == legacy_payload
     assert json.loads(output.read_text(encoding="utf-8")) == result
+    assert not transition.transition_failure_path(output).exists()
 
 
 def test_protected_read_or_ambiguous_arm_map_prevents_gate(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.setattr(
+        transition, "inspect_worktree_identity", lambda *_: None
+    )
     config_path, _ = _config(tmp_path)
     sources = _arm_sources(tmp_path)
     for run_id, source in sources.items():
@@ -408,6 +445,59 @@ def test_protected_read_or_ambiguous_arm_map_prevents_gate(
             ambiguous,
             expected_control_runner_head=CONTROL_HEAD,
         )
+
+
+def test_worktree_drift_fails_before_any_terminal_payload_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "cross_root/screen_gate.json"
+    read_paths: list[Path] = []
+    monkeypatch.setattr(
+        transition,
+        "read_json",
+        lambda path: read_paths.append(Path(path)),
+    )
+    monkeypatch.setattr(
+        transition,
+        "inspect_worktree_identity",
+        lambda *_: {
+            "failure_reason": "SCHEDULE_WORKTREE_IDENTITY_DRIFT",
+            "expected_git_head": CONTROL_HEAD,
+            "observed_git_head": "9" * 40,
+            "head_return_code": 0,
+            "porcelain_return_code": 0,
+            "porcelain_lines": [" M core/route2_xeditcritic_gate_v4.py"],
+        },
+    )
+
+    with pytest.raises(Exception, match="schedule-fixed clean HEAD"):
+        transition.run(
+            expected_control_runner_head=CONTROL_HEAD,
+            config_path=tmp_path / "must_not_read.json",
+            control_runtime_path=tmp_path / "must_not_read_runtime.json",
+            output_path=output,
+        )
+
+    assert read_paths == []
+    assert not output.exists()
+    failure_path = transition.transition_failure_path(output)
+    failure = json.loads(failure_path.read_text(encoding="utf-8"))
+    assert failure["failure_reason"] == "SCHEDULE_WORKTREE_IDENTITY_DRIFT"
+    assert failure["terminal_summary_payload_consumption"] == "NOT_STARTED"
+    assert failure["confirmation_authorized"] is False
+    assert failure["same_family_retry_authorized"] is False
+
+    monkeypatch.setattr(
+        transition, "inspect_worktree_identity", lambda *_: None
+    )
+    with pytest.raises(Exception, match="technical failure evidence already exists"):
+        transition.run(
+            expected_control_runner_head=CONTROL_HEAD,
+            config_path=tmp_path / "must_not_read.json",
+            control_runtime_path=tmp_path / "must_not_read_runtime.json",
+            output_path=output,
+        )
+    assert read_paths == []
 
 
 @pytest.mark.parametrize(

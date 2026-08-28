@@ -55,7 +55,11 @@ def _focused_test_commands() -> list[str]:
         "test_validate_route2_xeditsetflow_s1_checkpoint.py "
         "test_route2_xeditsetflow_gate_s1.py "
         "test_run_route2_xeditsetflow_s1_screen_scheduler.py "
-        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py",
+        "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py "
+        "test_route2_xeditsetflow_confirmation_s1.py "
+        "test_launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py "
+        "test_launch_route2_xeditsetflow_s1_confirmation_posttraining.py "
+        "test_adjudicate_route2_xeditsetflow_s1_confirmation.py",
         "python -m pytest -q "
         "test_run_route2_xeditflow_v4_guidance_screen_scheduler.py "
         "test_adjudicate_route2_xeditflow_guidance_screen_v4.py "
