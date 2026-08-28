@@ -62,9 +62,14 @@ from scripts.route_a_v3.evaluate_route2_generation_v1 import (
 )
 from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources
 from scripts.route_a_v3.train_route2_xeditsetflow_s1 import (
+    CONFIRMATION_CONFIG_SCHEMA,
+    CONFIRMATION_RUN_ID,
+    CONFIRMATION_SEEDS,
     OBJECTIVE_IDENTITY,
     OBJECTIVE_WEIGHT,
+    SCREEN_CONFIG_SCHEMA,
     require_s1_launch_authorization,
+    require_s1_confirmation_launch_authorization,
 )
 
 
@@ -129,10 +134,31 @@ def _move(batch: Mapping[str, Any], device: torch.device) -> dict[str, Any]:
 
 
 def setflow_validation_stage_seed_s1(config: Mapping[str, Any]) -> tuple[str, int]:
-    run_stage = "SCREEN"
-    _require(config.get("run_stage", "SCREEN") == run_stage, "S1 is screen-only")
-    seed = int(config["training"]["screen_seed"])
-    _require(seed == 20260911, "SetFlow V4 S1 validation seed changed")
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    if run_stage == "SCREEN":
+        _require(
+            config.get("schema_version", SCREEN_CONFIG_SCHEMA)
+            == SCREEN_CONFIG_SCHEMA,
+            "SetFlow V4 S1 screen validation config changed",
+        )
+        seed = int(config["training"]["screen_seed"])
+        _require(seed == 20260911, "SetFlow V4 S1 validation seed changed")
+        return run_stage, seed
+    _require(
+        run_stage == "CONFIRMATION"
+        and config.get("schema_version") == CONFIRMATION_CONFIG_SCHEMA
+        and config.get("status") == "FROZEN_S1_CONFIRMATION_CONFIG_NOT_STARTED"
+        and config.get("selected_model") == CONFIRMATION_RUN_ID,
+        "SetFlow V4 S1 confirmation validation config changed",
+    )
+    seeds = tuple(int(seed) for seed in config.get("required_confirmation_seeds", ()))
+    seed = int(config.get("training_seed", -1))
+    _require(
+        seeds == CONFIRMATION_SEEDS
+        and seed in CONFIRMATION_SEEDS
+        and config.get("additional_seed_authorized") is False,
+        "SetFlow V4 S1 confirmation validation seed changed",
+    )
     return run_stage, seed
 
 
@@ -141,7 +167,11 @@ def require_training_package_terminal_s1(
 ) -> dict[str, dict[str, Any]]:
     run_stage, training_seed = setflow_validation_stage_seed_s1(config)
     summaries: dict[str, dict[str, Any]] = {}
-    required_runs = ("v4_s1_full", "v4_s1_single_mode")
+    required_runs = (
+        ("v4_s1_full", "v4_s1_single_mode")
+        if run_stage == "SCREEN"
+        else (CONFIRMATION_RUN_ID,)
+    )
     for required_run in required_runs:
         directory = Path(config["output_root"]) / required_run
         _require(
@@ -159,6 +189,12 @@ def require_training_package_terminal_s1(
             and int(summary.get("seed", -1)) == training_seed,
             f"SetFlow V4 S1 training stage or seed changed: {required_run}",
         )
+        if run_stage == "CONFIRMATION":
+            _require(
+                summary.get("run_id") == CONFIRMATION_RUN_ID
+                and summary.get("selected_model") == CONFIRMATION_RUN_ID,
+                "SetFlow V4 S1 confirmation summary identity changed",
+            )
         _require(
             summary.get("objective_identity") == OBJECTIVE_IDENTITY
             and float(
@@ -224,6 +260,10 @@ def load_checkpoint_s1(
 ) -> tuple[torch.nn.Module, dict[str, Any], dict[str, Any]]:
     _require(checkpoint_pass in {4, 6, 8, 10}, "SetFlow V4 S1 checkpoint pass is undeclared")
     run_stage, training_seed = setflow_validation_stage_seed_s1(config)
+    _require(
+        run_stage == "SCREEN" or run_id == CONFIRMATION_RUN_ID,
+        "SetFlow V4 S1 confirmation only permits v4_s1_full",
+    )
     training_directory = Path(config["output_root"]) / run_id
     training_summary = require_training_package_terminal_s1(config)[run_id]
     _require(
@@ -262,6 +302,11 @@ def load_checkpoint_s1(
         and int(checkpoint.get("seed", -1)) == training_seed,
         "SetFlow V4 S1 checkpoint identity changed",
     )
+    if run_stage == "CONFIRMATION":
+        _require(
+            checkpoint.get("selected_model") == CONFIRMATION_RUN_ID,
+            "SetFlow V4 S1 confirmation checkpoint model identity changed",
+        )
     _require(
         checkpoint.get("objective_identity") == OBJECTIVE_IDENTITY
         and float(
@@ -455,20 +500,35 @@ def validate_checkpoint(
 ) -> dict[str, Any]:
     spec = screen_run_spec_s1(config, run_id)
     run_stage, training_seed = setflow_validation_stage_seed_s1(config)
+    _require(
+        run_stage == "SCREEN" or run_id == CONFIRMATION_RUN_ID,
+        "SetFlow V4 S1 confirmation only permits v4_s1_full",
+    )
     authorization = _read_json(authorization_path)
     preflight = _read_json(Path(config["preflight_output_path"]))
     source_data_audit = _read_json(Path(config["source_level_data_audit_path"]))
     validation_git_head = _git_head()
     training_git_heads = require_training_package_provenance_s1(config)
     training_git_head = training_git_heads[run_id]
-    require_s1_launch_authorization(
-        config,
-        authorization,
-        preflight,
-        source_data_audit,
-        run_id=run_id,
-        current_git_head=training_git_head,
-    )
+    if run_stage == "SCREEN":
+        require_s1_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            current_git_head=training_git_head,
+        )
+    else:
+        require_s1_confirmation_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            training_seed=training_seed,
+            current_git_head=training_git_head,
+        )
     _require(not output_directory.exists(), "SetFlow V4 S1 checkpoint validation already exists")
     _require(
         set(config["gpu_policy"]["physical_gpu_scope"]) == set(range(6))
@@ -490,6 +550,12 @@ def validate_checkpoint(
         run_id=run_id,
         checkpoint_pass=checkpoint_pass,
         device=device,
+    )
+    training_summary_path = (
+        Path(config["output_root"]) / run_id / "training_summary.json"
+    )
+    checkpoint_path = Path(
+        training_summary["saved_checkpoint_paths"][str(checkpoint_pass)]
     )
     validation_rows = load_projection_rows(
         [Path(config["validation_projection_path"])],
@@ -697,6 +763,11 @@ def validate_checkpoint(
         "g0_status": "FLOW_G0_READY" if correctness else "FLOW_G0_VALIDATION_FAIL",
         "run_stage": run_stage,
         "run_id": run_id,
+        **(
+            {"selected_model": CONFIRMATION_RUN_ID}
+            if run_stage == "CONFIRMATION"
+            else {}
+        ),
         "selectable": spec.selectable,
         "mode_count": spec.mode_count,
         "objective_identity": checkpoint["objective_identity"],
@@ -714,6 +785,11 @@ def validate_checkpoint(
         ],
         "seed": training_seed,
         "checkpoint_pass": checkpoint_pass,
+        "checkpoint_path": str(checkpoint_path),
+        "training_summary_path": str(training_summary_path),
+        "validation_summary_path": str(
+            output_directory / "validation_summary.json"
+        ),
         "training_git_head": training_git_head,
         "validation_git_head": validation_git_head,
         "training_and_validation_git_heads_differ": (

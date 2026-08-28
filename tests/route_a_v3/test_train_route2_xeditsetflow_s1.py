@@ -12,22 +12,77 @@ from core.route2_xeditsetflow_s1 import mixture_setflow_loss_s1
 from scripts.route_a_v3.train_route2_xeditsetflow_s1 import (
     AUTHORIZATION_SCHEMA,
     AUTHORIZATION_STATUS,
+    CONFIRMATION_AUTHORIZATION_SCHEMA,
+    CONFIRMATION_AUTHORIZATION_STATUS,
+    CONFIRMATION_CONFIG_SCHEMA,
+    CONFIRMATION_SEEDS,
     OBJECTIVE_IDENTITY,
     OBJECTIVE_WEIGHT,
     RUN_IDS,
+    SCREEN_RUNNER_GIT_HEAD,
     SetFlowTrainingS1Error,
     _write_atomic_terminal_s1,
     complete_attempt_then_publish_training_summary_s1,
     derive_training_update_geometry_s1,
     pass_complete_alive_event_s1,
     record_training_attempt_s1,
+    require_s1_confirmation_launch_authorization,
     require_s1_launch_authorization,
+    setflow_training_stage_seed_s1,
+    training_summary_identity_s1,
     training_attempt_identity_s1,
 )
 
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/route_a_v3/train_route2_xeditsetflow_s1.py"
+
+
+def _confirmation_config(seed: int = 20260912) -> dict:
+    return {
+        "schema_version": CONFIRMATION_CONFIG_SCHEMA,
+        "status": "FROZEN_S1_CONFIRMATION_CONFIG_NOT_STARTED",
+        "run_stage": "CONFIRMATION",
+        "training_seed": seed,
+        "selected_model": "v4_s1_full",
+        "required_confirmation_seeds": list(CONFIRMATION_SEEDS),
+        "additional_seed_authorized": False,
+        "objective_identity": OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
+        "screen_gate_path": "/exact/screen_gate.json",
+        "screen_selected_checkpoint_pass": 8,
+        "screen_provenance": {
+            "checkpoint_decisions": {
+                "v4_s1_full": {"selected": 8},
+                "v4_s1_single_mode": {"selected": 6},
+            }
+        },
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _confirmation_authorization() -> dict:
+    config = _confirmation_config()
+    return {
+        "schema_version": CONFIRMATION_AUTHORIZATION_SCHEMA,
+        "status": CONFIRMATION_AUTHORIZATION_STATUS,
+        "authorized_git_head": "a" * 40,
+        "authorized_run_ids": ["v4_s1_full"],
+        "authorized_seeds": list(CONFIRMATION_SEEDS),
+        "objective_identity": OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
+        "screen_gate_path": config["screen_gate_path"],
+        "screen_selected_checkpoint_pass": config[
+            "screen_selected_checkpoint_pass"
+        ],
+        "screen_provenance": config["screen_provenance"],
+        "free_memory_gate_applied": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
 
 
 def test_s1_terminal_artifact_is_atomic_and_never_overwritten(tmp_path: Path) -> None:
@@ -139,7 +194,96 @@ def test_s1_trainer_is_train_only_cuda_a100_bf16_and_has_no_critic_gradient() ->
         '"new_final_evaluation_outcome_reads": 0',
     ):
         assert token in source
-    assert "CONFIRMATION" not in source
+    assert 'run_stage == "CONFIRMATION"' in source
+    assert "free_memory_gate_applied" in source
+
+
+def test_s1_stage_seed_contract_keeps_screen_and_allows_only_three_full_confirmation_seeds() -> None:
+    screen = {
+        "schema_version": (
+            "route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_config.v1"
+        ),
+        "training": {"screen_seed": 20260911},
+    }
+    assert setflow_training_stage_seed_s1(screen, run_id="v4_s1_full") == (
+        "SCREEN",
+        20260911,
+    )
+    for seed in CONFIRMATION_SEEDS:
+        assert setflow_training_stage_seed_s1(
+            _confirmation_config(seed), run_id="v4_s1_full"
+        ) == ("CONFIRMATION", seed)
+    with pytest.raises(SetFlowTrainingS1Error, match="only permits"):
+        setflow_training_stage_seed_s1(
+            _confirmation_config(), run_id="v4_s1_single_mode"
+        )
+    with pytest.raises(SetFlowTrainingS1Error, match="seed cohort"):
+        setflow_training_stage_seed_s1(
+            _confirmation_config(20260915), run_id="v4_s1_full"
+        )
+    changed = _confirmation_config()
+    changed["run_stage"] = "POSTTRAINING"
+    with pytest.raises(SetFlowTrainingS1Error, match="run stage"):
+        setflow_training_stage_seed_s1(changed, run_id="v4_s1_full")
+
+
+def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_provenance() -> None:
+    config = _confirmation_config()
+    authorization = _confirmation_authorization()
+    preflight = {
+        "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
+        "passed": True,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    audit = {
+        "status": "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+    require_s1_confirmation_launch_authorization(
+        config,
+        authorization,
+        preflight,
+        audit,
+        run_id="v4_s1_full",
+        training_seed=20260912,
+        current_git_head="a" * 40,
+    )
+    for field, value in (
+        ("schema_version", AUTHORIZATION_SCHEMA),
+        ("authorized_seeds", [20260912]),
+        ("screen_selected_checkpoint_pass", 4),
+        ("free_memory_gate_applied", True),
+        ("development_test_outcome_reads", 1),
+    ):
+        changed = dict(authorization)
+        changed[field] = value
+        with pytest.raises(SetFlowTrainingS1Error):
+            require_s1_confirmation_launch_authorization(
+                config,
+                changed,
+                preflight,
+                audit,
+                run_id="v4_s1_full",
+                training_seed=20260912,
+                current_git_head="a" * 40,
+            )
+
+
+def test_s1_confirmation_summary_identity_is_explicit_and_not_screen_checkpoint_selection() -> None:
+    identity = training_summary_identity_s1(
+        _confirmation_config(20260914), run_id="v4_s1_full"
+    )
+    assert identity == {
+        "run_stage": "CONFIRMATION",
+        "run_id": "v4_s1_full",
+        "seed": 20260914,
+        "selected_model": "v4_s1_full",
+        "objective_identity": OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+    }
+    assert "checkpoint_pass" not in identity
 
 
 def test_s1_attempt_json_retains_objective_identity_weight_and_count(

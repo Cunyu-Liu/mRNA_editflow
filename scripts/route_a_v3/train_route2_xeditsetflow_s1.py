@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train one isolated XEditSetFlow V4 S1 screen run without active Validation reads."""
+"""Train one isolated XEditSetFlow V4 S1 screen or confirmation run."""
 
 from __future__ import annotations
 
@@ -51,16 +51,32 @@ from core.route2_xeditsetflow_training_v4 import (
 )
 
 
-CONFIG_SCHEMA = (
+SCREEN_CONFIG_SCHEMA = (
     "route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_config.v1"
 )
-AUTHORIZATION_SCHEMA = (
+CONFIG_SCHEMA = SCREEN_CONFIG_SCHEMA
+CONFIRMATION_CONFIG_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_runtime.v1"
+)
+SCREEN_AUTHORIZATION_SCHEMA = (
     "route_a_v3_route2_xeditsetflow_v4_s1_screen_launch_authorization.v1"
 )
-AUTHORIZATION_STATUS = "XEDITSETFLOW_V4_S1_SCREEN_LAUNCH_AUTHORIZED"
+AUTHORIZATION_SCHEMA = SCREEN_AUTHORIZATION_SCHEMA
+SCREEN_AUTHORIZATION_STATUS = "XEDITSETFLOW_V4_S1_SCREEN_LAUNCH_AUTHORIZED"
+AUTHORIZATION_STATUS = SCREEN_AUTHORIZATION_STATUS
+CONFIRMATION_AUTHORIZATION_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_launch_authorization.v1"
+)
+CONFIRMATION_AUTHORIZATION_STATUS = (
+    "XEDITSETFLOW_V4_S1_CONFIRMATION_LAUNCH_AUTHORIZED"
+)
 OBJECTIVE_IDENTITY = "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY"
 OBJECTIVE_WEIGHT = 0.05
 RUN_IDS = ("v4_s1_full", "v4_s1_single_mode")
+SCREEN_SEED = 20260911
+CONFIRMATION_SEEDS = (20260912, 20260913, 20260914)
+CONFIRMATION_RUN_ID = "v4_s1_full"
+SCREEN_RUNNER_GIT_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
 
 
 class SetFlowTrainingS1Error(RuntimeError):
@@ -278,6 +294,71 @@ def _collate_indices(
     return batch
 
 
+def setflow_training_stage_seed_s1(
+    config: Mapping[str, Any], *, run_id: str
+) -> tuple[str, int]:
+    """Resolve the two explicit S1 stages without changing SCREEN defaults."""
+
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    if run_stage == "SCREEN":
+        _require(
+            config.get("schema_version") == SCREEN_CONFIG_SCHEMA,
+            "S1 screen config schema changed",
+        )
+        _require(run_id in RUN_IDS, "SetFlow V4 S1 screen run id changed")
+        seed = int(config["training"]["screen_seed"])
+        _require(seed == SCREEN_SEED, "SetFlow V4 S1 screen seed changed")
+        return run_stage, seed
+    _require(run_stage == "CONFIRMATION", "SetFlow V4 S1 run stage changed")
+    _require(
+        config.get("schema_version") == CONFIRMATION_CONFIG_SCHEMA
+        and config.get("status") == "FROZEN_S1_CONFIRMATION_CONFIG_NOT_STARTED",
+        "S1 confirmation config identity changed",
+    )
+    _require(
+        run_id == CONFIRMATION_RUN_ID
+        and config.get("selected_model") == CONFIRMATION_RUN_ID,
+        "S1 confirmation only permits v4_s1_full",
+    )
+    seeds = tuple(int(seed) for seed in config.get("required_confirmation_seeds", ()))
+    seed = int(config.get("training_seed", -1))
+    _require(
+        seeds == CONFIRMATION_SEEDS
+        and seed in CONFIRMATION_SEEDS
+        and config.get("additional_seed_authorized") is False,
+        "SetFlow V4 S1 confirmation seed cohort changed",
+    )
+    _require(
+        config.get("objective_identity") == OBJECTIVE_IDENTITY
+        and float(
+            config.get("cross_state_candidate_mode_responsibility_weight", -1.0)
+        )
+        == OBJECTIVE_WEIGHT,
+        "SetFlow V4 S1 confirmation objective identity changed",
+    )
+    return run_stage, seed
+
+
+def training_summary_identity_s1(
+    config: Mapping[str, Any], *, run_id: str
+) -> dict[str, Any]:
+    run_stage, training_seed = setflow_training_stage_seed_s1(
+        config, run_id=run_id
+    )
+    return {
+        "run_stage": run_stage,
+        "run_id": run_id,
+        "seed": training_seed,
+        **(
+            {"selected_model": CONFIRMATION_RUN_ID}
+            if run_stage == "CONFIRMATION"
+            else {}
+        ),
+        "objective_identity": OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+    }
+
+
 def require_s1_launch_authorization(
     config: Mapping[str, Any],
     authorization: Mapping[str, Any],
@@ -330,6 +411,84 @@ def require_s1_launch_authorization(
         )
 
 
+def require_s1_confirmation_launch_authorization(
+    config: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    preflight: Mapping[str, Any],
+    source_data_audit: Mapping[str, Any],
+    *,
+    run_id: str,
+    training_seed: int,
+    current_git_head: str,
+) -> None:
+    """Bind one full-only confirmation seed to its exact fresh authority."""
+
+    resolved_stage, resolved_seed = setflow_training_stage_seed_s1(
+        config, run_id=run_id
+    )
+    _require(
+        resolved_stage == "CONFIRMATION" and resolved_seed == training_seed,
+        "SetFlow V4 S1 confirmation stage or seed changed",
+    )
+    _require(
+        authorization.get("schema_version") == CONFIRMATION_AUTHORIZATION_SCHEMA
+        and authorization.get("status") == CONFIRMATION_AUTHORIZATION_STATUS
+        and authorization.get("authorized_git_head") == current_git_head,
+        "SetFlow V4 S1 confirmation exact-HEAD authorization is absent",
+    )
+    _require(
+        authorization.get("authorized_run_ids") == [CONFIRMATION_RUN_ID]
+        and tuple(
+            int(seed) for seed in authorization.get("authorized_seeds", ())
+        )
+        == CONFIRMATION_SEEDS
+        and training_seed in CONFIRMATION_SEEDS,
+        "SetFlow V4 S1 confirmation authorization scope changed",
+    )
+    _require(
+        authorization.get("objective_identity") == OBJECTIVE_IDENTITY
+        and float(
+            authorization.get(
+                "cross_state_candidate_mode_responsibility_weight", -1.0
+            )
+        )
+        == OBJECTIVE_WEIGHT,
+        "SetFlow V4 S1 confirmation objective authorization changed",
+    )
+    _require(
+        authorization.get("screen_runner_git_head") == SCREEN_RUNNER_GIT_HEAD
+        == config.get("screen_runner_git_head")
+        and authorization.get("screen_gate_path") == config.get("screen_gate_path")
+        and authorization.get("screen_selected_checkpoint_pass")
+        == config.get("screen_selected_checkpoint_pass")
+        and authorization.get("screen_provenance")
+        == config.get("screen_provenance"),
+        "SetFlow V4 S1 confirmation screen provenance changed",
+    )
+    _require(
+        authorization.get("free_memory_gate_applied") is False,
+        "SetFlow V4 S1 confirmation authorization applied a VRAM gate",
+    )
+    _require(
+        preflight.get("status") == "XEDITSETFLOW_V4_PREFLIGHT_PASS"
+        and preflight.get("passed") is True
+        and source_data_audit.get("status")
+        == "XEDITSETFLOW_V4_SOURCE_LEVEL_DATA_AUDIT_PASS",
+        "reused V4 architecture or source-data fact audit is not PASS",
+    )
+    for payload, label in (
+        (config, "confirmation config"),
+        (authorization, "confirmation authorization"),
+        (preflight, "preflight"),
+        (source_data_audit, "source data audit"),
+    ):
+        _require(
+            int(payload.get("development_test_outcome_reads", -1)) == 0
+            and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            f"SetFlow V4 S1 {label} reports a protected read",
+        )
+
+
 def train(
     config: Mapping[str, Any],
     *,
@@ -338,23 +497,33 @@ def train(
     output_directory: Path,
     physical_gpu_index: int,
 ) -> dict[str, Any]:
+    run_stage, training_seed = setflow_training_stage_seed_s1(
+        config, run_id=run_id
+    )
     spec = screen_run_spec_s1(config, run_id)
-    run_stage = "SCREEN"
-    _require(config.get("run_stage", "SCREEN") == run_stage, "S1 is screen-only")
-    training_seed = int(config["training"]["screen_seed"])
     current_head = _git_head()
     authorization = _load_json(authorization_path)
     preflight = _load_json(Path(config["preflight_output_path"]))
     source_data_audit = _load_json(Path(config["source_level_data_audit_path"]))
-    require_s1_launch_authorization(
-        config,
-        authorization,
-        preflight,
-        source_data_audit,
-        run_id=run_id,
-        current_git_head=current_head,
-    )
-    _require(training_seed == 20260911, "SetFlow V4 S1 screen seed changed")
+    if run_stage == "SCREEN":
+        require_s1_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            current_git_head=current_head,
+        )
+    else:
+        require_s1_confirmation_launch_authorization(
+            config,
+            authorization,
+            preflight,
+            source_data_audit,
+            run_id=run_id,
+            training_seed=training_seed,
+            current_git_head=current_head,
+        )
     _require(
         not output_directory.exists(),
         f"terminal SetFlow V4 S1 output already exists: {output_directory}",
@@ -712,6 +881,11 @@ def train(
                     "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_checkpoint.v1",
                     "run_stage": run_stage,
                     "run_id": run_id,
+                    **(
+                        {"selected_model": CONFIRMATION_RUN_ID}
+                        if run_stage == "CONFIRMATION"
+                        else {}
+                    ),
                     "selectable": spec.selectable,
                     "mode_count": spec.mode_count,
                     "mode_information_weight": spec.mode_information_weight,
@@ -774,6 +948,11 @@ def train(
         "status": "TERMINAL_XEDITSETFLOW_V4_S1_TRAINING_COMPLETE_PENDING_VALIDATION",
         "run_stage": run_stage,
         "run_id": run_id,
+        **(
+            {"selected_model": CONFIRMATION_RUN_ID}
+            if run_stage == "CONFIRMATION"
+            else {}
+        ),
         "selectable": spec.selectable,
         "mode_count": spec.mode_count,
         "mode_information_weight": spec.mode_information_weight,
@@ -881,8 +1060,9 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path)
     arguments = parser.parse_args()
     config = _load_json(arguments.config)
-    run_stage = "SCREEN"
-    training_seed = int(config["training"]["screen_seed"])
+    run_stage, training_seed = setflow_training_stage_seed_s1(
+        config, run_id=arguments.run_id
+    )
     output_directory = arguments.output_dir or Path(config["output_root"]) / arguments.run_id
     try:
         result = train(

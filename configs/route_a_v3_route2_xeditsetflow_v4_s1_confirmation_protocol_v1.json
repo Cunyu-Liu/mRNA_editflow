@@ -1,0 +1,102 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_AFTER_S1_SCREEN_PASS_BEFORE_CONFIRMATION_PARAMETER_UPDATE_OR_VALIDATION_READ",
+  "base_screen_config": "configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json",
+  "selected_model": "v4_s1_full",
+  "required_seeds": [20260912, 20260913, 20260914],
+  "additional_seed_authorized": false,
+  "objective": {
+    "identity": "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY",
+    "cross_state_candidate_mode_responsibility_weight": 0.05,
+    "weight_sweep_authorized": false
+  },
+  "confirmation_design": {
+    "training_job_count": 3,
+    "training_run_ids": ["v4_s1_full", "v4_s1_full", "v4_s1_full"],
+    "single_mode_training_job_count": 0,
+    "checkpoint_validation_job_count": 12,
+    "checkpoint_validation_passes_per_seed": [4, 6, 8, 10],
+    "screen_full_and_single_mode_decisions_role": "BOUND_PROVENANCE_ONLY",
+    "screen_selected_checkpoint_pass_role": "BOUND_PROVENANCE_ONLY",
+    "confirmation_checkpoint_selection": "INDEPENDENT_WITHIN_EACH_SEED_AFTER_ITS_FOUR_TERMINAL_VALIDATIONS",
+    "screen_checkpoint_never_substitutes_for_confirmation_checkpoint": true
+  },
+  "screen_provenance": {
+    "screen_runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
+    "schedule_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/schedule.json",
+    "runtime_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime_config.json",
+    "authorization_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8.json",
+    "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/screen_gate.json",
+    "required_screen_run_ids": ["v4_s1_full", "v4_s1_single_mode"],
+    "required_checkpoint_passes": [4, 6, 8, 10],
+    "required_gate_status": "XEDITSETFLOW_V4_S1_SCREEN_PASS",
+    "required_successor_protocol": true,
+    "legacy_confirmation_authorized": false
+  },
+  "runner_outputs": {
+    "runtime_config_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v4/s1_confirmation_{runner_git_head}",
+    "training_runtime_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_confirmation_training_{runner_git_head}",
+    "training_log_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/s1_confirmation_training_{runner_git_head}",
+    "posttraining_runtime_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_confirmation_posttraining_{runner_git_head}",
+    "posttraining_log_root_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditsetflow_v4/s1_confirmation_posttraining_{runner_git_head}",
+    "confirmation_gate_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_confirmation_posttraining_{runner_git_head}/confirmation_gate.json",
+    "authorization_output_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_confirmation_{runner_git_head}.json",
+    "prelaunch_failure_template": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_confirmation_{runner_git_head}.failed.json"
+  },
+  "training_policy": {
+    "passes": 10,
+    "physical_and_effective_state_batch": 32,
+    "source_repeat_cap": 4,
+    "learning_rate": 0.0002,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "warmup_fraction": 0.05,
+    "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+    "saved_checkpoint_passes": [4, 6, 8, 10],
+    "checkpoint_selection_after_terminal_training_only": true,
+    "validation_generation_during_training": false
+  },
+  "checkpoint_gate": {
+    "maximum_common_validation_nll": 2.06809,
+    "minimum_source_macro_recovery": 0.35,
+    "minimum_source_macro_top_k_recovery": 0.2,
+    "minimum_source_macro_unique_candidate_rate": 0.9,
+    "minimum_recovery_margin_over_terminal_f2": 0.05,
+    "minimum_top_k_margin_over_terminal_f2": 0.03,
+    "minimum_unique_margin_over_terminal_f2": 0.15,
+    "all_g0_correctness_required": true
+  },
+  "paired_bootstrap": {
+    "statistic": "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_S1_FULL_MINUS_TERMINAL_F2",
+    "source_pairing": "EXACT_SOURCE_KEY_INTERSECTION_MUST_EQUAL_891",
+    "replicates": 10000,
+    "confidence_level": 0.95,
+    "interval": "PERCENTILE_TWO_SIDED",
+    "seed": 2026091102,
+    "required_lower_bound_strictly_greater_than_zero": true
+  },
+  "terminal_f2_validation_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/unguided_validation/f2/validation_summary.json",
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "cuda_bf16_only": true,
+    "cpu_fallback": false,
+    "gpu_inventory_required": true,
+    "free_or_estimated_memory_gate": false,
+    "free_or_estimated_memory_sorting": false,
+    "memory_values_are_diagnostic_only": true
+  },
+  "package_failure_policy": {
+    "first_terminal_failure_stops_pending_launches": true,
+    "in_flight_jobs_finish_naturally": true,
+    "pending_status_after_failure": "NOT_RUN_AFTER_TERMINAL_FAILURE",
+    "technical_failure_is_scientific_no_go": false,
+    "adjudication_after_incomplete_package": false,
+    "same_family_reuse_authorized": false
+  },
+  "development_test_authorized": false,
+  "guidance_authorized": false,
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "submission_ready": false,
+  "claim_boundary": "S1_CONFIRMATION_AND_G0_ARE_DEVELOPMENT_EVIDENCE_ONLY_AND_CANNOT_ESTABLISH_AN_EXCELLENT_FINAL_OR_EXTERNAL_EVALUATION_RESULT"
+}
