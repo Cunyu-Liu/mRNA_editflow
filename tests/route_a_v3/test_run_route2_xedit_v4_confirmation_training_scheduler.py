@@ -201,6 +201,80 @@ def test_confirmation_scheduler_records_worktree_mismatch_before_launch(
     assert not marker.exists()
 
 
+def test_confirmation_scheduler_nonzero_summary_stops_pending_job(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        scheduler, "inspect_worktree_identity", lambda *args, **kwargs: None
+    )
+    runtime = tmp_path / "runtime.json"
+    output = tmp_path / "setflow_20260912"
+    skipped_output = tmp_path / "setflow_20260913"
+    marker = tmp_path / "setflow_20260912.marker"
+    skipped_marker = tmp_path / "setflow_20260913.marker"
+    schedule = {
+        "git_head": "c" * 40,
+        "experiment_head": "d" * 40,
+        "worktree": str(tmp_path),
+        "runtime_manifest": str(runtime),
+        "eligible_components": ["setflow"],
+        "gpu_queues": [
+            {
+                "physical_gpu_index": 0,
+                "jobs": [
+                    {
+                        "job_key": "setflow:20260912:v4_s1_full",
+                        "component": "setflow",
+                        "training_seed": 20260912,
+                        "run_id": "v4_s1_full",
+                        "output_directory": str(output),
+                        "log_path": str(tmp_path / "setflow_20260912.log"),
+                        "command": _writer(
+                            output,
+                            "training_summary.json",
+                            marker,
+                            7,
+                        ),
+                    },
+                    {
+                        "job_key": "setflow:20260913:v4_s1_full",
+                        "component": "setflow",
+                        "training_seed": 20260913,
+                        "run_id": "v4_s1_full",
+                        "output_directory": str(skipped_output),
+                        "log_path": str(tmp_path / "setflow_20260913.log"),
+                        "command": _writer(
+                            skipped_output,
+                            "training_summary.json",
+                            skipped_marker,
+                            0,
+                        ),
+                    },
+                ],
+            }
+        ],
+    }
+
+    scheduler.run(schedule)
+
+    payload = json.loads(runtime.read_text(encoding="utf-8"))
+    assert payload["status"] == "V4_CONFIRMATION_TRAINING_TECHNICAL_FAILURE"
+    failed = payload["jobs"]["setflow:20260912:v4_s1_full"]
+    assert failed["status"] == "TECHNICAL_FAILURE_NONZERO_RETURN_CODE"
+    assert failed["terminal_artifact_kind"] == "SUMMARY"
+    assert failed["return_code"] == 7
+    first = payload["first_terminal_failure"]
+    assert first["job_key"] == "setflow:20260912:v4_s1_full"
+    assert first["reason"] == "JOB_NONZERO_RETURN_CODE"
+    assert first["terminal_artifact_kind"] == "SUMMARY"
+    assert first["return_code"] == 7
+    skipped = payload["jobs"]["setflow:20260913:v4_s1_full"]
+    assert skipped["status"] == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+    assert not skipped_marker.exists()
+    assert (output / "training_summary.json").is_file()
+    assert not (output / "failure.json").exists()
+
+
 def test_confirmation_terminal_kind_rejects_double_terminal(tmp_path: Path) -> None:
     job = {"component": "critic", "output_directory": str(tmp_path)}
     assert scheduler.terminal_kind(job) is None

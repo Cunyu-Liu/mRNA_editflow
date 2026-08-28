@@ -94,6 +94,18 @@ def run_logged(command: list[str], *, cwd: Path, log: Path) -> int:
         stream.close()
 
 
+def validation_run_id(job: dict[str, Any]) -> str:
+    run_id = job.get("run_id")
+    if isinstance(run_id, str) and run_id:
+        return run_id
+    command = [str(value) for value in job["command"]]
+    try:
+        index = command.index("--run-id")
+        return command[index + 1]
+    except (ValueError, IndexError) as error:
+        raise RuntimeError("validation schedule job has no run_id") from error
+
+
 def publish_missing_validation_failure(
     job: dict[str, Any],
     *,
@@ -111,7 +123,7 @@ def publish_missing_validation_failure(
         ),
         "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
         "stage": failure_stage,
-        "run_id": "v4_full",
+        "run_id": validation_run_id(job),
         "run_stage": "CONFIRMATION",
         "seed": int(job["training_seed"]),
         "checkpoint_pass": int(job["checkpoint_pass"]),
@@ -135,6 +147,7 @@ def run(schedule: dict[str, Any]) -> None:
     first_terminal_failure: dict[str, Any] = {}
     validation_states = {
         job["job_key"]: {
+            "run_id": validation_run_id(job),
             "training_seed": int(job["training_seed"]),
             "checkpoint_pass": int(job["checkpoint_pass"]),
             "physical_gpu_index": int(queue["physical_gpu_index"]),
@@ -348,26 +361,35 @@ def run(schedule: dict[str, Any]) -> None:
                     job["terminal_summary"], job["terminal_failure"]
                 )
             with lock:
+                successful = terminal == "SUMMARY" and return_code == 0
                 validation_states[key].update(
                     {
                         "status": (
-                            "TERMINAL_COMPLETE"
-                            if terminal is not None
-                            else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                            "TECHNICAL_FAILURE_NONZERO_RETURN_CODE"
+                            if terminal == "SUMMARY" and return_code != 0
+                            else (
+                                "TERMINAL_COMPLETE"
+                                if terminal is not None
+                                else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                            )
                         ),
                         "return_code": return_code,
                         "terminal_artifact_kind": terminal,
                         "finished_unix_seconds": time.time(),
                     }
                 )
-                if terminal != "SUMMARY":
+                if not successful:
                     record_terminal_failure(
                         stage="VALIDATION",
                         key=key,
                         reason=(
-                            "VALIDATION_TERMINAL_FAILURE_ARTIFACT"
-                            if terminal == "FAILURE"
-                            else "VALIDATION_NO_EXACT_TERMINAL_ARTIFACT"
+                            "VALIDATION_NONZERO_RETURN_CODE"
+                            if terminal == "SUMMARY" and return_code != 0
+                            else (
+                                "VALIDATION_TERMINAL_FAILURE_ARTIFACT"
+                                if terminal == "FAILURE"
+                                else "VALIDATION_NO_EXACT_TERMINAL_ARTIFACT"
+                            )
                         ),
                         terminal=terminal,
                         return_code=int(return_code),
@@ -495,26 +517,39 @@ def run(schedule: dict[str, Any]) -> None:
                 )
             write_atomic(failure, failure_payload)
         terminal = exact_terminal(str(gate), str(failure))
+        successful = terminal == "SUMMARY" and return_code == 0
         adjudication_states[component].update(
             {
                 "status": (
-                    "TERMINAL_COMPLETE"
-                    if terminal is not None
-                    else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                    "TECHNICAL_FAILURE_NONZERO_RETURN_CODE"
+                    if terminal == "SUMMARY" and return_code != 0
+                    else (
+                        "TERMINAL_COMPLETE"
+                        if terminal is not None
+                        else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                    )
                 ),
                 "return_code": return_code,
                 "terminal_artifact_kind": terminal,
                 "finished_unix_seconds": time.time(),
             }
         )
-        if terminal != "SUMMARY":
+        if not successful:
             record_terminal_failure(
                 stage="ADJUDICATION",
                 key=component,
                 reason=(
-                    "ADJUDICATION_TERMINAL_FAILURE_ARTIFACT"
-                    if terminal == "FAILURE"
-                    else "ADJUDICATION_NO_EXACT_TERMINAL_ARTIFACT"
+                    "ADJUDICATION_NONZERO_RETURN_CODE"
+                    if terminal == "SUMMARY" and return_code is not None
+                    else (
+                        "ADJUDICATION_PROCESS_ERROR"
+                        if terminal == "SUMMARY"
+                        else (
+                            "ADJUDICATION_TERMINAL_FAILURE_ARTIFACT"
+                            if terminal == "FAILURE"
+                            else "ADJUDICATION_NO_EXACT_TERMINAL_ARTIFACT"
+                        )
+                    )
                 ),
                 terminal=terminal,
                 return_code=return_code,
@@ -530,10 +565,12 @@ def run(schedule: dict[str, Any]) -> None:
 
     exact_validations = all(
         row.get("terminal_artifact_kind") == "SUMMARY"
+        and row.get("return_code") == 0
         for row in validation_states.values()
     )
     exact_adjudications = bool(adjudication_states) and all(
         row.get("terminal_artifact_kind") == "SUMMARY"
+        and row.get("return_code") == 0
         for row in adjudication_states.values()
     )
     publish(

@@ -80,6 +80,7 @@ def test_confirmation_posttraining_preserves_atomic_gate_and_validation_failure(
                 "jobs": [
                     {
                         "job_key": "setflow:20260912:pass_4",
+                        "run_id": "v4_s1_full",
                         "training_seed": 20260912,
                         "checkpoint_pass": 4,
                         "physical_gpu_index": 0,
@@ -97,6 +98,7 @@ def test_confirmation_posttraining_preserves_atomic_gate_and_validation_failure(
                 "jobs": [
                     {
                         "job_key": "setflow:20260913:pass_4",
+                        "run_id": "v4_full",
                         "training_seed": 20260913,
                         "checkpoint_pass": 4,
                         "physical_gpu_index": 1,
@@ -112,6 +114,7 @@ def test_confirmation_posttraining_preserves_atomic_gate_and_validation_failure(
                     },
                     {
                         "job_key": "setflow:20260913:pass_8",
+                        "run_id": "v4_full",
                         "training_seed": 20260913,
                         "checkpoint_pass": 8,
                         "physical_gpu_index": 1,
@@ -139,6 +142,8 @@ def test_confirmation_posttraining_preserves_atomic_gate_and_validation_failure(
     validation = payload["validation_jobs"]["setflow:20260912:pass_4"]
     assert validation["terminal_artifact_kind"] == "FAILURE"
     assert validation_failure.is_file()
+    failure_payload = json.loads(validation_failure.read_text(encoding="utf-8"))
+    assert failure_payload["run_id"] == "v4_s1_full"
     assert (
         payload["validation_jobs"]["setflow:20260913:pass_4"][
             "terminal_artifact_kind"
@@ -195,7 +200,7 @@ def test_confirmation_posttraining_publishes_adjudication_failure_when_gate_abse
     assert payload["first_terminal_failure"]["stage"] == "ADJUDICATION"
 
 
-def test_confirmation_validation_summary_survives_late_nonzero_exit(
+def test_confirmation_validation_nonzero_summary_blocks_adjudication(
     tmp_path: Path, monkeypatch,
 ) -> None:
     monkeypatch.setattr(
@@ -204,6 +209,9 @@ def test_confirmation_validation_summary_survives_late_nonzero_exit(
     runtime = tmp_path / "runtime.json"
     summary = tmp_path / "validation/pass_4/validation_summary.json"
     failure = tmp_path / "validation/pass_4.failed.json"
+    skipped_summary = tmp_path / "validation/pass_8/validation_summary.json"
+    skipped_failure = tmp_path / "validation/pass_8.failed.json"
+    skipped_marker = tmp_path / "validation/pass_8.marker"
     gate = tmp_path / "setflow_gate.json"
     gate_failure = tmp_path / "setflow_gate.failed.json"
     schedule = {
@@ -217,6 +225,7 @@ def test_confirmation_validation_summary_survives_late_nonzero_exit(
                 "jobs": [
                     {
                         "job_key": "setflow:20260912:pass_4",
+                        "run_id": "v4_s1_full",
                         "training_seed": 20260912,
                         "checkpoint_pass": 4,
                         "physical_gpu_index": 0,
@@ -224,6 +233,21 @@ def test_confirmation_validation_summary_survives_late_nonzero_exit(
                         "terminal_failure": str(failure),
                         "log_path": str(tmp_path / "validation.log"),
                         "command": _writer(summary, exit_code=7),
+                    },
+                    {
+                        "job_key": "setflow:20260912:pass_8",
+                        "run_id": "v4_s1_full",
+                        "training_seed": 20260912,
+                        "checkpoint_pass": 8,
+                        "physical_gpu_index": 0,
+                        "terminal_summary": str(skipped_summary),
+                        "terminal_failure": str(skipped_failure),
+                        "log_path": str(tmp_path / "skipped_validation.log"),
+                        "command": _writer(
+                            skipped_summary,
+                            exit_code=0,
+                            marker=skipped_marker,
+                        ),
                     }
                 ],
             }
@@ -240,12 +264,26 @@ def test_confirmation_validation_summary_survives_late_nonzero_exit(
     scheduler.run(schedule)
 
     payload = json.loads(runtime.read_text(encoding="utf-8"))
-    assert payload["status"] == "V4_CONFIRMATION_POSTTRAINING_ALL_TERMINAL"
+    assert payload["status"] == "V4_CONFIRMATION_POSTTRAINING_TECHNICAL_FAILURE"
     validation = payload["validation_jobs"]["setflow:20260912:pass_4"]
+    assert validation["status"] == "TECHNICAL_FAILURE_NONZERO_RETURN_CODE"
     assert validation["terminal_artifact_kind"] == "SUMMARY"
     assert validation["return_code"] == 7
+    first = payload["first_terminal_failure"]
+    assert first["stage"] == "VALIDATION"
+    assert first["reason"] == "VALIDATION_NONZERO_RETURN_CODE"
+    assert first["terminal_artifact_kind"] == "SUMMARY"
+    assert first["return_code"] == 7
+    skipped = payload["validation_jobs"]["setflow:20260912:pass_8"]
+    assert skipped["status"] == "NOT_RUN_AFTER_TERMINAL_FAILURE"
+    assert not skipped_marker.exists()
+    assert payload["adjudications"]["setflow"]["status"] == (
+        "NOT_RUN_AFTER_TERMINAL_FAILURE"
+    )
     assert summary.is_file()
     assert not failure.exists()
+    assert not gate.exists()
+    assert not gate_failure.exists()
 
 
 def test_confirmation_posttraining_records_worktree_mismatch_before_validation(
@@ -277,6 +315,7 @@ def test_confirmation_posttraining_records_worktree_mismatch_before_validation(
                 "jobs": [
                     {
                         "job_key": "setflow:20260912:pass_4",
+                        "run_id": "v4_full",
                         "training_seed": 20260912,
                         "checkpoint_pass": 4,
                         "physical_gpu_index": 0,
@@ -312,6 +351,15 @@ def test_confirmation_posttraining_records_worktree_mismatch_before_validation(
     )
     assert not validation_summary.exists()
     assert not gate.exists()
+
+
+def test_validation_run_id_uses_job_or_legacy_command() -> None:
+    assert scheduler.validation_run_id(
+        {"run_id": "v4_s1_full", "command": ["validator"]}
+    ) == "v4_s1_full"
+    assert scheduler.validation_run_id(
+        {"command": ["validator", "--run-id", "v4_full"]}
+    ) == "v4_full"
 
 
 def test_exact_terminal_rejects_absent_or_double_artifact(tmp_path: Path) -> None:

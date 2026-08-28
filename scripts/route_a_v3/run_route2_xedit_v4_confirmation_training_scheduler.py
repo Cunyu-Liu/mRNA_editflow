@@ -298,26 +298,35 @@ def run(schedule: dict[str, Any]) -> None:
                 stream.close()
             kind = terminal_kind(job)
             with lock:
+                successful = kind == "SUMMARY" and return_code == 0
                 states[key].update(
                     {
                         "status": (
-                            "TERMINAL_COMPLETE"
-                            if kind is not None
-                            else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                            "TECHNICAL_FAILURE_NONZERO_RETURN_CODE"
+                            if kind == "SUMMARY" and return_code != 0
+                            else (
+                                "TERMINAL_COMPLETE"
+                                if kind is not None
+                                else "TECHNICAL_FAILURE_NO_EXACT_TERMINAL_ARTIFACT"
+                            )
                         ),
                         "return_code": return_code,
                         "terminal_artifact_kind": kind,
                         "finished_unix_seconds": time.time(),
                     }
                 )
-                if kind != "SUMMARY":
+                if not successful:
                     record_terminal_failure(
                         key=key,
                         job=job,
                         reason=(
-                            "JOB_TERMINAL_FAILURE_ARTIFACT"
-                            if kind == "FAILURE"
-                            else "JOB_NO_EXACT_TERMINAL_ARTIFACT"
+                            "JOB_NONZERO_RETURN_CODE"
+                            if kind == "SUMMARY" and return_code != 0
+                            else (
+                                "JOB_TERMINAL_FAILURE_ARTIFACT"
+                                if kind == "FAILURE"
+                                else "JOB_NO_EXACT_TERMINAL_ARTIFACT"
+                            )
                         ),
                         terminal=kind,
                         return_code=int(return_code),
@@ -351,7 +360,9 @@ def run(schedule: dict[str, Any]) -> None:
         return
 
     exact_terminal = bool(states) and all(
-        row.get("terminal_artifact_kind") == "SUMMARY" for row in states.values()
+        row.get("terminal_artifact_kind") == "SUMMARY"
+        and row.get("return_code") == 0
+        for row in states.values()
     )
     publish(
         "V4_CONFIRMATION_TRAINING_ALL_JOBS_TERMINAL"
