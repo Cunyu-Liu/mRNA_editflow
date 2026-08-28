@@ -896,3 +896,64 @@ or terminal artifacts.
   still requires the terminal three-seed 98-job Final gate
   `XEDITFLOW_V4_PASS` with the independent evaluator, and
   `submission_ready=false` remains.
+
+## Iteration 16 — Make terminal handoff and formal admission executable
+
+- Readiness finding: the clean pushed audit-only candidate `70652f557...` had
+  correct training semantics but two reachable operational gaps. The corrected
+  S1 launcher depended on heartbeat prose, rather than a canonical artifact, to
+  prove that the invalid 930 family was terminal. The required eight isolated
+  focused groups, exact 96 V3.3.2 tests and dual exact-HEAD receipts had strict
+  consumers but no tracked producer; an automatic wake would otherwise have to
+  reconstruct ad-hoc commands and could accidentally select the narrower
+  controls marker subset. The candidate was therefore superseded before any
+  GPU family or formal receipt was created.
+- Old-family terminal transition: a new one-shot transition is now the sole
+  old-runtime reader. It refuses an existing receipt or `.partial` before the
+  runtime read, reads that runtime once, writes nothing while RUNNING, and only
+  freezes one of the two exact terminal classes after the 2 training + 8
+  Validation inventory, unique terminal artifacts, gate or first technical
+  failure, scheduler exit and zero protected reads close. Its receipt preserves
+  the nominal terminal only as invalid execution evidence and fixes successor
+  and same-family-retry authorization to false. Process-inspection command
+  failure is fail-closed, not interpreted as scheduler exit.
+- Corrected S1 guard: the canonical retry launcher explicitly rejects the 930
+  HEAD and consumes that immutable invalidation receipt after tracked repo
+  facts but before current-HEAD runner receipts, GPU inventory/probes or family
+  creation. It never rereads the old runtime. Scientific PASS/NO-GO and a
+  technical terminal can both close the predecessor execution, but neither can
+  authorize a scientific successor.
+- Formal admission producer: the new
+  `verify_and_materialize_route2_xedit_v403_successor_runner_receipts.py`
+  asserts that the strict Critic and SetFlow eight-group contracts are equal,
+  starts all eight isolated pytest processes before collecting them, records
+  their actual positive PASS counts, then runs the literal V3.3.2 cohort and
+  requires exact 96/0. Only then does it publish the distinct shared and
+  SetFlow receipt schemas and run the production Critic-controls and S1
+  pre-GPU consumer paths. A later external consumer-preflight failure preserves
+  already strictly validated receipts so `--validate-receipts-only` can retry
+  without repeating the test cohort.
+- GPU scheduling conclusion: no code change was needed. After formal admission,
+  Critic controls launch six concurrent arms on physical GPUs 0–5. Corrected
+  SetFlow launches full/single training on GPUs 0/1, followed by six concurrent
+  Validation queues over GPUs 0–5. The families use disjoint artifact roots and
+  may share fixed physical GPUs; no scheduler sorts, filters or gates by free or
+  predicted memory. Launcher calls should be serialized for unambiguous receipt
+  consumption, while their background GPU schedulers overlap.
+- New immutable code baseline: commit
+  `7b4a445d3979aa7f832c52a16bd5bd67885e10b7` contains the terminal transition,
+  launcher barrier, focused markers, formal admission producer and direct
+  tests. Root verification was 24/24 for the two new tools, 163/163 for the
+  integrated seven-module consumer set, and 72/72 for the committed-head Critic
+  semantic consumer. `git diff --check` passed; two independent read-only
+  reviewers reported PASS. The frozen Critic pathspec diff from `f1a2328d...`
+  to this baseline is empty, so the X2 scientific/training semantic audit
+  remains valid.
+- Deferred formal evidence: the complete eight-process focused run, exact 96
+  V3.3.2 run and dual `/mnt` receipts were deliberately not executed on the
+  preparation branch. They are valid only after the old 930 terminal receipt,
+  main-branch fast-forward/push and clean exact-HEAD identity checks. This
+  iteration read no active runtime or terminal metric, touched no Development
+  TEST/new Evaluation outcome, and launched no GPU. It is engineering evidence,
+  not Critic/SetFlow readiness or an excellent Development result;
+  `submission_ready=false` remains.

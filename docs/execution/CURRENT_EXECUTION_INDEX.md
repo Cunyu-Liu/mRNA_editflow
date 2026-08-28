@@ -86,10 +86,20 @@ family 禁止重新启动、覆盖或手工接续。该 family 继续自然收�
 准备分支的旧候选 `b7f7c122299e71380aadef015498490e5e8dfeba` 已被候选准入与静态审阅否决，禁止
 快进或启动：其 focused preflight 为 530 PASS/2 FAIL，且随后确认 Critic one-shot process launch、Atomic
 TEST pre-access、cross-root transition、refit/LOSO barrier 的技术失败证据仍不闭合。新不可变代码基线为
-`f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66`；它仍不是执行入口，必须先由 audit-only successor HEAD
-重新绑定语义审计并推送，之后仍等待旧 930 family 精确终态和主工作树正式全量准入。
+`f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66` 的 audit-only 候选
+`70652f5579fe227a831e887b0fa0ee91f63cde02` 又被启动就绪审计前瞻 supersede：它没有在 canonical S1
+launcher 内强制旧 930 exact-terminal，也没有正式八组 focused、96 项 V3.3.2 与双 receipt 的仓库内 producer，
+因此禁止作为执行入口。新的不可变代码基线是
+`7b4a445d3979aa7f832c52a16bd5bd67885e10b7`；它补齐 terminal-invalidation receipt 与一次性正式准入工具，
+但仍必须先由本文件所在的 audit-only successor HEAD 提交并推送，之后等待旧 930 family 精确终态和主工作树
+正式全量准入。
 
-监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。人工执行阶段不得循环轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
+监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。旧 930 游标的唯一读取入口改为准备
+工作树中的 `transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py`：RUNNING 时只返回极简状态且
+不写文件；两个精确终态之一成立时一次读取必要 terminal artifacts、确认 scheduler 已退出并原子写不可覆盖
+terminal-invalidation receipt。receipt 或 `.partial` 已存在时必须在读取 runtime 前停止。人工执行阶段不得循环
+轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变
+运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
 
 ## 4. 唯一阶段图
 
@@ -132,6 +142,25 @@ Critic frozen readiness + SetFlow G0_READY
 
 所有后继脚本只从第 2 节工作树的 clean、已推送 HEAD 启动；所有 `--expected-head` 类参数均使用启动时的当前 HEAD。脚本名如下，具体参数由两小时 heartbeat 按 frozen protocol 和当前 receipt 物化，不从历史文档复制：
 
+### 终态转接与正式准入
+
+- `transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py`
+- `verify_and_materialize_route2_xedit_v403_successor_runner_receipts.py`
+
+第一项是 heartbeat 对旧 930 S1 runtime 的唯一 reader。它只在旧 family 为精确科学终态或精确技术终态、
+2+8 job inventory 与 adjudication/first-failure 闭合、无 partial/双终态、scheduler 已退出、protected reads=0
+时，写 canonical immutable invalidation receipt；该 receipt 永久保持
+`successor_authorized=false`、`same_family_retry_authorized=false`，只证明旧 family 已结束且不能作为科学
+后继依据。
+
+第二项只在主许可分支 fast-forward、push 到新的 clean exact HEAD 后运行一次。它从严格 Critic 与 SetFlow
+consumer 的同一八组 marker 构造八个隔离 pytest 进程并发执行，使用实际 PASS 数而非旧固定计数；全部通过后
+才运行字面量 `tests/route_a_v3/*v332*.py` 并要求精确 96/0。随后它在 canonical `/mnt` audit 路径原子物化
+shared 与 SetFlow 两份不同 schema/status、相同实际证据的 receipt，并调用 Critic controls 与 corrected S1
+的真实 pre-GPU consumer 验收。任一 final 或 `.partial` 已存在时不覆盖；consumer 外部条件修复后只使用
+`--validate-receipts-only` 复验，不重跑八组与 V3.3.2。该工具不读取实验 runtime/protected outcome、不做
+GPU inventory 或模型执行。
+
 ### SetFlow
 
 - `launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py`
@@ -144,7 +173,9 @@ state→candidate→occurrence。原 V4 架构、sampler、seed 20260911、十 p
 
 旧 930 family 的上述 launcher 已消费完毕，禁止再次调用。corrected retry 只能在新 exact HEAD、完整准入和
 新 family 路径下消费一次。修复要求 CPU/CUDA seed 在任何模型构造之前应用，并把初始化 seed、应用顺序、
-CUDA/A100/BF16 与 no-CPU-fallback 证据贯穿 training summary、checkpoint、Validation 和 gate。
+CUDA/A100/BF16 与 no-CPU-fallback 证据贯穿 training summary、checkpoint、Validation 和 gate。canonical
+launcher 还必须显式拒绝 930 HEAD，并在 current-HEAD runner receipts、任何 GPU inventory/probe 和 family
+创建之前消费上一小节的 terminal-invalidation receipt；launcher 本身不得重读旧 runtime。
 
 - `launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py`
 - `launch_route2_xeditsetflow_s1_confirmation_posttraining.py`
