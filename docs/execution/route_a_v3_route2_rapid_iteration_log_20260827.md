@@ -1000,6 +1000,17 @@ or terminal artifacts.
   failure marks all wave-1 jobs `NOT_RUN_AFTER_TERMINAL_FAILURE`; already
   running jobs finish naturally. The mapping is literal and makes no live
   memory decision.
+- Technical-semantics freeze: immutable baseline
+  `793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110` is recorded by
+  `audits/route_a_v3_route2_xeditcritic_v403_controls_oom_retry_training_semantics_793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110.json`.
+  The existing f1a v2 audit remains independently validated. Under its frozen
+  pathspec, f1a→baseline changes exactly the controls launcher and scheduler,
+  classified as immutable OOM/new-family/no-VRAM-gate lineage and fixed
+  two-wave/allocator/package-first-failure execution; baseline→confirmation
+  runner must be empty. Model implementation/architecture/forward/loss,
+  scientific config, data, sampler, batch, seed cohort, update budget,
+  thresholds and GPU0–5 mapping are unchanged. Protected reads are 0 and this
+  audit claims no model result or scientific authorization.
 - Execution boundary: implementation occurs only on prep branch
   `route-a-v3-v403-controls-oom-retry-prep-20260828`. It may be committed,
   tested and pushed there but cannot launch GPU work. Corrected SetFlow keeps

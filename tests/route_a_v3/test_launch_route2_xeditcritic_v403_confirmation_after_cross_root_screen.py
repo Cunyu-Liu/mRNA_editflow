@@ -305,10 +305,19 @@ def _training_semantics(runner_head: str) -> dict:
         "incremental_changed_training_semantic_paths_since_previous_successor": (
             list(launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
         ),
+        **launcher.controls_oom_retry_technical_baseline_binding(),
         "runner_git_head": runner_head,
         "training_git_head": runner_head,
-        "training_semantic_diff_paths_since_audited_successor_baseline": [],
-        "training_semantics_unchanged_since_audited_successor_baseline": True,
+        "training_semantic_diff_paths_since_audited_successor_baseline": (
+            list(
+                launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS
+            )
+        ),
+        "training_semantics_unchanged_since_audited_successor_baseline": False,
+        "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline": [],
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline": (
+            True
+        ),
         "repaired_screen_is_historical_provenance_only": True,
     }
 
@@ -519,6 +528,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                     + "\n"
                 )
             )
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(stdout="")
 
     monkeypatch.setattr(
@@ -531,14 +551,20 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
         receipt[
             "training_semantics_unchanged_since_audited_successor_baseline"
         ]
-        is True
+        is False
     )
+    assert receipt[
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline"
+    ] is True
     assert "training_semantics_unchanged" not in receipt
     assert receipt["historical_repaired_screen_provenance_git_head"] == (
         launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
     )
     assert receipt["audited_successor_semantic_baseline_git_head"] == (
         launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+    )
+    assert receipt["controls_oom_retry_technical_baseline_git_head"] == (
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
     )
     assert commands == [
         [
@@ -564,6 +590,15 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
             "diff",
             "--name-only",
             launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
+            launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ],
+        [
+            "git",
+            "diff",
+            "--name-only",
+            launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD,
             "c" * 40,
             "--",
             *launcher.TRAINING_SEMANTIC_PATHS,
@@ -593,6 +628,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                     + "\n"
                 )
             )
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(
             stdout="scripts/route_a_v3/train_route2_xeditcritic_v4.py\n"
         )
@@ -617,9 +663,15 @@ def test_committed_successor_head_preserves_audited_training_semantics(
     )
     assert receipt[
         "training_semantic_diff_paths_since_audited_successor_baseline"
-    ] == []
+    ] == list(launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS)
     assert receipt[
         "training_semantics_unchanged_since_audited_successor_baseline"
+    ] is False
+    assert receipt[
+        "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline"
+    ] == []
+    assert receipt[
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline"
     ] is True
     assert receipt["audited_successor_changed_training_semantic_paths"] == (
         list(launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS)
@@ -636,6 +688,33 @@ def test_committed_successor_head_preserves_audited_training_semantics(
     assert receipt["audited_successor_semantic_baseline_audit"] == str(
         launcher.TRAINING_SEMANTICS_BASELINE_AUDIT
     )
+    assert receipt["controls_oom_retry_technical_baseline_audit"] == str(
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+    )
+
+
+def test_runner_semantics_rejects_f1a_to_technical_baseline_path_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def drifted_technical_baseline(command_args, **kwargs):
+        start = command_args[3]
+        if start == launcher.TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD:
+            paths = launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+        elif start == launcher.TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD:
+            paths = launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS
+        elif start == launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD:
+            paths = launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS[
+                :-1
+            ]
+        else:
+            paths = ()
+        return SimpleNamespace(
+            stdout=("\n".join(paths) + "\n") if paths else ""
+        )
+
+    monkeypatch.setattr(launcher, "command", drifted_technical_baseline)
+    with pytest.raises(Exception, match="technical semantic paths"):
+        launcher.validate_runner_training_semantics("d" * 40)
 
 
 def test_training_semantics_reaudit_accepts_exact_v2_audit() -> None:
@@ -665,6 +744,53 @@ def test_training_semantics_reaudit_accepts_exact_v2_audit() -> None:
     assert launcher.TRAINING_SEMANTICS_BASELINE_AUDIT.name.endswith(
         "f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66.json"
     )
+
+
+def test_controls_oom_retry_technical_baseline_accepts_exact_audit() -> None:
+    audit = launcher.read_json(
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+    )
+    launcher.validate_controls_oom_retry_technical_baseline_audit(audit)
+    assert audit[
+        "changed_training_semantic_paths_from_f1a_to_technical_baseline"
+    ] == list(launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS)
+    assert audit["path_classification"] == (
+        launcher.CONTROLS_OOM_RETRY_PATH_CLASSIFICATION
+    )
+    assert audit["physical_gpu_indices"] == list(launcher.PHYSICAL_GPUS)
+    assert audit["free_memory_gate_added"] is False
+    assert audit["model_result_claimed"] is False
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    (
+        lambda audit: audit[
+            "changed_training_semantic_paths_from_f1a_to_technical_baseline"
+        ].pop(),
+        lambda audit: audit["path_classification"].update(
+            {
+                launcher.CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS[0]: (
+                    "MODEL_OBJECTIVE_CHANGED"
+                )
+            }
+        ),
+        lambda audit: audit.update(critic_model_forward_changed=True),
+        lambda audit: audit.update(free_memory_gate_added=True),
+        lambda audit: audit.update(control_physical_gpu_mapping_changed=True),
+    ),
+)
+def test_controls_oom_retry_technical_baseline_rejects_path_or_flag_drift(
+    mutate,
+) -> None:
+    audit = copy.deepcopy(
+        launcher.read_json(
+            launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+        )
+    )
+    mutate(audit)
+    with pytest.raises(Exception, match="OOM-retry technical"):
+        launcher.validate_controls_oom_retry_technical_baseline_audit(audit)
 
 
 def test_training_semantics_reaudit_rejects_path_or_classification_drift() -> None:
@@ -1028,7 +1154,22 @@ def test_authorization_is_trainer_and_posttraining_compatible(
     )
     assert authorization[
         "training_semantics_unchanged_since_audited_successor_baseline"
+    ] is False
+    assert authorization[
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline"
     ] is True
+    assert authorization["controls_oom_retry_technical_baseline_git_head"] == (
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+    )
+    assert authorization["controls_oom_retry_technical_baseline_audit"] == str(
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+    )
+    assert authorization[
+        "controls_oom_retry_technical_baseline_audit_status"
+    ] == launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
+    assert authorization["training_semantics"][
+        "controls_oom_retry_technical_baseline_git_head"
+    ] == launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
     assert "training_semantics_unchanged_from_repaired_screen" not in (
         authorization
     )
@@ -1090,6 +1231,22 @@ def test_authorization_rejects_historical_full_as_new_training_head(
             ),
         )
 
+    drifted_technical_baseline = _training_semantics(runner_head)
+    drifted_technical_baseline[
+        "controls_oom_retry_technical_baseline_git_head"
+    ] = "a" * 40
+    with pytest.raises(Exception, match="baseline or runner roles changed"):
+        launcher.build_confirmation_authorization(
+            gate,
+            launcher.load_and_validate_source_authorizations(gate),
+            _runner_receipt(runner_head),
+            drifted_technical_baseline,
+            runner_head=runner_head,
+            runner_verification_receipt_path_value=(
+                launcher.runner_verification_receipt_path(runner_head)
+            ),
+        )
+
 
 def test_schedule_is_exact_three_seeds_two_arms_on_fixed_gpu_zero_to_five(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -1119,6 +1276,15 @@ def test_schedule_is_exact_three_seeds_two_arms_on_fixed_gpu_zero_to_five(
     assert schedule["audited_successor_semantic_baseline_git_head"] == (
         launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
     )
+    assert schedule["controls_oom_retry_technical_baseline_git_head"] == (
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+    )
+    assert schedule["controls_oom_retry_technical_baseline_audit"] == str(
+        launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+    )
+    assert schedule[
+        "controls_oom_retry_technical_baseline_audit_status"
+    ] == launcher.CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
     assert [queue["physical_gpu_index"] for queue in schedule["gpu_queues"]] == list(
         launcher.PHYSICAL_GPUS
     )
@@ -1230,3 +1396,13 @@ def test_gate_and_provenance_validation_precede_one_shot_write_and_launch() -> N
         "process = spawn_scheduler_with_failure_evidence("
     )
     assert gate_validation < provenance_validation < attempt_write < scheduler_launch
+
+
+def test_launch_receipt_includes_both_f1a_and_oom_retry_baselines() -> None:
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    launch_source = source[source.index("    launch = {") :]
+    assert '"audited_successor_semantic_baseline_git_head"' in launch_source
+    assert '"audited_successor_semantic_baseline_audit"' in launch_source
+    assert (
+        "**controls_oom_retry_technical_baseline_binding()," in launch_source
+    )

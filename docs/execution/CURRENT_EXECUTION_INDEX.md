@@ -214,6 +214,12 @@ authorization/log/gate roots与 attempt IDs，六个 controls 固定分配到物
 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` 仅改变 allocator 行为，不改变模型数学或科学协议。
 launcher/scheduler 禁止读取、排序、筛选或等待空闲显存，`free_memory_gate_applied=false` 必须贯穿全部证据。
 
+该重试的独立技术语义基线为 `793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110`，对应审计是
+`audits/route_a_v3_route2_xeditcritic_v403_controls_oom_retry_training_semantics_793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110.json`。
+它保留并继续验证 f1a v2 科学/训练语义审计；f1a→该基线在冻结 pathspec 下只允许 controls
+launcher 与 scheduler 两个路径，之后到真实 confirmation runner HEAD 的同 pathspec diff 必须为空。
+这是 protected reads=0 的 CPU-native 技术执行证据，不授权同 family 重试、不授权科学后继，也不是模型结果。
+
 六 controls 精确终态后，transition 才一次消费 C0、full 与六 controls 的八份 summary 并执行 mixed-provenance
 gate；历史 v1 例外严格只有 C0=937 和 full=f34。screen PASS 后，confirmation 的三个 seed
 20260908/20260909/20260910 各训练 full 与 matched C0，共六 job 六卡并发。后续 atomic TEST、三卡 refit 和

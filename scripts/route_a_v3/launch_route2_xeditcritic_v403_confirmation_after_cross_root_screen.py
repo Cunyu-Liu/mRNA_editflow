@@ -45,6 +45,50 @@ TRAINING_SEMANTICS_BASELINE_AUDIT = (
     / "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
     "training_semantics_reaudit_f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66.json"
 )
+CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD = (
+    "793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110"
+)
+CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditcritic_v403_controls_oom_retry_"
+    "training_semantics_793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110.json"
+)
+CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_SCHEMA = (
+    "route_a_v3_route2_xeditcritic_v403_controls_oom_retry_"
+    "training_semantics.v1"
+)
+CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS = (
+    "XEDITCRITIC_V403_CONTROLS_OOM_RETRY_TRAINING_SEMANTICS_PASS"
+)
+CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS = (
+    "scripts/route_a_v3/launch_route2_xeditcritic_v403_controls_after_full.py",
+    "scripts/route_a_v3/run_route2_xeditcritic_v403_control_recovery_scheduler.py",
+)
+CONTROLS_OOM_RETRY_PATH_CLASSIFICATION = {
+    CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS[0]: (
+        "IMMUTABLE_OOM_LINEAGE_NEW_INDEPENDENT_RETRY_NO_VRAM_GATE"
+    ),
+    CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS[1]: (
+        "FIXED_TWO_WAVE_ALLOCATOR_AND_PACKAGE_FIRST_FAILURE"
+    ),
+}
+CONTROLS_OOM_RETRY_UNCHANGED_FLAGS = {
+    "critic_model_implementation_changed": False,
+    "critic_trainer_code_changed": False,
+    "critic_model_architecture_changed": False,
+    "critic_model_forward_changed": False,
+    "critic_loss_changed": False,
+    "critic_scientific_config_changed": False,
+    "critic_training_data_changed": False,
+    "critic_sampler_changed": False,
+    "critic_physical_or_effective_batch_changed": False,
+    "critic_seed_cohort_changed": False,
+    "critic_optimizer_objective_changed": False,
+    "critic_optimizer_update_budget_changed": False,
+    "scientific_thresholds_changed": False,
+    "control_physical_gpu_mapping_changed": False,
+    "free_memory_gate_added": False,
+}
 TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
     "core/route2_experiment_ledger.py",
     "core/route2_xeditcritic_gate_v4.py",
@@ -971,6 +1015,99 @@ def validate_training_semantics_baseline_audit(
     )
 
 
+def validate_controls_oom_retry_technical_baseline_audit(
+    audit: Mapping[str, Any],
+) -> None:
+    consumer_review = audit.get("confirmation_consumer_review")
+    gpu_assignment = audit.get("control_run_id_to_physical_gpu_index")
+    unchanged_flags_match = all(
+        audit.get(name) is expected
+        for name, expected in CONTROLS_OOM_RETRY_UNCHANGED_FLAGS.items()
+    )
+    require(
+        audit.get("schema_version")
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_SCHEMA
+        and audit.get("status")
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
+        and audit.get("previous_audited_successor_semantic_baseline_git_head")
+        == TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        and audit.get("previous_audited_successor_semantic_baseline_audit")
+        == str(TRAINING_SEMANTICS_BASELINE_AUDIT.relative_to(WORKTREE))
+        and audit.get("controls_oom_retry_technical_baseline_git_head")
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+        and audit.get("frozen_training_semantic_pathspec")
+        == list(TRAINING_SEMANTIC_PATHS)
+        and tuple(
+            audit.get(
+                "changed_training_semantic_paths_from_f1a_to_technical_baseline",
+                [],
+            )
+        )
+        == CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS
+        and audit.get(
+            "changed_training_semantic_paths_from_f1a_to_technical_baseline"
+        )
+        == sorted(
+            audit.get(
+                "changed_training_semantic_paths_from_f1a_to_technical_baseline",
+                [],
+            )
+        )
+        and audit.get("path_classification")
+        == CONTROLS_OOM_RETRY_PATH_CLASSIFICATION
+        and audit.get("immutable_oom_terminal_lineage_added") is True
+        and audit.get("new_independent_retry_family_added") is True
+        and audit.get("same_family_retry_authorized") is False
+        and audit.get("successor_authorized_by_this_audit") is False
+        and audit.get("fixed_two_wave_scheduler_added") is True
+        and audit.get("pytorch_allocator_environment_added") is True
+        and audit.get("package_first_failure_semantics_preserved") is True
+        and audit.get("configured_gpu_existence_only_policy_preserved") is True
+        and audit.get("physical_gpu_indices") == list(PHYSICAL_GPUS)
+        and gpu_assignment
+        == {
+            run_id: gpu
+            for gpu, run_id in enumerate(CONTROL_RUN_IDS)
+        }
+        and unchanged_flags_match
+        and audit.get("baseline_scope")
+        == "TECHNICAL_EXECUTION_SEMANTICS_ONLY"
+        and audit.get("old_f1a_audit_preserved_and_validated") is True
+        and isinstance(consumer_review, Mapping)
+        and consumer_review.get("path")
+        == (
+            "scripts/route_a_v3/"
+            "launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py"
+        )
+        and consumer_review.get("included_in_frozen_training_semantic_pathspec")
+        is False
+        and consumer_review.get(
+            "expected_semantic_diff_from_technical_baseline_to_runner"
+        )
+        == []
+        and audit.get("model_result_claimed") is False
+        and audit.get("submission_ready") is False,
+        "Critic controls OOM-retry technical training-semantics audit is absent or invalid",
+    )
+    require_zero_protected_reads(
+        audit, label="Critic controls OOM-retry technical semantics audit"
+    )
+
+
+def controls_oom_retry_technical_baseline_binding() -> dict[str, str]:
+    return {
+        "controls_oom_retry_technical_baseline_git_head": (
+            CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+        ),
+        "controls_oom_retry_technical_baseline_audit": str(
+            CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+        ),
+        "controls_oom_retry_technical_baseline_audit_status": (
+            CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
+        ),
+    }
+
+
 def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
@@ -983,6 +1120,12 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     )
     baseline_audit = read_json(TRAINING_SEMANTICS_BASELINE_AUDIT)
     validate_training_semantics_baseline_audit(baseline_audit)
+    technical_baseline_audit = read_json(
+        CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT
+    )
+    validate_controls_oom_retry_technical_baseline_audit(
+        technical_baseline_audit
+    )
     audited_changed = command(
         [
             "git",
@@ -1016,12 +1159,29 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "Critic incremental successor hardening paths differ from the exact Git diff: "
         + ", ".join(incremental_changed),
     )
-    changed = command(
+    technical_baseline_changed = command(
         [
             "git",
             "diff",
             "--name-only",
             TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
+            CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD,
+            "--",
+            *TRAINING_SEMANTIC_PATHS,
+        ]
+    ).stdout.splitlines()
+    require(
+        tuple(technical_baseline_changed)
+        == CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS,
+        "Critic controls OOM-retry technical semantic paths differ from the "
+        "exact Git diff: " + ", ".join(technical_baseline_changed),
+    )
+    changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD,
             current_head,
             "--",
             *TRAINING_SEMANTIC_PATHS,
@@ -1029,8 +1189,8 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     ).stdout.splitlines()
     require(
         not changed,
-        "Critic confirmation training semantics changed after the audited "
-        "successor safety baseline: " + ", ".join(changed),
+        "Critic confirmation training semantics changed after the controls "
+        "OOM-retry technical baseline: " + ", ".join(changed),
     )
     return {
         "historical_repaired_screen_provenance_git_head": (
@@ -1049,6 +1209,7 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "audited_successor_semantic_baseline_audit_status": baseline_audit[
             "status"
         ],
+        **controls_oom_retry_technical_baseline_binding(),
         "runner_git_head": current_head,
         "training_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
@@ -1056,8 +1217,16 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "incremental_changed_training_semantic_paths_since_previous_successor": (
             incremental_changed
         ),
-        "training_semantic_diff_paths_since_audited_successor_baseline": changed,
-        "training_semantics_unchanged_since_audited_successor_baseline": True,
+        "training_semantic_diff_paths_since_audited_successor_baseline": (
+            technical_baseline_changed
+        ),
+        "training_semantics_unchanged_since_audited_successor_baseline": False,
+        "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline": (
+            changed
+        ),
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline": (
+            True
+        ),
         "repaired_screen_is_historical_provenance_only": True,
     }
 
@@ -1282,11 +1451,31 @@ def build_confirmation_authorization(
         )
         == list(TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
         and training_semantics.get(
+            "controls_oom_retry_technical_baseline_git_head"
+        )
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+        and training_semantics.get(
+            "controls_oom_retry_technical_baseline_audit"
+        )
+        == str(CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT)
+        and training_semantics.get(
+            "controls_oom_retry_technical_baseline_audit_status"
+        )
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
+        and training_semantics.get(
             "training_semantic_diff_paths_since_audited_successor_baseline"
+        )
+        == list(CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS)
+        and training_semantics.get(
+            "training_semantics_unchanged_since_audited_successor_baseline"
+        )
+        is False
+        and training_semantics.get(
+            "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline"
         )
         == []
         and training_semantics.get(
-            "training_semantics_unchanged_since_audited_successor_baseline"
+            "training_semantics_unchanged_since_controls_oom_retry_technical_baseline"
         )
         is True
         and training_semantics.get(
@@ -1338,6 +1527,7 @@ def build_confirmation_authorization(
         "audited_successor_semantic_baseline_audit": str(
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
+        **controls_oom_retry_technical_baseline_binding(),
         "training_semantics": dict(training_semantics),
         "source_authorization_paths": {
             run_id: gate["cross_root_transition"]["arm_sources"][run_id][
@@ -1376,7 +1566,10 @@ def build_confirmation_authorization(
             "exact_runner_head_verified": True,
         },
         "scientific_thresholds_changed": False,
-        "training_semantics_unchanged_since_audited_successor_baseline": True,
+        "training_semantics_unchanged_since_audited_successor_baseline": False,
+        "training_semantics_unchanged_since_controls_oom_retry_technical_baseline": (
+            True
+        ),
         "repaired_screen_is_historical_provenance_only": True,
         "additional_seed_authorized": False,
         "development_test_authorized": False,
@@ -1567,6 +1760,7 @@ def build_schedule(
         "audited_successor_semantic_baseline_audit": str(
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
+        **controls_oom_retry_technical_baseline_binding(),
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "eligible_components": ["critic"],
@@ -1816,6 +2010,7 @@ def run(current_head: str) -> dict[str, Any]:
         "audited_successor_semantic_baseline_audit": str(
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
+        **controls_oom_retry_technical_baseline_binding(),
         "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
         "historical_full_git_head": REPAIRED_SCREEN_PROVENANCE_GIT_HEAD,
         "control_runner_git_head": current_head,

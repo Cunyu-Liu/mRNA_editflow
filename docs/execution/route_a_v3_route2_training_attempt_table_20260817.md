@@ -4338,3 +4338,10 @@ optimizer updates 与科学 gate 均不变，不查询 `memory.free`，不设显
 prep 分支只允许 CPU-native 工程测试和 push。必须等活跃 SetFlow 与旧 Critic package 精确终态，许可主分支
 fast-forward 到新 clean pushed HEAD，并重新通过完整八组 focused、精确 96 V3.3.2 与双 receipts 后，才允许
 创建一次新的 retry1 GPU family。当前没有 retry 性能结果，也不构成 Critic readiness 或优秀 Development 结论。
+
+技术语义基线固定为 `793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110`，追踪审计为
+`audits/route_a_v3_route2_xeditcritic_v403_controls_oom_retry_training_semantics_793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110.json`。
+旧 f1a v2 audit 继续单独校验；冻结 Critic pathspec 下 f1a→基线精确只有 controls launcher/scheduler
+两路径，基线→confirmation runner 必须为空。该证据只闭合 OOM lineage、独立 retry、两个固定 waves、
+allocator 与 package-first-failure 执行语义；模型、forward/loss、科学 config、数据、sampler、batch、seed、update budget、
+门槛与 GPU0–5 映射均不变，不新增显存 gate，protected reads=0，不是参数更新 attempt 或模型结果。
