@@ -196,7 +196,8 @@ single-mode，不追加 seed，不预选 confirmation checkpoint。
 - `launch_route2_xeditsetflow_v403_recovered_confirmation_posttraining.py`
 
 上面两个 V4.0.3 recovered launcher 现在仅保留为历史实现，已被冻结 NO-GO 禁用。未来只有 S1 screen
-精确 PASS 才可实现并启动新 S1-bound confirmation；其训练 schedule 与 posttraining schedule 仍必须分离。
+精确 PASS 且新 current runner 完成正式准入后，才可启动已实现的新 S1-bound confirmation；其训练 schedule
+与 posttraining schedule 仍必须分离。
 Guidance 只能消费真正达到 `XEDITSETFLOW_V4_G0_READY` 的 posttraining schedule，而不是 screen PASS。
 
 ### Critic
