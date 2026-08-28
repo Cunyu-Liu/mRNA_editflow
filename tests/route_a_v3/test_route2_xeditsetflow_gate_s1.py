@@ -3,6 +3,9 @@ from __future__ import annotations
 import pytest
 
 from core.route2_xeditsetflow_gate_s1 import (
+    CONFIRMATION_BOOTSTRAP_REPLICATES,
+    CONFIRMATION_BOOTSTRAP_SEED,
+    CONFIRMATION_BOOTSTRAP_STATISTIC,
     OBJECTIVE_IDENTITY,
     OBJECTIVE_WEIGHT,
     XEditSetFlowGateS1Error,
@@ -11,6 +14,10 @@ from core.route2_xeditsetflow_gate_s1 import (
     select_checkpoint_s1,
     validate_checkpoint_summary_identity_s1,
 )
+
+
+TRAINING_HEAD = "a" * 40
+VALIDATION_HEAD = "b" * 40
 
 
 CONFIG = {
@@ -39,7 +46,7 @@ def _summary(
         "trunk_forward_state_count": 100,
         "mode_head_forward_state_count": 100 * modes,
     }
-    return {
+    summary = {
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_checkpoint_validation.v1",
         "status": "TERMINAL_XEDITSETFLOW_V4_S1_CHECKPOINT_VALIDATION_COMPLETE",
         "g0_status": "FLOW_G0_READY",
@@ -48,6 +55,8 @@ def _summary(
         "selectable": run_id == "v4_s1_full",
         "mode_count": modes,
         "seed": seed,
+        "parameter_initialization_seed": seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
         "checkpoint_pass": checkpoint_pass,
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
@@ -83,6 +92,22 @@ def _summary(
             "replay_generation": compute,
         },
         "precision": "BF16",
+        "physical_gpu_index": 0,
+        "torch_device": "cuda:0",
+        "device_name": "NVIDIA A100-SXM4-80GB",
+        "cuda_available": True,
+        "bf16_supported": True,
+        "cuda_device_index": 0,
+        "cuda_device_name": "NVIDIA A100-SXM4-80GB",
+        "cuda_device_uuid": "GPU-validation",
+        "declared_physical_gpu_uuid": "validation",
+        "cuda_parent_uuid_matches_declared_physical_index": True,
+        "training_torch_device": "cuda:1",
+        "training_device_name": "NVIDIA A100-SXM4-80GB",
+        "training_precision": "BF16",
+        "training_cuda_available": True,
+        "training_bf16_supported": True,
+        "training_cpu_fallback_used": False,
         "wall_time_seconds": 1.0,
         "peak_vram_bytes": 1,
         "cpu_fallback_used": False,
@@ -92,13 +117,22 @@ def _summary(
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
         "checkpoint_path": (
-            f"/tmp/seed_{seed}/v4_s1_full/pass_{checkpoint_pass}.pt"
+            f"/tmp/s1_confirmation/seed_{seed}/v4_s1_full/pass_{checkpoint_pass}.pt"
         ),
-        "training_summary_path": f"/tmp/seed_{seed}/training_summary.json",
+        "training_summary_path": (
+            f"/tmp/s1_confirmation/seed_{seed}/v4_s1_full/training_summary.json"
+        ),
         "validation_summary_path": (
-            f"/tmp/seed_{seed}/pass_{checkpoint_pass}/validation_summary.json"
+            f"/tmp/s1_confirmation/seed_{seed}/outcome_free_validation_generation/"
+            f"v4_s1_full/pass_{checkpoint_pass}/validation_summary.json"
         ),
+        "training_git_head": TRAINING_HEAD,
+        "validation_git_head": VALIDATION_HEAD,
+        "training_and_validation_git_heads_differ": True,
     }
+    if run_stage == "CONFIRMATION":
+        summary["selected_model"] = "v4_s1_full"
+    return summary
 
 
 def test_s1_identity_and_selection_are_exact() -> None:
@@ -171,11 +205,28 @@ def _confirmation_config(seed: int) -> dict:
         "additional_seed_authorized": False,
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "confirmation_runner_git_head": TRAINING_HEAD,
+        "output_root": f"/tmp/s1_confirmation/seed_{seed}",
+        "validation_output_root": (
+            f"/tmp/s1_confirmation/seed_{seed}/outcome_free_validation_generation"
+        ),
         "screen_gate_path": "/tmp/s1_screen_gate.json",
         "screen_runner_git_head": (
             "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
         ),
         "screen_selected_checkpoint_pass": 8,
+        "screen_provenance": {
+            "screen_runner_git_head": (
+                "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+            ),
+            "screen_gate_path": "/tmp/s1_screen_gate.json",
+            "screen_selected_checkpoint_pass": 8,
+            "checkpoint_decisions": {
+                "v4_s1_full": {"selected_checkpoint_pass": 8},
+                "v4_s1_single_mode": {"selected_checkpoint_pass": 6},
+            },
+            "role": "BOUND_SCREEN_FULL_AND_SINGLE_MODE_PROVENANCE_ONLY",
+        },
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
         "development_test_outcome_reads": 0,
@@ -257,8 +308,26 @@ def test_s1_three_seed_confirmation_requires_exact_full_only_package() -> None:
     assert gate["objective_identity"] == OBJECTIVE_IDENTITY
     assert gate["guidance_authorized"] is False
     assert gate["development_test_outcome_reads"] == 0
+    assert gate["screen_selected_checkpoint_pass"] == 8
+    assert gate["screen_provenance"] == configs[20260912]["screen_provenance"]
+    assert gate["confirmation_runner_git_head"] == TRAINING_HEAD
+    assert gate["training_git_head"] == TRAINING_HEAD
+    assert gate["validation_git_head"] == VALIDATION_HEAD
+    assert gate["training_and_validation_git_heads_differ"] is True
     assert all(
-        result["selected_checkpoint_path"].endswith("/v4_s1_full/pass_4.pt")
+        result["selected_checkpoint_path"]
+        == f"/tmp/s1_confirmation/seed_{seed}/v4_s1_full/pass_4.pt"
+        for seed, result in (
+            (int(seed), result) for seed, result in gate["seed_results"].items()
+        )
+    )
+    assert all(
+        result["paired_bootstrap_recovery_improvement"]["statistic"]
+        == CONFIRMATION_BOOTSTRAP_STATISTIC
+        and result["paired_bootstrap_recovery_improvement"]["replicates"]
+        == CONFIRMATION_BOOTSTRAP_REPLICATES
+        and result["paired_bootstrap_recovery_improvement"]["seed"]
+        == CONFIRMATION_BOOTSTRAP_SEED
         for result in gate["seed_results"].values()
     )
     summaries.pop(20260914)
@@ -302,7 +371,103 @@ def test_s1_confirmation_rejects_protected_or_checkpoint_lineage_drift() -> None
         )
     configs[20260912]["screen_selected_checkpoint_pass"] = 8
     summaries[20260912][4]["checkpoint_path"] = "/tmp/legacy/v4_full/pass_4.pt"
-    with pytest.raises(XEditSetFlowGateS1Error, match="checkpoint path"):
+    with pytest.raises(XEditSetFlowGateS1Error, match="artifact path"):
+        adjudicate_setflow_confirmation_s1(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("parameter_initialization_seed", 20260913, "initialization"),
+        (
+            "parameter_initialization_seed_applied_before_model_construction",
+            False,
+            "initialization",
+        ),
+        ("cuda_available", False, "Validation CUDA/A100/BF16"),
+        ("bf16_supported", False, "Validation CUDA/A100/BF16"),
+        ("cpu_fallback_used", True, "provenance changed"),
+        ("precision", "FP32", "provenance changed"),
+        ("cuda_parent_uuid_matches_declared_physical_index", False, "Validation CUDA/A100/BF16"),
+        ("training_cuda_available", False, "training CUDA/A100/BF16"),
+        ("training_bf16_supported", False, "training CUDA/A100/BF16"),
+        ("training_cpu_fallback_used", True, "training CUDA/A100/BF16"),
+    ),
+)
+def test_s1_confirmation_gate_rejects_initialization_or_cuda_evidence_drift(
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    configs = {
+        seed: _confirmation_config(seed)
+        for seed in (20260912, 20260913, 20260914)
+    }
+    summaries = _confirmation_summaries()
+    summaries[20260912][4][field] = value
+    with pytest.raises(XEditSetFlowGateS1Error, match=message):
+        adjudicate_setflow_confirmation_s1(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "wrong_path"),
+    (
+        (
+            "checkpoint_path",
+            "/tmp/s1_confirmation/seed_20260913/v4_s1_full/pass_4.pt",
+        ),
+        (
+            "training_summary_path",
+            "/tmp/s1_confirmation/seed_20260913/v4_s1_full/training_summary.json",
+        ),
+        (
+            "validation_summary_path",
+            "/tmp/s1_confirmation/seed_20260913/outcome_free_validation_generation/"
+            "v4_s1_full/pass_4/validation_summary.json",
+        ),
+    ),
+)
+def test_s1_confirmation_gate_rejects_wrong_seed_canonical_artifact_paths(
+    field: str,
+    wrong_path: str,
+) -> None:
+    configs = {
+        seed: _confirmation_config(seed)
+        for seed in (20260912, 20260913, 20260914)
+    }
+    summaries = _confirmation_summaries()
+    summaries[20260912][4][field] = wrong_path
+    with pytest.raises(XEditSetFlowGateS1Error, match="artifact path"):
+        adjudicate_setflow_confirmation_s1(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+
+
+def test_s1_confirmation_gate_rejects_training_or_validation_head_drift() -> None:
+    configs = {
+        seed: _confirmation_config(seed)
+        for seed in (20260912, 20260913, 20260914)
+    }
+    summaries = _confirmation_summaries()
+    summaries[20260912][4]["training_git_head"] = "c" * 40
+    with pytest.raises(XEditSetFlowGateS1Error, match="Git lineage"):
+        adjudicate_setflow_confirmation_s1(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+    summaries = _confirmation_summaries()
+    summaries[20260912][4]["validation_git_head"] = "not-a-head"
+    with pytest.raises(XEditSetFlowGateS1Error, match="Git lineage"):
+        adjudicate_setflow_confirmation_s1(
+            configs, summaries, _f2_summary([0.29] * 891)
+        )
+    summaries = _confirmation_summaries()
+    summaries[20260912][4]["validation_git_head"] = "c" * 40
+    summaries[20260912][4]["training_and_validation_git_heads_differ"] = True
+    with pytest.raises(XEditSetFlowGateS1Error, match="across 12 validations"):
         adjudicate_setflow_confirmation_s1(
             configs, summaries, _f2_summary([0.29] * 891)
         )

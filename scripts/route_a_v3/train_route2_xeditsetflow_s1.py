@@ -204,6 +204,11 @@ def record_failed_attempt_if_started_s1(
             for key in (
                 "objective_identity",
                 "cross_state_candidate_mode_responsibility_weight",
+                "parameter_initialization_seed",
+                "parameter_initialization_seed_applied_before_model_construction",
+                "cuda_available",
+                "bf16_supported",
+                "cpu_fallback_used",
                 "active_responsibility_constraint_count",
                 "active_responsibility_constraint_count_status",
                 "active_responsibility_candidate_count",
@@ -339,6 +344,24 @@ def setflow_training_stage_seed_s1(
     return run_stage, seed
 
 
+def build_seeded_setflow_model_s1(
+    config: Mapping[str, Any],
+    vocabs: Mapping[str, Any],
+    *,
+    run_id: str,
+    training_seed: int,
+) -> tuple[torch.nn.Module, dict[str, Any]]:
+    """Apply the frozen seed before any trainable parameter is constructed."""
+
+    _require(
+        training_seed in {SCREEN_SEED, *CONFIRMATION_SEEDS},
+        "SetFlow V4 S1 parameter initialization seed is undeclared",
+    )
+    torch.manual_seed(training_seed)
+    torch.cuda.manual_seed_all(training_seed)
+    return build_setflow_screen_model_s1(config, vocabs, run_id=run_id)
+
+
 def training_summary_identity_s1(
     config: Mapping[str, Any], *, run_id: str
 ) -> dict[str, Any]:
@@ -356,6 +379,8 @@ def training_summary_identity_s1(
         ),
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "parameter_initialization_seed": training_seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
     }
 
 
@@ -435,6 +460,12 @@ def require_s1_confirmation_launch_authorization(
         and authorization.get("status") == CONFIRMATION_AUTHORIZATION_STATUS
         and authorization.get("authorized_git_head") == current_git_head,
         "SetFlow V4 S1 confirmation exact-HEAD authorization is absent",
+    )
+    _require(
+        config.get("confirmation_runner_git_head")
+        == current_git_head
+        == authorization.get("authorized_git_head"),
+        "SetFlow V4 S1 confirmation config, runner, and authorization Git HEAD disagree",
     )
     _require(
         authorization.get("authorized_run_ids") == [CONFIRMATION_RUN_ID]
@@ -573,8 +604,11 @@ def train(
         ),
     )
     cache = SourceTokenCacheIndexV3(cache_payload)
-    model, capacity = build_setflow_screen_model_s1(
-        config, vocabs, run_id=run_id
+    model, capacity = build_seeded_setflow_model_s1(
+        config,
+        vocabs,
+        run_id=run_id,
+        training_seed=training_seed,
     )
     expected_preflight_count = int(
         preflight[
@@ -619,8 +653,6 @@ def train(
         seed=training_seed,
         repeat_cap=int(config["data_geometry"]["maximum_source_repeats_per_pass"]),
     )
-    torch.manual_seed(training_seed)
-    torch.cuda.manual_seed_all(training_seed)
     model = model.to(device)
     _require(next(model.parameters()).is_cuda, "SetFlow V4 S1 model parameters left CUDA")
     optimizer = torch.optim.AdamW(
@@ -643,6 +675,8 @@ def train(
                 "device": str(device),
                 "device_name": device_name,
                 "authorized_git_head": current_head,
+                "parameter_initialization_seed": training_seed,
+                "parameter_initialization_seed_applied_before_model_construction": True,
             },
             indent=2,
             sort_keys=True,
@@ -674,6 +708,11 @@ def train(
         + frozen_pretrained_count,
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "parameter_initialization_seed": training_seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
+        "cuda_available": True,
+        "bf16_supported": True,
+        "cpu_fallback_used": False,
         "active_responsibility_constraint_count": 0,
         "active_responsibility_constraint_count_status": "PENDING_TRAINING",
     }
@@ -705,8 +744,13 @@ def train(
         "training_sampling_mode": "TASK_SOURCE_BALANCED_SOURCE_LEVEL",
         "loss_aggregation_mode": "SOURCE_AND_UNIQUE_TERMINAL_CANDIDATE_EQUAL_WEIGHT",
         "seed": training_seed,
+        "parameter_initialization_seed": training_seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
         "physical_gpu_index": physical_gpu_index,
         "device": str(device),
+        "cuda_available": True,
+        "bf16_supported": True,
+        "cpu_fallback_used": False,
         "optimizer_name": "AdamW",
         "optimizer_fused": True,
         "training_precision": "BF16",
@@ -725,6 +769,8 @@ def train(
         objective_details={
             "objective_identity": OBJECTIVE_IDENTITY,
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+            "parameter_initialization_seed": training_seed,
+            "parameter_initialization_seed_applied_before_model_construction": True,
             "active_responsibility_constraint_count": 0,
             "active_responsibility_constraint_count_status": "PENDING_TRAINING",
             "active_responsibility_candidate_count": 0,
@@ -903,6 +949,8 @@ def train(
                         active_responsibility_occurrence_count
                     ),
                     "seed": training_seed,
+                    "parameter_initialization_seed": training_seed,
+                    "parameter_initialization_seed_applied_before_model_construction": True,
                     "completed_pass": pass_number,
                     "model_state_dict": model.state_dict(),
                     "vocabs": vocabs,
@@ -910,6 +958,13 @@ def train(
                     "source_token_cache_path": str(config["source_token_cache_path"]),
                     "update_geometry": update_geometry,
                     "selection_status": "PENDING_TERMINAL_OUTCOME_FREE_VALIDATION_GENERATION",
+                    "physical_gpu_index": physical_gpu_index,
+                    "torch_device": str(device),
+                    "device_name": device_name,
+                    "training_precision": "BF16",
+                    "cuda_available": True,
+                    "bf16_supported": True,
+                    "cpu_fallback_used": False,
                     "critic_used": False,
                     "independent_evaluator_used": False,
                     "development_test_outcome_reads": 0,
@@ -968,6 +1023,8 @@ def train(
             active_responsibility_occurrence_count
         ),
         "seed": training_seed,
+        "parameter_initialization_seed": training_seed,
+        "parameter_initialization_seed_applied_before_model_construction": True,
         "train_projection_candidate_row_count": len(train_rows),
         "train_source_count": len(train_records),
         "train_inventory": train_inventory,
@@ -991,6 +1048,8 @@ def train(
         "torch_device": str(device),
         "device_name": device_name,
         "training_precision": "BF16",
+        "cuda_available": True,
+        "bf16_supported": True,
         "cpu_fallback_used": False,
         "critic_used": False,
         "independent_evaluator_used": False,
@@ -1014,6 +1073,11 @@ def train(
                 "cross_state_candidate_mode_responsibility_weight": (
                     OBJECTIVE_WEIGHT
                 ),
+                "parameter_initialization_seed": training_seed,
+                "parameter_initialization_seed_applied_before_model_construction": True,
+                "cuda_available": True,
+                "bf16_supported": True,
+                "cpu_fallback_used": False,
                 "active_responsibility_constraint_count": (
                     active_responsibility_constraint_count
                 ),
@@ -1029,6 +1093,11 @@ def train(
     completed_objective_details = {
             "objective_identity": OBJECTIVE_IDENTITY,
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+            "parameter_initialization_seed": training_seed,
+            "parameter_initialization_seed_applied_before_model_construction": True,
+            "cuda_available": True,
+            "bf16_supported": True,
+            "cpu_fallback_used": False,
             "active_responsibility_constraint_count": (
                 active_responsibility_constraint_count
             ),

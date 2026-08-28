@@ -22,6 +22,7 @@ from scripts.route_a_v3.train_route2_xeditsetflow_s1 import (
     SCREEN_RUNNER_GIT_HEAD,
     SetFlowTrainingS1Error,
     _write_atomic_terminal_s1,
+    build_seeded_setflow_model_s1,
     complete_attempt_then_publish_training_summary_s1,
     derive_training_update_geometry_s1,
     pass_complete_alive_event_s1,
@@ -49,6 +50,7 @@ def _confirmation_config(seed: int = 20260912) -> dict:
         "additional_seed_authorized": False,
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "confirmation_runner_git_head": "a" * 40,
         "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
         "screen_gate_path": "/exact/screen_gate.json",
         "screen_selected_checkpoint_pass": 8,
@@ -227,6 +229,54 @@ def test_s1_stage_seed_contract_keeps_screen_and_allows_only_three_full_confirma
         setflow_training_stage_seed_s1(changed, run_id="v4_s1_full")
 
 
+def test_s1_parameter_seed_is_applied_before_model_construction_for_all_confirmation_seeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    events: list[tuple[str, int | str]] = []
+
+    monkeypatch.setattr(
+        trainer.torch,
+        "manual_seed",
+        lambda seed: events.append(("cpu_seed", seed)),
+    )
+    monkeypatch.setattr(
+        trainer.torch.cuda,
+        "manual_seed_all",
+        lambda seed: events.append(("cuda_seed", seed)),
+    )
+
+    def fake_build(_config, _vocabs, *, run_id):
+        events.append(("build", run_id))
+        return object(), {"trainable_parameter_count": 1}
+
+    monkeypatch.setattr(trainer, "build_setflow_screen_model_s1", fake_build)
+    for seed in CONFIRMATION_SEEDS:
+        events.clear()
+        model, capacity = build_seeded_setflow_model_s1(
+            _confirmation_config(seed),
+            {},
+            run_id="v4_s1_full",
+            training_seed=seed,
+        )
+        assert model is not None
+        assert capacity == {"trainable_parameter_count": 1}
+        assert events == [
+            ("cpu_seed", seed),
+            ("cuda_seed", seed),
+            ("build", "v4_s1_full"),
+        ]
+    with pytest.raises(SetFlowTrainingS1Error, match="undeclared"):
+        build_seeded_setflow_model_s1(
+            _confirmation_config(),
+            {},
+            run_id="v4_s1_full",
+            training_seed=20260915,
+        )
+    source = SCRIPT.read_text()
+    assert source.count("torch.manual_seed(training_seed)") == 1
+    assert source.count("torch.cuda.manual_seed_all(training_seed)") == 1
+
+
 def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_provenance() -> None:
     config = _confirmation_config()
     authorization = _confirmation_authorization()
@@ -250,6 +300,18 @@ def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_prov
         training_seed=20260912,
         current_git_head="a" * 40,
     )
+    wrong_config_head = dict(config)
+    wrong_config_head["confirmation_runner_git_head"] = "b" * 40
+    with pytest.raises(SetFlowTrainingS1Error, match="Git HEAD disagree"):
+        require_s1_confirmation_launch_authorization(
+            wrong_config_head,
+            authorization,
+            preflight,
+            audit,
+            run_id="v4_s1_full",
+            training_seed=20260912,
+            current_git_head="a" * 40,
+        )
     for field, value in (
         ("schema_version", AUTHORIZATION_SCHEMA),
         ("authorized_seeds", [20260912]),
@@ -282,6 +344,8 @@ def test_s1_confirmation_summary_identity_is_explicit_and_not_screen_checkpoint_
         "selected_model": "v4_s1_full",
         "objective_identity": OBJECTIVE_IDENTITY,
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "parameter_initialization_seed": 20260914,
+        "parameter_initialization_seed_applied_before_model_construction": True,
     }
     assert "checkpoint_pass" not in identity
 
@@ -300,12 +364,19 @@ def test_s1_attempt_json_retains_objective_identity_weight_and_count(
         objective_details={
             "objective_identity": OBJECTIVE_IDENTITY,
             "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+            "parameter_initialization_seed": 20260911,
+            "parameter_initialization_seed_applied_before_model_construction": True,
             "active_responsibility_constraint_count": 123,
         },
     )
     payload = json.loads(attempt.read_text())
     assert payload["objective_identity"] == OBJECTIVE_IDENTITY
     assert payload["cross_state_candidate_mode_responsibility_weight"] == .05
+    assert payload["parameter_initialization_seed"] == 20260911
+    assert (
+        payload["parameter_initialization_seed_applied_before_model_construction"]
+        is True
+    )
     assert payload["active_responsibility_constraint_count"] == 123
 
 

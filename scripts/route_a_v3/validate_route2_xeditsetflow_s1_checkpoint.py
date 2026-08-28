@@ -185,7 +185,8 @@ def require_training_package_terminal_s1(
             f"SetFlow V4 S1 training package is not fully terminal: {required_run}",
         )
         _require(
-            summary.get("run_stage", "SCREEN") == run_stage
+            summary.get("run_id") == required_run
+            and summary.get("run_stage", "SCREEN") == run_stage
             and int(summary.get("seed", -1)) == training_seed,
             f"SetFlow V4 S1 training stage or seed changed: {required_run}",
         )
@@ -208,9 +209,56 @@ def require_training_package_terminal_s1(
             f"SetFlow V4 S1 objective provenance changed: {required_run}",
         )
         _require(
-            set(summary.get("saved_checkpoint_paths", {}))
-            == {"4", "6", "8", "10"},
-            f"SetFlow V4 S1 checkpoint package is incomplete: {required_run}",
+            summary.get("parameter_initialization_seed") == training_seed
+            and summary.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True,
+            f"SetFlow V4 S1 parameter initialization provenance changed: {required_run}",
+        )
+        update_geometry = summary.get("update_geometry")
+        _require(
+            int(summary.get("completed_passes", -1)) == 10
+            and summary.get("early_stopping_used") is False
+            and isinstance(update_geometry, Mapping)
+            and int(update_geometry.get("pass_count", -1)) == 10
+            and int(update_geometry.get("total_optimizer_updates", 0)) > 0
+            and int(summary.get("optimizer_update_count", -1))
+            == int(update_geometry["total_optimizer_updates"])
+            and summary.get("parameter_changed") is True,
+            f"SetFlow V4 S1 terminal parameter-update evidence changed: {required_run}",
+        )
+        physical_gpu_index = summary.get("physical_gpu_index")
+        _require(
+            isinstance(physical_gpu_index, int)
+            and not isinstance(physical_gpu_index, bool)
+            and physical_gpu_index in range(6)
+            and summary.get("torch_device") == f"cuda:{physical_gpu_index}"
+            and "A100" in str(summary.get("device_name", ""))
+            and summary.get("training_precision") == "BF16"
+            and summary.get("cuda_available") is True
+            and summary.get("bf16_supported") is True
+            and summary.get("cpu_fallback_used") is False,
+            f"SetFlow V4 S1 terminal CUDA/A100/BF16 evidence changed: {required_run}",
+        )
+        _require(
+            summary.get("validation_generation_during_training") is False
+            and summary.get("checkpoint_selection_status")
+            == "PENDING_TERMINAL_OUTCOME_FREE_VALIDATION_GENERATION",
+            f"SetFlow V4 S1 training consumed Validation generation early: {required_run}",
+        )
+        _require(
+            int(summary.get("development_test_outcome_reads", -1)) == 0
+            and int(summary.get("new_final_evaluation_outcome_reads", -1)) == 0,
+            f"SetFlow V4 S1 training reports a protected read: {required_run}",
+        )
+        expected_checkpoint_paths = {
+            str(checkpoint_pass): str(directory / f"pass_{checkpoint_pass}.pt")
+            for checkpoint_pass in (4, 6, 8, 10)
+        }
+        _require(
+            summary.get("saved_checkpoint_paths") == expected_checkpoint_paths,
+            f"SetFlow V4 S1 checkpoint paths differ from the frozen run directory: {required_run}",
         )
         summaries[required_run] = summary
     return summaries
@@ -243,6 +291,13 @@ def require_training_package_provenance_s1(
             attempt_head == config_head,
             f"SetFlow V4 S1 training config and attempt disagree on Git HEAD: {run_id}",
         )
+        if str(config.get("run_stage", "SCREEN")) == "CONFIRMATION":
+            _require(
+                training_config.get("confirmation_runner_git_head")
+                == config.get("confirmation_runner_git_head")
+                == config_head,
+                f"SetFlow V4 S1 confirmation training Git HEAD drifted: {run_id}",
+            )
         heads[run_id] = config_head
     _require(
         len(set(heads.values())) == 1,
@@ -317,6 +372,31 @@ def load_checkpoint_s1(
         == OBJECTIVE_WEIGHT
         and int(checkpoint.get("active_responsibility_constraint_count", 0)) > 0,
         "SetFlow V4 S1 checkpoint objective provenance changed",
+    )
+    _require(
+        checkpoint.get("parameter_initialization_seed") == training_seed
+        and checkpoint.get(
+            "parameter_initialization_seed_applied_before_model_construction"
+        )
+        is True
+        and checkpoint.get("parameter_initialization_seed")
+        == training_summary.get("parameter_initialization_seed"),
+        "SetFlow V4 S1 checkpoint parameter initialization provenance changed",
+    )
+    physical_gpu_index = checkpoint.get("physical_gpu_index")
+    _require(
+        isinstance(physical_gpu_index, int)
+        and not isinstance(physical_gpu_index, bool)
+        and physical_gpu_index in range(6)
+        and checkpoint.get("torch_device") == f"cuda:{physical_gpu_index}"
+        and "A100" in str(checkpoint.get("device_name", ""))
+        and checkpoint.get("training_precision") == "BF16"
+        and checkpoint.get("cuda_available") is True
+        and checkpoint.get("bf16_supported") is True
+        and checkpoint.get("cpu_fallback_used") is False
+        and int(checkpoint.get("development_test_outcome_reads", -1)) == 0
+        and int(checkpoint.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        "SetFlow V4 S1 checkpoint CUDA/A100/BF16 provenance changed",
     )
     model, capacity = build_setflow_screen_model_s1(
         config, checkpoint["vocabs"], run_id=run_id
@@ -784,6 +864,14 @@ def validate_checkpoint(
             "active_responsibility_occurrence_count"
         ],
         "seed": training_seed,
+        "parameter_initialization_seed": training_summary[
+            "parameter_initialization_seed"
+        ],
+        "parameter_initialization_seed_applied_before_model_construction": (
+            training_summary[
+                "parameter_initialization_seed_applied_before_model_construction"
+            ]
+        ),
         "checkpoint_pass": checkpoint_pass,
         "checkpoint_path": str(checkpoint_path),
         "training_summary_path": str(training_summary_path),
@@ -796,6 +884,12 @@ def validate_checkpoint(
             training_git_head != validation_git_head
         ),
         "training_summary_status": training_summary["status"],
+        "training_cuda_available": training_summary["cuda_available"],
+        "training_bf16_supported": training_summary["bf16_supported"],
+        "training_torch_device": training_summary["torch_device"],
+        "training_device_name": training_summary["device_name"],
+        "training_precision": training_summary["training_precision"],
+        "training_cpu_fallback_used": training_summary["cpu_fallback_used"],
         "common_validation_set_marginal_nll": common_nll[
             "common_validation_set_marginal_nll"
         ],
@@ -833,6 +927,8 @@ def validate_checkpoint(
         "torch_device": str(device),
         "device_name": device_name,
         "precision": "BF16",
+        "cuda_available": True,
+        "bf16_supported": True,
         "cpu_fallback_used": False,
         "parameter_update_count": 0,
         "critic_used": False,

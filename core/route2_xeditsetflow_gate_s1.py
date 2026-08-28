@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import copy
 import math
+import re
+from pathlib import Path
 from typing import Any, Mapping
 
 
@@ -17,6 +20,11 @@ OBJECTIVE_IDENTITY = "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILI
 OBJECTIVE_WEIGHT = 0.05
 CONFIRMATION_SEEDS = (20260912, 20260913, 20260914)
 SCREEN_RUNNER_GIT_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+CONFIRMATION_BOOTSTRAP_REPLICATES = 10_000
+CONFIRMATION_BOOTSTRAP_SEED = 2026091102
+CONFIRMATION_BOOTSTRAP_STATISTIC = (
+    "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_S1_FULL_MINUS_TERMINAL_F2"
+)
 
 
 class XEditSetFlowGateS1Error(RuntimeError):
@@ -138,6 +146,45 @@ def validate_checkpoint_summary_identity_s1(
         and int(summary.get("parameter_update_count", -1)) == 0,
         "SetFlow V4 S1 checkpoint validation provenance changed",
     )
+    if expected_run_stage == "CONFIRMATION":
+        _require(
+            summary.get("selected_model") == "v4_s1_full"
+            and summary.get("parameter_initialization_seed") == expected_seed
+            and summary.get(
+                "parameter_initialization_seed_applied_before_model_construction"
+            )
+            is True,
+            "SetFlow V4 S1 confirmation parameter initialization provenance changed",
+        )
+        physical_gpu_index = summary.get("physical_gpu_index")
+        _require(
+            isinstance(physical_gpu_index, int)
+            and not isinstance(physical_gpu_index, bool)
+            and physical_gpu_index in range(6)
+            and summary.get("torch_device") == f"cuda:{physical_gpu_index}"
+            and "A100" in str(summary.get("device_name", ""))
+            and summary.get("precision") == "BF16"
+            and summary.get("cuda_available") is True
+            and summary.get("bf16_supported") is True
+            and summary.get("cpu_fallback_used") is False
+            and summary.get("cuda_device_index") == physical_gpu_index
+            and "A100" in str(summary.get("cuda_device_name", ""))
+            and bool(summary.get("cuda_device_uuid"))
+            and bool(summary.get("declared_physical_gpu_uuid"))
+            and summary.get("cuda_parent_uuid_matches_declared_physical_index")
+            is True,
+            "SetFlow V4 S1 confirmation Validation CUDA/A100/BF16 evidence changed",
+        )
+        training_device = str(summary.get("training_torch_device", ""))
+        _require(
+            re.fullmatch(r"cuda:[0-5]", training_device) is not None
+            and "A100" in str(summary.get("training_device_name", ""))
+            and summary.get("training_precision") == "BF16"
+            and summary.get("training_cuda_available") is True
+            and summary.get("training_bf16_supported") is True
+            and summary.get("training_cpu_fallback_used") is False,
+            "SetFlow V4 S1 confirmation training CUDA/A100/BF16 evidence changed",
+        )
     _require(
         summary.get("g0_status")
         in {"FLOW_G0_READY", "FLOW_G0_VALIDATION_FAIL"}
@@ -441,6 +488,24 @@ def _validate_confirmation_config_s1(
         in {4, 6, 8, 10},
         f"SetFlow V4 S1 confirmation lineage changed: {seed}",
     )
+    confirmation_runner_git_head = config.get("confirmation_runner_git_head")
+    output_root = Path(str(config.get("output_root", "")))
+    validation_output_root = Path(str(config.get("validation_output_root", "")))
+    screen_provenance = config.get("screen_provenance")
+    _require(
+        isinstance(confirmation_runner_git_head, str)
+        and re.fullmatch(r"[0-9a-f]{40}", confirmation_runner_git_head) is not None
+        and output_root.is_absolute()
+        and validation_output_root.is_absolute()
+        and isinstance(screen_provenance, Mapping)
+        and screen_provenance.get("screen_runner_git_head")
+        == SCREEN_RUNNER_GIT_HEAD
+        and screen_provenance.get("screen_gate_path")
+        == config.get("screen_gate_path")
+        and int(screen_provenance.get("screen_selected_checkpoint_pass", -1))
+        == int(config.get("screen_selected_checkpoint_pass", -2)),
+        f"SetFlow V4 S1 confirmation runner or screen provenance changed: {seed}",
+    )
     _require(
         config.get("development_test_outcomes_accessed") is False
         and config.get("new_final_evaluation_outcomes_accessed") is False
@@ -476,8 +541,21 @@ def adjudicate_setflow_confirmation_s1(
         == 1,
         "SetFlow V4 S1 confirmation configs disagree on frozen screen lineage",
     )
+    first_config = configs[CONFIRMATION_SEEDS[0]]
+    first_screen_provenance = first_config.get("screen_provenance")
+    first_runner_head = first_config.get("confirmation_runner_git_head")
+    _require(
+        all(
+            config.get("screen_provenance") == first_screen_provenance
+            and config.get("confirmation_runner_git_head") == first_runner_head
+            for config in configs.values()
+        ),
+        "SetFlow V4 S1 confirmation configs disagree on full screen or runner provenance",
+    )
     seed_results: dict[str, Any] = {}
     all_passed = True
+    validation_git_heads: set[str] = set()
+    training_git_heads: set[str] = set()
     for seed in CONFIRMATION_SEEDS:
         config = configs[seed]
         _validate_confirmation_config_s1(config, seed=seed)
@@ -485,16 +563,50 @@ def adjudicate_setflow_confirmation_s1(
             set(summaries[seed]) == {4, 6, 8, 10},
             f"SetFlow V4 S1 confirmation checkpoint package is incomplete: {seed}",
         )
-        rows = {
-            checkpoint_pass: validate_checkpoint_summary_identity_s1(
-                summaries[seed][checkpoint_pass],
+        training_root = Path(str(config["output_root"])) / "v4_s1_full"
+        validation_root = Path(str(config["validation_output_root"])) / "v4_s1_full"
+        expected_training_head = str(config["confirmation_runner_git_head"])
+        rows: dict[int, dict[str, Any]] = {}
+        for checkpoint_pass in (4, 6, 8, 10):
+            summary = summaries[seed][checkpoint_pass]
+            expected_checkpoint_path = str(
+                training_root / f"pass_{checkpoint_pass}.pt"
+            )
+            expected_training_summary_path = str(
+                training_root / "training_summary.json"
+            )
+            expected_validation_summary_path = str(
+                validation_root
+                / f"pass_{checkpoint_pass}"
+                / "validation_summary.json"
+            )
+            _require(
+                summary.get("checkpoint_path") == expected_checkpoint_path
+                and summary.get("training_summary_path")
+                == expected_training_summary_path
+                and summary.get("validation_summary_path")
+                == expected_validation_summary_path,
+                f"SetFlow V4 S1 confirmation artifact path changed: {seed} pass {checkpoint_pass}",
+            )
+            training_git_head = summary.get("training_git_head")
+            validation_git_head = summary.get("validation_git_head")
+            _require(
+                training_git_head == expected_training_head
+                and isinstance(validation_git_head, str)
+                and re.fullmatch(r"[0-9a-f]{40}", validation_git_head) is not None
+                and summary.get("training_and_validation_git_heads_differ")
+                == (training_git_head != validation_git_head),
+                f"SetFlow V4 S1 confirmation training/Validation Git lineage changed: {seed} pass {checkpoint_pass}",
+            )
+            training_git_heads.add(training_git_head)
+            validation_git_heads.add(validation_git_head)
+            rows[checkpoint_pass] = validate_checkpoint_summary_identity_s1(
+                summary,
                 run_id="v4_s1_full",
                 checkpoint_pass=checkpoint_pass,
                 expected_seed=seed,
                 expected_run_stage="CONFIRMATION",
             )
-            for checkpoint_pass in (4, 6, 8, 10)
-        }
         decision = select_checkpoint_s1(rows)
         selected = decision["generation_constrained_selected_checkpoint"]
         checks = {"has_eligible_checkpoint": selected is not None}
@@ -522,12 +634,6 @@ def adjudicate_setflow_confirmation_s1(
                 ),
                 f"SetFlow V4 S1 selected checkpoint lineage is absent: {seed}",
             )
-            _require(
-                selected_checkpoint_path.endswith(
-                    f"/v4_s1_full/pass_{selected['checkpoint_pass']}.pt"
-                ),
-                f"SetFlow V4 S1 selected checkpoint path changed: {seed}",
-            )
             reference_recovery = _finite(
                 terminal_f2_summary.get("source_macro_candidate_recovery_rate"),
                 "terminal F2 recovery",
@@ -543,11 +649,26 @@ def adjudicate_setflow_confirmation_s1(
                 "terminal F2 unique rate",
             )
             try:
-                bootstrap = paired_bootstrap_recovery_improvement_v4(
-                    selected_summary, terminal_f2_summary
+                reused_bootstrap = paired_bootstrap_recovery_improvement_v4(
+                    selected_summary,
+                    terminal_f2_summary,
+                    replicates=CONFIRMATION_BOOTSTRAP_REPLICATES,
+                    seed=CONFIRMATION_BOOTSTRAP_SEED,
                 )
             except XEditSetFlowGateV4Error as error:
                 raise XEditSetFlowGateS1Error(str(error)) from error
+            _require(
+                reused_bootstrap.get("replicates")
+                == CONFIRMATION_BOOTSTRAP_REPLICATES
+                and reused_bootstrap.get("seed") == CONFIRMATION_BOOTSTRAP_SEED
+                and reused_bootstrap.get("statistic")
+                == "SOURCE_MACRO_CANDIDATE_RECOVERY_DIFFERENCE_V4_MINUS_TERMINAL_F2",
+                "SetFlow V4 S1 reused bootstrap numeric contract changed",
+            )
+            bootstrap = {
+                **reused_bootstrap,
+                "statistic": CONFIRMATION_BOOTSTRAP_STATISTIC,
+            }
             checks.update(
                 {
                     "recovery_margin_over_terminal_f2_at_least_0_05": selected[
@@ -601,6 +722,12 @@ def adjudicate_setflow_confirmation_s1(
             "checks": checks,
             "passed": passed,
         }
+    _require(
+        training_git_heads == {first_runner_head}
+        and len(validation_git_heads) == 1,
+        "SetFlow V4 S1 confirmation package Git lineage is inconsistent across 12 validations",
+    )
+    validation_git_head = next(iter(validation_git_heads))
     return {
         "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
         "status": "XEDITSETFLOW_V4_G0_READY"
@@ -612,6 +739,16 @@ def adjudicate_setflow_confirmation_s1(
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
         "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
         "screen_gate_path": configs[CONFIRMATION_SEEDS[0]]["screen_gate_path"],
+        "screen_selected_checkpoint_pass": configs[CONFIRMATION_SEEDS[0]][
+            "screen_selected_checkpoint_pass"
+        ],
+        "screen_provenance": copy.deepcopy(first_screen_provenance),
+        "confirmation_runner_git_head": first_runner_head,
+        "training_git_head": first_runner_head,
+        "validation_git_head": validation_git_head,
+        "training_and_validation_git_heads_differ": (
+            first_runner_head != validation_git_head
+        ),
         "seed_results": seed_results,
         "additional_seed_authorized": False,
         "development_test_authorized": False,
