@@ -59,6 +59,7 @@ SCHEDULER = (
 )
 
 S1_FOCUSED_TEST_MARKERS = (
+    "test_transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py",
     "test_route2_xeditsetflow_confirmation_s1.py",
     "test_train_route2_xeditsetflow_s1.py",
     "test_validate_route2_xeditsetflow_s1_checkpoint.py",

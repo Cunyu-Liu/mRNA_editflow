@@ -223,6 +223,7 @@ def _focused_test_commands() -> list[str]:
         "test_route2_xeditsetflow_gate_s1.py "
         "test_run_route2_xeditsetflow_s1_screen_scheduler.py "
         "test_launch_route2_xeditsetflow_s1_screen_after_v403_terminal.py "
+        "test_transition_record_route2_xeditsetflow_s1_930_terminal_invalidation.py "
         "test_route2_xeditsetflow_confirmation_s1.py "
         "test_launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py "
         "test_launch_route2_xeditsetflow_s1_confirmation_posttraining.py "

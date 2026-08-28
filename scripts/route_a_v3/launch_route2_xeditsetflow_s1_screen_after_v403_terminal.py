@@ -24,6 +24,19 @@ from scripts.route_a_v3.authorize_route2_xeditsetflow_v403_recovered_confirmatio
 from scripts.route_a_v3.launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen import (
     validate_runner_verification_receipt as validate_shared_runner_verification_receipt,
 )
+from scripts.route_a_v3.transition_record_route2_xeditsetflow_s1_930_terminal_invalidation import (
+    CANONICAL_RECEIPT as OLD_S1_TERMINAL_INVALIDATION_RECEIPT,
+    DEFECT_IDENTITY as OLD_S1_DEFECT_IDENTITY,
+    OLD_HEAD as INVALIDATED_S1_RUNNER_HEAD,
+    OLD_RUNTIME as INVALIDATED_S1_RUNTIME,
+    RECEIPT_SCHEMA as OLD_S1_TERMINAL_INVALIDATION_SCHEMA,
+    RUN_IDS as INVALIDATED_S1_RUN_IDS,
+    SCIENTIFIC_INVALIDATION_STATUS as OLD_S1_SCIENTIFIC_INVALIDATION_STATUS,
+    SCIENTIFIC_TERMINAL_STATUS as OLD_S1_SCIENTIFIC_TERMINAL_STATUS,
+    SCREEN_SEED as INVALIDATED_S1_SCREEN_SEED,
+    TECHNICAL_INVALIDATION_STATUS as OLD_S1_TECHNICAL_INVALIDATION_STATUS,
+    TECHNICAL_TERMINAL_STATUS as OLD_S1_TECHNICAL_TERMINAL_STATUS,
+)
 
 
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
@@ -423,6 +436,89 @@ def consume_receipts(
     }
 
 
+def consume_old_s1_terminal_invalidation_receipt(path: Path) -> dict[str, Any]:
+    require(
+        path == OLD_S1_TERMINAL_INVALIDATION_RECEIPT,
+        "old S1 terminal invalidation receipt path is not canonical",
+    )
+    partial = path.with_suffix(path.suffix + ".partial")
+    require(not partial.exists(), f"old S1 terminal invalidation receipt is partial: {partial}")
+    require(path.is_file(), f"old S1 terminal invalidation receipt is absent: {path}")
+    payload = read_json(path)
+    status = payload.get("status")
+    terminal_class = payload.get("terminal_class")
+    runtime_status = payload.get("old_runtime_status")
+    require(
+        payload.get("schema_version") == OLD_S1_TERMINAL_INVALIDATION_SCHEMA
+        and status
+        in {
+            OLD_S1_SCIENTIFIC_INVALIDATION_STATUS,
+            OLD_S1_TECHNICAL_INVALIDATION_STATUS,
+        }
+        and (
+            (
+                status == OLD_S1_SCIENTIFIC_INVALIDATION_STATUS
+                and terminal_class == "SCIENTIFIC_GATE_TERMINAL"
+                and runtime_status == OLD_S1_SCIENTIFIC_TERMINAL_STATUS
+            )
+            or (
+                status == OLD_S1_TECHNICAL_INVALIDATION_STATUS
+                and terminal_class == "TECHNICAL_FAILURE_TERMINAL"
+                and runtime_status == OLD_S1_TECHNICAL_TERMINAL_STATUS
+            )
+        ),
+        "old S1 terminal invalidation class is not exact",
+    )
+    defect = payload.get("known_defect")
+    require(
+        payload.get("old_runner_git_head") == INVALIDATED_S1_RUNNER_HEAD
+        and payload.get("old_runtime_path") == str(INVALIDATED_S1_RUNTIME)
+        and int(payload.get("screen_seed", -1)) == INVALIDATED_S1_SCREEN_SEED
+        and payload.get("run_ids") == list(INVALIDATED_S1_RUN_IDS)
+        and payload.get("objective_identity") == OBJECTIVE_IDENTITY
+        and float(
+            payload.get(
+                "cross_state_candidate_mode_responsibility_weight", -1.0
+            )
+        )
+        == OBJECTIVE_WEIGHT
+        and payload.get("scheduler_process_gone") is True
+        and isinstance(payload.get("terminal_jobs"), list)
+        and len(payload["terminal_jobs"]) == 10
+        and isinstance(payload.get("terminal_adjudication"), Mapping)
+        and isinstance(defect, Mapping)
+        and defect.get("identity") == OLD_S1_DEFECT_IDENTITY
+        and defect.get("model_construction_consumes_cpu_rng") is True
+        and defect.get("nominal_seed_controlled_parameter_initialization") is False
+        and defect.get("matched_full_single_initialization_established") is False
+        and defect.get("affected_family_can_authorize_successor") is False,
+        "old S1 terminal invalidation lineage or defect changed",
+    )
+    require(
+        payload.get("nominal_terminal_retained_as_execution_evidence") is True
+        and payload.get("nominal_terminal_rewritten") is False
+        and payload.get("scientific_successor_authorized") is False
+        and payload.get("successor_authorized") is False
+        and payload.get("same_family_retry_authorized") is False
+        and payload.get("old_family_artifacts_read_only") is True
+        and int(payload.get("old_runtime_read_count_this_transition", -1)) == 1
+        and payload.get("gpu_inventory_or_probe_executed") is False
+        and payload.get("gpu_or_model_execution_started") is False
+        and payload.get("protected_outcome_payload_read") is False,
+        "old S1 invalidation authorization or read-only boundary changed",
+    )
+    _protected_reads_zero(payload, "old S1 terminal invalidation receipt")
+    return {
+        "path": str(path),
+        "status": status,
+        "terminal_class": terminal_class,
+        "old_runner_git_head": INVALIDATED_S1_RUNNER_HEAD,
+        "old_runtime_status": runtime_status,
+        "successor_authorized": False,
+        "same_family_retry_authorized": False,
+    }
+
+
 def gpu_diagnostics(
     required_physical_gpus: Sequence[int],
 ) -> dict[int, dict[str, Any]]:
@@ -819,12 +915,17 @@ def build_schedule(
 def run(
     expected_head: str,
     *,
+    old_s1_terminal_invalidation_receipt_path: Path | None = None,
     shared_receipt_path: Path | None = None,
     setflow_receipt_path: Path | None = None,
 ) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", expected_head) is not None,
         "expected Git HEAD is invalid",
+    )
+    require(
+        expected_head != INVALIDATED_S1_RUNNER_HEAD,
+        "corrected S1 retry cannot use the invalidated 930 runner HEAD",
     )
     for path, label in (
         (PYTHON, "formal Python"),
@@ -856,6 +957,10 @@ def run(
     config = read_json(CONFIG)
     validate_config(config)
     audits = validate_repo_fact_audits(config)
+    old_s1_terminal_invalidation = consume_old_s1_terminal_invalidation_receipt(
+        old_s1_terminal_invalidation_receipt_path
+        or OLD_S1_TERMINAL_INVALIDATION_RECEIPT
+    )
     canonical_shared, canonical_setflow = expected_receipt_paths(expected_head)
     receipts = consume_receipts(
         expected_head,
@@ -920,6 +1025,7 @@ def run(
                 key: str(_tracked_audit_path(config["repo_fact_audits"][key]))
                 for key in audits
             },
+            "invalidated_930_s1_terminal_receipt": old_s1_terminal_invalidation,
         }
     )
     write_new_atomic(runtime_config_path, runtime_config)
@@ -935,6 +1041,7 @@ def run(
         "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
         "weight_sweep_authorized": False,
         "repo_fact_audits": runtime_config["s1_repo_fact_audits_consumed"],
+        "invalidated_930_s1_terminal_receipt": old_s1_terminal_invalidation,
         "runner_verification_receipts": receipts,
         "gpu_diagnostics": {
             str(gpu): dict(row) for gpu, row in diagnostics.items()
@@ -1020,11 +1127,15 @@ def run(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-head", required=True)
+    parser.add_argument("--old-s1-terminal-invalidation-receipt", type=Path)
     parser.add_argument("--runner-verification-receipt", type=Path)
     parser.add_argument("--setflow-runner-verification-receipt", type=Path)
     arguments = parser.parse_args()
     result = run(
         arguments.expected_head,
+        old_s1_terminal_invalidation_receipt_path=(
+            arguments.old_s1_terminal_invalidation_receipt
+        ),
         shared_receipt_path=arguments.runner_verification_receipt,
         setflow_receipt_path=arguments.setflow_runner_verification_receipt,
     )

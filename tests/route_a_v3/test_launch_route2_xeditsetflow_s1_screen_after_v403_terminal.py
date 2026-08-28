@@ -42,6 +42,51 @@ def _config(tmp_path: Path) -> dict:
     }
 
 
+def _invalidation_receipt(*, scientific: bool) -> dict:
+    if scientific:
+        status = launcher.OLD_S1_SCIENTIFIC_INVALIDATION_STATUS
+        terminal_class = "SCIENTIFIC_GATE_TERMINAL"
+        runtime_status = launcher.OLD_S1_SCIENTIFIC_TERMINAL_STATUS
+    else:
+        status = launcher.OLD_S1_TECHNICAL_INVALIDATION_STATUS
+        terminal_class = "TECHNICAL_FAILURE_TERMINAL"
+        runtime_status = launcher.OLD_S1_TECHNICAL_TERMINAL_STATUS
+    return {
+        "schema_version": launcher.OLD_S1_TERMINAL_INVALIDATION_SCHEMA,
+        "status": status,
+        "terminal_class": terminal_class,
+        "old_runner_git_head": launcher.INVALIDATED_S1_RUNNER_HEAD,
+        "old_runtime_path": str(launcher.INVALIDATED_S1_RUNTIME),
+        "old_runtime_status": runtime_status,
+        "screen_seed": launcher.INVALIDATED_S1_SCREEN_SEED,
+        "run_ids": list(launcher.INVALIDATED_S1_RUN_IDS),
+        "objective_identity": launcher.OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": launcher.OBJECTIVE_WEIGHT,
+        "scheduler_process_gone": True,
+        "terminal_jobs": [{"job_key": f"job:{index}"} for index in range(10)],
+        "terminal_adjudication": {"status": "TERMINAL"},
+        "known_defect": {
+            "identity": launcher.OLD_S1_DEFECT_IDENTITY,
+            "model_construction_consumes_cpu_rng": True,
+            "nominal_seed_controlled_parameter_initialization": False,
+            "matched_full_single_initialization_established": False,
+            "affected_family_can_authorize_successor": False,
+        },
+        "nominal_terminal_retained_as_execution_evidence": True,
+        "nominal_terminal_rewritten": False,
+        "scientific_successor_authorized": False,
+        "successor_authorized": False,
+        "same_family_retry_authorized": False,
+        "old_family_artifacts_read_only": True,
+        "old_runtime_read_count_this_transition": 1,
+        "gpu_inventory_or_probe_executed": False,
+        "gpu_or_model_execution_started": False,
+        "protected_outcome_payload_read": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+    }
+
+
 def test_s1_launcher_validates_exact_frozen_config(tmp_path: Path) -> None:
     config = _config(tmp_path)
     launcher.validate_config(config)
@@ -226,3 +271,145 @@ def test_s1_launcher_accepts_the_actual_tracked_repo_fact_audits() -> None:
     assert repair["defect"]["affected_family_can_authorize_successor"] is False
     assert repair["repair_contract"]["same_screen_seed"] == 20260911
     assert repair["repair_contract"]["threshold_reduction_authorized"] is False
+
+
+@pytest.mark.parametrize("scientific", [True, False])
+def test_s1_launcher_accepts_both_exact_old_terminal_invalidation_classes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, scientific: bool
+) -> None:
+    receipt = tmp_path / "old_terminal_invalidation.json"
+    receipt.write_text(json.dumps(_invalidation_receipt(scientific=scientific)))
+    monkeypatch.setattr(launcher, "OLD_S1_TERMINAL_INVALIDATION_RECEIPT", receipt)
+    consumed = launcher.consume_old_s1_terminal_invalidation_receipt(receipt)
+    assert consumed["successor_authorized"] is False
+    assert consumed["same_family_retry_authorized"] is False
+    assert consumed["terminal_class"] == (
+        "SCIENTIFIC_GATE_TERMINAL"
+        if scientific
+        else "TECHNICAL_FAILURE_TERMINAL"
+    )
+
+
+def test_s1_launcher_rejects_partial_or_authorizing_invalidation_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    receipt = tmp_path / "old_terminal_invalidation.json"
+    monkeypatch.setattr(launcher, "OLD_S1_TERMINAL_INVALIDATION_RECEIPT", receipt)
+    partial = receipt.with_suffix(receipt.suffix + ".partial")
+    partial.write_text("{}")
+    with pytest.raises(launcher.XEditSetFlowS1LaunchError, match="partial"):
+        launcher.consume_old_s1_terminal_invalidation_receipt(receipt)
+    partial.unlink()
+    payload = _invalidation_receipt(scientific=True)
+    payload["successor_authorized"] = True
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(launcher.XEditSetFlowS1LaunchError, match="authorization"):
+        launcher.consume_old_s1_terminal_invalidation_receipt(receipt)
+
+
+def _command_identity(arguments: list[str]) -> SimpleNamespace:
+    if arguments[:2] == ["git", "status"]:
+        value = ""
+    elif arguments[:3] == ["git", "branch", "--show-current"]:
+        value = launcher.BRANCH
+    elif arguments[:3] == ["git", "rev-parse", "HEAD"]:
+        value = "a" * 40
+    elif arguments[:2] == ["git", "rev-parse"]:
+        value = "a" * 40
+    else:
+        raise AssertionError(arguments)
+    return SimpleNamespace(stdout=value + ("\n" if value else ""), stderr="")
+
+
+def test_s1_launcher_checks_invalidation_after_repo_facts_before_receipts_or_gpu(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    events = []
+    config = _config(tmp_path)
+    monkeypatch.setattr(launcher, "command", _command_identity)
+    monkeypatch.setattr(launcher, "read_json", lambda path: config if path == launcher.CONFIG else {})
+    monkeypatch.setattr(launcher, "validate_config", lambda _config: events.append("config"))
+    monkeypatch.setattr(
+        launcher,
+        "validate_repo_fact_audits",
+        lambda _config: events.append("repo_facts") or {},
+    )
+
+    def stop_at_invalidation(_path: Path) -> dict:
+        events.append("old_terminal_invalidation")
+        raise launcher.XEditSetFlowS1LaunchError("sentinel invalidation stop")
+
+    monkeypatch.setattr(
+        launcher,
+        "consume_old_s1_terminal_invalidation_receipt",
+        stop_at_invalidation,
+    )
+    monkeypatch.setattr(
+        launcher,
+        "consume_receipts",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("receipts consumed first")),
+    )
+    monkeypatch.setattr(
+        launcher,
+        "gpu_diagnostics",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("GPU inventory ran first")),
+    )
+    with pytest.raises(launcher.XEditSetFlowS1LaunchError, match="sentinel"):
+        launcher.run("a" * 40)
+    assert events == ["config", "repo_facts", "old_terminal_invalidation"]
+    assert not Path(config["family_paths"]["runtime_root_template"].format(runner_git_head="a" * 40)).exists()
+
+
+def test_s1_launcher_missing_invalidation_receipt_blocks_gpu_and_family_creation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = _config(tmp_path)
+    missing = tmp_path / "missing_terminal_invalidation.json"
+    monkeypatch.setattr(launcher, "OLD_S1_TERMINAL_INVALIDATION_RECEIPT", missing)
+    monkeypatch.setattr(launcher, "command", _command_identity)
+    monkeypatch.setattr(launcher, "read_json", lambda path: config if path == launcher.CONFIG else {})
+    monkeypatch.setattr(launcher, "validate_config", lambda _config: None)
+    monkeypatch.setattr(launcher, "validate_repo_fact_audits", lambda _config: {})
+    monkeypatch.setattr(
+        launcher,
+        "consume_receipts",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("receipts consumed")),
+    )
+    monkeypatch.setattr(
+        launcher,
+        "gpu_diagnostics",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("GPU inventory ran")),
+    )
+    with pytest.raises(launcher.XEditSetFlowS1LaunchError, match="absent"):
+        launcher.run("a" * 40)
+    family = Path(config["family_paths"]["runtime_root_template"].format(runner_git_head="a" * 40))
+    assert not family.exists()
+
+
+def test_s1_launcher_explicitly_rejects_invalidated_930_head_before_any_probe(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        launcher,
+        "command",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("repository inspected")),
+    )
+    monkeypatch.setattr(
+        launcher,
+        "gpu_diagnostics",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("GPU inventory ran")),
+    )
+    with pytest.raises(launcher.XEditSetFlowS1LaunchError, match="invalidated 930"):
+        launcher.run(launcher.INVALIDATED_S1_RUNNER_HEAD)
+
+
+def test_s1_launcher_source_order_places_terminal_barrier_before_receipts_gpu_and_family() -> None:
+    source = Path(launcher.__file__).read_text()
+    repo_facts = source.index("audits = validate_repo_fact_audits(config)")
+    invalidation = source.index(
+        "old_s1_terminal_invalidation = consume_old_s1_terminal_invalidation_receipt("
+    )
+    receipts = source.index("receipts = consume_receipts(")
+    gpu = source.index("diagnostics = gpu_diagnostics(range(6))")
+    family = source.index("family_root.mkdir(parents=True)")
+    assert repo_facts < invalidation < receipts < gpu < family
