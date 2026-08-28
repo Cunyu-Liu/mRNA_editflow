@@ -7,10 +7,16 @@ from typing import Any, Mapping
 
 
 from core.route2_xedit_v4_interfaces import SetFlowCheckpointDecisionV4
+from core.route2_xeditsetflow_gate_v4 import (
+    XEditSetFlowGateV4Error,
+    paired_bootstrap_recovery_improvement_v4,
+)
 
 
 OBJECTIVE_IDENTITY = "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY"
 OBJECTIVE_WEIGHT = 0.05
+CONFIRMATION_SEEDS = (20260912, 20260913, 20260914)
+SCREEN_RUNNER_GIT_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
 
 
 class XEditSetFlowGateS1Error(RuntimeError):
@@ -380,4 +386,239 @@ def adjudicate_setflow_screen_s1(
         "guidance_authorized": False,
         "development_test_outcome_reads": 0,
         "new_final_evaluation_outcome_reads": 0,
+    }
+
+
+def _validate_terminal_f2_reference_s1(
+    terminal_f2_summary: Mapping[str, Any],
+) -> None:
+    _require(
+        terminal_f2_summary.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_unguided_validation.v3"
+        and terminal_f2_summary.get("status") == "FLOW_G0_READY"
+        and terminal_f2_summary.get("arm") == "f2"
+        and int(terminal_f2_summary.get("seed", -1)) == 20260903
+        and int(terminal_f2_summary.get("source_count", -1)) == 891
+        and int(terminal_f2_summary.get("candidate_count", -1)) == 28_512,
+        "terminal F2 reference identity changed",
+    )
+    _require(
+        terminal_f2_summary.get("development_test_outcomes_accessed") is False
+        and int(terminal_f2_summary.get("evaluation_records_read", -1)) == 0
+        and terminal_f2_summary.get("evaluation_outcomes_accessed") is False
+        and terminal_f2_summary.get("guided_critic_used") is False
+        and terminal_f2_summary.get("independent_evaluator_used") is False,
+        "terminal F2 reference used prohibited outcomes or evaluators",
+    )
+
+
+def _validate_confirmation_config_s1(
+    config: Mapping[str, Any], *, seed: int
+) -> None:
+    _require(
+        config.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_runtime.v1"
+        and config.get("status") == "FROZEN_S1_CONFIRMATION_CONFIG_NOT_STARTED"
+        and config.get("run_stage") == "CONFIRMATION"
+        and int(config.get("training_seed", -1)) == seed
+        and config.get("selected_model") == "v4_s1_full"
+        and config.get("required_confirmation_seeds")
+        == list(CONFIRMATION_SEEDS)
+        and config.get("additional_seed_authorized") is False,
+        f"SetFlow V4 S1 confirmation config changed: {seed}",
+    )
+    _require(
+        config.get("objective_identity") == OBJECTIVE_IDENTITY
+        and _finite(
+            config.get("cross_state_candidate_mode_responsibility_weight"),
+            "S1 confirmation responsibility weight",
+        )
+        == OBJECTIVE_WEIGHT
+        and config.get("screen_runner_git_head") == SCREEN_RUNNER_GIT_HEAD
+        and isinstance(config.get("screen_gate_path"), str)
+        and bool(config.get("screen_gate_path"))
+        and int(config.get("screen_selected_checkpoint_pass", -1))
+        in {4, 6, 8, 10},
+        f"SetFlow V4 S1 confirmation lineage changed: {seed}",
+    )
+    _require(
+        config.get("development_test_outcomes_accessed") is False
+        and config.get("new_final_evaluation_outcomes_accessed") is False
+        and int(config.get("development_test_outcome_reads", -1)) == 0
+        and int(config.get("new_final_evaluation_outcome_reads", -1)) == 0,
+        f"SetFlow V4 S1 confirmation config reports a protected read: {seed}",
+    )
+
+
+def adjudicate_setflow_confirmation_s1(
+    configs: Mapping[int, Mapping[str, Any]],
+    summaries: Mapping[int, Mapping[int, Mapping[str, Any]]],
+    terminal_f2_summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Adjudicate the frozen three-seed, full-only S1 confirmation package."""
+
+    _validate_terminal_f2_reference_s1(terminal_f2_summary)
+    _require(
+        set(configs) == set(summaries) == set(CONFIRMATION_SEEDS),
+        "SetFlow V4 S1 confirmation seed cohort is incomplete or contains an extra seed",
+    )
+    _require(
+        len(
+            {
+                (
+                    config.get("screen_gate_path"),
+                    config.get("screen_runner_git_head"),
+                    config.get("screen_selected_checkpoint_pass"),
+                )
+                for config in configs.values()
+            }
+        )
+        == 1,
+        "SetFlow V4 S1 confirmation configs disagree on frozen screen lineage",
+    )
+    seed_results: dict[str, Any] = {}
+    all_passed = True
+    for seed in CONFIRMATION_SEEDS:
+        config = configs[seed]
+        _validate_confirmation_config_s1(config, seed=seed)
+        _require(
+            set(summaries[seed]) == {4, 6, 8, 10},
+            f"SetFlow V4 S1 confirmation checkpoint package is incomplete: {seed}",
+        )
+        rows = {
+            checkpoint_pass: validate_checkpoint_summary_identity_s1(
+                summaries[seed][checkpoint_pass],
+                run_id="v4_s1_full",
+                checkpoint_pass=checkpoint_pass,
+                expected_seed=seed,
+                expected_run_stage="CONFIRMATION",
+            )
+            for checkpoint_pass in (4, 6, 8, 10)
+        }
+        decision = select_checkpoint_s1(rows)
+        selected = decision["generation_constrained_selected_checkpoint"]
+        checks = {"has_eligible_checkpoint": selected is not None}
+        bootstrap = None
+        selected_checkpoint_path = None
+        selected_validation_summary_path = None
+        selected_training_summary_path = None
+        if selected is not None:
+            selected_summary = summaries[seed][selected["checkpoint_pass"]]
+            selected_checkpoint_path = selected_summary.get("checkpoint_path")
+            selected_validation_summary_path = selected_summary.get(
+                "validation_summary_path"
+            )
+            selected_training_summary_path = selected_summary.get(
+                "training_summary_path"
+            )
+            _require(
+                all(
+                    isinstance(value, str) and bool(value)
+                    for value in (
+                        selected_checkpoint_path,
+                        selected_validation_summary_path,
+                        selected_training_summary_path,
+                    )
+                ),
+                f"SetFlow V4 S1 selected checkpoint lineage is absent: {seed}",
+            )
+            _require(
+                selected_checkpoint_path.endswith(
+                    f"/v4_s1_full/pass_{selected['checkpoint_pass']}.pt"
+                ),
+                f"SetFlow V4 S1 selected checkpoint path changed: {seed}",
+            )
+            reference_recovery = _finite(
+                terminal_f2_summary.get("source_macro_candidate_recovery_rate"),
+                "terminal F2 recovery",
+            )
+            reference_top_k = _finite(
+                terminal_f2_summary.get(
+                    "source_macro_measured_top_k_recovery_at_k"
+                ),
+                "terminal F2 top-k recovery",
+            )
+            reference_unique = _finite(
+                terminal_f2_summary.get("source_macro_unique_candidate_rate"),
+                "terminal F2 unique rate",
+            )
+            try:
+                bootstrap = paired_bootstrap_recovery_improvement_v4(
+                    selected_summary, terminal_f2_summary
+                )
+            except XEditSetFlowGateV4Error as error:
+                raise XEditSetFlowGateS1Error(str(error)) from error
+            checks.update(
+                {
+                    "recovery_margin_over_terminal_f2_at_least_0_05": selected[
+                        "source_macro_candidate_recovery_rate"
+                    ]
+                    - reference_recovery
+                    >= 0.05,
+                    "top_k_margin_over_terminal_f2_at_least_0_03": selected[
+                        "source_macro_measured_top_k_recovery_at_k"
+                    ]
+                    - reference_top_k
+                    >= 0.03,
+                    "unique_margin_over_terminal_f2_at_least_0_15": selected[
+                        "source_macro_unique_candidate_rate"
+                    ]
+                    - reference_unique
+                    >= 0.15,
+                    "paired_bootstrap_recovery_ci_lower_bound_positive": bootstrap[
+                        "ci_lower_bound_strictly_greater_than_zero"
+                    ],
+                    "s1_responsibility_constraints_active": int(
+                        selected_summary.get(
+                            "active_responsibility_constraint_count", 0
+                        )
+                    )
+                    > 0,
+                }
+            )
+        else:
+            checks.update(
+                {
+                    "recovery_margin_over_terminal_f2_at_least_0_05": False,
+                    "top_k_margin_over_terminal_f2_at_least_0_03": False,
+                    "unique_margin_over_terminal_f2_at_least_0_15": False,
+                    "paired_bootstrap_recovery_ci_lower_bound_positive": False,
+                    "s1_responsibility_constraints_active": False,
+                }
+            )
+        passed = all(checks.values())
+        all_passed = all_passed and passed
+        seed_results[str(seed)] = {
+            "checkpoint_rows": rows,
+            "checkpoint_decision": decision,
+            "selected_checkpoint_pass": None
+            if selected is None
+            else selected["checkpoint_pass"],
+            "selected_checkpoint_path": selected_checkpoint_path,
+            "selected_validation_summary_path": selected_validation_summary_path,
+            "selected_training_summary_path": selected_training_summary_path,
+            "paired_bootstrap_recovery_improvement": bootstrap,
+            "checks": checks,
+            "passed": passed,
+        }
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v4_confirmation_gate.v1",
+        "status": "XEDITSETFLOW_V4_G0_READY"
+        if all_passed
+        else "XEDITSETFLOW_V4_CONFIRMATION_NO_GO",
+        "required_seeds": list(CONFIRMATION_SEEDS),
+        "selected_model": "v4_s1_full",
+        "objective_identity": OBJECTIVE_IDENTITY,
+        "cross_state_candidate_mode_responsibility_weight": OBJECTIVE_WEIGHT,
+        "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
+        "screen_gate_path": configs[CONFIRMATION_SEEDS[0]]["screen_gate_path"],
+        "seed_results": seed_results,
+        "additional_seed_authorized": False,
+        "development_test_authorized": False,
+        "guidance_authorized": False,
+        "critic_used": False,
+        "independent_evaluator_used": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+        "claim_boundary": "SETFLOW_S1_COMPONENT_READINESS_ONLY_NOT_FINAL_SCIENTIFIC_EVIDENCE",
     }
