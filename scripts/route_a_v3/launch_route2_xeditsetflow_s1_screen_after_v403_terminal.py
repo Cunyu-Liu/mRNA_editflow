@@ -225,6 +225,7 @@ def validate_repo_fact_audits(config: Mapping[str, Any]) -> dict[str, Any]:
             "v403_terminal_no_go",
             "critic_v403_full_terminal",
             "s1_mechanism_authorization",
+            "s1_seed_initialization_repair",
         },
         "S1 repo fact audit inventory changed",
     )
@@ -329,6 +330,67 @@ def validate_repo_fact_audits(config: Mapping[str, Any]) -> dict[str, Any]:
         "tracked SetFlow V4 S1 frozen authority changed",
     )
     _protected_reads_zero(execution, "tracked S1 execution state")
+
+    repair = audits["s1_seed_initialization_repair"]
+    affected = repair.get("affected_family")
+    defect = repair.get("defect")
+    repair_contract = repair.get("repair_contract")
+    claim_boundary = repair.get("claim_boundary")
+    require(
+        repair.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair.v1"
+        and repair.get("status")
+        == "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY"
+        and isinstance(affected, Mapping)
+        and affected.get("runner_git_head")
+        == "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+        and int(affected.get("screen_seed", -1)) == 20260911
+        and affected.get("run_ids") == list(RUN_IDS)
+        and affected.get("launcher_consumed_once") is True
+        and affected.get("runtime_or_outcome_read_by_this_static_audit") is False
+        and affected.get("artifacts_immutable") is True
+        and affected.get("same_family_retry_authorized") is False
+        and isinstance(defect, Mapping)
+        and defect.get("identity")
+        == "PARAMETER_INITIALIZATION_SEED_APPLIED_AFTER_MODEL_CONSTRUCTION"
+        and defect.get("model_construction_consumes_cpu_rng") is True
+        and defect.get("nominal_seed_controlled_parameter_initialization") is False
+        and defect.get("matched_full_single_initialization_established") is False
+        and defect.get("exact_seed_reproducibility_established") is False
+        and defect.get("affected_family_can_authorize_successor") is False,
+        "tracked S1 seed-initialization defect facts changed",
+    )
+    require(
+        isinstance(repair_contract, Mapping)
+        and repair_contract.get("new_clean_pushed_git_head_required") is True
+        and repair_contract.get("new_independent_family_required") is True
+        and int(repair_contract.get("same_screen_seed", -1)) == 20260911
+        and repair_contract.get("same_run_ids") == list(RUN_IDS)
+        and repair_contract.get("same_objective_identity") == OBJECTIVE_IDENTITY
+        and float(repair_contract.get("same_objective_weight", -1.0))
+        == OBJECTIVE_WEIGHT
+        and repair_contract.get("weight_sweep_authorized") is False
+        and repair_contract.get("additional_screen_seed_authorized") is False
+        and repair_contract.get("threshold_reduction_authorized") is False
+        and repair_contract.get(
+            "cpu_and_cuda_seed_before_any_model_construction_required"
+        )
+        is True
+        and repair_contract.get("parameter_initialization_seed_evidence_required")
+        is True
+        and repair_contract.get(
+            "complete_isolated_focused_and_v332_receipts_required"
+        )
+        is True
+        and repair_contract.get("technical_retry_not_scientific_threshold_change")
+        is True
+        and isinstance(claim_boundary, Mapping)
+        and claim_boundary.get("affected_nominal_gate_is_scientific_successor_authority")
+        is False
+        and claim_boundary.get("affected_nominal_pass_or_no_go_is_rewritten") is False,
+        "tracked S1 seed-initialization repair contract changed",
+    )
+    _protected_reads_zero(repair, "tracked S1 seed-initialization repair")
     return audits
 
 

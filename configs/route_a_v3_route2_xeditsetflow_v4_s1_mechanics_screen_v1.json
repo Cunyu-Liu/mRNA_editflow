@@ -8,7 +8,8 @@
   "repo_fact_audits": {
     "v403_terminal_no_go": "audits/route_a_v3_route2_xeditsetflow_v403_recovered_screen_terminal_nogo_v1.json",
     "critic_v403_full_terminal": "audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json",
-    "s1_mechanism_authorization": "audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json"
+    "s1_mechanism_authorization": "audits/route_a_v3_route2_xeditsetflow_v4_s1_freeze_and_runner_v1.json",
+    "s1_seed_initialization_repair": "audits/route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair_v1.json"
   },
   "train_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
   "validation_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl",

@@ -1,0 +1,56 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair.v1",
+  "status": "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY",
+  "detected_on": "2026-08-28",
+  "affected_family": {
+    "runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
+    "screen_seed": 20260911,
+    "run_ids": [
+      "v4_s1_full",
+      "v4_s1_single_mode"
+    ],
+    "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json",
+    "launcher_consumed_once": true,
+    "runtime_or_outcome_read_by_this_static_audit": false,
+    "artifacts_immutable": true,
+    "same_family_retry_authorized": false
+  },
+  "defect": {
+    "identity": "PARAMETER_INITIALIZATION_SEED_APPLIED_AFTER_MODEL_CONSTRUCTION",
+    "model_construction_consumes_cpu_rng": true,
+    "cpu_manual_seed_was_after_model_construction": true,
+    "cuda_manual_seed_all_was_after_model_construction": true,
+    "full_and_single_mode_used_independent_processes": true,
+    "nominal_seed_controlled_parameter_initialization": false,
+    "matched_full_single_initialization_established": false,
+    "exact_seed_reproducibility_established": false,
+    "affected_family_can_authorize_successor": false
+  },
+  "repair_contract": {
+    "new_clean_pushed_git_head_required": true,
+    "new_independent_family_required": true,
+    "same_screen_seed": 20260911,
+    "same_run_ids": [
+      "v4_s1_full",
+      "v4_s1_single_mode"
+    ],
+    "same_objective_identity": "XEDITSETFLOW_V4_S1_CROSS_STATE_CANDIDATE_MODE_RESPONSIBILITY",
+    "same_objective_weight": 0.05,
+    "weight_sweep_authorized": false,
+    "additional_screen_seed_authorized": false,
+    "threshold_reduction_authorized": false,
+    "cpu_and_cuda_seed_before_any_model_construction_required": true,
+    "parameter_initialization_seed_evidence_required": true,
+    "complete_isolated_focused_and_v332_receipts_required": true,
+    "technical_retry_not_scientific_threshold_change": true
+  },
+  "claim_boundary": {
+    "affected_nominal_gate_may_be_retained_as_execution_evidence": true,
+    "affected_nominal_gate_is_scientific_successor_authority": false,
+    "affected_nominal_pass_or_no_go_is_rewritten": false,
+    "excellent_development_result_claimed": false,
+    "submission_ready": false
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0
+}

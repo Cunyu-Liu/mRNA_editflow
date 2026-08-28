@@ -204,6 +204,8 @@ def test_s1_launcher_consumes_tracked_facts_and_both_exact_head_receipts() -> No
         "XEDITSETFLOW_V403_RECOVERED_SCREEN_TERMINAL_NO_GO_RECORDED",
         "XEDITCRITIC_V403_FULL_TERMINAL_SUMMARY_RECORDED",
         "XEDITSETFLOW_V4_S1_PROTOCOL_AND_RUNNER_FROZEN_NO_ATTEMPT",
+        "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY",
+        "PARAMETER_INITIALIZATION_SEED_APPLIED_AFTER_MODEL_CONSTRUCTION",
     ):
         assert token in source
     assert "recovery_runtime" not in source
@@ -218,4 +220,9 @@ def test_s1_launcher_accepts_the_actual_tracked_repo_fact_audits() -> None:
         "v403_terminal_no_go",
         "critic_v403_full_terminal",
         "s1_mechanism_authorization",
+        "s1_seed_initialization_repair",
     }
+    repair = audits["s1_seed_initialization_repair"]
+    assert repair["defect"]["affected_family_can_authorize_successor"] is False
+    assert repair["repair_contract"]["same_screen_seed"] == 20260911
+    assert repair["repair_contract"]["threshold_reduction_authorized"] is False
