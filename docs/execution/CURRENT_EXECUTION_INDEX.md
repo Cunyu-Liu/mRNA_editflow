@@ -184,9 +184,12 @@ launcher 还必须显式拒绝 930 HEAD，并在 current-HEAD runner receipts、
 - `launch_route2_xeditsetflow_s1_confirmation_posttraining.py`
 - `adjudicate_route2_xeditsetflow_s1_confirmation.py`
 
-这三个 S1-bound confirmation 入口已在准备分支实现，但当前保持硬锁定：旧 930 family 被显式拒绝，只有
-corrected retry 的 exact screen HEAD/path 在未来 commit 中前瞻冻结、并产生精确 PASS 后才能启用。训练固定
-三个 `v4_s1_full` seeds 20260912/20260913/20260914；posttraining 固定 3×4 个 Validation，不重训
+这三个 S1-bound confirmation 入口已在准备分支实现，但当前保持执行锁定：旧 930 family 被显式拒绝；
+corrected screen HEAD/path 已在 S3 `19bc3ed4dd3ee5647e3d3304c10dc9914f885e68` 前瞻冻结为 producer
+`ebf99ebf8a253ad27e311e555121d328df8fae10`。只有 corrected screen runtime/gate 精确 PASS、新 current runner
+完成正式准入，并通过本 bridge 审计与无漂移检查后才能启用 S1 confirmation；该 bridge audit 本身仍保持
+`successor_authorized_by_this_audit=false`、`confirmation_authorized_by_this_audit=false`，不构成启动授权。
+训练固定三个 `v4_s1_full` seeds 20260912/20260913/20260914；posttraining 固定 3×4 个 Validation，不重训
 single-mode，不追加 seed，不预选 confirmation checkpoint。
 
 - `launch_route2_xeditsetflow_v403_recovered_confirmation.py`
@@ -313,3 +316,28 @@ final_adjudication.json.gate.status == XEDITFLOW_V4_PASS
 每个 run/retry family 必须在 rapid iteration log 与 attempt table 中记录：配置/协议、Git commit、GPU 与 CUDA 证据、seed、开始和结束时间、终态、关键冻结 gate、失败原因、是否允许后继以及本轮结论。技术重试新建独立 family，不覆盖旧 artifacts、不降低冻结阈值。
 
 本索引不记录正在运行实验的中间性能数值；中间数值只由低频 heartbeat 在必要时读取并写入对应实验证据。
+
+## 10. SetFlow S1 corrected-screen provenance bridge
+
+SetFlow S1 confirmation 的 corrected-screen 生产代码基线固定为
+`19bc3ed4dd3ee5647e3d3304c10dc9914f885e68`（S3），前一代码基线为
+`26fdbcb38090cf98e68425bebabd084a374447c4`（Z2）。追踪审计是
+`audits/route_a_v3_route2_xeditsetflow_s1_corrected_screen_confirmation_provenance_19bc3ed4dd3ee5647e3d3304c10dc9914f885e68.json`，
+status 必须为 `XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS`。
+Z2→S3 的生产 pathspec 差异必须精确为 confirmation protocol、confirmation core、S1 gate core 与 S1 trainer
+四条路径；其中 protocol 只能把 `screen_provenance` 的六个 family 字段从已失效 930 family 换成 corrected
+`ebf99ebf8a253ad27e311e555121d328df8fae10` family。旧 930 terminal invalidation 与 seed-initialization repair
+必须继续保留，930 仍不能授权任何后继。
+
+SetFlow confirmation launcher 必须在 GPU inventory/probe 和 family 物化前验证上述审计、精确四路径以及
+S3→当前 runner 在完整生产 pathspec 上为空，并把审计 baseline head/path/status 写入 authorization、training schedule 与
+launch receipt。Critic confirmation consumer 同时从 Critic 技术基线
+`793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110`（Z1）核对：Z1→S3 在原 Critic training-semantic
+pathspec 下只能出现两个 SetFlow core provenance-only、Critic-objective-neutral 路径，S3→当前 runner 在该
+pathspec 上必须为空。当前 confirmation runner HEAD 可以不同于 corrected screen producer HEAD，但不得回退 930、
+不得目录发现或 fallback。
+
+该 bridge 不改变 SetFlow/Critic 模型、architecture、forward/loss、objective/weight、seed、pass、batch、checkpoint、
+bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失败或 protected-outcome policy；protected reads=0。
+审计本身 `successor_authorized=false`、`confirmation_authorized=false`，不声明模型结果，也不改变 Final/Guidance
+准入条件。

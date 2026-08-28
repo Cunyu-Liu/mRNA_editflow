@@ -52,6 +52,87 @@ PROTOCOL = (
     WORKTREE
     / "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json"
 )
+CORRECTED_SCREEN_PROVENANCE_PREVIOUS_CODE_BASELINE_HEAD = (
+    "26fdbcb38090cf98e68425bebabd084a374447c4"
+)
+CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD = (
+    "19bc3ed4dd3ee5647e3d3304c10dc9914f885e68"
+)
+CRITIC_CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD = (
+    "793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110"
+)
+INVALIDATED_SCREEN_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+CORRECTED_SCREEN_PROVENANCE_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditsetflow_s1_corrected_screen_"
+    "confirmation_provenance_19bc3ed4dd3ee5647e3d3304c10dc9914f885e68.json"
+)
+CORRECTED_SCREEN_PROVENANCE_AUDIT_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_s1_corrected_screen_"
+    "confirmation_provenance.v1"
+)
+CORRECTED_SCREEN_PROVENANCE_AUDIT_STATUS = (
+    "XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS"
+)
+CORRECTED_SCREEN_PROVENANCE_PRODUCTION_PATHSPEC = (
+    "configs",
+    "core",
+    "scripts/route_a_v3/train_route2_xeditsetflow_s1.py",
+)
+CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS = (
+    "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json",
+    "core/route2_xeditsetflow_confirmation_s1.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+    "scripts/route_a_v3/train_route2_xeditsetflow_s1.py",
+)
+CORRECTED_SCREEN_PROVENANCE_PATH_CLASSIFICATION = {
+    CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS[0]: (
+        "CORRECTED_SCREEN_PROTOCOL_PROVENANCE_SIX_FIELDS_ONLY"
+    ),
+    CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS[1]: (
+        "CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BINDING_ONLY"
+    ),
+    CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS[2]: (
+        "CORRECTED_SCREEN_CONFIRMATION_GATE_LINEAGE_ONLY"
+    ),
+    CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS[3]: (
+        "CORRECTED_SCREEN_CONFIRMATION_AUTHORIZATION_LINEAGE_ONLY"
+    ),
+}
+CORRECTED_SCREEN_PROVENANCE_PROTOCOL_FIELDS = (
+    "authorization_path",
+    "runtime_config_path",
+    "runtime_path",
+    "schedule_path",
+    "screen_gate_path",
+    "screen_runner_git_head",
+)
+CORRECTED_SCREEN_PROVENANCE_CRITIC_PATHS = (
+    "core/route2_xeditsetflow_confirmation_s1.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+)
+CORRECTED_SCREEN_PROVENANCE_CRITIC_PATH_CLASSIFICATION = {
+    path: "SETFLOW_PROVENANCE_ONLY_CRITIC_OBJECTIVE_NEUTRAL"
+    for path in CORRECTED_SCREEN_PROVENANCE_CRITIC_PATHS
+}
+CORRECTED_SCREEN_PROVENANCE_UNCHANGED_FLAGS = (
+    "setflow_model_architecture_forward_loss_changed",
+    "setflow_trainer_parameter_update_semantics_changed",
+    "objective_identity_changed",
+    "objective_weight_changed",
+    "screen_seed_changed",
+    "confirmation_seed_cohort_changed",
+    "pass_count_changed",
+    "physical_or_effective_batch_changed",
+    "checkpoint_passes_changed",
+    "paired_bootstrap_changed",
+    "scientific_thresholds_changed",
+    "gpu_scope_or_fixed_mapping_changed",
+    "free_or_estimated_memory_gate_added",
+    "free_or_estimated_memory_sorting_added",
+    "package_failure_policy_changed",
+    "protected_outcome_policy_changed",
+)
 TRAINER = WORKTREE / "scripts/route_a_v3/train_route2_xeditsetflow_s1.py"
 SCHEDULER = (
     WORKTREE
@@ -138,6 +219,164 @@ def protected_reads_zero(payload: Mapping[str, Any], *, label: str) -> None:
         and int(payload.get("new_final_evaluation_outcome_reads", -1)) == 0,
         f"SetFlow S1 {label} reports a protected outcome read",
     )
+
+
+def validate_corrected_screen_provenance_audit_s1(
+    audit: Mapping[str, Any],
+) -> None:
+    replacement = audit.get("protocol_screen_provenance_replacement")
+    setflow_consumer = audit.get("setflow_confirmation_consumer_review")
+    critic_consumer = audit.get("critic_confirmation_consumer_review")
+    require(
+        audit.get("schema_version")
+        == CORRECTED_SCREEN_PROVENANCE_AUDIT_SCHEMA
+        and audit.get("status") == CORRECTED_SCREEN_PROVENANCE_AUDIT_STATUS
+        and audit.get("previous_code_baseline_git_head")
+        == CORRECTED_SCREEN_PROVENANCE_PREVIOUS_CODE_BASELINE_HEAD
+        and audit.get(
+            "corrected_screen_confirmation_provenance_baseline_git_head"
+        )
+        == CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD
+        and audit.get("critic_controls_oom_retry_technical_baseline_git_head")
+        == CRITIC_CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+        and audit.get("invalidated_screen_runner_git_head")
+        == INVALIDATED_SCREEN_HEAD
+        and audit.get("corrected_screen_runner_git_head") == SCREEN_HEAD
+        and audit.get("production_pathspec")
+        == list(CORRECTED_SCREEN_PROVENANCE_PRODUCTION_PATHSPEC)
+        and tuple(
+            audit.get("changed_production_paths_from_previous_code_baseline", [])
+        )
+        == CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS
+        and audit.get("changed_production_paths_from_previous_code_baseline")
+        == sorted(
+            audit.get("changed_production_paths_from_previous_code_baseline", [])
+        )
+        and audit.get("production_path_classification")
+        == CORRECTED_SCREEN_PROVENANCE_PATH_CLASSIFICATION
+        and tuple(audit.get("protocol_changed_screen_provenance_fields", []))
+        == CORRECTED_SCREEN_PROVENANCE_PROTOCOL_FIELDS
+        and isinstance(replacement, Mapping)
+        and replacement.get("from_screen_runner_git_head")
+        == INVALIDATED_SCREEN_HEAD
+        and replacement.get("to_screen_runner_git_head") == SCREEN_HEAD
+        and replacement.get("all_six_fields_replace_only_the_family_head")
+        is True
+        and replacement.get("all_other_protocol_fields_changed") is False
+        and tuple(
+            audit.get(
+                "critic_training_semantic_paths_from_z1_to_corrected_screen_baseline",
+                [],
+            )
+        )
+        == CORRECTED_SCREEN_PROVENANCE_CRITIC_PATHS
+        and audit.get("critic_path_classification")
+        == CORRECTED_SCREEN_PROVENANCE_CRITIC_PATH_CLASSIFICATION
+        and all(
+            audit.get(field) is False
+            for field in CORRECTED_SCREEN_PROVENANCE_UNCHANGED_FLAGS
+        )
+        and audit.get("old_930_terminal_invalidation_preserved") is True
+        and audit.get("old_930_seed_initialization_repair_preserved") is True
+        and audit.get("invalidated_930_family_can_authorize_successor") is False
+        and audit.get(
+            "current_confirmation_runner_may_differ_from_corrected_screen_runner"
+        )
+        is True
+        and audit.get("successor_authorized_by_this_audit") is False
+        and audit.get("confirmation_authorized_by_this_audit") is False
+        and isinstance(setflow_consumer, Mapping)
+        and setflow_consumer.get("path")
+        == (
+            "scripts/route_a_v3/"
+            "launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py"
+        )
+        and setflow_consumer.get("included_in_changed_production_paths") is False
+        and setflow_consumer.get(
+            "expected_changed_production_paths_from_baseline_to_runner"
+        )
+        == []
+        and isinstance(critic_consumer, Mapping)
+        and critic_consumer.get("path")
+        == (
+            "scripts/route_a_v3/"
+            "launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py"
+        )
+        and critic_consumer.get("included_in_critic_training_semantic_pathspec")
+        is False
+        and critic_consumer.get(
+            "expected_critic_training_semantic_paths_from_baseline_to_runner"
+        )
+        == []
+        and audit.get("model_result_claimed") is False
+        and audit.get("submission_ready") is False,
+        "S1 corrected-screen confirmation provenance audit is absent or invalid",
+    )
+    protected_reads_zero(
+        audit, label="corrected-screen confirmation provenance audit"
+    )
+
+
+def corrected_screen_provenance_baseline_binding_s1() -> dict[str, str]:
+    return {
+        "corrected_screen_confirmation_provenance_baseline_git_head": (
+            CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD
+        ),
+        "corrected_screen_confirmation_provenance_audit": str(
+            CORRECTED_SCREEN_PROVENANCE_AUDIT
+        ),
+        "corrected_screen_confirmation_provenance_audit_status": (
+            CORRECTED_SCREEN_PROVENANCE_AUDIT_STATUS
+        ),
+    }
+
+
+def validate_corrected_screen_provenance_baseline_s1(
+    current_head: str,
+) -> dict[str, Any]:
+    audit = read_json(CORRECTED_SCREEN_PROVENANCE_AUDIT)
+    validate_corrected_screen_provenance_audit_s1(audit)
+    baseline_changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            CORRECTED_SCREEN_PROVENANCE_PREVIOUS_CODE_BASELINE_HEAD,
+            CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD,
+            "--",
+            *CORRECTED_SCREEN_PROVENANCE_PRODUCTION_PATHSPEC,
+        ]
+    ).stdout.splitlines()
+    require(
+        tuple(baseline_changed)
+        == CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS,
+        "S1 corrected-screen provenance production paths differ from the exact "
+        "Git diff: " + ", ".join(baseline_changed),
+    )
+    changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD,
+            current_head,
+            "--",
+            *CORRECTED_SCREEN_PROVENANCE_PRODUCTION_PATHSPEC,
+        ]
+    ).stdout.splitlines()
+    require(
+        not changed,
+        "S1 corrected-screen provenance changed after its code baseline: "
+        + ", ".join(changed),
+    )
+    return {
+        **corrected_screen_provenance_baseline_binding_s1(),
+        "changed_production_paths_from_previous_code_baseline": baseline_changed,
+        "changed_production_paths_since_corrected_screen_provenance_baseline": (
+            changed
+        ),
+        "corrected_screen_provenance_unchanged_since_baseline": True,
+    }
 
 
 def format_output_path(
@@ -446,6 +685,7 @@ def build_authorization_s1(
             "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_launch_authorization.v1"
         ),
         "status": "XEDITSETFLOW_V4_S1_CONFIRMATION_LAUNCH_AUTHORIZED",
+        **corrected_screen_provenance_baseline_binding_s1(),
         "authorized_git_head": runner_head,
         "authorized_run_ids": [CONFIRMATION_RUN_ID],
         "authorized_seeds": list(CONFIRMATION_SEEDS),
@@ -485,6 +725,16 @@ def validate_authorization_s1(
         == "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_launch_authorization.v1"
         and authorization.get("status")
         == "XEDITSETFLOW_V4_S1_CONFIRMATION_LAUNCH_AUTHORIZED"
+        and authorization.get(
+            "corrected_screen_confirmation_provenance_baseline_git_head"
+        )
+        == CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD
+        and authorization.get("corrected_screen_confirmation_provenance_audit")
+        == str(CORRECTED_SCREEN_PROVENANCE_AUDIT)
+        and authorization.get(
+            "corrected_screen_confirmation_provenance_audit_status"
+        )
+        == CORRECTED_SCREEN_PROVENANCE_AUDIT_STATUS
         and authorization.get("authorized_git_head") == runner_head
         and authorization.get("authorized_run_ids") == [CONFIRMATION_RUN_ID]
         and authorization.get("authorized_seeds") == list(CONFIRMATION_SEEDS)
@@ -586,6 +836,7 @@ def build_training_schedule_s1(
             "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_training_schedule.v1"
         ),
         "status": "FROZEN_S1_CONFIRMATION_TRAINING_SCHEDULE",
+        **corrected_screen_provenance_baseline_binding_s1(),
         "git_head": runner_head,
         "experiment_head": SCREEN_HEAD,
         "worktree": str(WORKTREE),
@@ -805,6 +1056,7 @@ def run(
     ):
         require(path.is_file(), f"{label} is absent: {path}")
     require_exact_pushed_clean_head(expected_head)
+    validate_corrected_screen_provenance_baseline_s1(expected_head)
 
     protocol = read_json(PROTOCOL)
     base_path = WORKTREE / str(protocol.get("base_screen_config", ""))
@@ -1033,6 +1285,7 @@ def run(
             "route_a_v3_route2_xeditsetflow_v4_s1_confirmation_training_launch.v1"
         ),
         "status": "XEDITSETFLOW_V4_S1_CONFIRMATION_TRAINING_SCHEDULER_LAUNCHED",
+        **corrected_screen_provenance_baseline_binding_s1(),
         "runner_git_head": expected_head,
         "scheduler_pid": process.pid,
         "schedule_path": str(schedule_path),

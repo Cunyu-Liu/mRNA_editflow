@@ -1020,3 +1020,33 @@ or terminal artifacts.
   materialize new dual receipts before one retry launch. None of the present
   engineering work is Critic readiness, Guidance evidence or an excellent
   Development result.
+
+## Iteration 18 — Freeze the corrected SetFlow screen-to-confirmation bridge
+
+- Production baseline: S3
+  `19bc3ed4dd3ee5647e3d3304c10dc9914f885e68` follows Z2
+  `26fdbcb38090cf98e68425bebabd084a374447c4`. Under the frozen production
+  pathspec, Z2→S3 changes exactly four paths: the S1 confirmation protocol,
+  confirmation core, gate core and trainer. The protocol diff is restricted to
+  six `screen_provenance` fields, each replacing only the invalid 930 family
+  identity with corrected-screen producer
+  `ebf99ebf8a253ad27e311e555121d328df8fae10`.
+- Immutable audit: the tracked artifact is
+  `audits/route_a_v3_route2_xeditsetflow_s1_corrected_screen_confirmation_provenance_19bc3ed4dd3ee5647e3d3304c10dc9914f885e68.json`
+  with status
+  `XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS`. It keeps
+  the old 930 invalidation and seed-initialization repair authoritative and
+  explicitly denies both successor and confirmation authorization.
+- Dual-consumer barrier: the SetFlow confirmation launcher validates the audit,
+  exact Z2→S3 four-path diff and an empty S3→current diff before any GPU probe,
+  then records the baseline head/path/status in authorization, schedule and
+  launch receipt. The Critic confirmation launcher independently preserves its
+  f1a and Z1 audits, accepts exactly the two SetFlow core paths from Z1→S3 as
+  provenance-only and Critic-objective-neutral, and requires no later drift in
+  its frozen pathspec. The runner HEAD may advance; the corrected screen
+  producer remains ebf and 930 remains forbidden.
+- Scientific boundary: objective/weight, seed cohorts, passes, batch, checkpoint
+  set, bootstrap, thresholds, GPU0–5 mapping, no-VRAM-gate, package-first-failure
+  and protected-outcome policies are unchanged. This CPU-native provenance
+  bridge reads no active runtime or protected outcome, authorizes no GPU family,
+  and reports no model result; `submission_ready=false` remains.

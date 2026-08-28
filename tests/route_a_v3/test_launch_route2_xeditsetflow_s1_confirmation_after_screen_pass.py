@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -14,6 +15,94 @@ OLD_INVALID_SCREEN_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
 
 def test_confirmation_launcher_is_bound_to_the_permitted_execution_branch() -> None:
     assert launcher.BRANCH == "route-a-v3-v403-no-vram-gate-20260827"
+
+
+def _canonical_provenance_audit() -> dict:
+    return json.loads(
+        launcher.CORRECTED_SCREEN_PROVENANCE_AUDIT.read_text(encoding="utf-8")
+    )
+
+
+def _exact_provenance_diff(arguments) -> SimpleNamespace:
+    arguments = list(arguments)
+    assert tuple(arguments[arguments.index("--") + 1 :]) == (
+        launcher.CORRECTED_SCREEN_PROVENANCE_PRODUCTION_PATHSPEC
+    )
+    if arguments[3:5] == [
+        launcher.CORRECTED_SCREEN_PROVENANCE_PREVIOUS_CODE_BASELINE_HEAD,
+        launcher.CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD,
+    ]:
+        rows = launcher.CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS
+    elif arguments[3:5] == [
+        launcher.CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD,
+        HEAD,
+    ]:
+        rows = ()
+    else:
+        raise AssertionError(f"unexpected Git diff command: {arguments}")
+    return SimpleNamespace(
+        stdout="" if not rows else "\n".join(rows) + "\n"
+    )
+
+
+def test_corrected_screen_provenance_audit_is_exact_and_rejects_drift() -> None:
+    audit = _canonical_provenance_audit()
+    launcher.validate_corrected_screen_provenance_audit_s1(audit)
+
+    changed_path = json.loads(json.dumps(audit))
+    changed_path["changed_production_paths_from_previous_code_baseline"].append(
+        "core/unexpected.py"
+    )
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError, match="provenance audit"
+    ):
+        launcher.validate_corrected_screen_provenance_audit_s1(changed_path)
+
+    changed_flag = json.loads(json.dumps(audit))
+    changed_flag["scientific_thresholds_changed"] = True
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError, match="provenance audit"
+    ):
+        launcher.validate_corrected_screen_provenance_audit_s1(changed_flag)
+
+    old_screen = json.loads(json.dumps(audit))
+    old_screen["corrected_screen_runner_git_head"] = OLD_INVALID_SCREEN_HEAD
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError, match="provenance audit"
+    ):
+        launcher.validate_corrected_screen_provenance_audit_s1(old_screen)
+
+
+def test_corrected_screen_provenance_git_baseline_is_exact_and_frozen(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(launcher, "command", _exact_provenance_diff)
+    result = launcher.validate_corrected_screen_provenance_baseline_s1(HEAD)
+    assert result == {
+        **launcher.corrected_screen_provenance_baseline_binding_s1(),
+        "changed_production_paths_from_previous_code_baseline": list(
+            launcher.CORRECTED_SCREEN_PROVENANCE_CHANGED_PRODUCTION_PATHS
+        ),
+        "changed_production_paths_since_corrected_screen_provenance_baseline": [],
+        "corrected_screen_provenance_unchanged_since_baseline": True,
+    }
+
+    def drifted(arguments) -> SimpleNamespace:
+        result = _exact_provenance_diff(arguments)
+        if list(arguments)[3] == launcher.CORRECTED_SCREEN_PROVENANCE_BASELINE_HEAD:
+            return SimpleNamespace(
+                stdout=(
+                    "core/route2_xeditsetflow_confirmation_s1.py\n"
+                )
+            )
+        return result
+
+    monkeypatch.setattr(launcher, "command", drifted)
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError,
+        match="changed after its code baseline",
+    ):
+        launcher.validate_corrected_screen_provenance_baseline_s1(HEAD)
 
 
 def _protocol(tmp_path: Path) -> dict:
@@ -198,6 +287,10 @@ def test_training_schedule_is_three_full_only_and_low_memory_never_changes_it(
     assert schedule["git_head"] == HEAD
     assert schedule["experiment_head"] == launcher.SCREEN_HEAD
     assert schedule["git_head"] != schedule["experiment_head"]
+    assert {
+        key: schedule[key]
+        for key in launcher.corrected_screen_provenance_baseline_binding_s1()
+    } == launcher.corrected_screen_provenance_baseline_binding_s1()
     assert len(jobs) == 3
     assert {job["run_id"] for job in jobs} == {"v4_s1_full"}
     assert [job["training_seed"] for job in jobs] == [20260912, 20260913, 20260914]
@@ -205,6 +298,51 @@ def test_training_schedule_is_three_full_only_and_low_memory_never_changes_it(
     assert schedule["single_mode_training_job_count"] == 0
     assert schedule["free_memory_gate_applied"] is False
     assert schedule["gpu_diagnostics_before_launch"]["0"]["free_memory_mib"] == 1
+
+
+def test_authorization_and_launch_bind_corrected_screen_provenance_baseline(
+    tmp_path: Path,
+) -> None:
+    configs = _configs(tmp_path)
+    authorization = launcher.build_authorization_s1(
+        runner_head=HEAD,
+        configs=configs,
+        receipts={"shared": {}, "setflow": {}},
+        diagnostics={},
+        probes={},
+    )
+    binding = launcher.corrected_screen_provenance_baseline_binding_s1()
+    assert {key: authorization[key] for key in binding} == binding
+    first_config = json.loads(configs[launcher.CONFIRMATION_SEEDS[0]].read_text())
+    launcher.validate_authorization_s1(
+        authorization,
+        first_config,
+        runner_head=HEAD,
+    )
+    authorization[
+        "corrected_screen_confirmation_provenance_baseline_git_head"
+    ] = OLD_INVALID_SCREEN_HEAD
+    with pytest.raises(
+        launcher.XEditSetFlowS1ConfirmationLaunchError,
+        match="authorization identity",
+    ):
+        launcher.validate_authorization_s1(
+            authorization,
+            first_config,
+            runner_head=HEAD,
+        )
+
+    source = Path(launcher.__file__).read_text(encoding="utf-8")
+    run_source = source[source.index("def run(") :]
+    assert run_source.index(
+        "validate_corrected_screen_provenance_baseline_s1(expected_head)"
+    ) < run_source.index("diagnostics, probes = perform_gpu_preflight_s1(")
+    launch_block = run_source[
+        run_source.index("    launch = {") : run_source.index(
+            '    write_new_atomic(training_root / "launch.json", launch)'
+        )
+    ]
+    assert "**corrected_screen_provenance_baseline_binding_s1()" in launch_block
 
 
 def test_screen_runtime_requires_exact_two_plus_eight_zero_exit_unique_summaries(

@@ -4345,3 +4345,23 @@ fast-forward 到新 clean pushed HEAD，并重新通过完整八组 focused、�
 两路径，基线→confirmation runner 必须为空。该证据只闭合 OOM lineage、独立 retry、两个固定 waves、
 allocator 与 package-first-failure 执行语义；模型、forward/loss、科学 config、数据、sampler、batch、seed、update budget、
 门槛与 GPU0–5 映射均不变，不新增显存 gate，protected reads=0，不是参数更新 attempt 或模型结果。
+
+## SetFlow S1 corrected-screen confirmation provenance bridge（2026-08-29）
+
+本项不是训练 attempt。S3 代码基线
+`19bc3ed4dd3ee5647e3d3304c10dc9914f885e68` 相对 Z2
+`26fdbcb38090cf98e68425bebabd084a374447c4` 的冻结生产 diff 精确为四路径：confirmation protocol、
+confirmation core、S1 gate core 与 S1 trainer。protocol 仅在 `screen_provenance` 的
+`screen_runner_git_head/schedule_path/runtime_path/runtime_config_path/authorization_path/screen_gate_path`
+六字段中把已失效 930 family 替换成 corrected ebf family；旧 930 invalidation/repair 证据继续有效且不能授权后继。
+
+canonical audit 为
+`audits/route_a_v3_route2_xeditsetflow_s1_corrected_screen_confirmation_provenance_19bc3ed4dd3ee5647e3d3304c10dc9914f885e68.json`，
+status=`XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS`。SetFlow consumer 在 GPU 前验证
+Z2→S3 精确四路径与 S3→runner 在完整生产 pathspec 上无漂移，并把 baseline head/path/status 绑定到 authorization、schedule、launch；
+Critic consumer 保留旧 f1a/Z1 审计，同时只允许 Z1→S3 的两个 SetFlow core provenance-only、
+Critic-objective-neutral 路径，并要求 S3→runner 在原 Critic pathspec 上为空。
+
+模型、architecture、forward/loss、objective/weight、seed、pass、batch、checkpoint、bootstrap、阈值、GPU 映射、
+no-VRAM-gate、package-first-failure 与 protected policy 均未改变；Development TEST/new Evaluation reads=0。
+该审计不授权 confirmation/successor，不是参数更新、Validation、readiness 或模型结果。

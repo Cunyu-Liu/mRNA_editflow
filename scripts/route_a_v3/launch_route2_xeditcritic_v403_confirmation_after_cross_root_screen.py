@@ -89,6 +89,54 @@ CONTROLS_OOM_RETRY_UNCHANGED_FLAGS = {
     "control_physical_gpu_mapping_changed": False,
     "free_memory_gate_added": False,
 }
+PREVIOUS_CODE_BASELINE_HEAD = "26fdbcb38090cf98e68425bebabd084a374447c4"
+CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD = (
+    "19bc3ed4dd3ee5647e3d3304c10dc9914f885e68"
+)
+CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditsetflow_s1_corrected_screen_"
+    "confirmation_provenance_19bc3ed4dd3ee5647e3d3304c10dc9914f885e68.json"
+)
+CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_SCHEMA = (
+    "route_a_v3_route2_xeditsetflow_s1_corrected_screen_"
+    "confirmation_provenance.v1"
+)
+CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_STATUS = (
+    "XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS"
+)
+INVALIDATED_SCREEN_RUNNER_GIT_HEAD = (
+    "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+)
+CORRECTED_SCREEN_RUNNER_GIT_HEAD = (
+    "ebf99ebf8a253ad27e311e555121d328df8fae10"
+)
+CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS = (
+    "core/route2_xeditsetflow_confirmation_s1.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+)
+CORRECTED_SCREEN_PROVENANCE_PATH_CLASSIFICATION = {
+    path: "SETFLOW_PROVENANCE_ONLY_CRITIC_OBJECTIVE_NEUTRAL"
+    for path in CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS
+}
+CORRECTED_SCREEN_PROVENANCE_UNCHANGED_FLAGS = {
+    "setflow_model_architecture_forward_loss_changed": False,
+    "setflow_trainer_parameter_update_semantics_changed": False,
+    "objective_identity_changed": False,
+    "objective_weight_changed": False,
+    "screen_seed_changed": False,
+    "confirmation_seed_cohort_changed": False,
+    "pass_count_changed": False,
+    "physical_or_effective_batch_changed": False,
+    "checkpoint_passes_changed": False,
+    "paired_bootstrap_changed": False,
+    "scientific_thresholds_changed": False,
+    "gpu_scope_or_fixed_mapping_changed": False,
+    "free_or_estimated_memory_gate_added": False,
+    "free_or_estimated_memory_sorting_added": False,
+    "package_failure_policy_changed": False,
+    "protected_outcome_policy_changed": False,
+}
 TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
     "core/route2_experiment_ledger.py",
     "core/route2_xeditcritic_gate_v4.py",
@@ -1108,6 +1156,94 @@ def controls_oom_retry_technical_baseline_binding() -> dict[str, str]:
     }
 
 
+def validate_corrected_screen_confirmation_provenance_audit(
+    audit: Mapping[str, Any],
+) -> None:
+    consumer_review = audit.get("critic_confirmation_consumer_review")
+    unchanged_flags_match = all(
+        audit.get(name) is expected
+        for name, expected in CORRECTED_SCREEN_PROVENANCE_UNCHANGED_FLAGS.items()
+    )
+    require(
+        audit.get("schema_version")
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_SCHEMA
+        and audit.get("status")
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_STATUS
+        and audit.get("previous_code_baseline_git_head")
+        == PREVIOUS_CODE_BASELINE_HEAD
+        and audit.get("critic_controls_oom_retry_technical_baseline_git_head")
+        == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD
+        and audit.get(
+            "corrected_screen_confirmation_provenance_baseline_git_head"
+        )
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        and tuple(
+            audit.get(
+                "critic_training_semantic_paths_from_z1_to_corrected_screen_baseline",
+                [],
+            )
+        )
+        == CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS
+        and audit.get(
+            "critic_training_semantic_paths_from_z1_to_corrected_screen_baseline"
+        )
+        == sorted(
+            audit.get(
+                "critic_training_semantic_paths_from_z1_to_corrected_screen_baseline",
+                [],
+            )
+        )
+        and audit.get("critic_path_classification")
+        == CORRECTED_SCREEN_PROVENANCE_PATH_CLASSIFICATION
+        and audit.get("invalidated_screen_runner_git_head")
+        == INVALIDATED_SCREEN_RUNNER_GIT_HEAD
+        and audit.get("corrected_screen_runner_git_head")
+        == CORRECTED_SCREEN_RUNNER_GIT_HEAD
+        and unchanged_flags_match
+        and audit.get("old_930_terminal_invalidation_preserved") is True
+        and audit.get("old_930_seed_initialization_repair_preserved") is True
+        and audit.get("invalidated_930_family_can_authorize_successor") is False
+        and audit.get(
+            "current_confirmation_runner_may_differ_from_corrected_screen_runner"
+        )
+        is True
+        and audit.get("successor_authorized_by_this_audit") is False
+        and audit.get("confirmation_authorized_by_this_audit") is False
+        and isinstance(consumer_review, Mapping)
+        and consumer_review.get("path")
+        == (
+            "scripts/route_a_v3/"
+            "launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py"
+        )
+        and consumer_review.get("included_in_critic_training_semantic_pathspec")
+        is False
+        and consumer_review.get(
+            "expected_critic_training_semantic_paths_from_baseline_to_runner"
+        )
+        == []
+        and audit.get("model_result_claimed") is False
+        and audit.get("submission_ready") is False,
+        "corrected SetFlow screen confirmation-provenance audit is absent or invalid",
+    )
+    require_zero_protected_reads(
+        audit, label="corrected SetFlow screen confirmation-provenance audit"
+    )
+
+
+def corrected_screen_confirmation_provenance_binding() -> dict[str, str]:
+    return {
+        "corrected_screen_confirmation_provenance_baseline_git_head": (
+            CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        ),
+        "corrected_screen_confirmation_provenance_audit": str(
+            CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT
+        ),
+        "corrected_screen_confirmation_provenance_audit_status": (
+            CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_STATUS
+        ),
+    }
+
+
 def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
@@ -1125,6 +1261,12 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     )
     validate_controls_oom_retry_technical_baseline_audit(
         technical_baseline_audit
+    )
+    corrected_screen_provenance_audit = read_json(
+        CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT
+    )
+    validate_corrected_screen_confirmation_provenance_audit(
+        corrected_screen_provenance_audit
     )
     audited_changed = command(
         [
@@ -1176,12 +1318,30 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "Critic controls OOM-retry technical semantic paths differ from the "
         "exact Git diff: " + ", ".join(technical_baseline_changed),
     )
-    changed = command(
+    corrected_screen_provenance_changed = command(
         [
             "git",
             "diff",
             "--name-only",
             CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_HEAD,
+            CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD,
+            "--",
+            *TRAINING_SEMANTIC_PATHS,
+        ]
+    ).stdout.splitlines()
+    require(
+        tuple(corrected_screen_provenance_changed)
+        == CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS,
+        "SetFlow corrected-screen provenance paths differ from the exact "
+        "Critic training-semantic Git diff: "
+        + ", ".join(corrected_screen_provenance_changed),
+    )
+    changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD,
             current_head,
             "--",
             *TRAINING_SEMANTIC_PATHS,
@@ -1189,8 +1349,8 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     ).stdout.splitlines()
     require(
         not changed,
-        "Critic confirmation training semantics changed after the controls "
-        "OOM-retry technical baseline: " + ", ".join(changed),
+        "Critic confirmation training semantics changed after the corrected "
+        "SetFlow screen provenance baseline: " + ", ".join(changed),
     )
     return {
         "historical_repaired_screen_provenance_git_head": (
@@ -1210,6 +1370,7 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
             "status"
         ],
         **controls_oom_retry_technical_baseline_binding(),
+        **corrected_screen_confirmation_provenance_binding(),
         "runner_git_head": current_head,
         "training_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
@@ -1222,9 +1383,15 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         ),
         "training_semantics_unchanged_since_audited_successor_baseline": False,
         "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline": (
-            changed
+            corrected_screen_provenance_changed
         ),
         "training_semantics_unchanged_since_controls_oom_retry_technical_baseline": (
+            False
+        ),
+        "training_semantic_diff_paths_since_corrected_screen_confirmation_provenance_baseline": (
+            changed
+        ),
+        "training_semantics_unchanged_since_corrected_screen_confirmation_provenance_baseline": (
             True
         ),
         "repaired_screen_is_historical_provenance_only": True,
@@ -1463,6 +1630,18 @@ def build_confirmation_authorization(
         )
         == CONTROLS_OOM_RETRY_TECHNICAL_BASELINE_AUDIT_STATUS
         and training_semantics.get(
+            "corrected_screen_confirmation_provenance_baseline_git_head"
+        )
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        and training_semantics.get(
+            "corrected_screen_confirmation_provenance_audit"
+        )
+        == str(CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT)
+        and training_semantics.get(
+            "corrected_screen_confirmation_provenance_audit_status"
+        )
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_AUDIT_STATUS
+        and training_semantics.get(
             "training_semantic_diff_paths_since_audited_successor_baseline"
         )
         == list(CONTROLS_OOM_RETRY_CHANGED_TRAINING_SEMANTIC_PATHS)
@@ -1473,9 +1652,17 @@ def build_confirmation_authorization(
         and training_semantics.get(
             "training_semantic_diff_paths_since_controls_oom_retry_technical_baseline"
         )
-        == []
+        == list(CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS)
         and training_semantics.get(
             "training_semantics_unchanged_since_controls_oom_retry_technical_baseline"
+        )
+        is False
+        and training_semantics.get(
+            "training_semantic_diff_paths_since_corrected_screen_confirmation_provenance_baseline"
+        )
+        == []
+        and training_semantics.get(
+            "training_semantics_unchanged_since_corrected_screen_confirmation_provenance_baseline"
         )
         is True
         and training_semantics.get(
@@ -1528,6 +1715,7 @@ def build_confirmation_authorization(
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
         **controls_oom_retry_technical_baseline_binding(),
+        **corrected_screen_confirmation_provenance_binding(),
         "training_semantics": dict(training_semantics),
         "source_authorization_paths": {
             run_id: gate["cross_root_transition"]["arm_sources"][run_id][
@@ -1568,6 +1756,9 @@ def build_confirmation_authorization(
         "scientific_thresholds_changed": False,
         "training_semantics_unchanged_since_audited_successor_baseline": False,
         "training_semantics_unchanged_since_controls_oom_retry_technical_baseline": (
+            False
+        ),
+        "training_semantics_unchanged_since_corrected_screen_confirmation_provenance_baseline": (
             True
         ),
         "repaired_screen_is_historical_provenance_only": True,
@@ -1761,6 +1952,7 @@ def build_schedule(
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
         **controls_oom_retry_technical_baseline_binding(),
+        **corrected_screen_confirmation_provenance_binding(),
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "eligible_components": ["critic"],
@@ -2011,6 +2203,7 @@ def run(current_head: str) -> dict[str, Any]:
             TRAINING_SEMANTICS_BASELINE_AUDIT
         ),
         **controls_oom_retry_technical_baseline_binding(),
+        **corrected_screen_confirmation_provenance_binding(),
         "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
         "historical_full_git_head": REPAIRED_SCREEN_PROVENANCE_GIT_HEAD,
         "control_runner_git_head": current_head,

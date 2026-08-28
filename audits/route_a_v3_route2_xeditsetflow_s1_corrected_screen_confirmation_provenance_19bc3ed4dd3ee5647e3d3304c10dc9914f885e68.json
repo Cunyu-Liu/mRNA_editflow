@@ -1,0 +1,84 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_s1_corrected_screen_confirmation_provenance.v1",
+  "status": "XEDITSETFLOW_V4_S1_CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_PASS",
+  "previous_code_baseline_git_head": "26fdbcb38090cf98e68425bebabd084a374447c4",
+  "corrected_screen_confirmation_provenance_baseline_git_head": "19bc3ed4dd3ee5647e3d3304c10dc9914f885e68",
+  "critic_controls_oom_retry_technical_baseline_git_head": "793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110",
+  "invalidated_screen_runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
+  "corrected_screen_runner_git_head": "ebf99ebf8a253ad27e311e555121d328df8fae10",
+  "production_pathspec": [
+    "configs",
+    "core",
+    "scripts/route_a_v3/train_route2_xeditsetflow_s1.py"
+  ],
+  "changed_production_paths_from_previous_code_baseline": [
+    "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json",
+    "core/route2_xeditsetflow_confirmation_s1.py",
+    "core/route2_xeditsetflow_gate_s1.py",
+    "scripts/route_a_v3/train_route2_xeditsetflow_s1.py"
+  ],
+  "production_path_classification": {
+    "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json": "CORRECTED_SCREEN_PROTOCOL_PROVENANCE_SIX_FIELDS_ONLY",
+    "core/route2_xeditsetflow_confirmation_s1.py": "CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BINDING_ONLY",
+    "core/route2_xeditsetflow_gate_s1.py": "CORRECTED_SCREEN_CONFIRMATION_GATE_LINEAGE_ONLY",
+    "scripts/route_a_v3/train_route2_xeditsetflow_s1.py": "CORRECTED_SCREEN_CONFIRMATION_AUTHORIZATION_LINEAGE_ONLY"
+  },
+  "protocol_changed_screen_provenance_fields": [
+    "authorization_path",
+    "runtime_config_path",
+    "runtime_path",
+    "schedule_path",
+    "screen_gate_path",
+    "screen_runner_git_head"
+  ],
+  "protocol_screen_provenance_replacement": {
+    "from_screen_runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
+    "to_screen_runner_git_head": "ebf99ebf8a253ad27e311e555121d328df8fae10",
+    "all_six_fields_replace_only_the_family_head": true,
+    "all_other_protocol_fields_changed": false
+  },
+  "critic_training_semantic_paths_from_z1_to_corrected_screen_baseline": [
+    "core/route2_xeditsetflow_confirmation_s1.py",
+    "core/route2_xeditsetflow_gate_s1.py"
+  ],
+  "critic_path_classification": {
+    "core/route2_xeditsetflow_confirmation_s1.py": "SETFLOW_PROVENANCE_ONLY_CRITIC_OBJECTIVE_NEUTRAL",
+    "core/route2_xeditsetflow_gate_s1.py": "SETFLOW_PROVENANCE_ONLY_CRITIC_OBJECTIVE_NEUTRAL"
+  },
+  "setflow_model_architecture_forward_loss_changed": false,
+  "setflow_trainer_parameter_update_semantics_changed": false,
+  "objective_identity_changed": false,
+  "objective_weight_changed": false,
+  "screen_seed_changed": false,
+  "confirmation_seed_cohort_changed": false,
+  "pass_count_changed": false,
+  "physical_or_effective_batch_changed": false,
+  "checkpoint_passes_changed": false,
+  "paired_bootstrap_changed": false,
+  "scientific_thresholds_changed": false,
+  "gpu_scope_or_fixed_mapping_changed": false,
+  "free_or_estimated_memory_gate_added": false,
+  "free_or_estimated_memory_sorting_added": false,
+  "package_failure_policy_changed": false,
+  "protected_outcome_policy_changed": false,
+  "old_930_terminal_invalidation_preserved": true,
+  "old_930_seed_initialization_repair_preserved": true,
+  "invalidated_930_family_can_authorize_successor": false,
+  "current_confirmation_runner_may_differ_from_corrected_screen_runner": true,
+  "successor_authorized_by_this_audit": false,
+  "confirmation_authorized_by_this_audit": false,
+  "setflow_confirmation_consumer_review": {
+    "path": "scripts/route_a_v3/launch_route2_xeditsetflow_s1_confirmation_after_screen_pass.py",
+    "included_in_changed_production_paths": false,
+    "expected_changed_production_paths_from_baseline_to_runner": []
+  },
+  "critic_confirmation_consumer_review": {
+    "path": "scripts/route_a_v3/launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py",
+    "included_in_critic_training_semantic_pathspec": false,
+    "expected_critic_training_semantic_paths_from_baseline_to_runner": []
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "model_result_claimed": false,
+  "submission_ready": false
+}
