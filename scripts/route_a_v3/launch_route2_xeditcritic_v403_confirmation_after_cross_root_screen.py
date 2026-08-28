@@ -33,13 +33,16 @@ HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD = (
     "708e2843b4b4a6f36796db5c21b6e99469138f3b"
 )
-TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD = (
+TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD = (
     "eba5b17431cb8e19202e5ea788fd419338da2d66"
+)
+TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD = (
+    "f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66"
 )
 TRAINING_SEMANTICS_BASELINE_AUDIT = (
     WORKTREE
     / "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
-    "training_semantics_reaudit_eba5b17431cb8e19202e5ea788fd419338da2d66.json"
+    "training_semantics_reaudit_f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66.json"
 )
 TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
     "core/route2_experiment_ledger.py",
@@ -92,13 +95,13 @@ TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION = {
         "CRITIC_SCREEN_RUNNER_HEAD_PROPAGATION_ONLY"
     ),
     "scripts/route_a_v3/launch_route2_xeditcritic_v403_controls_after_full.py": (
-        "CRITIC_CONTROL_EXACT_HEAD_AUTHORIZATION_AND_NO_VRAM_GATE_HARDENING"
+        "CRITIC_CONTROL_EXACT_HEAD_NO_VRAM_GATE_AND_SCHEDULER_LAUNCH_FAILURE_EVIDENCE"
     ),
     "scripts/route_a_v3/launch_route2_xeditcritic_v4_loso_after_refits.py": (
-        "CRITIC_LOSO_MANIFEST_EXACT_HEAD_BINDING"
+        "CRITIC_LOSO_MANIFEST_EXACT_HEAD_AND_SCHEDULER_LAUNCH_FAILURE_EVIDENCE"
     ),
     "scripts/route_a_v3/launch_route2_xeditcritic_v4_refit_after_atomic_test.py": (
-        "CRITIC_REFIT_MANIFEST_EXACT_HEAD_BINDING"
+        "CRITIC_REFIT_MANIFEST_EXACT_HEAD_AND_SCHEDULER_LAUNCH_FAILURE_EVIDENCE"
     ),
     "scripts/route_a_v3/prepare_route2_xeditcritic_v4_confirmation_configs.py": (
         "CRITIC_CONFIRMATION_CONFIG_RUNNER_HEAD_LINEAGE"
@@ -113,17 +116,29 @@ TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION = {
         "CRITIC_CONTROL_PACKAGE_FIRST_FAILURE_AND_CLEAN_HEAD_FAIL_CLOSED"
     ),
     "scripts/route_a_v3/run_route2_xeditcritic_v4_loso_scheduler.py": (
-        "CRITIC_LOSO_PACKAGE_FIRST_FAILURE_CLEAN_HEAD_AND_BARRIER_FAIL_CLOSED"
+        "CRITIC_LOSO_FIRST_FAILURE_JOB_BARRIER_SPAWN_AND_WORKTREE_IDENTITY_FAIL_CLOSED"
     ),
     "scripts/route_a_v3/run_route2_xeditcritic_v4_refit_scheduler.py": (
-        "CRITIC_REFIT_PACKAGE_FIRST_FAILURE_CLEAN_HEAD_AND_BARRIER_FAIL_CLOSED"
+        "CRITIC_REFIT_FIRST_FAILURE_JOB_ADJUDICATION_SPAWN_AND_WORKTREE_IDENTITY_FAIL_CLOSED"
     ),
     "scripts/route_a_v3/train_route2_xeditcritic_v4.py": (
         "CRITIC_SEED_BEFORE_MODEL_CUDA_A100_BF16_AND_V2_TERMINAL_PROVENANCE"
     ),
     "scripts/route_a_v3/transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py": (
-        "CRITIC_HISTORICAL_SCREEN_PROVENANCE_AND_CURRENT_CONTROL_HEAD_BINDING"
+        "CRITIC_CROSS_ROOT_PROVENANCE_WORKTREE_IDENTITY_AND_ONE_SHOT_SIBLING_FAILURE"
     ),
+}
+TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS = (
+    "scripts/route_a_v3/launch_route2_xeditcritic_v403_controls_after_full.py",
+    "scripts/route_a_v3/launch_route2_xeditcritic_v4_loso_after_refits.py",
+    "scripts/route_a_v3/launch_route2_xeditcritic_v4_refit_after_atomic_test.py",
+    "scripts/route_a_v3/run_route2_xeditcritic_v4_loso_scheduler.py",
+    "scripts/route_a_v3/run_route2_xeditcritic_v4_refit_scheduler.py",
+    "scripts/route_a_v3/transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py",
+)
+TRAINING_SEMANTICS_INCREMENTAL_PATH_CLASSIFICATION = {
+    path: TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION[path]
+    for path in TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS
 }
 TRAINING_SEMANTICS_CHANGED_FLAGS = {
     "critic_trainer_code_changed": True,
@@ -131,12 +146,20 @@ TRAINING_SEMANTICS_CHANGED_FLAGS = {
     "critic_confirmation_config_lineage_changed": True,
     "critic_gate_and_terminal_acceptance_changed": True,
     "critic_scheduler_fail_closed_semantics_changed": True,
+    "critic_scheduler_process_launch_failure_evidence_changed": True,
+    "critic_job_and_barrier_spawn_fail_closed_semantics_changed": True,
+    "critic_cross_root_worktree_identity_and_one_shot_failure_changed": True,
     "shared_training_ledger_schema_changed": True,
 }
 TRAINING_SEMANTICS_UNCHANGED_FLAGS = {
     "critic_screen_config_changed": False,
     "optimizer_objective_sampler_data_budget_changed": False,
     "model_architecture_forward_loss_changed": False,
+    "critic_data_geometry_changed": False,
+    "critic_sampler_semantics_changed": False,
+    "critic_physical_or_effective_batch_changed": False,
+    "critic_seed_cohort_changed": False,
+    "critic_optimizer_update_budget_changed": False,
     "scientific_thresholds_changed": False,
 }
 BASE_CONFIG = (
@@ -782,6 +805,7 @@ def validate_training_semantics_baseline_audit(
     audit: Mapping[str, Any],
 ) -> None:
     consumer_review = audit.get("audit_consumer_launcher_review")
+    previous_successor_review = audit.get("previous_successor_audit_review")
     changed_flags_match = all(
         audit.get(name) is expected
         for name, expected in TRAINING_SEMANTICS_CHANGED_FLAGS.items()
@@ -797,6 +821,8 @@ def validate_training_semantics_baseline_audit(
         == "XEDITCRITIC_V403_CONFIRMATION_TRAINING_SEMANTICS_REAUDIT_V2_PASS"
         and audit.get("previous_audited_baseline_git_head")
         == TRAINING_SEMANTICS_PREVIOUS_AUDITED_BASELINE_HEAD
+        and audit.get("previous_successor_semantic_baseline_git_head")
+        == TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
         and audit.get("audited_successor_semantic_baseline_git_head")
         == TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
         and audit.get("critic_repaired_screen_provenance_git_head")
@@ -810,6 +836,15 @@ def validate_training_semantics_baseline_audit(
         == sorted(audit.get("changed_training_semantic_paths", []))
         and audit.get("path_classification")
         == TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION
+        and tuple(
+            audit.get(
+                "incremental_changed_training_semantic_paths_since_previous_successor",
+                [],
+            )
+        )
+        == TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS
+        and audit.get("incremental_path_classification")
+        == TRAINING_SEMANTICS_INCREMENTAL_PATH_CLASSIFICATION
         and changed_flags_match
         and unchanged_flags_match
         and audit.get(
@@ -834,6 +869,16 @@ def validate_training_semantics_baseline_audit(
         == []
         and consumer_review.get("runner_role")
         == "EXACT_CLEAN_AUDIT_CONSUMER_AND_CONFIRMATION_TRAINING_HEAD"
+        and isinstance(previous_successor_review, Mapping)
+        and previous_successor_review.get("path")
+        == (
+            "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
+            "training_semantics_reaudit_"
+            "eba5b17431cb8e19202e5ea788fd419338da2d66.json"
+        )
+        and previous_successor_review.get("preserved_as_history") is True
+        and previous_successor_review.get("consumed_by_current_launcher")
+        is False
         and audit.get("model_result_claimed") is False
         and audit.get("submission_ready") is False,
         "Critic confirmation training-semantics re-audit is absent or invalid",
@@ -844,10 +889,11 @@ def validate_training_semantics_baseline_audit(
                 audit["critic_repaired_screen_provenance_git_head"],
                 audit["historical_c0_git_head"],
                 audit["previous_audited_baseline_git_head"],
+                audit["previous_successor_semantic_baseline_git_head"],
                 audit["audited_successor_semantic_baseline_git_head"],
             }
         )
-        == 4,
+        == 5,
         "Critic confirmation training-semantics provenance roles are mixed",
     )
     require_zero_protected_reads(
@@ -883,6 +929,23 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "Critic successor semantic re-audit paths differ from the exact Git diff: "
         + ", ".join(audited_changed),
     )
+    incremental_changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD,
+            TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
+            "--",
+            *TRAINING_SEMANTIC_PATHS,
+        ]
+    ).stdout.splitlines()
+    require(
+        tuple(incremental_changed)
+        == TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS,
+        "Critic incremental successor hardening paths differ from the exact Git diff: "
+        + ", ".join(incremental_changed),
+    )
     changed = command(
         [
             "git",
@@ -904,6 +967,9 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
             REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
         ),
         "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
+        "previous_successor_semantic_baseline_git_head": (
+            TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
+        ),
         "audited_successor_semantic_baseline_git_head": (
             TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
         ),
@@ -917,6 +983,9 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "training_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
         "audited_successor_changed_training_semantic_paths": audited_changed,
+        "incremental_changed_training_semantic_paths_since_previous_successor": (
+            incremental_changed
+        ),
         "training_semantic_diff_paths_since_audited_successor_baseline": changed,
         "training_semantics_unchanged_since_audited_successor_baseline": True,
         "repaired_screen_is_historical_provenance_only": True,
@@ -1123,9 +1192,25 @@ def build_confirmation_authorization(
         and training_semantics.get("historical_c0_git_head")
         == HISTORICAL_C0_GIT_HEAD
         and training_semantics.get(
+            "previous_successor_semantic_baseline_git_head"
+        )
+        == TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
+        and training_semantics.get(
             "audited_successor_semantic_baseline_git_head"
         )
         == TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        and training_semantics.get(
+            "audited_successor_semantic_baseline_audit"
+        )
+        == str(TRAINING_SEMANTICS_BASELINE_AUDIT)
+        and training_semantics.get(
+            "audited_successor_semantic_baseline_audit_status"
+        )
+        == "XEDITCRITIC_V403_CONFIRMATION_TRAINING_SEMANTICS_REAUDIT_V2_PASS"
+        and training_semantics.get(
+            "incremental_changed_training_semantic_paths_since_previous_successor"
+        )
+        == list(TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
         and training_semantics.get(
             "training_semantic_diff_paths_since_audited_successor_baseline"
         )

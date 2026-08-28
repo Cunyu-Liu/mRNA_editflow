@@ -83,6 +83,12 @@ family 禁止重新启动、覆盖或手工接续。该 family 继续自然收�
 允许建立一个新的独立 retry family，仍使用 seed 20260911、原两臂、weight 0.05、原 checkpoints 和未降低
 的全部阈值；禁止增加 screen seed、扫描 weight 或覆盖旧 artifacts。
 
+准备分支的旧候选 `b7f7c122299e71380aadef015498490e5e8dfeba` 已被候选准入与静态审阅否决，禁止
+快进或启动：其 focused preflight 为 530 PASS/2 FAIL，且随后确认 Critic one-shot process launch、Atomic
+TEST pre-access、cross-root transition、refit/LOSO barrier 的技术失败证据仍不闭合。新不可变代码基线为
+`f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66`；它仍不是执行入口，必须先由 audit-only successor HEAD
+重新绑定语义审计并推送，之后仍等待旧 930 family 精确终态和主工作树正式全量准入。
+
 监控只由 Codex 中名为“mRNA EditFlow 训练监控”的两小时 heartbeat 执行。人工执行阶段不得循环轮询、分钟级读取、tail 日志或重复解析同一 runtime。等待期间只做不会读取 protected outcomes、不会改变运行中 artifacts 的文档、静态审计、CPU-native 单元测试和数据契约核查。
 
 ## 4. 唯一阶段图
@@ -207,10 +213,25 @@ Guidance 必须同时消费 SetFlow posttraining readiness 与 Critic post-test 
 - 科学 `NO_GO` 是成功完成的裁决结果，不得伪装成技术失败，也不得改写成 PASS。
 - 禁止按剩余显存、预计显存或预留显存设置启动 gate。GPU inventory 和显存只作诊断；任何有可用显存的配置 GPU 都可按调度器安排使用。
 - Final 启动前 GPU inventory 若执行、解析或设备枚举失败，必须在 runtime root 创建前写 sibling `*.failed.json`；同一 family 不覆盖、不自动重试。真正需要重试时建立新 retry/run family。
+- Critic controls、confirmation、confirmation posttraining、Atomic TEST wrapper、refit 与 LOSO 的 one-shot
+  launcher 在 schedule/authorization/attempt 已物化但 scheduler/wrapper 进程无法启动时，必须在该 family
+  写不可覆盖 `scheduler_launch.failed.json`；不得生成 PID、`LAUNCHED` 状态或虚假 launch receipt，同一
+  family 不得再次调用。
+- Cross-root transition 在读取八臂 terminal payload 前必须验证当前工作树仍为 control schedule 固定的
+  clean exact HEAD。任一 identity、payload validation、evaluation 或 gate-write 技术异常必须写 gate sibling
+  `.failed.json`，并在下一次调用读取任何 terminal payload 前拒绝同 family 重入；科学 PASS/NO-GO 仍写正常 gate。
+- Atomic frozen TEST wrapper 必须在真正 TEST runner 启动和任何 TEST access 之前验证 job-fixed clean exact
+  HEAD。identity 或 process-spawn 失败必须以 `development_test_access_started=false`、access count 0、
+  outcome reads 0 的 FAILURE + terminal runtime 结束，不得消耗唯一 TEST 授权。
+- Refit/LOSO 不仅训练 job，adjudication 与 readiness 的每个 barrier 进程启动前也必须重新验证 schedule-fixed
+  clean HEAD。任何 barrier identity/spawn 失败均为包级技术失败，readiness 不运行且
+  `guidance_authorized=false`。
 
 ## 7. 包级一致性与提交纪律
 
-Confirmation training、confirmation posttraining、guidance screen 和 final comparison 均采用包级首失败语义。每个 job 在真正启动前，都必须在同一启动锁内确认工作树仍等于 schedule 固定的 clean HEAD；终态分类和首失败记录也必须在线性化锁内完成。
+Critic controls、confirmation training、confirmation posttraining、refit、LOSO、guidance screen 和 final
+comparison 均采用包级首失败语义。每个 job 或 barrier 在真正启动前，都必须确认工作树仍等于 schedule
+固定的 clean HEAD；并发长队列的终态分类和首失败记录必须在线性化锁内完成。
 
 任何代码或当前执行文档修改后，下一条新实验启动前必须完成：
 

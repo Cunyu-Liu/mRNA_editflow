@@ -830,3 +830,69 @@ or terminal artifacts.
   Development claim still requires the terminal 98-job Final adjudication with
   frozen `XEDITFLOW_V4_PASS` and an independent evaluator;
   `submission_ready=false` remains.
+
+## Iteration 15 — Fail closed before multi-GPU Critic launch
+
+- Candidate admission preflight: the clean pushed preparation candidate
+  `b7f7c122299e71380aadef015498490e5e8dfeba` was tested without reading or
+  writing `/mnt`. Eight isolated focused processes reported group results
+  145/2, 16/0, 129/0, 27/0, 17/0, 10/0, 105/0 and 81/0, for 530 passes and
+  two failures. The exact `tests/route_a_v3/*v332*.py` glob remained 96/96.
+  Both focused failures came from one stale synthetic runner-receipt fixture:
+  its third command group omitted the four already-required SetFlow S1
+  confirmation modules. After repairing only that fixture coverage, the two
+  failed nodes passed 2/2. This preflight was diagnostic evidence, not a formal
+  `/mnt` receipt.
+- Keep/discard decision: `b7f7c122...` was discarded as an executable
+  candidate even though most tests passed. A targeted read-only review found
+  reachable failure paths that could leave a one-shot family permanently
+  ambiguous, compute a cross-root gate with drifted code, continue refit/LOSO
+  after a missing process, or consume the unique frozen TEST with the wrong
+  checkout. No threshold, seed, objective, data split or model result was used
+  in this decision.
+- One-shot launch closure: controls, Critic confirmation, confirmation
+  posttraining, Atomic TEST, refit and LOSO launchers now write a family-local,
+  non-overwriting `scheduler_launch.failed.json` if the scheduler/wrapper
+  process cannot start after schedule/authorization/attempt artifacts have
+  consumed the family. The failure records the exact command, HEAD, worktree,
+  intended runtime, created artifact paths and original exception, with no PID,
+  no false `LAUNCHED`, `gpu_job_started=false`, protected reads 0 and no
+  automatic same-family retry.
+- Atomic TEST pre-access closure: the Atomic job wrapper now verifies the
+  job-fixed exact clean HEAD before starting the formal TEST runner. Identity
+  drift or runner spawn failure writes `failure.json` plus a terminal technical
+  runtime with `development_test_access_started=false`, access count 0 and
+  outcome reads 0. A consumed failure family cannot be entered again.
+- Long-package closure: refit and LOSO training-thread spawn exceptions now
+  create exact job failure evidence, set the unique `first_terminal_failure`,
+  stop pending work and skip adjudication/readiness. Refit adjudication, LOSO
+  adjudication and LOSO readiness also re-check the schedule-fixed clean HEAD
+  immediately before their process starts; identity or spawn failure is
+  technical, never scientific NO-GO/READY, and leaves Guidance unauthorized.
+- Cross-root one-read closure: before any eight-arm terminal payload is read,
+  the transition now verifies the controls HEAD against the current clean
+  checkout. Any identity, validation, evaluation or gate-write exception writes
+  the gate sibling `.failed.json`; a later call rejects that family before any
+  terminal payload reread. A successfully computed scientific PASS or NO-GO
+  continues to use the normal immutable gate.
+- New immutable code baseline: commit
+  `f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66` contains the 21 implementation
+  and direct-test changes. Direct verification was 155/155 for the six
+  launchers plus Atomic wrapper, 29/29 for refit/LOSO/cross-root, and 9/9 for
+  the Guidance runner-receipt consumer. `git diff --check` passed, AppleDouble
+  files were absent, and an independent read-only review found no remaining
+  launch-decision blocker in the bounded Critic-first path.
+- Audit boundary: this code baseline changes controls/refit/LOSO/transition
+  files inside the frozen Critic semantic pathspec. The previous
+  `eba5b174...` audit cannot be reused mechanically. A new v2 audit must compare
+  the same 708 baseline to `f1a2328d...`, classify the additional process-launch,
+  barrier-identity and one-shot evidence semantics, and prove an empty frozen
+  path diff from this code baseline to the eventual audit-only runner HEAD.
+- Protected and scientific boundary: no active 930 runtime, training log,
+  checkpoint payload, Development TEST or new Evaluation outcome was read; no
+  GPU family or TEST runner was started. All results above are CPU-native
+  engineering evidence. They do not establish Critic readiness, SetFlow
+  readiness, Guidance success or an excellent Development result. The latter
+  still requires the terminal three-seed 98-job Final gate
+  `XEDITFLOW_V4_PASS` with the independent evaluator, and
+  `submission_ready=false` remains.

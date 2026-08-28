@@ -287,8 +287,21 @@ def _training_semantics(runner_head: str) -> dict:
             launcher.REPAIRED_SCREEN_PROVENANCE_GIT_HEAD
         ),
         "historical_c0_git_head": launcher.HISTORICAL_C0_GIT_HEAD,
+        "previous_successor_semantic_baseline_git_head": (
+            launcher.TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
+        ),
         "audited_successor_semantic_baseline_git_head": (
             launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD
+        ),
+        "audited_successor_semantic_baseline_audit": str(
+            launcher.TRAINING_SEMANTICS_BASELINE_AUDIT
+        ),
+        "audited_successor_semantic_baseline_audit_status": (
+            "XEDITCRITIC_V403_CONFIRMATION_"
+            "TRAINING_SEMANTICS_REAUDIT_V2_PASS"
+        ),
+        "incremental_changed_training_semantic_paths_since_previous_successor": (
+            list(launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
         ),
         "runner_git_head": runner_head,
         "training_git_head": runner_head,
@@ -451,6 +464,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                     + "\n"
                 )
             )
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(stdout="")
 
     monkeypatch.setattr(
@@ -486,6 +510,15 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
             "git",
             "diff",
             "--name-only",
+            launcher.TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD,
+            launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ],
+        [
+            "git",
+            "diff",
+            "--name-only",
             launcher.TRAINING_SEMANTICS_AUDITED_SUCCESSOR_BASELINE_HEAD,
             "c" * 40,
             "--",
@@ -501,6 +534,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                 stdout=(
                     "\n".join(
                         launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS
+                    )
+                    + "\n"
+                )
+            )
+        if command_args[3] == (
+            launcher.TRAINING_SEMANTICS_PREVIOUS_SUCCESSOR_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS
                     )
                     + "\n"
                 )
@@ -537,6 +581,14 @@ def test_committed_successor_head_preserves_audited_training_semantics(
         list(launcher.TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS)
     )
     assert len(receipt["audited_successor_changed_training_semantic_paths"]) == 20
+    assert receipt[
+        "incremental_changed_training_semantic_paths_since_previous_successor"
+    ] == list(launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
+    assert len(
+        receipt[
+            "incremental_changed_training_semantic_paths_since_previous_successor"
+        ]
+    ) == 6
     assert receipt["audited_successor_semantic_baseline_audit"] == str(
         launcher.TRAINING_SEMANTICS_BASELINE_AUDIT
     )
@@ -550,6 +602,24 @@ def test_training_semantics_reaudit_accepts_exact_v2_audit() -> None:
     )
     assert audit["path_classification"] == (
         launcher.TRAINING_SEMANTICS_REAUDIT_PATH_CLASSIFICATION
+    )
+    assert audit[
+        "incremental_changed_training_semantic_paths_since_previous_successor"
+    ] == list(launcher.TRAINING_SEMANTICS_INCREMENTAL_CHANGED_PATHS)
+    assert audit["incremental_path_classification"] == (
+        launcher.TRAINING_SEMANTICS_INCREMENTAL_PATH_CLASSIFICATION
+    )
+    assert audit["previous_successor_audit_review"] == {
+        "path": (
+            "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
+            "training_semantics_reaudit_"
+            "eba5b17431cb8e19202e5ea788fd419338da2d66.json"
+        ),
+        "preserved_as_history": True,
+        "consumed_by_current_launcher": False,
+    }
+    assert launcher.TRAINING_SEMANTICS_BASELINE_AUDIT.name.endswith(
+        "f1a2328db57e1bd20fcc5cd5e6a23abcf4c62b66.json"
     )
 
 
@@ -569,6 +639,17 @@ def test_training_semantics_reaudit_rejects_path_or_classification_drift() -> No
     with pytest.raises(Exception, match="re-audit"):
         launcher.validate_training_semantics_baseline_audit(
             classification_drift
+        )
+
+    incremental_drift = copy.deepcopy(original)
+    incremental_drift[
+        "incremental_changed_training_semantic_paths_since_previous_successor"
+    ] = incremental_drift[
+        "incremental_changed_training_semantic_paths_since_previous_successor"
+    ][:-1]
+    with pytest.raises(Exception, match="re-audit"):
+        launcher.validate_training_semantics_baseline_audit(
+            incremental_drift
         )
 
 
@@ -915,6 +996,27 @@ def test_authorization_rejects_historical_full_as_new_training_head(
             launcher.load_and_validate_source_authorizations(gate),
             _runner_receipt(runner_head),
             semantics,
+            runner_head=runner_head,
+            runner_verification_receipt_path_value=(
+                launcher.runner_verification_receipt_path(runner_head)
+            ),
+        )
+
+    old_audit_semantics = _training_semantics(runner_head)
+    old_audit_semantics["audited_successor_semantic_baseline_audit"] = str(
+        launcher.WORKTREE
+        / (
+            "audits/route_a_v3_route2_xeditcritic_v403_confirmation_"
+            "training_semantics_reaudit_"
+            "eba5b17431cb8e19202e5ea788fd419338da2d66.json"
+        )
+    )
+    with pytest.raises(Exception, match="baseline or runner roles changed"):
+        launcher.build_confirmation_authorization(
+            gate,
+            launcher.load_and_validate_source_authorizations(gate),
+            _runner_receipt(runner_head),
+            old_audit_semantics,
             runner_head=runner_head,
             runner_verification_receipt_path_value=(
                 launcher.runner_verification_receipt_path(runner_head)
