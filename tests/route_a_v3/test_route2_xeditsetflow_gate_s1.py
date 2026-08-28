@@ -8,6 +8,7 @@ from core.route2_xeditsetflow_gate_s1 import (
     CONFIRMATION_BOOTSTRAP_STATISTIC,
     OBJECTIVE_IDENTITY,
     OBJECTIVE_WEIGHT,
+    SCREEN_RUNNER_GIT_HEAD,
     XEditSetFlowGateS1Error,
     adjudicate_setflow_confirmation_s1,
     adjudicate_setflow_screen_s1,
@@ -272,14 +273,10 @@ def _confirmation_config(seed: int) -> dict:
             f"/tmp/s1_confirmation/seed_{seed}/outcome_free_validation_generation"
         ),
         "screen_gate_path": "/tmp/s1_screen_gate.json",
-        "screen_runner_git_head": (
-            "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
-        ),
+        "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
         "screen_selected_checkpoint_pass": 8,
         "screen_provenance": {
-            "screen_runner_git_head": (
-                "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
-            ),
+            "screen_runner_git_head": SCREEN_RUNNER_GIT_HEAD,
             "screen_gate_path": "/tmp/s1_screen_gate.json",
             "screen_selected_checkpoint_pass": 8,
             "checkpoint_decisions": {
@@ -371,7 +368,9 @@ def test_s1_three_seed_confirmation_requires_exact_full_only_package() -> None:
     assert gate["development_test_outcome_reads"] == 0
     assert gate["screen_selected_checkpoint_pass"] == 8
     assert gate["screen_provenance"] == configs[20260912]["screen_provenance"]
+    assert gate["screen_runner_git_head"] == SCREEN_RUNNER_GIT_HEAD
     assert gate["confirmation_runner_git_head"] == TRAINING_HEAD
+    assert gate["confirmation_runner_git_head"] != gate["screen_runner_git_head"]
     assert gate["training_git_head"] == TRAINING_HEAD
     assert gate["validation_git_head"] == VALIDATION_HEAD
     assert gate["training_and_validation_git_heads_differ"] is True
@@ -411,6 +410,23 @@ def test_s1_confirmation_scientific_failure_is_no_go_not_technical() -> None:
     assert gate["status"] == "XEDITSETFLOW_V4_CONFIRMATION_NO_GO"
     assert "technical_failures" not in gate
     assert gate["additional_seed_authorized"] is False
+
+
+def test_s1_confirmation_rejects_old_930_screen_provenance() -> None:
+    configs = {
+        seed: _confirmation_config(seed)
+        for seed in (20260912, 20260913, 20260914)
+    }
+    old_head = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+    for config in configs.values():
+        config["screen_runner_git_head"] = old_head
+        config["screen_provenance"]["screen_runner_git_head"] = old_head
+    with pytest.raises(XEditSetFlowGateS1Error, match="lineage changed"):
+        adjudicate_setflow_confirmation_s1(
+            configs,
+            _confirmation_summaries(),
+            _f2_summary([0.29] * 891),
+        )
 
 
 def test_s1_confirmation_rejects_protected_or_checkpoint_lineage_drift() -> None:

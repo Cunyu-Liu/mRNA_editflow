@@ -372,6 +372,10 @@ def test_s1_projection_rejects_unknown_target_and_digest_detects_state_drift() -
 def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_provenance() -> None:
     config = _confirmation_config()
     authorization = _confirmation_authorization()
+    assert SCREEN_RUNNER_GIT_HEAD == (
+        "ebf99ebf8a253ad27e311e555121d328df8fae10"
+    )
+    assert config["confirmation_runner_git_head"] != SCREEN_RUNNER_GIT_HEAD
     preflight = {
         "status": "XEDITSETFLOW_V4_PREFLIGHT_PASS",
         "passed": True,
@@ -392,6 +396,24 @@ def test_s1_confirmation_authorization_binds_seed_head_objective_and_screen_prov
         training_seed=20260912,
         current_git_head="a" * 40,
     )
+    stale_config = dict(config)
+    stale_authorization = dict(authorization)
+    stale_config["screen_runner_git_head"] = (
+        "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+    )
+    stale_authorization["screen_runner_git_head"] = (
+        "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+    )
+    with pytest.raises(SetFlowTrainingS1Error, match="screen provenance"):
+        require_s1_confirmation_launch_authorization(
+            stale_config,
+            stale_authorization,
+            preflight,
+            audit,
+            run_id="v4_s1_full",
+            training_seed=20260912,
+            current_git_head="a" * 40,
+        )
     wrong_config_head = dict(config)
     wrong_config_head["confirmation_runner_git_head"] = "b" * 40
     with pytest.raises(SetFlowTrainingS1Error, match="Git HEAD disagree"):

@@ -85,7 +85,7 @@ RUN_IDS = ("v4_s1_full", "v4_s1_single_mode")
 SCREEN_SEED = 20260911
 CONFIRMATION_SEEDS = (20260912, 20260913, 20260914)
 CONFIRMATION_RUN_ID = "v4_s1_full"
-SCREEN_RUNNER_GIT_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+SCREEN_RUNNER_GIT_HEAD = "ebf99ebf8a253ad27e311e555121d328df8fae10"
 
 
 class SetFlowTrainingS1Error(RuntimeError):

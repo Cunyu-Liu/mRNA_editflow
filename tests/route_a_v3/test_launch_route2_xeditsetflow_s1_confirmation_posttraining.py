@@ -161,6 +161,12 @@ def test_low_free_memory_is_diagnostic_only_and_never_changes_twelve_job_schedul
         probes,
         expected_head=HEAD,
     )
+    assert schedule["git_head"] == HEAD
+    assert schedule["training_runner_git_head"] == HEAD
+    assert schedule["screen_experiment_head"] == launcher.SCREEN_HEAD
+    assert schedule["training_runner_git_head"] != schedule[
+        "screen_experiment_head"
+    ]
     assert len(schedule["validation_inventory"]) == 12
     assert schedule["free_memory_gate_applied"] is False
     assert schedule["gpu_diagnostics_before_launch"]["5"]["free_memory_mib"] == 1

@@ -9,6 +9,7 @@ import scripts.route_a_v3.launch_route2_xeditsetflow_s1_confirmation_after_scree
 
 
 HEAD = "a" * 40
+OLD_INVALID_SCREEN_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
 
 
 def test_confirmation_launcher_is_bound_to_the_permitted_execution_branch() -> None:
@@ -194,6 +195,9 @@ def test_training_schedule_is_three_full_only_and_low_memory_never_changes_it(
         runner_head=HEAD,
     )
     jobs = [job for queue in schedule["gpu_queues"] for job in queue["jobs"]]
+    assert schedule["git_head"] == HEAD
+    assert schedule["experiment_head"] == launcher.SCREEN_HEAD
+    assert schedule["git_head"] != schedule["experiment_head"]
     assert len(jobs) == 3
     assert {job["run_id"] for job in jobs} == {"v4_s1_full"}
     assert [job["training_seed"] for job in jobs] == [20260912, 20260913, 20260914]
@@ -236,7 +240,7 @@ def test_screen_runtime_requires_exact_two_plus_eight_zero_exit_unique_summaries
         )
 
 
-def test_known_unseeded_screen_head_cannot_authorize_confirmation() -> None:
+def test_repair_audit_rejects_old_930_but_allows_corrected_screen_head() -> None:
     repair = {
         "schema_version": (
             "route_a_v3_route2_xeditsetflow_v4_s1_seed_initialization_repair.v1"
@@ -244,7 +248,7 @@ def test_known_unseeded_screen_head_cannot_authorize_confirmation() -> None:
         "status": (
             "XEDITSETFLOW_V4_S1_SEED_INITIALIZATION_REPAIR_FROZEN_BEFORE_INDEPENDENT_RETRY"
         ),
-        "affected_family": {"runner_git_head": launcher.SCREEN_HEAD},
+        "affected_family": {"runner_git_head": OLD_INVALID_SCREEN_HEAD},
         "defect": {"affected_family_can_authorize_successor": False},
     }
     with pytest.raises(
@@ -252,8 +256,11 @@ def test_known_unseeded_screen_head_cannot_authorize_confirmation() -> None:
         match="uncontrolled parameter initialization",
     ):
         launcher.require_seed_valid_screen_head_s1(
-            repair, screen_head=launcher.SCREEN_HEAD
+            repair, screen_head=OLD_INVALID_SCREEN_HEAD
         )
+    launcher.require_seed_valid_screen_head_s1(
+        repair, screen_head=launcher.SCREEN_HEAD
+    )
 
 
 def test_screen_no_go_stops_before_any_materialization(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,12 @@ from core.route2_xeditsetflow_gate_s1 import select_checkpoint_s1
 
 
 ROOT = Path(__file__).resolve().parents[2]
+OLD_INVALID_SCREEN_HEAD = "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8"
+CORRECTED_SCREEN_HEAD = "ebf99ebf8a253ad27e311e555121d328df8fae10"
+S3_PARENT_HEAD = "26fdbcb38090cf98e68425bebabd084a374447c4"
+PROTOCOL_REPOSITORY_PATH = (
+    "configs/route_a_v3_route2_xeditsetflow_v4_s1_confirmation_protocol_v1.json"
+)
 BASE = json.loads(
     (
         ROOT
@@ -240,6 +247,7 @@ def _build(bundle: dict, *, confirmation_head: str = "a" * 40) -> list[dict]:
 
 
 def test_protocol_freezes_three_full_only_twelve_validation_and_gpu_boundaries() -> None:
+    assert SCREEN_HEAD == CORRECTED_SCREEN_HEAD
     assert PROTOCOL["selected_model"] == "v4_s1_full"
     assert PROTOCOL["required_seeds"] == [20260912, 20260913, 20260914]
     assert PROTOCOL["confirmation_design"]["training_job_count"] == 3
@@ -259,11 +267,45 @@ def test_protocol_freezes_three_full_only_twelve_validation_and_gpu_boundaries()
     assert PROTOCOL["new_final_evaluation_outcome_reads"] == 0
 
 
+def test_protocol_diff_from_s3_parent_is_exactly_six_screen_provenance_fields() -> None:
+    baseline = json.loads(
+        subprocess.run(
+            [
+                "git",
+                "show",
+                f"{S3_PARENT_HEAD}:{PROTOCOL_REPOSITORY_PATH}",
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    )
+    expected = copy.deepcopy(baseline)
+    changed_fields = (
+        "screen_runner_git_head",
+        "schedule_path",
+        "runtime_path",
+        "runtime_config_path",
+        "authorization_path",
+        "screen_gate_path",
+    )
+    for field in changed_fields:
+        expected["screen_provenance"][field] = expected[
+            "screen_provenance"
+        ][field].replace(OLD_INVALID_SCREEN_HEAD, CORRECTED_SCREEN_HEAD)
+    assert PROTOCOL == expected
+    assert set(PROTOCOL["screen_provenance"]) == set(
+        baseline["screen_provenance"]
+    )
+
+
 def test_exact_pass_builds_three_full_configs_and_keeps_screen_selection_provenance_only(
     tmp_path: Path,
 ) -> None:
     bundle = _bundle(tmp_path)
-    configs = _build(bundle)
+    confirmation_head = "a" * 40
+    configs = _build(bundle, confirmation_head=confirmation_head)
     assert [config["training_seed"] for config in configs] == [
         20260912,
         20260913,
@@ -274,6 +316,11 @@ def test_exact_pass_builds_three_full_configs_and_keeps_screen_selection_provena
     assert all(config["run_stage"] == "CONFIRMATION" for config in configs)
     assert all(config["selected_model"] == "v4_s1_full" for config in configs)
     assert all(config["screen_runner_git_head"] == SCREEN_HEAD for config in configs)
+    assert all(
+        config["confirmation_runner_git_head"] == confirmation_head
+        and config["confirmation_runner_git_head"] != SCREEN_HEAD
+        for config in configs
+    )
     assert all(config["objective_identity"] == OBJECTIVE_IDENTITY for config in configs)
     assert all(
         config["cross_state_candidate_mode_responsibility_weight"] == 0.05
@@ -287,6 +334,23 @@ def test_exact_pass_builds_three_full_configs_and_keeps_screen_selection_provena
     assert all("confirmation_selected_checkpoint_pass" not in config for config in configs)
     assert all(config["confirmation_training_job_count"] == 3 for config in configs)
     assert all(config["confirmation_checkpoint_validation_job_count"] == 12 for config in configs)
+
+
+def test_corrected_screen_bundle_is_accepted_and_old_930_identity_is_rejected(
+    tmp_path: Path,
+) -> None:
+    corrected = _bundle(tmp_path / "corrected")
+    assert len(_build(corrected, confirmation_head="a" * 40)) == 3
+
+    stale = _bundle(tmp_path / "stale")
+    stale["protocol"]["screen_provenance"][
+        "screen_runner_git_head"
+    ] = OLD_INVALID_SCREEN_HEAD
+    stale["schedule"]["git_head"] = OLD_INVALID_SCREEN_HEAD
+    stale["runtime_config"]["runner_git_head"] = OLD_INVALID_SCREEN_HEAD
+    stale["authorization"]["authorized_git_head"] = OLD_INVALID_SCREEN_HEAD
+    with pytest.raises(XEditSetFlowConfirmationS1Error):
+        _build(stale, confirmation_head="a" * 40)
 
 
 @pytest.mark.parametrize(

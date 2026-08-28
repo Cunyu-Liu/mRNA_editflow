@@ -22,12 +22,12 @@
     "screen_checkpoint_never_substitutes_for_confirmation_checkpoint": true
   },
   "screen_provenance": {
-    "screen_runner_git_head": "930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8",
-    "schedule_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/schedule.json",
-    "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime.json",
-    "runtime_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/runtime_config.json",
-    "authorization_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8.json",
-    "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_930fccf468c14378b3dd2fd2caf3aaa3cc2eb3c8/screen_gate.json",
+    "screen_runner_git_head": "ebf99ebf8a253ad27e311e555121d328df8fae10",
+    "schedule_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/schedule.json",
+    "runtime_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/runtime.json",
+    "runtime_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/runtime_config.json",
+    "authorization_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10.json",
+    "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/screen_gate.json",
     "required_screen_run_ids": ["v4_s1_full", "v4_s1_single_mode"],
     "required_checkpoint_passes": [4, 6, 8, 10],
     "required_gate_status": "XEDITSETFLOW_V4_S1_SCREEN_PASS",
