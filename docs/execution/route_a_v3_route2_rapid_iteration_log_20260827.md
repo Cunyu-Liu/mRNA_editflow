@@ -1081,3 +1081,18 @@ or terminal artifacts.
   current 必须为空」；更新 guidance mock group7 与两个语义链测试；index 补 S1 mechanics 字符串。
 - Tests: confirmation/guidance/controls/transition 相关 153/153 passed。
 - Conclusion: retry1 新 HEAD 待完整准入（8 组 focused + 96 V3.3.2 + 双 receipt）后启动六臂重跑。
+
+## Iteration P — 2026-08-29: V5 架构优化 prep（方向 A + E 实现，不动运行中实验）
+
+- 用户决策：Critic 与 SetFlow 两轨并行优化；需重训的等当前训练结束，不需重训的任务结束后立即改进。
+- 诊断新增事实：V4 effective objective 的 pairwise 项只用 different_source_group_pair_indices
+  （显式排除同 source 对），而评估 task-macro Spearman 是 task 内 pooled 排序（含同 source 对）——
+  模型从未被训练区分同 source 候选，即 candidate-specific 信息通道。
+- Direction A 实现：core/route2_xeditcritic_within_source_ranking_v5.py（same-source softplus
+  排序 loss，与 V4 cross-source 项同尺度，可选 target-gap 加权）。tests 7/7。
+- Direction E 实现：core/route2_xeditsetflow_temperature_control_v5.py（mode prior 温度
+  p^(1/T) 重归一 + STOP rate 缩放 + 5x5 冻结扫描网格，含 identity 自对照）。零训练成本，
+  可用于任何 terminal checkpoint。tests 6/6。
+- 设计文档：docs/paper/route2_v5_architecture_optimization_hypotheses_v1.md（PREPARATION_ONLY，
+  未授权任何 V5 run；B/C/D 方向待训练窗口）。
+- 分支：route-a-v3-v5-arch-optimization-prep-20260829（从 697043fd）。
