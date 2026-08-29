@@ -1124,3 +1124,17 @@ or terminal artifacts.
   (position, alt_base) 编辑频率（Laplace 平滑），输出归一化行 + log-rate，作 additive bias/coupling。
 - V5 五个模块（A/B/C/E Critic+SetFlow 双轨）全部完成 prep：30/30 CPU 测试通过。
 - 运行中训练不受影响：retry1 wave0（GPU2/3/5）与 S1（GPU0/1，pass 4/10）继续自然收尾。
+
+## Iteration R — 2026-08-29: 方向 E 正式扫描 runner（S1 终态后由心跳直接调用）
+
+- scripts/route_a_v3/run_route2_xeditsetflow_s1_temperature_sweep_v5.py：
+  复用冻结 V4 validation 数据路径（load_checkpoint_s1 / 891×32 cohort / decoder seeds /
+  evaluate_generation + measured_neighborhood_metrics），V5 采样器 sample_many_setflow_v5
+  与 V4 sample_many_setflow_v4 控制流逐行一致，仅两处显式推断期注入：
+  a) root mode priors 在 stratified 分配前 temper（p^(1/T) 重归一）；
+  b) 合法率向量 STOP 列在归一化前乘 stop_rate_scale（identity=1.0 时算术与 V4 完全一致，
+     测试断言缩放分支被 1.0 守卫短路）。
+- 输出原子写 25 格点 JSON（含 recovery/unique/legality/预算违规），diagnostic_only，
+  不触碰 S1 冻结 artifacts/gate；CUDA/A100/BF16 校验、CPU fallback 禁止、protected reads=0。
+- tests 6/6（STOP 列索引与采样器解码一致性、identity 算术、网格冻结序、schema 常量）。
+- 心跳任务 b150a4cc 第 3 项已指向该正式脚本（S1 精确终态 + 8 Validation 终态后触发）。
