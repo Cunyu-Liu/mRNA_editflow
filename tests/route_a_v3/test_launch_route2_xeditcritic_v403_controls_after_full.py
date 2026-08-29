@@ -431,18 +431,18 @@ def test_full_terminal_rejects_gpu_disagreement_or_unauthorized_run(
 ) -> None:
     output_root = tmp_path / "full"
     authorization_path = tmp_path / "authorization.json"
-    authorization = _full_authorization(physical_gpu_index=4)
+    authorization = _full_authorization(physical_gpu_index=3)
     _write_json(authorization_path, authorization)
     _write_json(
         output_root / "v4_full/run_summary.json",
-        _full_summary(authorization_path, physical_gpu_index=3),
+        _full_summary(authorization_path, physical_gpu_index=5),
     )
     runtime_path = tmp_path / "runtime.json"
-    _write_json(runtime_path, _full_runtime(physical_gpu_index=3))
+    _write_json(runtime_path, _full_runtime(physical_gpu_index=5))
     with pytest.raises(Exception, match="physical GPUs disagree"):
         launcher.validate_current_full_terminal(output_root, runtime_path)
 
-    authorization["v403_rng_replay_recovery"]["physical_gpu_index"] = 3
+    authorization["v403_rng_replay_recovery"]["physical_gpu_index"] = 5
     authorization["authorized_run_ids"].remove("v4_full")
     _write_json(authorization_path, authorization)
     with pytest.raises(Exception, match="launch authorization identity"):
@@ -462,7 +462,7 @@ def test_schedule_is_exactly_six_fresh_controls_from_current_head(
         job["run_id"] for job in schedule["jobs"]
     }
     assert [job["physical_gpu_index"] for job in schedule["jobs"]] == list(
-        range(6)
+        launcher.PHYSICAL_GPU_INDICES
     )
     assert [job["wave_index"] for job in schedule["jobs"]] == [0, 0, 0, 1, 1, 1]
     assert schedule["control_waves"] == [

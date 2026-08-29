@@ -1050,3 +1050,20 @@ or terminal artifacts.
   and protected-outcome policies are unchanged. This CPU-native provenance
   bridge reads no active runtime or protected outcome, authorizes no GPU family,
   and reports no model result; `submission_ready=false` remains.
+## Iteration N — 2026-08-29: Critic Y3 controls OOM 冻结 + retry1 GPU 重映射
+
+- Objective: 冻结 Y3 controls 的 CUDA OOM 技术失败，并为 retry1 提供可执行的 GPU 调度。
+- Y3 controls（HEAD ebf99ebf）六臂固定 GPU0–5 并发：GPU3/4/5 三臂（candidate_bundle_permutation、
+  no_cross、no_moe）TERMINAL_SUMMARY；GPU0/1/2 三臂（source_only、edit_metadata_only、
+  no_candidate_sequence）CUDA OOM（error_type=OutOfMemoryError，backward 阶段无法分配 428–756 MiB）。
+  失败根因：GPU0/1/2 被 tokenizer-benchmark 与 S1 训练长期占用，空闲显存不足；free_memory_gate_applied=false。
+  该 package 定为技术失败，非科学 NO-GO。
+- 唯一 transition 已执行：transition_record_route2_xeditcritic_v403_controls_oom_terminal.py
+  → receipt audits/xeditcritic_v4/v403_control_recovery_runner_ebf99ebf8a253ad27e311e555121d328df8fae10_oom_terminal.json
+  status=XEDITCRITIC_V403_CONTROL_RECOVERY_OOM_TERMINAL_RECORDED,
+  new_independent_retry_eligible=true, same_family_retry_authorized=false, protected reads=0。
+- retry1 GPU 映射调整（2026-08-29）：原冻结「GPU0–2 / GPU3–5」两波在 GPU0/1（仅约 5–8 GiB 空闲）必立即
+  OOM；调整为两波均用 GPU2/3/5（9.6/30.3/22.1 GiB 空闲），wave 1 三臂全成功后再复用同卡跑 wave 2。
+  PHYSICAL_GPU_INDICES = (2,3,5,2,3,5)；一臂一卡、expandable_segments、不筛卡、不改任何科学字段。
+- Tests: launcher + transition 相关 focused 52/52 passed。
+- Conclusion: Y3 旧 package 已永久冻结；retry1 将以全新 roots/attempt IDs 六臂全量重跑。

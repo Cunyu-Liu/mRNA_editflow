@@ -85,7 +85,7 @@ ALL_RUN_IDS = (
     "v4_no_moe",
 )
 CONTROL_RUN_IDS = ALL_RUN_IDS[2:]
-PHYSICAL_GPU_INDICES = (0, 1, 2, 3, 4, 5)
+PHYSICAL_GPU_INDICES = (2, 3, 5, 2, 3, 5)
 GPU_INVENTORY_COMMAND = (
     "nvidia-smi",
     "--query-gpu=index",

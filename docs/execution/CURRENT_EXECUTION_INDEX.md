@@ -87,8 +87,7 @@ Critic 技术重试代码只在独立 prep 分支
 `route-a-v3-v403-controls-oom-retry-prep-20260828`、worktree
 `/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_v403_controls_oom_retry_prep_20260828` 开发；该分支不是 GPU
 执行入口。新实现先由唯一 transition 将旧 package 的精确技术终态冻结成不可覆盖 receipt，再允许新 HEAD、
-新根目录、retry index 1 的六臂完整重跑。调度固定为 GPU0–2 第一波、GPU3–5 第二波；第一波全部精确成功才
-启动第二波，仍是一臂一卡、多 GPU 并行。子进程使用 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+新根目录、retry index 1 的六臂完整重跑。2026-08-29 复核确认 GPU0/1/4 被其他长期任务大量占用、空闲不足，原「GPU0–2 第一波、GPU3–5 第二波」固定映射会让第一波在 GPU0/1 立即 CUDA OOM；故将两波固定映射调整为均使用空闲最充裕的 GPU2/3/5：wave 0 三臂 → GPU2/3/5，wave 1 三臂在 wave 0 全部精确成功后复用 GPU2/3/5。仍是一臂一卡、多 GPU 并行。子进程使用 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
 减少 allocator 碎片；不查询 `memory.free`、不等待/排序/筛卡、不设显存阈值。模型、trainer、数据、seed、
 batch、passes、更新预算和科学 gate 均不得改变。
 
