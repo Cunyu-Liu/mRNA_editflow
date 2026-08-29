@@ -137,6 +137,25 @@ CORRECTED_SCREEN_PROVENANCE_UNCHANGED_FLAGS = {
     "package_failure_policy_changed": False,
     "protected_outcome_policy_changed": False,
 }
+CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD = (
+    "649f38c8be05b59aa0ea4a4e2f22222afe0a93fb"
+)
+CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS = (
+    "scripts/route_a_v3/launch_route2_xeditcritic_v403_controls_after_full.py",
+    "scripts/route_a_v3/run_route2_xeditcritic_v403_control_recovery_scheduler.py",
+)
+CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT = (
+    WORKTREE
+    / "audits/route_a_v3_route2_xeditcritic_v403_controls_retry1_gpu_remap_"
+    "649f38c8be05b59aa0ea4a4e2f22222afe0a93fb.json"
+)
+CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT_SCHEMA = (
+    "route_a_v3_route2_xeditcritic_v403_controls_retry1_gpu_remap_"
+    "training_semantics.v1"
+)
+CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT_STATUS = (
+    "XEDITCRITIC_V403_CONTROLS_RETRY1_GPU_REMAP_TRAINING_SEMANTICS_PASS"
+)
 TRAINING_SEMANTICS_REAUDIT_CHANGED_PATHS = (
     "core/route2_experiment_ledger.py",
     "core/route2_xeditcritic_gate_v4.py",
@@ -1244,6 +1263,63 @@ def corrected_screen_confirmation_provenance_binding() -> dict[str, str]:
     }
 
 
+def validate_controls_retry1_gpu_remap_baseline_audit(
+    audit: Mapping[str, Any],
+) -> None:
+    consumer_review = audit.get("confirmation_consumer_review")
+    require(
+        audit.get("schema_version")
+        == CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT_SCHEMA
+        and audit.get("status")
+        == CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT_STATUS
+        and audit.get(
+            "previous_corrected_screen_confirmation_provenance_baseline_git_head"
+        )
+        == CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        and audit.get("controls_retry1_gpu_remap_baseline_git_head")
+        == CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD
+        and tuple(
+            audit.get(
+                "changed_training_semantic_paths_from_corrected_screen_"
+                "baseline_to_retry1_remap",
+                [],
+            )
+        )
+        == CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS
+        and audit.get("control_physical_gpu_mapping_changed") is True
+        and audit.get("physical_gpu_indices") == [2, 3, 5, 2, 3, 5]
+        and audit.get("free_memory_gate_added") is False
+        and audit.get("free_or_estimated_memory_sorting_added") is False
+        and isinstance(consumer_review, Mapping)
+        and consumer_review.get("included_in_frozen_training_semantic_pathspec")
+        is False
+        and consumer_review.get(
+            "expected_semantic_diff_from_retry1_remap_baseline_to_runner"
+        )
+        == []
+        and audit.get("model_result_claimed") is False
+        and audit.get("submission_ready") is False,
+        "controls retry1 GPU-remap baseline audit is absent or invalid",
+    )
+    require_zero_protected_reads(
+        audit, label="controls retry1 GPU-remap baseline audit"
+    )
+
+
+def controls_retry1_gpu_remap_baseline_binding() -> dict[str, str]:
+    return {
+        "controls_retry1_gpu_remap_baseline_git_head": (
+            CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD
+        ),
+        "controls_retry1_gpu_remap_baseline_audit": str(
+            CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT
+        ),
+        "controls_retry1_gpu_remap_baseline_audit_status": (
+            CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT_STATUS
+        ),
+    }
+
+
 def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
@@ -1267,6 +1343,12 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     )
     validate_corrected_screen_confirmation_provenance_audit(
         corrected_screen_provenance_audit
+    )
+    controls_retry1_gpu_remap_audit = read_json(
+        CONTROLS_RETRY1_GPU_REMAP_BASELINE_AUDIT
+    )
+    validate_controls_retry1_gpu_remap_baseline_audit(
+        controls_retry1_gpu_remap_audit
     )
     audited_changed = command(
         [
@@ -1336,12 +1418,29 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         "Critic training-semantic Git diff: "
         + ", ".join(corrected_screen_provenance_changed),
     )
-    changed = command(
+    retry1_remap_changed = command(
         [
             "git",
             "diff",
             "--name-only",
             CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD,
+            CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD,
+            "--",
+            *TRAINING_SEMANTIC_PATHS,
+        ]
+    ).stdout.splitlines()
+    require(
+        tuple(retry1_remap_changed)
+        == CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS,
+        "Critic controls retry1 GPU-remap semantic paths differ from the "
+        "exact Git diff: " + ", ".join(retry1_remap_changed),
+    )
+    changed = command(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD,
             current_head,
             "--",
             *TRAINING_SEMANTIC_PATHS,
@@ -1349,8 +1448,8 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
     ).stdout.splitlines()
     require(
         not changed,
-        "Critic confirmation training semantics changed after the corrected "
-        "SetFlow screen provenance baseline: " + ", ".join(changed),
+        "Critic confirmation training semantics changed after the controls "
+        "retry1 GPU-remap baseline: " + ", ".join(changed),
     )
     return {
         "historical_repaired_screen_provenance_git_head": (
@@ -1371,6 +1470,7 @@ def validate_runner_training_semantics(current_head: str) -> dict[str, Any]:
         ],
         **controls_oom_retry_technical_baseline_binding(),
         **corrected_screen_confirmation_provenance_binding(),
+        **controls_retry1_gpu_remap_baseline_binding(),
         "runner_git_head": current_head,
         "training_git_head": current_head,
         "training_semantic_paths": list(TRAINING_SEMANTIC_PATHS),
@@ -1716,6 +1816,7 @@ def build_confirmation_authorization(
         ),
         **controls_oom_retry_technical_baseline_binding(),
         **corrected_screen_confirmation_provenance_binding(),
+        **controls_retry1_gpu_remap_baseline_binding(),
         "training_semantics": dict(training_semantics),
         "source_authorization_paths": {
             run_id: gate["cross_root_transition"]["arm_sources"][run_id][
@@ -1953,6 +2054,7 @@ def build_schedule(
         ),
         **controls_oom_retry_technical_baseline_binding(),
         **corrected_screen_confirmation_provenance_binding(),
+        **controls_retry1_gpu_remap_baseline_binding(),
         "worktree": str(WORKTREE),
         "runtime_manifest": str(runtime_manifest),
         "eligible_components": ["critic"],
@@ -2204,6 +2306,7 @@ def run(current_head: str) -> dict[str, Any]:
         ),
         **controls_oom_retry_technical_baseline_binding(),
         **corrected_screen_confirmation_provenance_binding(),
+        **controls_retry1_gpu_remap_baseline_binding(),
         "historical_c0_git_head": HISTORICAL_C0_GIT_HEAD,
         "historical_full_git_head": REPAIRED_SCREEN_PROVENANCE_GIT_HEAD,
         "control_runner_git_head": current_head,

@@ -1067,3 +1067,17 @@ or terminal artifacts.
   PHYSICAL_GPU_INDICES = (2,3,5,2,3,5)；一臂一卡、expandable_segments、不筛卡、不改任何科学字段。
 - Tests: launcher + transition 相关 focused 52/52 passed。
 - Conclusion: Y3 旧 package 已永久冻结；retry1 将以全新 roots/attempt IDs 六臂全量重跑。
+
+## Iteration O — 2026-08-29: retry1 准入修复（语义链扩展 + 测试/mock/index 修复）
+
+- Objective: 让新 HEAD（含 controls retry1 GPU remap）通过唯一 successor runner 准入。
+- 发现：materializer 首次运行 4 项 focused 失败。其中 2 项为 prep 分支既有缺陷（guidance 测试
+  mock 的 group7 缺 OOM terminal 测试 marker；index 缺 S1 mechanics config 字符串）；1 项为
+  retry1 GPU remap 触发 confirmation launcher 的不可变训练语义守卫（controls 两文件相对
+  corrected-screen baseline 变化）。
+- 修复：新增 CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD=649f38c8 语义基线 + 审计
+  audits/route_a_v3_route2_xeditcritic_v403_controls_retry1_gpu_remap_649f38c8.json，
+  把最终检查改为「corrected-screen→retry1-remap 步必须恰为两 controls 文件」+「retry1-remap→
+  current 必须为空」；更新 guidance mock group7 与两个语义链测试；index 补 S1 mechanics 字符串。
+- Tests: confirmation/guidance/controls/transition 相关 153/153 passed。
+- Conclusion: retry1 新 HEAD 待完整准入（8 组 focused + 96 V3.3.2 + 双 receipt）后启动六臂重跑。

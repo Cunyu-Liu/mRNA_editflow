@@ -559,6 +559,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                     + "\n"
                 )
             )
+        if command_args[3] == (
+            launcher.CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(stdout="")
 
     monkeypatch.setattr(
@@ -634,6 +645,15 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
             "diff",
             "--name-only",
             launcher.CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD,
+            launcher.CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ],
+        [
+            "git",
+            "diff",
+            "--name-only",
+            launcher.CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD,
             "c" * 40,
             "--",
             *launcher.TRAINING_SEMANTIC_PATHS,
@@ -681,6 +701,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                 stdout=(
                     "\n".join(
                         launcher.CORRECTED_SCREEN_PROVENANCE_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
+        if command_args[3] == (
+            launcher.CORRECTED_SCREEN_CONFIRMATION_PROVENANCE_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS
                     )
                     + "\n"
                 )
@@ -824,7 +855,7 @@ def test_runner_semantics_rejects_post_corrected_screen_path_drift(
         return SimpleNamespace(stdout="\n".join(paths) + "\n")
 
     monkeypatch.setattr(launcher, "command", drifted_post_corrected_screen)
-    with pytest.raises(Exception, match="changed after the corrected"):
+    with pytest.raises(Exception, match="retry1 GPU-remap semantic paths"):
         launcher.validate_runner_training_semantics("d" * 40)
 
 

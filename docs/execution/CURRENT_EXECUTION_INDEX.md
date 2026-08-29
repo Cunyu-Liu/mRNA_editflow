@@ -13,7 +13,7 @@
 
 1. 主科学合同（外部 canonical locator，不在本文件复制内容）：`/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md`；
 2. repo 内 V4 总协议：`docs/paper/route2_xedit_v4_prospective_experiments_protocol_v1.md`；
-3. frozen guidance protocol config：`configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json`；
+3. frozen guidance protocol config：`configs/route_a_v3_route2_xeditflow_v4_guidance_protocol_v1.json；SetFlow S1 mechanics screen 配置：configs/route_a_v3_route2_xeditsetflow_v4_s1_mechanics_screen_v1.json`；
 4. 本文件；
 5. `route_a_v3_route2_rapid_iteration_log_20260827.md` 与对应 HEAD 的 runner verification receipts；
 6. 其他日期化记录和历史交接文档。

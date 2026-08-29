@@ -76,6 +76,7 @@ def _focused_test_commands() -> list[str]:
         "test_launch_route2_xedit_v4_confirmation_posttraining_after_terminal.py "
         "test_launch_route2_xeditsetflow_v403_recovered_confirmation.py "
         "test_launch_route2_xeditcritic_v403_controls_after_full.py "
+        "test_transition_record_route2_xeditcritic_v403_controls_oom_terminal.py "
         "test_launch_route2_xeditcritic_v4_atomic_frozen_test_after_confirmation.py "
         "test_launch_route2_xeditcritic_v4_refit_after_atomic_test.py "
         "test_launch_route2_xeditcritic_v4_loso_after_refits.py",
