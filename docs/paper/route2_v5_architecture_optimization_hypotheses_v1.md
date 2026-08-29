@@ -60,3 +60,31 @@ Pareto-better (temperature, stop_scale) than identity. Tests: 6/6 pass (CPU).
   a new clean HEAD + independent roots; no gate/threshold changes without a
   new frozen protocol.
 - Directions B/C/D follow the same prospective pattern.
+
+## Direction B — Critic Δstructure features (implemented 2026-08-29)
+
+Module core/route2_xeditcritic_structure_features_v5.py
+(structure_differential_features_v5): ViennaRNA 2.7.2 MFE + partition
+function per (source, candidate) pair; 12-dim outcome-free vector
+(per-nt MFE both sides, ΔMFE, Δensemble, edit-site and ±4-local
+pairing-probability change summaries, ΔGC, edit count). Hypothesis:
+appending this vector to the raw branch input improves task-macro
+Spearman because edit effects are mediated by local structure. Tests 6/6.
+
+## Direction C — hard antisymmetric siamese readout (implemented 2026-08-29)
+
+Module core/route2_xeditcritic_antisymmetric_head_v5.py
+(AntisymmetricSiameseHeadV5): wraps any paired score module g into
+delta = g(s,c) − g(c,s), exactly antisymmetric and identity-zero.
+Hypothesis: the hard constraint improves MAE and stabilizes both
+mutation directions (DDMut evidence). Tests 6/6, residuals exactly 0.0.
+
+## Direction D — SetFlow structured edit coupling (implemented 2026-08-29)
+
+Module core/route2_xeditsetflow_edit_coupling_v5.py
+(empirical_edit_prior_v5): per-(position, alt_base) substitution counts
+from substitutions-only pairs with Laplace smoothing; normalized
+scaled-to-(1−p_stop) rows + log-rate form for additive rate bias or
+coupling weighting. Hypothesis: an outcome-free TRAIN-only empirical
+prior rebalances the common set-marginal objective toward measured edit
+hotspots and improves recovery without hurting unique rate. Tests 5/5.

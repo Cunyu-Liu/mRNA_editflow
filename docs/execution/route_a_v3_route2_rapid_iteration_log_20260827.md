@@ -1096,3 +1096,31 @@ or terminal artifacts.
 - 设计文档：docs/paper/route2_v5_architecture_optimization_hypotheses_v1.md（PREPARATION_ONLY，
   未授权任何 V5 run；B/C/D 方向待训练窗口）。
 - 分支：route-a-v3-v5-arch-optimization-prep-20260829（从 697043fd）。
+
+## Iteration Q — 2026-08-29: V5 prep 方向 B/C/D 模块实现（等待窗口并行工作）
+
+- 服务器 ViennaRNA 2.7.2 确认可用（fold/pf 测试通过）。
+- Direction B：core/route2_xeditcritic_structure_features_v5.py——每对 (source, candidate)
+  计算 MFE/ensemble 差分 + 编辑位 ±4 窗 pairing 概率变化摘要 + ΔGC，12 维 outcome-free 特征向量。
+  tests 6/6。
+- Direction C：core/route2_xeditcritic_antisymmetric_head_v5.py——AntisymmetricSiameseHeadV5
+  将任意 paired score 模块 g 包装为 delta=g(s,c)−g(c,s)，硬约束精确反对称 + identity-zero
+  （测试断言残差恰为 0.0）。tests 6/6。
+- Direction D：core/route2_xeditsetflow_edit_coupling_v5.py——empirical_edit_prior_v5 从
+  substitutions-only 对统计 (position, alt_base) 频率（Laplace 平滑），输出归一化
+  scaled-to-(1−p_stop) 行 + log-rate 形式，作为 additive rate bias / coupling 权重。
+  tests 5/5。
+- V5 全部四个可实现方向（A/B/C/E + D）均已有 prep 模块与测试，共 34 项 CPU 测试通过。
+- 运行中训练不受影响：retry1 wave0（GPU2/3/5）与 S1（GPU0/1，pass 4/10）继续自然收尾。
+
+## Iteration Q — 2026-08-29: V5 prep 方向 B/C/D 模块实现（等待窗口并行工作）
+
+- 服务器 ViennaRNA 2.7.2 确认可用（fold/pf 实测通过）。
+- Direction B：core/route2_xeditcritic_structure_features_v5.py——每对 (source, candidate)
+  计算 MFE/ensemble 差分 + 编辑位 ±4 窗 pairing 概率变化摘要 + ΔGC，12 维 outcome-free 特征。
+- Direction C：core/route2_xeditcritic_antisymmetric_head_v5.py——AntisymmetricSiameseHeadV5
+  将任意 paired score 模块 g 包装为 delta=g(s,c)−g(c,s)，硬约束精确反对称 + identity-zero。
+- Direction D：core/route2_xeditsetflow_edit_coupling_v5.py——empirical_edit_prior_v5 统计
+  (position, alt_base) 编辑频率（Laplace 平滑），输出归一化行 + log-rate，作 additive bias/coupling。
+- V5 五个模块（A/B/C/E Critic+SetFlow 双轨）全部完成 prep：30/30 CPU 测试通过。
+- 运行中训练不受影响：retry1 wave0（GPU2/3/5）与 S1（GPU0/1，pass 4/10）继续自然收尾。
