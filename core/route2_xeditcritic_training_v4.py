@@ -18,6 +18,9 @@ from core.route2_xeditcritic_training_data_v3 import (
     capped_sqrt_task_allocations,
     different_source_group_pair_indices,
 )
+from core.route2_xeditcritic_within_source_ranking_v5 import (
+    same_source_group_pair_indices,
+)
 
 
 EFFECTIVE_BATCH_V4 = 32
@@ -271,6 +274,8 @@ class EffectivePredictionObjectiveV4:
     huber_loss: float
     pairwise_loss: float
     soft_spearman_loss: float
+    within_source_loss: float
+    within_source_pair_count: int
     pair_count: int
     prediction_gradient: torch.Tensor
 
@@ -474,6 +479,39 @@ def backward_replayed_prediction_gradient_v4(
     return replayed_predictions
 
 
+def within_source_ranking_term_v4(
+    predictions: torch.Tensor,
+    targets: torch.Tensor,
+    source_groups: Sequence[str],
+    task_ids: Sequence[str],
+) -> dict[str, torch.Tensor | int]:
+    """Same-source-group softplus ranking term (Direction A, V5).
+
+    Complements the V4 cross-source pairwise term: the evaluated task-macro
+    Spearman also contains same-source candidate pairs, and V2 evidence
+    showed the candidate-content channel contributes little.  Restricts to
+    pairs within one source group with differing targets.
+    """
+
+    _require(
+        predictions.shape == targets.shape and predictions.ndim == 1,
+        "within-source objective vectors are misaligned",
+    )
+    pairs = same_source_group_pair_indices(targets, source_groups, task_ids)
+    if not pairs:
+        return {"loss": predictions.new_zeros(()), "pair_count": 0}
+    left = torch.tensor([pair[0] for pair in pairs], device=predictions.device)
+    right = torch.tensor([pair[1] for pair in pairs], device=predictions.device)
+    target_delta = targets[left] - targets[right]
+    prediction_delta = predictions[left] - predictions[right]
+    loss = F.softplus(-target_delta.sign() * prediction_delta).mean()
+    _require(
+        bool(torch.isfinite(loss).item()),
+        "within-source ranking term is nonfinite",
+    )
+    return {"loss": loss, "pair_count": len(pairs)}
+
+
 def effective_prediction_objective_v4(
     predictions: torch.Tensor,
     targets: torch.Tensor,
@@ -484,6 +522,7 @@ def effective_prediction_objective_v4(
     pass_number: int,
     huber_delta: float = 1.0,
     soft_rank_temperature: float = 0.2,
+    within_source_ranking_weight: float = 0.0,
 ) -> EffectivePredictionObjectiveV4:
     """Compute the full task-batch objective and its exact prediction gradient.
 
@@ -528,10 +567,21 @@ def effective_prediction_objective_v4(
             temperature=soft_rank_temperature,
         )
     )
+    within_source = (
+        {"loss": values.new_zeros(()), "pair_count": 0}
+        if within_source_ranking_weight == 0.0
+        else within_source_ranking_term_v4(
+            values,
+            targets,
+            source_groups,
+            task_ids,
+        )
+    )
     total = (
         weights["huber"] * huber
         + weights["pairwise"] * pairwise
         + weights["soft_spearman"] * soft
+        + within_source_ranking_weight * within_source["loss"]
     )
     _require(torch.isfinite(total).item(), "Critic V4 effective prediction loss is nonfinite")
     gradient = torch.autograd.grad(total, values, create_graph=False)[0]
@@ -541,6 +591,8 @@ def effective_prediction_objective_v4(
         huber_loss=float(huber.detach().cpu()),
         pairwise_loss=float(pairwise.detach().cpu()),
         soft_spearman_loss=float(soft.detach().cpu()),
+        within_source_loss=float(within_source["loss"].detach().cpu()),
+        within_source_pair_count=int(within_source["pair_count"]),
         pair_count=len(pairs),
         prediction_gradient=gradient.detach(),
     )

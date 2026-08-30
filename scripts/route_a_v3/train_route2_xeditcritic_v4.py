@@ -1093,6 +1093,9 @@ def run(
                     pass_number=pass_number,
                     huber_delta=float(config["training"]["huber_delta"]),
                     soft_rank_temperature=float(config["training"]["soft_rank_temperature"]),
+                    within_source_ranking_weight=float(
+                        config["training"].get("within_source_ranking_weight", 0.0)
+                    ),
                 )
                 optimizer.zero_grad(set_to_none=True)
                 router_balance_weight = float(
