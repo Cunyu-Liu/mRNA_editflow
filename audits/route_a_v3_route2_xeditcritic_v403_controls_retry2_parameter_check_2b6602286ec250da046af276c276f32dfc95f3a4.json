@@ -1,0 +1,39 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v403_controls_retry2_parameter_check_training_semantics.v1",
+  "status": "XEDITCRITIC_V403_CONTROLS_RETRY2_PARAMETER_CHECK_TRAINING_SEMANTICS_PASS",
+  "previous_controls_retry1_gpu_remap_baseline_git_head": "649f38c8be05b59aa0ea4a4e2f22222afe0a93fb",
+  "controls_retry2_parameter_check_baseline_git_head": "2b6602286ec250da046af276c276f32dfc95f3a4",
+  "changed_training_semantic_paths_from_retry1_remap_to_retry2_parameter_check": [
+    "scripts/route_a_v3/train_route2_xeditcritic_v4.py"
+  ],
+  "path_classification": {
+    "scripts/route_a_v3/train_route2_xeditcritic_v4.py": "PARAMETER_CHANGED_DETECTION_ANY_TRAINABLE_UPDATE_ONLY"
+  },
+  "retry1_gpu_remap_baseline_audit_preserved_and_validated": true,
+  "critic_model_implementation_changed": false,
+  "critic_trainer_learning_semantics_changed": false,
+  "critic_model_architecture_changed": false,
+  "critic_model_forward_changed": false,
+  "critic_loss_changed": false,
+  "critic_scientific_config_changed": false,
+  "critic_training_data_changed": false,
+  "critic_sampler_changed": false,
+  "critic_physical_or_effective_batch_changed": false,
+  "critic_seed_cohort_changed": false,
+  "critic_optimizer_objective_changed": false,
+  "critic_optimizer_update_budget_changed": false,
+  "scientific_thresholds_changed": false,
+  "control_physical_gpu_mapping_changed": false,
+  "free_memory_gate_added": false,
+  "baseline_scope": "TECHNICAL_PARAMETER_CHANGE_CHECK_EVIDENCE_ONLY",
+  "confirmation_consumer_review": {
+    "path": "scripts/route_a_v3/launch_route2_xeditcritic_v403_confirmation_after_cross_root_screen.py",
+    "included_in_frozen_training_semantic_pathspec": false,
+    "role": "AUDIT_ONLY_CONSUMER_BINDING_OUTSIDE_FROZEN_TRAINING_SEMANTICS",
+    "expected_semantic_diff_from_retry2_parameter_check_baseline_to_runner": []
+  },
+  "development_test_outcome_reads": 0,
+  "new_final_evaluation_outcome_reads": 0,
+  "model_result_claimed": false,
+  "submission_ready": false
+}

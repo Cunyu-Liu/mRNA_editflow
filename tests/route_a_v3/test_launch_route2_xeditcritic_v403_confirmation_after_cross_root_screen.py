@@ -570,6 +570,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                     + "\n"
                 )
             )
+        if command_args[3] == (
+            launcher.CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_RETRY2_PARAMETER_CHECK_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
         return SimpleNamespace(stdout="")
 
     monkeypatch.setattr(
@@ -654,6 +665,15 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
             "diff",
             "--name-only",
             launcher.CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD,
+            launcher.CONTROLS_RETRY2_PARAMETER_CHECK_BASELINE_HEAD,
+            "--",
+            *launcher.TRAINING_SEMANTIC_PATHS,
+        ],
+        [
+            "git",
+            "diff",
+            "--name-only",
+            launcher.CONTROLS_RETRY2_PARAMETER_CHECK_BASELINE_HEAD,
             "c" * 40,
             "--",
             *launcher.TRAINING_SEMANTIC_PATHS,
@@ -712,6 +732,17 @@ def test_exact_runner_accepts_audit_then_rejects_postbaseline_semantic_diff(
                 stdout=(
                     "\n".join(
                         launcher.CONTROLS_RETRY1_GPU_REMAP_CHANGED_TRAINING_SEMANTIC_PATHS
+                    )
+                    + "\n"
+                )
+            )
+        if command_args[3] == (
+            launcher.CONTROLS_RETRY1_GPU_REMAP_BASELINE_HEAD
+        ):
+            return SimpleNamespace(
+                stdout=(
+                    "\n".join(
+                        launcher.CONTROLS_RETRY2_PARAMETER_CHECK_CHANGED_TRAINING_SEMANTIC_PATHS
                     )
                     + "\n"
                 )
