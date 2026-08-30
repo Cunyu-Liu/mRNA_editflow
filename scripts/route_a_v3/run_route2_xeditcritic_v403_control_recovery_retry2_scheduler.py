@@ -43,12 +43,12 @@ CONTROL_WAVES = (
 PRIOR_FAILED_CONTROL_RUNTIME = (
     Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
     / "experiments/xeditcritic_v4/"
-    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}/runtime.json"
+    f"v403_control_recovery_retry1_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}/runtime.json"
 )
 PRIOR_CONTROL_OOM_TERMINAL_RECEIPT = (
     Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
     / "audits/xeditcritic_v4/"
-    f"v403_control_recovery_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}_oom_terminal.json"
+    f"v403_control_recovery_retry1_runner_{PRIOR_FAILED_CONTROL_GIT_HEAD}_terminal.json"
 )
 
 
