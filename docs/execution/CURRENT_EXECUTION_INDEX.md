@@ -345,11 +345,20 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
 
 ## 11. 运行状态更新（2026-08-30 heartbeat）
 
-### Critic controls retry1 —— 精确技术终态
-- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`，Git HEAD `697043fd`。
-- wave0 首臂 `v4_source_only`（GPU2）return_code=1 技术失败；`v4_edit_metadata_only`/`v4_no_candidate_sequence`
-  自然 SUMMARY；wave1 三臂 `NOT_RUN_AFTER_TERMINAL_FAILURE`。
-- cross-root gate 未运行；same-family retry 不授权；Critic controls 后继 family 待用户决策。
+### Critic controls retry1 — 精确技术终态（已记录）
+- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`，Git HEAD `697043fd`；
+  terminal receipt `v403_control_recovery_retry1_runner_697043fd..._terminal.json`
+  （successor_authorized=false，new_independent_retry_eligible=true）。
+- 根因：`v4_source_only` 的 `parameter_changed` 哨兵只检查第一个参数（upper_encoder.layers.0.Wqkv），
+  SOURCE_ONLY 下该参数梯度恒 0、weight-decay 变化 fp32 不可表示 → 误报 no learned update；
+  训练实际完成（cuda:true，22416 updates）。
+- 修复（2b660228）：parameter_changed 改为任意可训练参数变化检测，SOURCE_ONLY 下 55 参数真实更新。
+
+### Critic controls retry2 —— RUNNING（2026-08-30 启动）
+- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING`
+  `v403_control_recovery_retry2_runner_a21ae2a47b3275519611ad834660813534b38c41`，scheduler_pid=559310。
+- wave0 三臂并行：`v4_source_only`(GPU2)、`v4_edit_metadata_only`(GPU3)、`v4_no_candidate_sequence`(GPU5)，真实 CUDA。
+- wave1 三臂（permutation/no_cross/no_moe）PENDING，wave0 全部 SUMMARY 后自动启动，仍复用 GPU2/3/5。
 
 ### SetFlow V4-S1 corrected screen —— RUNNING（正常，无状态变化）
 - runtime status = `XEDITSETFLOW_V4_S1_SCREEN_RUNNING`，training `v4_s1_full`(GPU0)/

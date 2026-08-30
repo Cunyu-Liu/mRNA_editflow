@@ -1106,3 +1106,33 @@ or terminal artifacts.
   旧 Y3 OOM receipt 与 `793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110` 技术语义基线沿用。
 - Conclusion: retry1 为独立 retry family，包级技术终结；`same_family_retry_authorized=false`，不擅启直接 retry2。
   Critic controls 后续 family 需用户决策；SetFlow V4-S1 corrected screen 仍 RUNNING，不受影响。
+
+
+## Iteration Q — 2026-08-30: Critic controls retry2 根本修复并并行重启
+
+- Objective: retry1 技术失败后，定位根因并根本修复，随后建立 retry2 独立 family 在多 GPU 并行启动。
+- Root cause（两 family 归纳）:
+  - Y3（ebf99）: GPU0/1/2 在彼时被其他长期任务大量占用（14+ GiB/卡）→ wave0 三臂 OOM；GPU3/4/5 三臂自然 SUMMARY。
+    已由 retry1 GPU remap 修复（两波均置于 GPU2/3/5，V4.0.3 语义内 GPU 放置，无显存 gate）。
+  - retry1（697043fd）: `v4_source_only` 训练实际完整完成（cuda:true，8 passes，22416 updates），
+    但 trainer 的 `parameter_changed` 哨兵只比较模型第一个参数
+    `upper_encoder.layers.0.attention.self.Wqkv.weight`；SOURCE_ONLY 下该参数梯度恒为 0
+    （suppress_edits 切断编辑路径），AdamW weight-decay 更新量在 fp32 下不可表示，
+    torch.equal 恒等 → 误报 "no learned parameter update"，return_code=1。
+- 根本修复（commit 2b660228，已实证）: `parameter_changed` 改为对全部 requires_grad 参数
+  快照做 any-change 检测。SOURCE_ONLY 下 3 步实测 55 个参数真实更新（gradient_norm≈36），
+  判定恢复 True；EDIT_METADATA_ONLY 下 319 个参数更新不变。
+- 语义链扩展（commit 9f9d3f4d）: confirmation launcher 新增
+  CONTROLS_RETRY2_PARAMETER_CHECK baseline：retry1-remap→retry2-param-check 恰为一个 trainer 文件，
+  retry2-param-check→runner 为空。retry1 terminal receipt 由新 transition 工具记录
+  （v403_control_recovery_retry1_runner_697043fd..._terminal.json，successor_authorized=false）。
+- retry2 family（commit a5d728f9/a21ae2a4）: 新 launcher/scheduler（ordinal=2、identity=retry2、
+  prior=retry1 terminal receipt、transition gate 前缀 retry2、GPU2/3/5 两波复用）。scheduler 修正
+  prior runtime/receipt 路径（a21ae2a4）。
+- 准入: focused 8 组 632 passed + v332 96 passed（XEDIT_V403_SUCCESSOR_RUNNER_VERIFICATION_RECEIPTS_MATERIALIZED）。
+- Launch: 2026-08-30 scheduler_pid=559310，runtime
+  `v403_control_recovery_retry2_runner_a21ae2a47b3275519611ad834660813534b38c41/runtime.json`
+  status=XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING。
+  wave0 三臂并行：v4_source_only/GPU2、v4_edit_metadata_only/GPU3、v4_no_candidate_sequence/GPU5，均 RUNNING（真实 CUDA）。
+  wave1 三臂（permutation/no_cross/no_moe）待 wave0 全部 TERMINAL_SUMMARY 后自动启动，仍复用 GPU2/3/5。
+- Conclusion: retry1 为哨兵误报而非科学失败，参数更新证据充分；retry2 三臂真实 GPU 并行训练中，等待端终态。
