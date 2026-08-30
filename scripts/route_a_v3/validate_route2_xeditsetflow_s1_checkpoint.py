@@ -669,6 +669,10 @@ def validate_checkpoint(
         checkpoint_pass=checkpoint_pass,
         device=device,
     )
+    training_matched_initialization = _require_matched_initialization_s1(
+        training_summary,
+        label="SetFlow V4 S1 selected training summary",
+    )
     training_summary_path = (
         Path(config["output_root"]) / run_id / "training_summary.json"
     )
