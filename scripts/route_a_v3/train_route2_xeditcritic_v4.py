@@ -1033,7 +1033,11 @@ def run(
             repeat_cap=int(geometry["maximum_record_repeats_per_pass"]),
             effective_batch=int(geometry["effective_batch_size"]),
         )
-        initial_parameter = next(model.parameters()).detach().clone()
+        initial_parameters = {
+            name: parameter.detach().clone()
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
+        }
         update_count = 0
         pass_rows: list[dict[str, Any]] = []
         for pass_index in range(int(geometry["pass_count"])):
@@ -1162,8 +1166,10 @@ def run(
                 flush=True,
             )
         _require(update_count == int(geometry["total_optimizer_updates"]), "Critic V4 total update budget changed")
-        parameter_changed = not torch.equal(
-            initial_parameter, next(model.parameters()).detach()
+        parameter_changed = any(
+            not torch.equal(initial_parameters[name], parameter.detach())
+            for name, parameter in model.named_parameters()
+            if parameter.requires_grad
         )
         _require(parameter_changed, "Critic V4 performed no learned parameter update")
         prediction_path = (
