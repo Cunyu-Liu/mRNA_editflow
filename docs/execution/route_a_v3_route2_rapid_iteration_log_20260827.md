@@ -1081,3 +1081,28 @@ or terminal artifacts.
   current 必须为空」；更新 guidance mock group7 与两个语义链测试；index 补 S1 mechanics 字符串。
 - Tests: confirmation/guidance/controls/transition 相关 153/153 passed。
 - Conclusion: retry1 新 HEAD 待完整准入（8 组 focused + 96 V3.3.2 + 双 receipt）后启动六臂重跑。
+
+
+## Iteration P — 2026-08-30: Critic controls retry1 技术失败冻结记录
+
+- Objective: 低频 heartbeat 发现 retry1 六臂进入精确技术终态；按包级语义停止记录，不运行 cross-root gate。
+- Runtime: `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`
+  ` /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_control_recovery_retry1_runner_697043fdbfb904dc98adc74095a1bcaa8d62b0f3/runtime.json`
+- Git HEAD（training/runner/worktree 同 HEAD）: `697043fdbfb904dc98adc74095a1bcaa8d62b0f3`
+- 六臂终态 inventory:
+  - wave0
+    - `v4_source_only`（GPU2）: `TECHNICAL_FAILURE`，return_code=1，terminal_artifact_kind=FAILURE ← 包级首失败
+    - `v4_edit_metadata_only`（GPU3）: `TERMINAL_SUMMARY`，return_code=0
+    - `v4_no_candidate_sequence`（GPU5）: `TERMINAL_SUMMARY`，return_code=0
+  - wave1（自动启动后被首失败终止）
+    - `v4_candidate_bundle_permutation`（GPU2）: `NOT_RUN_AFTER_TERMINAL_FAILURE`（EARLIER_CONTROL_JOB_TECHNICAL_FAILURE）
+    - `v4_no_cross`（GPU3）: 同上
+    - `v4_no_moe`（GPU5）: 同上
+- cross_root_adjudication_run=false：因首臂技术失败，mixed 八臂 gate 未运行，confirmation/后继不授权。
+- 首失败证据保留（未读取 protected TEST / new final Evaluation outcome）:
+  first_terminal_failure: reason=JOB_TERMINAL_FAILURE_ARTIFACT, return_code=1, terminal_artifact_kind=FAILURE,
+  log=` /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/logs/xeditcritic_v4/v403_control_recovery_retry1_697043fdbfb904dc98adc74095a1bcaa8d62b0f3/v4_source_only.log`
+- 配置证据: `free_memory_gate_applied=false`（无显存启动 gate），`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`；
+  旧 Y3 OOM receipt 与 `793eedfb4b84e8c0dbd5a30bdf79c8923ddf8110` 技术语义基线沿用。
+- Conclusion: retry1 为独立 retry family，包级技术终结；`same_family_retry_authorized=false`，不擅启直接 retry2。
+  Critic controls 后续 family 需用户决策；SetFlow V4-S1 corrected screen 仍 RUNNING，不受影响。

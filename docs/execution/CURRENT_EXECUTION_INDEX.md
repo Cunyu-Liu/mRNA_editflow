@@ -2,7 +2,7 @@
 
 **文档角色：** 唯一当前执行入口  
 **适用项目：** Route A V3 / XEditFlow V4.0.3 / SetFlow V4-S1
-**更新时间：** 2026-08-28（Asia/Shanghai）
+**更新时间：** 2026-08-30（Asia/Shanghai）
 **执行原则：** 本文件只规定当前入口、阶段依赖和证据边界；科学阈值仍以冻结合同与协议为准。
 
 > 除本文件外，`docs/execution/` 中带有旧日期、旧分支或旧工作树的执行文档均为历史快照。不得从历史快照复制命令启动当前实验。
@@ -341,3 +341,16 @@ pathspec 上必须为空。当前 confirmation runner HEAD 可以不同于 corre
 bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失败或 protected-outcome policy；protected reads=0。
 审计本身 `successor_authorized=false`、`confirmation_authorized=false`，不声明模型结果，也不改变 Final/Guidance
 准入条件。
+
+
+## 11. 运行状态更新（2026-08-30 heartbeat）
+
+### Critic controls retry1 —— 精确技术终态
+- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`，Git HEAD `697043fd`。
+- wave0 首臂 `v4_source_only`（GPU2）return_code=1 技术失败；`v4_edit_metadata_only`/`v4_no_candidate_sequence`
+  自然 SUMMARY；wave1 三臂 `NOT_RUN_AFTER_TERMINAL_FAILURE`。
+- cross-root gate 未运行；same-family retry 不授权；Critic controls 后继 family 待用户决策。
+
+### SetFlow V4-S1 corrected screen —— RUNNING（正常，无状态变化）
+- runtime status = `XEDITSETFLOW_V4_S1_SCREEN_RUNNING`，training `v4_s1_full`(GPU0)/
+  `v4_s1_single_mode`(GPU1) RUNNING，8 个 checkpoint Validation PENDING，adjudication PENDING。
