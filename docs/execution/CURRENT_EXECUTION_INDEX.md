@@ -360,6 +360,15 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
 - wave0 三臂并行：`v4_source_only`(GPU2)、`v4_edit_metadata_only`(GPU3)、`v4_no_candidate_sequence`(GPU5)，真实 CUDA。
 - wave1 三臂（permutation/no_cross/no_moe）PENDING，wave0 全部 SUMMARY 后自动启动，仍复用 GPU2/3/5。
 
-### SetFlow V4-S1 corrected screen —— RUNNING（正常，无状态变化）
-- runtime status = `XEDITSETFLOW_V4_S1_SCREEN_RUNNING`，training `v4_s1_full`(GPU0)/
-  `v4_s1_single_mode`(GPU1) RUNNING，8 个 checkpoint Validation PENDING，adjudication PENDING。
+### SetFlow V4-S1 corrected screen —— 精确技术终态（已记录）
+- runtime status = `XEDITSETFLOW_V4_S1_SCREEN_TECHNICAL_FAILURE`，runtime HEAD `ebf99ebf`。
+- 两 run training（`v4_s1_full`/GPU0、`v4_s1_single_mode`/GPU1）均 `TERMINAL_COMPLETE`（SUMMARY，return_code=0，
+  cuda:true，cpu_fallback_used=false）——训练科学产出完整；8 个 pass_4/6/8/10 checkpoint 均留存。
+- 首失败：validation `v4_s1_full:pass_10`（GPU3, pid 1433728）`JOB_TERMINAL_FAILURE_ARTIFACT` return_code=1；
+  根因 `NameError: name 'training_matched_initialization' is not defined`
+  （scripts/route_a_v3/validate_route2_xeditsetflow_s1_checkpoint.py:913，应参考
+  `_require_matched_initialization_s1`）——纯 validation 实现缺陷，非科学失败。
+- 8 个 validation 全部 TERMINAL_FAILURE；`first_terminal_failure` 冻结；`development_test_outcome_reads=0`、
+  `new_final_evaluation_outcome_reads=0`。adjudication 状态 NOT_RUN_AFTER_TERMINAL_FAILURE。
+- Gate 语义：S1 终态 = 技术失败（非 PASS/NO-GO）→ confirmation 不授权、方向 E 温度扫描 gate 不满足，未启动。
+- 处置：本迭代只记录；不擅自触发重跑/重 validation，修复与 rerun family 待用户决策（见迭代日志 Iteration R）。

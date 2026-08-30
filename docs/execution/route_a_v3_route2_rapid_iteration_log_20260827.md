@@ -1136,3 +1136,30 @@ or terminal artifacts.
   wave0 三臂并行：v4_source_only/GPU2、v4_edit_metadata_only/GPU3、v4_no_candidate_sequence/GPU5，均 RUNNING（真实 CUDA）。
   wave1 三臂（permutation/no_cross/no_moe）待 wave0 全部 TERMINAL_SUMMARY 后自动启动，仍复用 GPU2/3/5。
 - Conclusion: retry1 为哨兵误报而非科学失败，参数更新证据充分；retry2 三臂真实 GPU 并行训练中，等待端终态。
+
+## Iteration R — 2026-08-30: SetFlow V4-S1 corrected screen 精确技术终态记录（validation NameError）
+
+- Objective: 低频 heartbeat 发现 S1 corrected screen 进入精确技术终态；按约定记录结论、更新执行索引并
+  commit+push（路线 2，分支 route-a-v3-v403-no-vram-gate-20260827 检出工作树
+  route_a_v3_v403_controls_retry1_20260829；detached HEAD @ ebf99ebf 工作树保持只读未动）。
+- Runtime: `XEDITSETFLOW_V4_S1_SCREEN_TECHNICAL_FAILURE`
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v4/s1_screen_seed_20260911_runner_ebf99ebf8a253ad27e311e555121d328df8fae10/runtime.json`
+  runtime.json 终态时间 2026-08-30 17:22:56（+0800）；观测时间 18:04（+0800）。Git HEAD = `ebf99ebf`。
+- 训练阶段证据（科学产出完整，非训练失败）:
+  - `training:v4_s1_full`（GPU0, pid 2098150）: TERMINAL_COMPLETE / SUMMARY，return_code=0；
+    cuda 真实使用（cpu_fallback_used=false）。checkpoint pass_4/6/8/10 均留存（v4_s1_full/）。
+  - `training:v4_s1_single_mode`（GPU1, pid 2098162）: TERMINAL_COMPLETE / SUMMARY，return_code=0。
+    checkpoint pass_4/6/8/10 均留存（v4_s1_single_mode/）。
+- 首失败: `validation:v4_s1_full:pass_10`（GPU3, pid 1433728）return_code=1，
+  reason=JOB_TERMINAL_FAILURE_ARTIFACT, terminal_artifact_kind=FAILURE, stage=VALIDATION。
+- 根因（pass_10.failed.json + validation log traceback）:
+  `NameError: name 'training_matched_initialization' is not defined`
+  scripts/route_a_v3/validate_route2_xeditsetflow_s1_checkpoint.py:913（Python 建议
+  `_require_matched_initialization_s1`）→ 纯 validation 脚本实现缺陷，与训练科学语义无关。
+- 8 个 checkpoint validation 全部 TERMINAL_FAILURE（其余 7 个同根因）；`first_terminal_failure` 已冻结；
+  adjudication.status = NOT_RUN_AFTER_TERMINAL_FAILURE。
+- protected/provenance 证据: development_test_outcome_reads=0, new_final_evaluation_outcome_reads=0。
+- Gate 语义结论: S1 精确终态=技术失败（既非 PASS 也非 NO-GO）→ confirmation 不授权；方向 E 温度扫描的
+  gate（要求 PASS/NO-GO 且 8 validation 终态）不满足，未启动扫描。
+- 处置边界: 本迭代只读 runtime + 终态工件并记录；未修改/重启/覆盖任何运行中实验或旧 artifacts；
+  未运行 cross-root gate；未擅启 retry/confirmation。修复与 rerun family 待用户决策（v4-vs-v5 路径见会话）。
