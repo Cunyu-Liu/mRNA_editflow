@@ -1166,3 +1166,30 @@ or terminal artifacts.
 - 启动：2026-08-30 ~12:10 CST，GPU2，PID 282776。训练加载中（GPU2 占用 14.9GB）。
 - 判定：V5 为独立 family，不改变任何 V4.0.3/S1 冻结 gate；run_summary 终态后与历史 f34 full 对比
   validation task-macro Spearman/MAE。
+
+## Iteration T — 2026-08-31: V5 Critic family v5_full 终态成功 + 同 seed f34 对照（方向 A 首次实证）
+
+### T1. v5_full 终态（TERMINAL SUCCESS，非失败，不触发重跑）
+
+- runtime 目录：/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v5/v5_screen_seed_20260907_runner_1113cd2c.../v5_full/
+- status = TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE；training_git_head=1113cd2c（V5 prep 分支）。
+- CUDA 证据：cuda_available=true、cuda_device=cuda:2（NVIDIA A100-PCIE-40GB）、a100_device_verified=true、
+  cpu_fallback_used=false、precision=BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE、peak_vram=8.75GB。
+- protected reads：development_test_outcome_reads=0、new_final_evaluation_outcome_reads=0。
+- 训练：8 passes、22,416 updates（pass1-8 PASS_COMPLETE_ALIVE_ONLY，2802×8）、elapsed≈55,637s、
+  seed=20260907、within_source_ranking_weight=0.5。终态约 2026-08-31 03:50 CST。
+- final_validation：9 tasks、18,293 records。
+
+### T2. 与历史 f34 full（V4.0.3 full，seed 20260907，无 within-source）同 seed 对照
+
+| 指标 | v5_full（Direction A within-source w=0.5） | f34 full（V4.0.3，无 within-source） | Δ（相对） |
+| --- | --- | --- | --- |
+| task-macro Spearman | 0.16709 | 0.16056 | +0.00653（+4.07%） |
+| task-macro standardized MAE | 1.93476 | 2.01513 | −0.08037（−3.99%） |
+
+- 同 seed 20260907、同 9 任务、同 validation 18,293 records、同数据/预算；唯一差异为 loss 架构
+  （是否含 within-source ranking 项 w=0.5）→ 干净同 seed 对照。
+- 结论：Direction A within-source ranking（同 source 软排序，w=0.5）相对无 within-source 基线同时改善
+  validation task-macro Spearman（+4.07%）与标准化 MAE（−3.99%），与 Iteration P 假设一致
+  （V4 因 cross-source 训练无法区分同 source 候选 → candidate-specific 信息缺失）。
+- V5 family 单臂完整终态；无技术失败，不擅自重跑同一 family。
