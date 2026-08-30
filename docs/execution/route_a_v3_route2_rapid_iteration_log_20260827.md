@@ -1138,3 +1138,31 @@ or terminal artifacts.
   不触碰 S1 冻结 artifacts/gate；CUDA/A100/BF16 校验、CPU fallback 禁止、protected reads=0。
 - tests 6/6（STOP 列索引与采样器解码一致性、identity 算术、网格冻结序、schema 常量）。
 - 心跳任务 b150a4cc 第 3 项已指向该正式脚本（S1 精确终态 + 8 Validation 终态后触发）。
+
+## Iteration S — 2026-08-30: Critic retry1 技术失败收尾 + V5 Critic family 启动
+
+### S1. Critic V4.0.3 controls retry1 TECHNICAL_FAILURE（V4.0.3 路线关闭）
+
+- retry1（HEAD 697043fd）wave0：edit_metadata_only/GPU3、no_candidate_sequence/GPU5 两臂
+  TERMINAL_SUMMARY；v4_source_only/GPU2 跑完全部 8 passes（22,416 updates，pass1-8 alive 事件齐全）
+  后于最终发布失败：error='Critic V4 performed no learned parameter update'
+  （XEditCriticTrainingV4RunnerError）。非 OOM；elapsed 67,246s。
+- 判定：该 package 失去完整六臂，定为技术失败，不运行 cross-root gate，禁止二次触发。
+- 科学影响：V4.0.3 controls 路线实质关闭（无 source_only 摘要无法做 cross-root 裁决）。source_only
+  控制臂的无参数更新实现缺陷留待 V5 或后续诊断，不阻塞 V5 主实验。
+
+### S2. V5 Critic family v5_full 启动（方向 A 首次接入）
+
+- 用户决策（2026-08-30）：显卡多张空余，V5 训练立即启动，不等旧任务。
+- 代码：V5 prep 分支 HEAD 1113cd2c。Direction A（within-source ranking）接入
+  effective_prediction_objective_v4（within_source_ranking_weight 默认 0=V4 行为不变；
+  config training.within_source_ranking_weight=0.5，pass1-2 与 pass3-8 权重同 0.5）。
+  32-batch 单测验证：weight=0 时 within_source_pair_count=0/loss=0；weight=0.5 时 48 对同 source
+  pair、total 上升。V5 全部 36 项 CPU 测试通过。
+- family：v5_screen_seed_20260907（与历史 f34 full 同 seed 20260907，同数据/预算，仅 loss 架构不同
+  → 同 seed 对照最干净）。单臂 v5_full（FULL/NONE）。config/auth 位于
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/authorizations/xeditcritic_v5/...，复用冻结 preflight
+  (attempt5, git_head 107fa43d) 与 bottom-six cache。
+- 启动：2026-08-30 ~12:10 CST，GPU2，PID 282776。训练加载中（GPU2 占用 14.9GB）。
+- 判定：V5 为独立 family，不改变任何 V4.0.3/S1 冻结 gate；run_summary 终态后与历史 f34 full 对比
+  validation task-macro Spearman/MAE。
