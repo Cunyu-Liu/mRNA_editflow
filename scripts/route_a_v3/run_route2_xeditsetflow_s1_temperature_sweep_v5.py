@@ -284,6 +284,15 @@ def _sweep_cell(
                 "generated_candidate_grants_canonical_credit": False,
             }
         )
+    empirical = Counter(
+        (row["source_key"], row["candidate_sequence"]) for row in candidates
+    )
+    totals = Counter(row["source_key"] for row in candidates)
+    for row in candidates:
+        row["generation_score"] = math.log(
+            empirical[(row["source_key"], row["candidate_sequence"])]
+            / totals[row["source_key"]]
+        )
     manifest = load_source_manifest(Path(config["source_eligibility_manifest"]))
     generation = evaluate_generation(manifest, candidates)
     measured_rows = _read_jsonl(Path(config["measured_neighborhood_path"]))
