@@ -262,7 +262,11 @@ def test_s1_validator_dispatches_confirmation_authority_and_retains_cuda_identit
     assert '"precision": "BF16"' in source
     assert '"cpu_fallback_used": False' in source
     assert '"parameter_initialization_seed"' in source
-    assert '"matched_initialization": training_matched_initialization' in source
+    assert '"matched_initialization": _require_matched_initialization_s1(' in source
+    # The validator recomputes matched-initialization from the loaded training
+    # summary inside validate_checkpoint; the load_checkpoint_s1 scope must not
+    # leak (regression guard for the 2026-08-30 NameError that killed all six
+    # S1 validation jobs after generation completed).
 
 
 @pytest.mark.parametrize(

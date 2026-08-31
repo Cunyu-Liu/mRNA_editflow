@@ -910,7 +910,10 @@ def validate_checkpoint(
                 "parameter_initialization_seed_applied_before_model_construction"
             ]
         ),
-        "matched_initialization": training_matched_initialization,
+        "matched_initialization": _require_matched_initialization_s1(
+            training_summary,
+            label="SetFlow V4 S1 selected training summary",
+        ),
         "checkpoint_pass": checkpoint_pass,
         "checkpoint_path": str(checkpoint_path),
         "training_summary_path": str(training_summary_path),
