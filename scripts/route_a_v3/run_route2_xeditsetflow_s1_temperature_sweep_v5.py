@@ -288,7 +288,13 @@ def _sweep_cell(
     generation = evaluate_generation(manifest, candidates)
     measured_rows = _read_jsonl(Path(config["measured_neighborhood_path"]))
     validate_measured_pool(measured_rows, "DEVELOPMENT", "CLOSED")
-    measured = measured_neighborhood_metrics(manifest, candidates, measured_rows)
+    measured = measured_neighborhood_metrics(
+        manifest,
+        candidates,
+        measured_rows,
+        k=int(validation_generation["measured_top_k"]),
+        candidate_support_mode="OPEN_GENERATED_SUPPORT",
+    )
     return {
         "mode_prior_temperature": temperature,
         "stop_rate_scale": stop_scale,
