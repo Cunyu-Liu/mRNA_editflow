@@ -1244,3 +1244,67 @@ or terminal artifacts.
   全部 all_equal，说明 8 个 checkpoint 的 single-mode 投影初始化与 canonical full 精确匹配。
   方向 E 温度扫描已在 GPU1 后台运行，完成后将把单调性/Pareto 结论追加进迭代日志并 commit+push。
 - 处置边界: 未重跑任何已成功 pass、未覆盖旧目录；原 runtime/旧 failed artifacts 冻结只读未二次触发。
+## Iteration V — 2026-08-31: retry3 隔离重跑（根治 worktree HEAD 污染）+ 温度扫描两项 bug 修复
+
+- Objective: 用户指出 retry2 的 WORKTREE_HEAD_MISMATCH 属"再次犯过的错"，要求彻底排查并隔离重跑；
+  同时对 V5 指标不满意要求反思。本迭代完成：根因确认、隔离架构实施、retry3 启动、方向 E 温度扫描两项 bug 修复。
+
+### 一、retry2 WORKTREE_HEAD_MISMATCH 根因确认（结构性缺陷）
+- retry2 launch 脚本硬编码 `TRAINING_WORKTREE = ORCHESTRATION_WORKTREE = Path(__file__).resolve().parents[2]`
+  （launch_route2_xeditcritic_v403_controls_retry2_after_full.py，即训练工作树 == 记录工作树）。
+- 上一轮（Iteration R/S/T）将 S1 validation 修复 commit 60da6502 与记录 commit 提交到**同一工作树**
+  route_a_v3_v403_controls_retry1_20260829，导致运行 HEAD 从 a21ae2a4 前移。
+- wave1 启动时 scheduler 的 `inspect_worktree_identity`（HEAD==expected 且 clean）按 fail-closed 语义拒绝：
+  reason=WORKTREE_HEAD_MISMATCH（expected a21ae2a4，observed 60da6502）→ retry2 整包 TECHNICAL_FAILURE。
+- 本质：**训练工作树与记录工作树耦合**；任何记录 commit 都会破坏训练 HEAD 校验。retry1 期间同模式已潜伏
+  （Iteration P/Q 记录同样提交到训练工作树），只是 retry1 因 parameter_changed 先失败未暴露。
+
+### 二、隔离架构实施（根治）
+- 新建独立训练工作树: /home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_v403_controls_retry3_training_20260831
+  分支 route-a-v3-v403-controls-retry3-20260831（由 git worktree add 从主仓库创建，基线 a21ae2a4）。
+- retry3 family 代码（launcher/scheduler/transition 工具）全部落在该工作树，HEAD 自 a21ae2a4 起：
+  c49d3207（feat: retry3 三件套）→ 63ee6422 → bff5f4e3（licensed head 绑定 retry2 基线 a21ae2a4，
+  `_retry3_head_acceptable` 接受 licensed 的严格后代）→ 1cc55fcb → f507e217（authorized_git_head 用运行时 HEAD，
+  runner receipt 校验用 licensed HEAD，二者解耦）。
+- 关键语义: RETRY3_LICENSED_HEAD=a21ae2a4（retry2 训练基线，runner_verification receipt 存在于此）；
+  运行 HEAD 可为其严格后代（训练代码语义不变，仅 orchestration 增量）；记录工作树（retry1_20260829/
+  route-a-v3-v403-no-vram-gate-20260827）任何记录 commit 均不影响 retry3 训练 HEAD 校验。
+- retry2 terminal receipt 已生成（transition_record_route2_xeditcritic_v403_controls_retry2_terminal.py）:
+  audits/xeditcritic_v4/v403_control_recovery_retry2_runner_a21ae2a4..._terminal.json，
+  status=XEDITCRITIC_V403_CONTROL_RECOVERY_RETRY2_TERMINAL_RECORDED，
+  new_independent_retry_eligible=true, successor_authorized=false, same_family_retry_authorized=false。
+- retry3 启动（成功）: launch --expected-orchestration-head f507e217 → XEDITCRITIC_V403_CONTROL_RECOVERY_LAUNCHED，
+  scheduler_pid=3288205。wave0 三臂 RUNNING（v4_source_only/GPU2、v4_edit_metadata_only/GPU3、
+  v4_no_candidate_sequence/GPU5），wave1 三臂 PENDING，wave0 全 SUMMARY 后自动启动。
+- 修复过程注记：retry3 首个 family（HEAD 1cc55fcb）曾因 authorized_git_head 被误改为 licensed head 导致
+  trainer "authorization is for another Git HEAD" 失败（JOB_MISSING_TERMINAL_ARTIFACT）。修复后以 f507e217
+  新 family 重启成功；1cc55fcb family 已 TECHNICAL_FAILURE 冻结，未覆盖旧 artifacts、未二次触发。
+
+### 三、方向 E 温度扫描 bug 修复（两项）
+1. measured_neighborhood_metrics 缺 k 与 candidate_support_mode 两个 keyword-only 参数
+   （run_route2_xeditsetflow_s1_temperature_sweep_v5.py:291）→ TypeError。补参，与
+   validate_route2_xeditsetflow_s1_checkpoint.py:838 同语义（k=int(validation_generation["measured_top_k"])=10，
+   candidate_support_mode="OPEN_GENERATED_SUPPORT"）。commit 408e41ff（v5 prep 分支）。
+2. candidates 构造未注入 ranking score → GenerationEvaluationError "candidate has no ranking score"。
+   在 evaluate_generation 前按 validate s1 同语义注入 generation_score（内存 empirical log-frequency，每 source
+   32 条轨迹有判别力）。commit 9d7ce3b1（v5 prep 分支）。
+- 修复后第三次启动扫描（PID 3303383，GPU1），存活超过 60 秒稳定运行；输出 json 原子写完成后生成。
+- 前两次失败日志保留（/tmp/s1_temperature_sweep_457e15ae.log 覆盖写，见证在运行环境）。
+
+### 四、V5 指标反思（用户不满意 Spearman 0.167，仅 +4%）
+- 事实: v5_full（方向 A within-source weight=0.5, seed 20260907）task-macro Spearman=0.167094 vs f34 full 0.160561
+  （+4.07%）；MAE 1.934759 vs 2.015126（-3.99%）。9 个 validation task 中多数 Spearman 仍低（如 RNA_HALF_LIFE
+  ~0.05、PUBLISHED_REF_VS_ALT 0.064、TOTAL_POLYSOME 0.058），仅 PROXIMAL_POLYA_SITE 0.822 突出。
+- 假设清单（供决策，需再验证）:
+  a) 训练 8 passes/22416 updates 可能不足——pass 8 mask 后 loss 仍下降（soft_spearman 0.235 还在降），
+     延长训练或提升 update 数可能继续改善。
+  b) selection_policy=FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION 是固定协议，但可考虑
+     validation-peak 重选以服务下游（需改协议、属协议变更）。
+  c) within-source weight=0.5 相对偏保守; 若方向 A 假设成立可扫描更高权重（0.75/1.0），但需要新的训练 family。
+  d) 多数 task 的 Spearman 体现 Critic 排序能力整体偏弱——20260907 seed 仅测量一次，需同 seed 对照确认稳健性。
+- 本轮不擅自重训 V5（架构优化待 retry3/温度扫描完成后并行推进）。
+
+### 处置边界
+- 未读取 protected DEVELOPMENT TEST / new final Evaluation outcome（两运行 protected reads=0）。
+- 未修改/重启/覆盖任何运行中实验或旧 artifacts；retry2/1cc55fcb/旧扫描日志均冻结只读。
+- GPU: retry3 用 GPU2/3/5（真实 CUDA）；温度扫描 GPU1；GPU0/4/6/7 未触碰。

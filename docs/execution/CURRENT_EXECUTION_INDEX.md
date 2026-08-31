@@ -399,3 +399,27 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
   （expected a21ae2a4，observed 60da6502）；v4_no_cross（GPU3）、v4_no_moe（GPU5）NOT_RUN_AFTER_TERMINAL_FAILURE。
 - 根因: S1 修复 commit 60da6502 使共享记录工作树 HEAD 前移，wave1 启动时 WORKTREE_HEAD 一致性检查 fail-closed。
 - cross-root gate 未运行（包级首失败语义）；不擅启 retry3；critic controls 后继 family 待用户决策。
+## 13. 运行状态更新（2026-08-31 retry3 隔离重跑 + 扫描修复）
+
+### Critic controls retry3 —— RUNNING（独立训练工作树，根治 HEAD 污染）
+- retry2 失败根因（结构性）: retry2 launcher 硬编码 TRAINING_WORKTREE=ORCHESTRATION_WORKTREE=记录工作树；
+  上轮记录 commit（60da6502 等）前移工作树 HEAD → wave1 启动时 WORKTREE_HEAD_MISMATCH（expected a21ae2a4,
+  observed 60da6502）。
+- 根治: 独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831（分支
+  route-a-v3-v403-controls-retry3-20260831，HEAD=f507e217，licensed 基线=a21ae2a4；
+  `_retry3_head_acceptable` 接受 licensed 严格后代）。记录工作树（retry1_20260829）任何 commit 不再影响训练。
+- retry2 terminal receipt 已生成（audits/xeditcritic_v4/v403_control_recovery_retry2_runner_a21ae2a4..._terminal.json,
+  RETRY2_TERMINAL_RECORDED, new_independent_retry_eligible=true）。
+- retry3 启动: LAUNCHED (f507e217, scheduler_pid=3288205)；wave0 三臂 RUNNING（source_only/GPU2、
+  edit_metadata_only/GPU3、no_candidate_sequence/GPU5），wave1 三臂 PENDING。首 family 1cc55fcb 因
+  authorized_git_head 误绑定 licensed 失败冻结（JOB_MISSING_TERMINAL_ARTIFACT），未覆盖、未二次触发。
+
+### 方向 E 温度扫描 —— 修复后 RUNNING（第三次）
+- bug1: 缺 k/candidate_support_mode（缺参 TypeError）→ 修复 commit 408e41ff。
+- bug2: 候选无 ranking score（GenerationEvaluationError）→ 注入 generation_score commit 9d7ce3b1。
+- 修复版 PID 3303383（GPU1），存活稳定；输出 s1_temperature_sweep_457e15ae.json 原子写，完成后追加结论。
+
+### V5 Critic 指标反思 —— 待决策
+- v5_full (方向A w=0.5, seed 20260907): Spearman 0.167094 vs f34 0.160561 (+4.07%)；MAE -3.99%。
+- 多数 task Spearman 仍低；假设清单（延长训练/峰重选/更高 weight/seed 稳健性）见迭代日志 Iteration V。
+- 不擅重训 V5；待 retry3 与温度扫描推进后并行决策。
