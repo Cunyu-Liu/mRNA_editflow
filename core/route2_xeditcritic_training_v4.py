@@ -230,6 +230,55 @@ def pairwise_sigmoid_soft_ranks_v4(
     return 0.5 + torch.sigmoid(pairwise).sum(dim=1)
 
 
+def lambda_rankic_pairwise_term_v4(
+    predictions: torch.Tensor,
+    targets: torch.Tensor,
+    source_groups: Sequence[str],
+    task_ids: Sequence[str],
+    *,
+    soft_rank_temperature: float = 0.2,
+) -> dict[str, torch.Tensor | int]:
+    """Rank-displacement weighted pairwise ranking term (LambdaRankIC-style).
+
+    Plain pairwise softplus treats every misordered pair as equally costly,
+    which aligns with Kendall tau rather than Spearman rho.  Following the
+    Delta-RankIC identity, the damage of swapping two items scales with the
+    product of their predicted-rank gap and target-rank gap, so this term
+    weights each pair by |soft_rank_i - soft_rank_j| * |midrank_i - midrank_j|.
+    The weight is detached: gradients flow only through the softplus margin,
+    keeping the LambdaRank interpretation of a swap-importance weight.
+    """
+
+    pairs = different_source_group_pair_indices(
+        targets,
+        source_groups,
+        task_ids,
+    )
+    if not pairs:
+        return {"loss": predictions.new_zeros(()), "pair_count": 0, "weight_sum": 0.0}
+    left = torch.tensor([pair[0] for pair in pairs], device=predictions.device)
+    right = torch.tensor([pair[1] for pair in pairs], device=predictions.device)
+    with torch.no_grad():
+        soft_ranks = pairwise_sigmoid_soft_ranks_v4(
+            predictions.detach(),
+            temperature=soft_rank_temperature,
+        )
+    mid_ranks = target_midranks_v4(targets)
+    rank_gap = (soft_ranks[left] - soft_ranks[right]).abs()
+    target_gap = (mid_ranks[left] - mid_ranks[right]).abs()
+    swap_importance = (rank_gap * target_gap).clamp_min(1.0e-6).detach()
+    target_delta = targets[left] - targets[right]
+    prediction_delta = predictions[left] - predictions[right]
+    per_pair = F.softplus(-target_delta.sign() * prediction_delta)
+    loss = (swap_importance * per_pair).sum() / swap_importance.sum()
+    _require(bool(torch.isfinite(loss).item()), "lambda pairwise term is nonfinite")
+    return {
+        "loss": loss,
+        "pair_count": len(pairs),
+        "weight_sum": float(swap_importance.sum().detach().cpu()),
+    }
+
+
 def soft_spearman_loss_v4(
     predictions: torch.Tensor,
     targets: torch.Tensor,
@@ -278,6 +327,8 @@ class EffectivePredictionObjectiveV4:
     within_source_pair_count: int
     pair_count: int
     prediction_gradient: torch.Tensor
+    lambda_pairwise_loss: float = 0.0
+    lambda_pairwise_pair_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -523,6 +574,7 @@ def effective_prediction_objective_v4(
     huber_delta: float = 1.0,
     soft_rank_temperature: float = 0.2,
     within_source_ranking_weight: float = 0.0,
+    lambda_pairwise_weight: float = 0.0,
 ) -> EffectivePredictionObjectiveV4:
     """Compute the full task-batch objective and its exact prediction gradient.
 
@@ -577,11 +629,23 @@ def effective_prediction_objective_v4(
             task_ids,
         )
     )
+    lambda_pairwise = (
+        {"loss": values.new_zeros(()), "pair_count": 0, "weight_sum": 0.0}
+        if lambda_pairwise_weight == 0.0
+        else lambda_rankic_pairwise_term_v4(
+            values,
+            targets,
+            source_groups,
+            task_ids,
+            soft_rank_temperature=soft_rank_temperature,
+        )
+    )
     total = (
         weights["huber"] * huber
         + weights["pairwise"] * pairwise
         + weights["soft_spearman"] * soft
         + within_source_ranking_weight * within_source["loss"]
+        + lambda_pairwise_weight * lambda_pairwise["loss"]
     )
     _require(torch.isfinite(total).item(), "Critic V4 effective prediction loss is nonfinite")
     gradient = torch.autograd.grad(total, values, create_graph=False)[0]
@@ -594,6 +658,8 @@ def effective_prediction_objective_v4(
         within_source_loss=float(within_source["loss"].detach().cpu()),
         within_source_pair_count=int(within_source["pair_count"]),
         pair_count=len(pairs),
+        lambda_pairwise_loss=float(lambda_pairwise["loss"].detach().cpu()),
+        lambda_pairwise_pair_count=int(lambda_pairwise["pair_count"]),
         prediction_gradient=gradient.detach(),
     )
 
