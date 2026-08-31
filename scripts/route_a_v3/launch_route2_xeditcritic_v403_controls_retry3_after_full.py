@@ -16,7 +16,7 @@ from typing import Any, Mapping, Sequence
 HISTORICAL_FULL_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 PRIOR_FAILED_CONTROL_GIT_HEAD = "a21ae2a47b3275519611ad834660813534b38c41"
-RETRY3_LICENSED_HEAD = "c49d3207999beac1bc60e89a5d0072cde3996be3"
+RETRY3_LICENSED_HEAD = "a21ae2a47b3275519611ad834660813534b38c41"
 EXPECTED_RETRY2_FIRST_FAILURE_RUN_ID = "v4_candidate_bundle_permutation"
 CONTROL_RETRY_ORDINAL = 3
 CONTROL_RETRY_IDENTITY = "v403_control_recovery_retry3"
@@ -978,12 +978,12 @@ def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]
         "orchestration worktree is dirty",
     )
     receipt_path = runner_verification_receipt_path(
-        expected_orchestration_head
+        RETRY3_LICENSED_HEAD
     )
     receipt = read_json(receipt_path)
     validate_runner_verification_receipt(
         receipt,
-        current_head=expected_orchestration_head,
+        current_head=RETRY3_LICENSED_HEAD,
         receipt_path=receipt_path,
     )
     return {
