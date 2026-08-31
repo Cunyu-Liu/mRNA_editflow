@@ -372,3 +372,30 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
   `new_final_evaluation_outcome_reads=0`。adjudication 状态 NOT_RUN_AFTER_TERMINAL_FAILURE。
 - Gate 语义：S1 终态 = 技术失败（非 PASS/NO-GO）→ confirmation 不授权、方向 E 温度扫描 gate 不满足，未启动。
 - 处置：本迭代只记录；不擅自触发重跑/重 validation，修复与 rerun family 待用户决策（见迭代日志 Iteration R）。
+
+## 12. 运行状态更新（2026-08-31 heartbeat）
+
+### V5 Critic v5_full — 精确成功终态（已记录，Iteration S）
+- run_summary status = `TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE`，无 failure.json；
+  run_id=v5_full，seed=20260907，方向 A within-source ranking weight=0.5，GPU2，training_git_head=1113cd2c。
+- cuda_available=true（NVIDIA A100-PCIE-40GB，cuda:2），cpu_fallback_used=false，a100_device_verified=true；
+  protected reads=0（development_test_outcome_reads=0，new_final_evaluation_outcome_reads=0）。
+- final validation（DEVELOPMENT_VALIDATION 口径）: task-macro Spearman=0.167094，task-macro standardized MAE=1.934759。
+- 与历史 f34 full（V4.0.3 full，seed 20260907，无 within-source）对比:
+  Spearman 0.167094 vs 0.160561（+4.07%），MAE 1.934759 vs 2.015126（-3.99%）→ 方向 A 两项指标一致小幅改善。
+
+### SetFlow V4-S1 validation 重跑 — 8/8 全终态（方向 E 新 gate 达成，已记录，Iteration U）
+- 重跑输出根 `s1_screen_validation_rerun_fix_60da6502/`: v4_s1_full 与 v4_s1_single_mode 各 pass_4/6/8/10，
+  8 份 validation_summary.json 全部 `TERMINAL_XEDITSETFLOW_V4_S1_CHECKPOINT_VALIDATION_COMPLETE`。
+- 8/8 证据: cuda=true、cpu_fallback_used=false、protected reads=0、matched_initialization.all_equal=true。
+- 队列自然结束；方向 E 温度扫描已在 GPU1（空闲显存 40437 MiB 最大）后台启动
+  （PID 2212599，run-id v4_s1_full，checkpoint-pass 10，输出 s1_temperature_sweep_457e15ae.json 原子写，
+  日志 /tmp/s1_temperature_sweep_457e15ae.log）。完成后追加单调性/Pareto 结论。
+
+### Critic controls retry2 — 精确技术终态（已记录，Iteration T）
+- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`（启动 Git HEAD a21ae2a4）。
+- wave0 三臂（source_only/GPU2、edit_metadata_only/GPU3、no_candidate_sequence/GPU5）全部 TERMINAL_SUMMARY。
+- wave1: v4_candidate_bundle_permutation（GPU2）TECHNICAL_FAILURE，reason=WORKTREE_HEAD_MISMATCH
+  （expected a21ae2a4，observed 60da6502）；v4_no_cross（GPU3）、v4_no_moe（GPU5）NOT_RUN_AFTER_TERMINAL_FAILURE。
+- 根因: S1 修复 commit 60da6502 使共享记录工作树 HEAD 前移，wave1 启动时 WORKTREE_HEAD 一致性检查 fail-closed。
+- cross-root gate 未运行（包级首失败语义）；不擅启 retry3；critic controls 后继 family 待用户决策。

@@ -1163,3 +1163,84 @@ or terminal artifacts.
   gate（要求 PASS/NO-GO 且 8 validation 终态）不满足，未启动扫描。
 - 处置边界: 本迭代只读 runtime + 终态工件并记录；未修改/重启/覆盖任何运行中实验或旧 artifacts；
   未运行 cross-root gate；未擅启 retry/confirmation。修复与 rerun family 待用户决策（v4-vs-v5 路径见会话）。
+
+## Iteration S — 2026-08-31: V5 Critic v5_full 终态成功 + 方向 A within-source 对照
+
+- Objective: 低频 heartbeat 发现 V5 Critic family v5_full 达到精确成功终态；将 validation 指标与历史 f34 full
+  （V4.0.3 full，同 seed 20260907，无 within-source）横向对比，结论写入迭代日志。
+- Runtime: `TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE`
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v5/v5_screen_seed_20260907_runner_1113cd2c0dd9acb508f58782eecb40f458d2cab3/v5_full/`
+  run_summary.json 终态（completed_at 2026-08-31T03:52:54+08:00）；无 failure.json。
+- 配置: family=方向 A within-source ranking weight=0.5（用户指定），seed=20260907，run_id=v5_full，
+  model_kind=V4-FULL，mechanism_mode=FULL，physical_gpu_index=2，training_git_head=1113cd2c。
+  loss_kind（artifact 记录）= STANDARDIZED_HUBER_PLUS_CROSS_GROUP_PAIRWISE_THEN_SOFT_SPEARMAN；
+  training_weighting_mode=STUDY_THEN_SOURCE_GROUP。8 passes，22416 updates，selected_pass=8（fixed，无 validation 峰重选）。
+- CUDA/真实性证据: cuda_available=true，cuda_device=cuda:2（NVIDIA A100-PCIE-40GB），a100_device_verified=true，
+  cpu_fallback_used=false，peak_vram_bytes=8752891904；development_test_outcome_reads=0，
+  new_final_evaluation_outcome_reads=0（protected reads=0）。
+- Final validation（DEVELOPMENT_VALIDATION 口径，task-macro）: task_macro_spearman=0.167094，
+  task_macro_standardized_mae=1.934759；9 tasks，18293 validation records。
+- 历史 f34 full 对照（V4.0.3 full，seed 20260907，无 within-source）:
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_rng_replay_fix_f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea/v4_full/run_summary.json`
+  status=TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE，task_macro_spearman=0.160561，
+  task_macro_standardized_mae=2.015126。
+- 横向对比（v5_full vs f34 full，同 seed）:
+  - task-macro Spearman: 0.167094 vs 0.160561 → +0.006533（相对 +4.07%）
+  - task-macro standardized MAE: 1.934759 vs 2.015126 → -0.080367（MAE 降低，相对改善 -3.99%）
+- Conclusion: 方向 A（within-source ranking weight=0.5，seed 20260907 与 f34 full 同 seed）相比历史 f34 full
+  （无 within-source）在 task-macro Spearman 与 standardized MAE 两项指标上均小幅改善，两指标一致向好、无 trade-off
+  冲突。口径为 DEVELOPMENT_VALIDATION，非 protected TEST / new final Evaluation。
+- 处置边界: 只读终态工件并记录；未修改/重启/覆盖任何运行中实验或旧 artifacts；未读取 protected outcome。
+
+## Iteration T — 2026-08-31: Critic controls retry2 技术失败（wave1 WORKTREE_HEAD_MISMATCH）冻结记录
+
+- Objective: 低频 heartbeat 发现 retry2 family 进入精确技术终态；按包级语义停止记录、不运行 cross-root gate、
+  不擅启 retry3，仅更新迭代日志与执行索引并 commit+push。
+- Runtime: `XEDITCRITIC_V403_CONTROL_RECOVERY_TECHNICAL_FAILURE`
+  `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/v403_control_recovery_retry2_runner_a21ae2a47b3275519611ad834660813534b38c41/runtime.json`
+- 六臂终态 inventory:
+  - wave0（全部 TERMINAL_SUMMARY，return_code=0，真实 CUDA）:
+    - `v4_source_only`（GPU2）: TERMINAL_SUMMARY
+    - `v4_edit_metadata_only`（GPU3）: TERMINAL_SUMMARY
+    - `v4_no_candidate_sequence`（GPU5）: TERMINAL_SUMMARY
+  - wave1（wave0 全 SUMMARY 后自动启动）:
+    - `v4_candidate_bundle_permutation`（GPU2）: TECHNICAL_FAILURE ← 包级首失败
+      reason=WORKTREE_HEAD_MISMATCH；worktree_inspection: expected_git_head=a21ae2a4，
+      observed_git_head=60da6502。return_code=null，terminal_artifact_kind=FAILURE。
+    - `v4_no_cross`（GPU3）: NOT_RUN_AFTER_TERMINAL_FAILURE（EARLIER_CONTROL_JOB_TECHNICAL_FAILURE）
+    - `v4_no_moe`（GPU5）: NOT_RUN_AFTER_TERMINAL_FAILURE（EARLIER_CONTROL_JOB_TECHNICAL_FAILURE）
+- 根因: retry2 runner 启动时固定在训练/记录共享工作树 HEAD a21ae2a4；wave0 三臂在该 HEAD 下正常完成。
+  其后 S1 validation NameError 修复 commit 60da6502 使同一工作树
+  `/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_v403_controls_retry1_20260829` 的 HEAD 前移。
+  wave1 启动时 runner 的 WORKTREE_HEAD 一致性检查发现 HEAD 不再等于 a21ae2a4（实测 60da6502），
+  按 fail-closed 语义拒绝运行 candidate_bundle_permutation，并连锁停止 wave1 其余两臂。
+- protected/provenance 证据: development_test_outcome_reads=0, new_final_evaluation_outcome_reads=0。
+- Gate 语义: 包级首失败 → cross_root_adjudication_run=false，cross-root gate 未运行；same_family_retry_authorized=false，
+  不擅启 retry3。critic controls 后继 family 需用户决策。
+- 处置边界: 本迭代只读 runtime + 终态工件并记录；未修改/重启/覆盖任何运行中实验或旧 artifacts。
+
+## Iteration U — 2026-08-31: SetFlow V4-S1 validation 重跑 8/8 全终态 + 方向 E 温度扫描启动
+
+- Objective: S1 validation 重跑队列（修复 commit 60da6502 后）8/8 全部终态成功，达成方向 E 温度扫描新 gate；
+  在 V5 prep 工作树启动方向 E 温度扫描（nohup 后台）。
+- 重跑输出根: `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_screen_validation_rerun_fix_60da6502/`
+  - `v4_s1_full`: pass_4/6/8/10 四份 validation_summary.json 均
+    TERMINAL_XEDITSETFLOW_V4_S1_CHECKPOINT_VALIDATION_COMPLETE
+  - `v4_s1_single_mode`: pass_4/6/8/10 四份同上
+  - 8/8 证据: cuda_available=true，cpu_fallback_used=false，development_test_outcome_reads=0，
+    new_final_evaluation_outcome_reads=0，matched_initialization.all_equal=true
+    （canonical_run_id=v4_s1_full，canonical_state_digest=fc9a913f...，521 tensors / 100099998 elements）。
+- 队列进程已自然结束（8 个 pass 全终态，非异常中断）；无 failed.json、无进程崩溃。
+- 方向 E 温度扫描启动（新 gate 达成）:
+  - 工作树: `/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_v5_arch_prep_20260829`（HEAD b2978d7e，位于 12d33652 之后）
+  - 命令: scripts/route_a_v3/run_route2_xeditsetflow_s1_temperature_sweep_v5.py
+    --config .../s1_screen_seed_20260911_runner_ebf99ebf.../runtime_config.json --run-id v4_s1_full
+    --checkpoint-pass 10 --physical-gpu-index 1 --output-json
+    /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditsetflow_v4/s1_temperature_sweep_457e15ae.json
+  - 卡选择: GPU1（当前空闲显存最大 40437 MiB，0% 利用率，全程空闲）；未设显存 gate；未触碰任何运行中进程。
+  - PID 2212599（python3.10），日志 /tmp/s1_temperature_sweep_457e15ae.log；输出 json 原子写 25 格点
+    recovery/unique/legality 表（含 identity 自对照），完成后生成。
+- Conclusion: S1 validation 重跑 8/8 全终态成功，验证 60da6502 修复彻底解决 NameError；matched_initialization
+  全部 all_equal，说明 8 个 checkpoint 的 single-mode 投影初始化与 canonical full 精确匹配。
+  方向 E 温度扫描已在 GPU1 后台运行，完成后将把单调性/Pareto 结论追加进迭代日志并 commit+push。
+- 处置边界: 未重跑任何已成功 pass、未覆盖旧目录；原 runtime/旧 failed artifacts 冻结只读未二次触发。
