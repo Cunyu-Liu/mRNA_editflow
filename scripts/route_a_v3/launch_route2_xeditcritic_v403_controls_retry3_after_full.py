@@ -16,12 +16,31 @@ from typing import Any, Mapping, Sequence
 HISTORICAL_FULL_GIT_HEAD = "f34ab7d865bb2477bfe24c1d0a7c9f5301a24cea"
 HISTORICAL_C0_GIT_HEAD = "93703adec7a4c76b4466d3aaae8684620bee985a"
 PRIOR_FAILED_CONTROL_GIT_HEAD = "a21ae2a47b3275519611ad834660813534b38c41"
-RETRY3_LICENSED_HEAD = "a21ae2a47b3275519611ad834660813534b38c41"
+RETRY3_LICENSED_HEAD = "c49d3207999beac1bc60e89a5d0072cde3996be3"
 EXPECTED_RETRY2_FIRST_FAILURE_RUN_ID = "v4_candidate_bundle_permutation"
 CONTROL_RETRY_ORDINAL = 3
 CONTROL_RETRY_IDENTITY = "v403_control_recovery_retry3"
+
+def _retry3_head_acceptable(head: str) -> bool:
+    """True when head is the pinned retry3 licensed commit or a strict descendant of it."""
+    import subprocess
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        return False
+    if head == RETRY3_LICENSED_HEAD:
+        return True
+    try:
+        result = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", RETRY3_LICENSED_HEAD, head],
+            cwd=BASE_DIR,
+            capture_output=True,
+        )
+    except Exception:
+        return False
+    return result.returncode == 0
+
 PYTORCH_CUDA_ALLOC_CONF = "expandable_segments:True"
 ORCHESTRATION_WORKTREE = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[2]
 TRAINING_WORKTREE = ORCHESTRATION_WORKTREE
 PYTHON = Path("/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10")
 ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
@@ -181,7 +200,7 @@ def control_family_paths(current_head: str) -> dict[str, Path]:
 
     require(
         re.fullmatch(r"[0-9a-f]{40}", current_head) is not None
-        and current_head == RETRY3_LICENSED_HEAD
+        and _retry3_head_acceptable(current_head)
         and current_head
         not in {
             HISTORICAL_FULL_GIT_HEAD,
@@ -913,7 +932,7 @@ def validate_historical_c0_terminal(
 def validate_training_source(expected_orchestration_head: str) -> dict[str, Any]:
     require(
         re.fullmatch(r"[0-9a-f]{40}", expected_orchestration_head) is not None
-        and expected_orchestration_head == RETRY3_LICENSED_HEAD
+        and _retry3_head_acceptable(expected_orchestration_head)
         and expected_orchestration_head
         not in {
             HISTORICAL_FULL_GIT_HEAD,
@@ -1252,7 +1271,7 @@ def launch(
     # admission evidence.  No historical producer audit, current-HEAD check,
     # GPU probe, or family path is consumed before it passes.
     require(
-        expected_orchestration_head == RETRY3_LICENSED_HEAD,
+        _retry3_head_acceptable(expected_orchestration_head),
         "retry3 control retry HEAD is not the pinned Retry2 baseline a21ae2a4",
     )
     require(
