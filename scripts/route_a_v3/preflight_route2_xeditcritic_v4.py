@@ -392,6 +392,8 @@ def _build_model(
         dropout=float(architecture["dropout"]),
         minimum_physical_batch=4,
         activation_checkpointing=True,
+        cell_offset_head=bool(architecture.get("cell_offset_head", False)),
+        cell_offset_hidden_width=int(architecture.get("cell_offset_hidden_width", 256)),
     ).to(device)
 
 
