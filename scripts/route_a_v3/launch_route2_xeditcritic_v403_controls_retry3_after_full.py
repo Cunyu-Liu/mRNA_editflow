@@ -1063,6 +1063,7 @@ def build_launch_authorization(
     preflight: Mapping[str, Any],
     *,
     current_head: str,
+    runtime_git_head: str,
     prior_control_oom_terminal_receipt: Mapping[str, Any],
     prior_control_oom_terminal_receipt_path: Path,
     historical_full_terminal_audit: Mapping[str, Any],
@@ -1084,7 +1085,7 @@ def build_launch_authorization(
             "route_a_v3_route2_xeditcritic_v4_screen_launch_authorization.v1"
         ),
         "status": "XEDITCRITIC_V4_SCREEN_LAUNCH_AUTHORIZED",
-        "authorized_git_head": current_head,
+        "authorized_git_head": runtime_git_head,
         "preflight_runner_git_head": str(preflight["git_head"]),
         "historical_full_terminal_audit": {
             **dict(historical_full_terminal_audit),
@@ -1335,6 +1336,7 @@ def launch(
     authorization = build_launch_authorization(
         source["preflight"],
         current_head=RETRY3_LICENSED_HEAD,
+        runtime_git_head=expected_orchestration_head,
         prior_control_oom_terminal_receipt=prior_terminal_receipt,
         prior_control_oom_terminal_receipt_path=prior_terminal_receipt_path,
         historical_full_terminal_audit=full_terminal_audit,
