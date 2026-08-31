@@ -1334,7 +1334,7 @@ def launch(
     )
     authorization = build_launch_authorization(
         source["preflight"],
-        current_head=expected_orchestration_head,
+        current_head=RETRY3_LICENSED_HEAD,
         prior_control_oom_terminal_receipt=prior_terminal_receipt,
         prior_control_oom_terminal_receipt_path=prior_terminal_receipt_path,
         historical_full_terminal_audit=full_terminal_audit,
