@@ -21,11 +21,15 @@ from core.route2_xeditcritic_training_data_v3 import (
 from core.route2_xeditcritic_within_source_ranking_v5 import (
     same_source_group_pair_indices,
 )
+from core.route2_xeditcritic_cell_offset_v6 import cell_offset_loss_v6
 
 
 EFFECTIVE_BATCH_V4 = 32
 PHYSICAL_BATCH_CANDIDATES_V4 = (4, 8, 16, 32)
 PHYSICAL_GPU_SCOPE_V4 = (0, 1, 2, 3, 4, 5)
+# V6 family extends the frozen A100 scope to all eight physical cards.  The
+# 0–5 scope remains valid so every historical V4/V5 run stays reproducible.
+PHYSICAL_GPU_SCOPE_V6 = (0, 1, 2, 3, 4, 5, 6, 7)
 
 
 class XEditCriticTrainingV4Error(RuntimeError):
@@ -40,21 +44,31 @@ def _require(condition: bool, message: str) -> None:
 def require_physical_gpu_scope_v4(
     config: Mapping[str, object], physical_gpu_index: int
 ) -> None:
-    """Bind every Critic V4 CUDA entry point to the frozen physical GPUs 0–5."""
+    """Bind every Critic V4/V6 CUDA entry point to the frozen A100 GPU scope.
+
+    The historical families are pinned to physical GPUs 0–5; the V6 family is
+    admitted across 0–7 so that unused cards can be filled with parallel arms.
+    """
 
     gpu_policy = config.get("gpu_policy")
     _require(isinstance(gpu_policy, Mapping), "Critic V4 GPU policy is absent")
     scope = gpu_policy.get("physical_gpu_scope")
-    _require(
-        scope == list(PHYSICAL_GPU_SCOPE_V4),
-        "Critic V4 physical GPU scope changed from 0–5",
-    )
-    _require(
-        isinstance(physical_gpu_index, int)
-        and not isinstance(physical_gpu_index, bool)
-        and physical_gpu_index in PHYSICAL_GPU_SCOPE_V4,
-        "Critic V4 GPU is outside 0–5",
-    )
+    if scope == list(PHYSICAL_GPU_SCOPE_V6):
+        _require(
+            physical_gpu_index in PHYSICAL_GPU_SCOPE_V6,
+            "Critic V6 GPU is outside the frozen 0–7 scope",
+        )
+    else:
+        _require(
+            scope == list(PHYSICAL_GPU_SCOPE_V4),
+            "Critic V4 physical GPU scope changed from 0–5",
+        )
+        _require(
+            isinstance(physical_gpu_index, int)
+            and not isinstance(physical_gpu_index, bool)
+            and physical_gpu_index in PHYSICAL_GPU_SCOPE_V4,
+            "Critic V4 GPU is outside 0–5",
+        )
     _require(
         gpu_policy.get("cuda_bf16_only") is True
         and gpu_policy.get("cpu_fallback") is False,
@@ -329,6 +343,8 @@ class EffectivePredictionObjectiveV4:
     prediction_gradient: torch.Tensor
     lambda_pairwise_loss: float = 0.0
     lambda_pairwise_pair_count: int = 0
+    cell_offset_loss: float = 0.0
+    cell_offset_gradient: torch.Tensor | None = None
 
 
 @dataclass(frozen=True)
@@ -342,6 +358,7 @@ class RetainedEffectiveBatchGraphV4:
     objective_predictions: torch.Tensor
     prediction: torch.Tensor
     router_balance_loss: torch.Tensor
+    cell_offset: torch.Tensor | None = None
 
 
 def capture_replay_rng_state_v4(device: torch.device) -> ReplayRNGStateV4:
@@ -434,6 +451,7 @@ def forward_retained_effective_batch_v4(
         output = forward(batch)
         prediction = output["mean"]
         router_balance_loss = output["router_balance_loss"]
+        cell_offset = output.get("cell_offset")
         _require(
             prediction.shape == (EFFECTIVE_BATCH_V4,),
             "Critic V4 retained prediction geometry changed",
@@ -447,10 +465,17 @@ def forward_retained_effective_batch_v4(
             and torch.isfinite(router_balance_loss).all().item(),
             "Critic V4 retained router balance is invalid",
         )
+        if cell_offset is not None:
+            _require(
+                cell_offset.shape == (EFFECTIVE_BATCH_V4,)
+                and torch.isfinite(cell_offset).all().item(),
+                "Critic V6 retained cell offset is invalid",
+            )
     return RetainedEffectiveBatchGraphV4(
         objective_predictions=prediction.detach().float(),
         prediction=prediction,
         router_balance_loss=router_balance_loss,
+        cell_offset=cell_offset,
     )
 
 
@@ -459,6 +484,7 @@ def backward_retained_effective_batch_v4(
     prediction_gradient: torch.Tensor,
     *,
     router_balance_weight: float,
+    cell_offset_gradient: torch.Tensor | None = None,
 ) -> None:
     """Backpropagate the objective through the retained batch-32 graph."""
 
@@ -470,7 +496,22 @@ def backward_retained_effective_batch_v4(
         router_balance_weight >= 0,
         "Critic V4 retained router-balance weight is negative",
     )
-    if router_balance_weight > 0:
+    if cell_offset_gradient is not None:
+        _require(
+            graph.cell_offset is not None
+            and cell_offset_gradient.shape == (EFFECTIVE_BATCH_V4,),
+            "Critic V6 retained cell-offset gradient is invalid",
+        )
+        extra_leaves = (graph.cell_offset, graph.router_balance_loss)
+        extra_grads = (
+            cell_offset_gradient,
+            graph.prediction.new_tensor(router_balance_weight),
+        )
+        torch.autograd.backward(
+            (graph.prediction, *extra_leaves),
+            (prediction_gradient, *extra_grads),
+        )
+    elif router_balance_weight > 0:
         torch.autograd.backward(
             (graph.prediction, graph.router_balance_loss),
             (
@@ -575,6 +616,9 @@ def effective_prediction_objective_v4(
     soft_rank_temperature: float = 0.2,
     within_source_ranking_weight: float = 0.0,
     lambda_pairwise_weight: float = 0.0,
+    cell_offset_predictions: torch.Tensor | None = None,
+    cell_offset_targets: torch.Tensor | None = None,
+    cell_offset_weight: float = 0.0,
 ) -> EffectivePredictionObjectiveV4:
     """Compute the full task-batch objective and its exact prediction gradient.
 
@@ -583,6 +627,10 @@ def effective_prediction_objective_v4(
     least four with the recorded RNG states.  This retains the full effective
     pairwise/soft-rank objective without holding 32 records' activations or
     reverting to singleton ranking forwards.
+
+    When the D1 cell-offset auxiliary head is enabled, an extra weighted Huber
+    term supervises the per-cell offset (scaled target - scaled pair mean)
+    whose detached 32-vector gradient is returned alongside the main one.
     """
 
     _require(predictions.shape == targets.shape == sample_weights.shape == (EFFECTIVE_BATCH_V4,), "Critic V4 objective requires exactly 32 aligned values")
@@ -640,12 +688,30 @@ def effective_prediction_objective_v4(
             soft_rank_temperature=soft_rank_temperature,
         )
     )
+    cell_offset_gradient: torch.Tensor | None = None
+    cell_offset_loss_value = values.new_zeros(())
+    if cell_offset_weight > 0.0:
+        _require(
+            cell_offset_predictions is not None
+            and cell_offset_targets is not None
+            and cell_offset_predictions.shape == cell_offset_targets.shape == (EFFECTIVE_BATCH_V4,),
+            "Critic V6 cell-offset bundle is misaligned",
+        )
+        offset_result = cell_offset_loss_v6(
+            cell_offset_predictions,
+            cell_offset_targets,
+            sample_weights=sample_weights.detach(),
+            delta=float(huber_delta),
+        )
+        cell_offset_loss_value = float(cell_offset_weight) * offset_result["loss"]
+        cell_offset_gradient = float(cell_offset_weight) * offset_result["gradient"]
     total = (
         weights["huber"] * huber
         + weights["pairwise"] * pairwise
         + weights["soft_spearman"] * soft
         + within_source_ranking_weight * within_source["loss"]
         + lambda_pairwise_weight * lambda_pairwise["loss"]
+        + cell_offset_loss_value
     )
     _require(torch.isfinite(total).item(), "Critic V4 effective prediction loss is nonfinite")
     gradient = torch.autograd.grad(total, values, create_graph=False)[0]
@@ -660,6 +726,8 @@ def effective_prediction_objective_v4(
         pair_count=len(pairs),
         lambda_pairwise_loss=float(lambda_pairwise["loss"].detach().cpu()),
         lambda_pairwise_pair_count=int(lambda_pairwise["pair_count"]),
+        cell_offset_loss=float(cell_offset_loss_value.detach().cpu()),
+        cell_offset_gradient=cell_offset_gradient,
         prediction_gradient=gradient.detach(),
     )
 

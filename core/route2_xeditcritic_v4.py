@@ -10,6 +10,7 @@ from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
 
 from core.route2_xedit_v4_interfaces import CriticStateBatchV4
+from core.route2_xeditcritic_cell_offset_v6 import CellOffsetHeadV6
 from core.route2_xeditcritic_v3 import (
     EndpointConditionerV1,
     RawAntisymmetricBranchV3,
@@ -473,6 +474,8 @@ class XEditCriticV4(nn.Module):
         dropout: float = 0.1,
         minimum_physical_batch: int = 4,
         activation_checkpointing: bool = True,
+        cell_offset_head: bool = False,
+        cell_offset_hidden_width: int = 256,
     ) -> None:
         super().__init__()
         _require(control_mode in XEDITCRITIC_V4_CONTROLS, "unknown Critic V4 control")
@@ -554,6 +557,12 @@ class XEditCriticV4(nn.Module):
         self.readout_dropout = PairedDropoutV4(dropout)
         self.effect_head = nn.Linear(model_width, 1)
         self.study_calibration = StudyLogScaleCalibrationV3(study_count)
+        self.cell_offset_head: CellOffsetHeadV6 | None = None
+        if cell_offset_head:
+            self.cell_offset_head = CellOffsetHeadV6(
+                condition_width=model_width,
+                hidden_width=int(cell_offset_hidden_width),
+            )
 
     @property
     def trainable_parameter_count(self) -> int:
@@ -573,6 +582,8 @@ class XEditCriticV4(nn.Module):
             "readout_and_head": nn.ModuleList([self.readout, self.effect_head]),
             "study_scale": self.study_calibration,
         }
+        if self.cell_offset_head is not None:
+            modules["cell_offset_head_v6"] = self.cell_offset_head
         counts = {
             name: sum(parameter.numel() for parameter in module.parameters() if parameter.requires_grad)
             for name, module in modules.items()
@@ -798,11 +809,15 @@ class XEditCriticV4(nn.Module):
         )
         mean = torch.where(identity, torch.zeros_like(mean), mean)
         mean = self.study_calibration(mean, batch["study_ids"])
-        return {
+        result: dict[str, torch.Tensor] = {
             "mean": mean,
             "router_balance_loss": balance,
             "route_weights": route,
         }
+        if self.cell_offset_head is not None:
+            condition = self._endpoint_condition(batch)
+            result["cell_offset"] = self.cell_offset_head(condition)
+        return result
 
 
 def require_v4_trainable_parameter_range(

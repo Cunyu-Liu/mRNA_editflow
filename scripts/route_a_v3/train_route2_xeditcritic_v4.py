@@ -48,6 +48,13 @@ from core.route2_xeditcritic_training_data_v3 import (
     build_vocabs,
     records_from_projection_rows,
 )
+from core.route2_xeditcritic_pair_mean_v6 import (
+    MPRAU_TASK_ID,
+    apply_pair_mean_targets_v6,
+    apply_rank_gaussian_targets_v6,
+    extended_validation_metrics_v6,
+    pair_key_v6,
+)
 from core.route2_xeditcritic_training_v4 import (
     FixedEffectiveTaskBatchSamplerV4,
     backward_replayed_prediction_gradient_v4,
@@ -580,7 +587,10 @@ def _forward_bf16(
         # C0-V4 has no semantic mixture.  A graph-connected exact zero keeps
         # the common pass schedule without inventing a baseline-only router.
         router_balance = mean.sum() * 0.0
-    return {"mean": mean, "router_balance_loss": router_balance}
+    result = {"mean": mean, "router_balance_loss": router_balance}
+    if "cell_offset" in output:
+        result["cell_offset"] = output["cell_offset"]
+    return result
 
 
 def _physical_batches(
@@ -761,6 +771,8 @@ def _build_model(
         dropout=float(architecture["dropout"]),
         minimum_physical_batch=int(config["memory_preflight"]["minimum_physical_batch"]),
         activation_checkpointing=bool(config["memory_preflight"]["activation_checkpointing"]),
+        cell_offset_head=bool(architecture.get("cell_offset_head", False)),
+        cell_offset_hidden_width=int(architecture.get("cell_offset_hidden_width", 256)),
     ).to(device)
     capacity = require_v4_trainable_parameter_range(
         model,
@@ -911,6 +923,25 @@ def run(
         else:
             train_records = [record for record in records if record.split == "TRAIN"]
             validation_records = [record for record in records if record.split == "VALIDATION"]
+        # Apply W1-a pair-mean label aggregation before scaling.  D1 counts
+        # the 12,048 VALIDATION MPRAU rows collapsing to 2,008 pair means, so
+        # both splits adopt the shared-effect label (row count unchanged).
+        pair_mean_label_map: dict[str, float] | None = None
+        if bool(config["training"].get("pair_mean_targets", False)):
+            train_records, train_pair_map = apply_pair_mean_targets_v6(
+                train_records, pair_tasks=None
+            )
+            validation_records, validation_pair_map = apply_pair_mean_targets_v6(
+                validation_records, pair_tasks=None
+            )
+            pair_mean_label_map = {**train_pair_map, **validation_pair_map}
+        # Apply W1-c rank-Gaussian transform before scaling (train labels only,
+        # per the handover "训练时任务内标签 rank-Gaussian/分位数变换").
+        rank_gaussian_metadata: dict[str, object] | None = None
+        if bool(config["training"].get("per_task_rank_gaussian", False)):
+            train_records, rank_gaussian_metadata = apply_rank_gaussian_targets_v6(
+                train_records, rank_tasks=None
+            )
         _require(len(train_records) == int(geometry["expected_train_count"]), "TRAIN count changed")
         _require(len(validation_records) == int(geometry["expected_validation_count"]), "VALIDATION count changed")
         record_by_id = {record.record_id: record for record in records}
@@ -1084,6 +1115,33 @@ def run(
                     for batch in physical_batches
                     for value in batch["task_ids"]
                 ]
+                cell_offset_targets = None
+                if float(config["training"].get("cell_offset_weight", 0.0)) > 0.0:
+                    _require(
+                        pair_mean_label_map is not None,
+                        "Critic V6 cell-offset target requires pair-mean labels",
+                    )
+                    # W1-b: the auxiliary head predicts each record's deviation
+                    # from its six-cell pair mean, expressed in scaled units.
+                    clips: list[torch.Tensor] = []
+                    for batch in physical_batches:
+                        scales = batch["target_scale"].float()
+                        values = torch.tensor(
+                            [
+                                (
+                                    record_by_id[record_id].target
+                                    - pair_mean_label_map[record_id]
+                                )
+                                / float(scale)
+                                for record_id, scale in zip(
+                                    batch["record_ids"], scales.tolist()
+                                )
+                            ],
+                            dtype=torch.float32,
+                            device=scales.device,
+                        )
+                        clips.append(values)
+                    cell_offset_targets = torch.cat(clips)
                 objective = effective_prediction_objective_v4(
                     predictions,
                     targets,
@@ -1096,6 +1154,19 @@ def run(
                     within_source_ranking_weight=float(
                         config["training"].get("within_source_ranking_weight", 0.0)
                     ),
+                    lambda_pairwise_weight=float(
+                        config["training"].get("lambda_pairwise_weight", 0.0)
+                    ),
+                    cell_offset_predictions=(
+                        retained_graph.cell_offset.detach().float()
+                        if retained_graph is not None
+                        and retained_graph.cell_offset is not None
+                        else None
+                    ),
+                    cell_offset_targets=cell_offset_targets,
+                    cell_offset_weight=float(
+                        config["training"].get("cell_offset_weight", 0.0)
+                    ),
                 )
                 optimizer.zero_grad(set_to_none=True)
                 router_balance_weight = float(
@@ -1106,8 +1177,16 @@ def run(
                         retained_graph,
                         objective.prediction_gradient,
                         router_balance_weight=router_balance_weight,
+                        cell_offset_gradient=objective.cell_offset_gradient,
                     )
                 else:
+                    # The W1-b cell-offset head sails through the retained
+                    # batch-32 graph; the sub-four replay path keeps V5's
+                    # mean-only contract.
+                    _require(
+                        objective.cell_offset_gradient is None,
+                        "Critic V6 cell-offset requires the retained batch-32 path",
+                    )
                     backward_replayed_prediction_gradient_v4(
                         physical_batches,
                         states,
@@ -1138,8 +1217,7 @@ def run(
                 pairwise_losses.append(objective.pairwise_loss)
                 soft_losses.append(objective.soft_spearman_loss)
                 pair_counts.append(objective.pair_count)
-            pass_rows.append(
-                {
+            pass_row = {
                     "pass": pass_number,
                     "update_count_cumulative": update_count,
                     "mean_task_objective_excluding_router_balance": float(np.mean(task_losses)),
@@ -1149,7 +1227,54 @@ def run(
                     "mean_pair_count": float(np.mean(pair_counts)),
                     "validation_metric_read": False,
                 }
-            )
+            if bool(config["training"].get("per_pass_validation", False)):
+                # W1-d: persist a checkpoint and a validation metric for the
+                # just-finished pass (H1 prerequisite).  The final pass reuses
+                # the canonical final prediction artifact below; earlier passes
+                # write pass-scoped artifacts that never touch TEST/Eval.
+                pass_checkpoint_path = output_directory / f"pass_{pass_number}_checkpoint.pt"
+                torch.save(
+                    {
+                        "schema_version": f"route_a_v3_route2_xeditcritic_v4_{run_stage.lower()}_checkpoint.v2",
+                        "run_stage": run_stage,
+                        "run_id": run_id,
+                        "model_kind": spec.model_kind,
+                        "control_mode": spec.control_mode,
+                        "mechanism_mode": spec.mechanism_mode,
+                        "candidate_bundle_permutation": spec.candidate_bundle_permutation,
+                        "seed": training_seed,
+                        "physical_gpu_index": physical_gpu_index,
+                        "precision": "BF16_FORWARD_FP32_EFFECTIVE_OBJECTIVE",
+                        "selected_pass": pass_number,
+                        "selection_policy": "PER_PASS_W1_D",
+                        "model_state_dict": model.state_dict(),
+                        "vocabs": vocabs,
+                        "target_scaler": scaler.to_dict(),
+                        "capacity": capacity,
+                        "physical_batch_size": physical_batch_size,
+                        "effective_batch_size": 32,
+                        "retained_graph_fast_path": physical_batch_size == 32,
+                        "full_cache_validation_per_batch": False,
+                        "development_test_outcome_reads": 0,
+                        "new_final_evaluation_outcome_reads": 0,
+                    },
+                    pass_checkpoint_path,
+                )
+                if validation_dataset is not None:
+                    pass_prediction_path = (
+                        output_directory / f"pass_{pass_number}_validation_predictions.jsonl"
+                    )
+                    pass_metrics = _evaluate(
+                        model,
+                        validation_dataset,
+                        collator,
+                        physical_batch_size=physical_batch_size,
+                        device=device,
+                        prediction_path=pass_prediction_path,
+                    )
+                    pass_row["validation_metric_read"] = True
+                    pass_row["validation_metrics"] = pass_metrics
+            pass_rows.append(pass_row)
             print(
                 json.dumps(
                     {
@@ -1186,6 +1311,41 @@ def run(
             if validation_dataset is not None and prediction_path is not None
             else None
         )
+        extended_metrics: dict[str, object] | None = None
+        if (
+            bool(config["training"].get("extended_validation_metrics", False))
+            and final_metrics is not None
+            and prediction_path is not None
+        ):
+            # W1-e: within-source rho, pair-mean rho + ceiling ratio, hit@K / NDCG@K
+            # over the measured pair neighborhood, plus Tier-B markers.  Read the
+            # already-written prediction rows (never TEST/Eval) and pair keys from
+            # the validation records.
+            pair_key_by_record_id = {
+                record.record_id: pair_key_v6(record)
+                for record in validation_records
+            }
+            prediction_rows: list[dict[str, Any]] = []
+            with prediction_path.open("r", encoding="utf-8") as handle:
+                for line in handle:
+                    prediction_rows.append(json.loads(line))
+            ceiling_by_task = None
+            if config["training"].get("ceiling_by_task"):
+                ceiling_by_task = {
+                    str(task): float(ceiling)
+                    for task, ceiling in config["training"]["ceiling_by_task"].items()
+                }
+            extended_metrics = extended_validation_metrics_v6(
+                [row["target"] for row in prediction_rows],
+                [row["prediction"] for row in prediction_rows],
+                [str(row["task_id"]) for row in prediction_rows],
+                [str(row["source_group_id"]) for row in prediction_rows],
+                [
+                    pair_key_by_record_id[str(row["record_id"])]
+                    for row in prediction_rows
+                ],
+                ceiling_by_task=ceiling_by_task,
+            )
         selection_policy = posttest_selection_policy_v4(run_stage)
         torch.save(
             {
@@ -1264,6 +1424,13 @@ def run(
             "target_scaler": scaler.to_dict(),
             "passes": pass_rows,
             "final_validation": final_metrics,
+            "extended_validation_metrics": extended_metrics,
+            "pair_mean_targets_enabled": bool(
+                config["training"].get("pair_mean_targets", False)
+            ),
+            "per_task_rank_gaussian_enabled": bool(
+                config["training"].get("per_task_rank_gaussian", False)
+            ),
             **terminal_paths,
             "validation_prediction_path": (
                 str(prediction_path) if prediction_path is not None else None
