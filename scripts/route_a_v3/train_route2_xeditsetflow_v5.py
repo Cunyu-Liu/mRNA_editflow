@@ -268,9 +268,11 @@ def train(
     model, capacity = build_setflow_screen_model_v5(
         config, vocabs, run_id=run_id
     )
+    preflight_capacity = preflight.get("per_run_capacity", {})
     _require(
-        int(capacity["trainable_parameter_count"])
-        == int(preflight[spec.run_id]["trainable_parameter_count"]),
+        spec.run_id in preflight_capacity
+        and int(capacity["trainable_parameter_count"])
+        == int(preflight_capacity[spec.run_id]["trainable_parameter_count"]),
         "SetFlow V5 runner parameter count differs from preflight",
     )
 
