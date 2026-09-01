@@ -957,3 +957,37 @@ or terminal artifacts.
   TEST/new Evaluation outcome, and launched no GPU. It is engineering evidence,
   not Critic/SetFlow readiness or an excellent Development result;
   `submission_ready=false` remains.
+
+## Iteration U — SetFlow V5 base-repair ablation screen (2026-09-01)
+
+**S1 terminal (closed out):** `XEDITSETFLOW_V4_S1_SCREEN_NO_GO` (2026-08-31).
+Frozen S1 rerun (HEAD e455662c, master PID 1179890, ALL DONE 2026-09-01 06:02)
+produced 8/8 real `validation_summary.json`; screen gate 6/9 checks failed.
+Pathologies P1–P4 (memorization, coverage-driven memorization, low entropy/no
+mixture margin, unguided recovery ceiling ≈0.28–0.29) recorded in the
+handover package `SPECS_SETFLOW_V5/` and `CURRENT_HANDOVER_STATUS_20260901.md`.
+
+**V5 direction (D1=B guided regen, D2=coverage ablation, D5=A1+config first round):**
+- New successor family `xeditsetflow_v5` in worktree
+  `route_a_v3_setflow_v5_base_fix_20260901` (HEAD in MR for this iteration).
+- `core/route2_xeditsetflow_runtime_v5.py` — per-arm run spec (mode count /
+  coverage weight / architecture profile), A1 parameter band guard 5M–20M
+  (V4-size arms 80M–150M), Gate B0 convergence judgment.
+- `preflight_route2_xeditsetflow_v5.py` — source audit + per-arm capacity +
+  BF16 batch smoke.
+- `train_route2_xeditsetflow_v5.py` — F1 via `saved_checkpoint_passes=[2,4,6]`,
+  F2 via per-arm coverage weight, F4 mode count, F5 weight decay 0.001,
+  F8 per-pass curves + Gate B0, entropy-bonus optional, protected reads 0.
+- `validate_route2_xeditsetflow_v5_checkpoint.py` — outcome-free per-pass
+  validation with F3 temperature knobs (identity default 1.0/1.0) and
+  STOP-rate-scale sampler.
+- `adjudicate_route2_xeditsetflow_v5_screen.py` — Gate B0 + B1; selected
+  checkpoint = argmin common-NLL among legal passes (pre-registered, H2 ban).
+- `authorize_route2_xeditsetflow_v5_screen_stages.py` — exact-HEAD-bound
+  preflight + launch authorizations with per-GPU CUDA/BF16/A100 probes.
+- Protocol pre-registered: `docs/paper/route2_xeditsetflow_v5_protocol_v1.md`.
+
+**Eng checks at this iteration:** 47 SetFlow-family tests green (incl. new
+runtime_v5 + temperature control); config switches default to V4-S1 semantics.
+Next: preflight on GPU → exact-HEAD screen launch → four arms on four GPUs →
+per-pass validation → Gate B0/B1 adjudication.

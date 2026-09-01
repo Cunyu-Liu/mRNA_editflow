@@ -1,0 +1,947 @@
+#!/usr/bin/env python3
+"""Evaluate one terminal SetFlow V5 checkpoint under the frozen 891x32 protocol.
+
+V5 successor of the V4 outcome-free checkpoint validation. Arms, saved
+checkpoint passes, and architecture profiles come from the V5 screen config,
+so the same validator covers B-fix1/2/3 and B-arch1.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import re
+import sys
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+import torch
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from core.route2_development_projection_v3 import load_projection_rows
+from core.route2_gpu_failure_evidence import (
+    cuda_device_observation,
+)
+import random
+
+from core.route2_legal_xeditflow import (
+    STOP as _STOP,
+    exact_terminal_distribution,
+    initial_state,
+    jump_distribution,
+    apply_action,
+    legal_actions,
+)
+from core.route2_xeditsetflow_sampling_v4 import (
+    select_trajectory_mode_rates_v4,
+    TOKEN as _TOKEN,
+    BASE as _BASE,
+)
+from core.route2_legal_xeditflow import STOP, LegalAction
+from core.route2_source_token_cache_v3 import (
+    SourceTokenCacheIndexV3,
+    assemble_source_token_cache_v3,
+    load_source_token_cache_v3,
+)
+from core.route2_xeditsetflow_runtime_v5 import (
+    build_setflow_screen_model_v5,
+    require_setflow_v5_screen_launch_authorization,
+    screen_run_spec_v5,
+)
+from core.route2_xeditsetflow_sampling_v3 import (
+    SetFlowGenerationMetadataV3,
+    build_generation_metadata_v3,
+)
+from core.route2_xeditsetflow_sampling_v4 import (
+    root_mode_priors_v4,
+    sample_many_setflow_v4,
+    setflow_rate_map_v4,
+    stratified_trajectory_mode_ids_v4,
+)
+from core.route2_xeditsetflow_temperature_control_v5 import (
+    temper_mode_prior_v5,
+)
+from core.route2_xeditsetflow_training_v3 import (
+    SetMarginalStateDatasetV3,
+    collate_setflow_states_v3,
+    setflow_records_from_projection_rows,
+)
+from core.route2_xeditsetflow_v4 import common_set_marginal_loss_v4
+from scripts.route_a_v3.evaluate_route2_generation_v1 import (
+    evaluate_generation,
+    load_source_manifest,
+    measured_neighborhood_metrics,
+    validate_measured_pool,
+)
+from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources
+
+
+class SetFlowCheckpointValidationV5Error(RuntimeError):
+    pass
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise SetFlowCheckpointValidationV5Error(message)
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    _require(isinstance(payload, dict), f"JSON artifact is not an object: {path}")
+    return payload
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            rows.append(json.loads(line))
+    _require(bool(rows), f"validation input is empty: {path}")
+    return rows
+
+
+def _write_atomic_terminal_v4(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _require(not path.exists(), f"terminal SetFlow V4 artifact already exists: {path}")
+    partial = path.with_suffix(path.suffix + ".partial")
+    _require(
+        not partial.exists(),
+        f"partial SetFlow V4 terminal artifact already exists: {partial}",
+    )
+    partial.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(partial, path)
+
+
+def _git_head() -> str:
+    import subprocess
+
+    return subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
+def _move(batch: Mapping[str, Any], device: torch.device) -> dict[str, Any]:
+    return {
+        key: value.to(device, non_blocking=True)
+        if isinstance(value, torch.Tensor)
+        else value
+        for key, value in batch.items()
+    }
+
+
+def setflow_validation_stage_seed_v5(config: Mapping[str, Any]) -> tuple[str, int]:
+    run_stage = str(config.get("run_stage", "SCREEN"))
+    _require(run_stage in {"SCREEN", "CONFIRMATION"}, "unknown SetFlow V5 run stage")
+    seed = (
+        int(config["training"]["screen_seed"])
+        if run_stage == "SCREEN"
+        else int(config["training_seed"])
+    )
+    return run_stage, seed
+
+
+def saved_checkpoint_passes_v5(config: Mapping[str, Any]) -> tuple[int, ...]:
+    passes = tuple(sorted(int(p) for p in config["training"]["saved_checkpoint_passes"]))
+    _require(bool(passes) and all(p >= 1 for p in passes), "SetFlow V5 saved checkpoint passes are invalid")
+    return passes
+
+
+def require_training_package_terminal_v5(
+    config: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    run_stage, training_seed = setflow_validation_stage_seed_v5(config)
+    summaries: dict[str, dict[str, Any]] = {}
+    required_runs = tuple(str(row["run_id"]) for row in config["required_screen_runs"])
+    for required_run in required_runs:
+        directory = Path(config["output_root"]) / required_run
+        _require(
+            not (directory / "failure.json").exists(),
+            f"SetFlow V5 training package has a technical failure: {required_run}",
+        )
+        summary = _read_json(directory / "training_summary.json")
+        _require(
+            summary.get("status")
+            == "TERMINAL_XEDITSETFLOW_V5_TRAINING_COMPLETE_PENDING_VALIDATION",
+            f"SetFlow V5 training package is not fully terminal: {required_run}",
+        )
+        _require(
+            summary.get("run_stage", "SCREEN") == run_stage
+            and int(summary.get("seed", -1)) == training_seed,
+            f"SetFlow V5 training stage or seed changed: {required_run}",
+        )
+        _require(
+            set(summary.get("saved_checkpoint_paths", {}))
+            == {str(p) for p in saved_checkpoint_passes_v5(config)},
+            f"SetFlow V5 checkpoint package is incomplete: {required_run}",
+        )
+        summaries[required_run] = summary
+    return summaries
+
+
+def require_training_package_provenance_v5(
+    config: Mapping[str, Any],
+) -> dict[str, str]:
+    """Return the Git HEAD that produced each terminal training package.
+
+    Checkpoint validation can legitimately run from a later Git revision than
+    training.  The launch authorization therefore binds the code that produced
+    the checkpoint, while the validation result records its own Git revision
+    separately.
+    """
+
+    summaries = require_training_package_terminal_v5(config)
+    heads: dict[str, str] = {}
+    for run_id in summaries:
+        directory = Path(config["output_root"]) / run_id
+        training_config = _read_json(directory / "training_config.json")
+        training_attempt = _read_json(directory / "training_attempt.json")
+        config_head = str(training_config.get("authorized_git_head", ""))
+        attempt_head = str(training_attempt.get("code_commit", ""))
+        _require(
+            re.fullmatch(r"[0-9a-f]{40}", config_head) is not None,
+            f"SetFlow V5 training Git provenance is invalid: {run_id}",
+        )
+        _require(
+            attempt_head == config_head,
+            f"SetFlow V5 training config and attempt disagree on Git HEAD: {run_id}",
+        )
+        heads[run_id] = config_head
+    _require(
+        len(set(heads.values())) == 1,
+        "SetFlow V5 screen arms were trained from different Git HEADs",
+    )
+    return heads
+
+
+def load_checkpoint_v5(
+    config: Mapping[str, Any],
+    *,
+    run_id: str,
+    checkpoint_pass: int,
+    device: torch.device,
+) -> tuple[torch.nn.Module, dict[str, Any], dict[str, Any]]:
+    _require(checkpoint_pass in saved_checkpoint_passes_v5(config), "SetFlow V5 checkpoint pass is undeclared")
+    run_stage, training_seed = setflow_validation_stage_seed_v5(config)
+    training_directory = Path(config["output_root"]) / run_id
+    training_summary = require_training_package_terminal_v5(config)[run_id]
+    _require(
+        training_summary.get("status")
+        == "TERMINAL_XEDITSETFLOW_V5_TRAINING_COMPLETE_PENDING_VALIDATION",
+        "SetFlow V5 training is not terminal before checkpoint validation",
+    )
+    _require(
+        training_summary.get("validation_generation_during_training") is False
+        and training_summary.get("checkpoint_selection_status")
+        == "PENDING_TERMINAL_OUTCOME_FREE_VALIDATION_GENERATION",
+        "SetFlow V5 training read Validation generation or selected early",
+    )
+    _require(
+        set(training_summary.get("saved_checkpoint_paths", {}))
+        == {str(p) for p in saved_checkpoint_passes_v5(config)},
+        "SetFlow V5 terminal checkpoint package is incomplete",
+    )
+    checkpoint_path = Path(
+        training_summary["saved_checkpoint_paths"][str(checkpoint_pass)]
+    )
+    _require(
+        checkpoint_path == training_directory / f"pass_{checkpoint_pass}.pt",
+        "SetFlow V5 checkpoint path differs from the frozen run directory",
+    )
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    _require(
+        checkpoint.get("schema_version")
+        == "route_a_v3_route2_xeditsetflow_v5_checkpoint.v1",
+        "unexpected SetFlow V5 checkpoint schema",
+    )
+    _require(
+        checkpoint.get("run_id") == run_id
+        and checkpoint.get("run_stage", "SCREEN") == run_stage
+        and int(checkpoint.get("completed_pass", -1)) == checkpoint_pass
+        and int(checkpoint.get("seed", -1)) == training_seed,
+        "SetFlow V5 checkpoint identity changed",
+    )
+    model, capacity = build_setflow_screen_model_v5(
+        config, checkpoint["vocabs"], run_id=run_id
+    )
+    _require(capacity == checkpoint["capacity"], "SetFlow V5 checkpoint capacity changed")
+    model = model.to(device)
+    model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+    model.eval()
+    return model, checkpoint, training_summary
+
+
+@torch.no_grad()
+def evaluate_common_validation_nll_v5(
+    model: torch.nn.Module,
+    validation_rows: Sequence[Mapping[str, Any]],
+    checkpoint: Mapping[str, Any],
+    *,
+    source_cache: SourceTokenCacheIndexV3,
+    device: torch.device,
+    state_seed: int,
+    batch_size: int = 32,
+) -> dict[str, Any]:
+    records, eligibility = setflow_records_from_projection_rows(validation_rows)
+    dataset = SetMarginalStateDatasetV3(
+        records,
+        checkpoint["vocabs"],
+        seed=int(state_seed),
+        states_per_record=2,
+    )
+    dataset.set_pass(0)
+    indices = [
+        (record_index, state_slot)
+        for record_index in range(len(records))
+        for state_slot in range(2)
+    ]
+    weighted = 0.0
+    total_weight = 0.0
+    active_count = 0
+    forward_batch_count = 0
+    forward_state_count = 0
+    model.eval()
+    for start in range(0, len(indices), batch_size):
+        state_indices = indices[start : start + batch_size]
+        batch = _move(
+            collate_setflow_states_v3(
+                [
+                    dataset.state(record_index, state_slot)
+                    for record_index, state_slot in state_indices
+                ],
+                source_cache=source_cache,
+            ),
+            device,
+        )
+        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+            output = model(batch)
+        result = common_set_marginal_loss_v4(
+            output,
+            batch["positive_action_mask"],
+            batch["structural_budget_exhausted"],
+            batch["sample_weight"],
+        )
+        weight = float(result.active_weight.cpu())
+        weighted += float(result.loss.cpu()) * weight
+        total_weight += weight
+        active_count += result.active_state_count
+        forward_batch_count += 1
+        forward_state_count += len(state_indices)
+    _require(total_weight > 0.0 and active_count > 0, "SetFlow V5 common Validation set is empty")
+    return {
+        "common_validation_set_marginal_nll": weighted / total_weight,
+        "validation_candidate_record_count": len(records),
+        "validation_states_per_record": 2,
+        "validation_active_state_count": active_count,
+        "eligibility": eligibility,
+        "forward_batch_count": forward_batch_count,
+        "forward_state_count": forward_state_count,
+        "mode_head_forward_state_count": forward_state_count * model.mode_count,
+    }
+
+
+def _enumerate_terminal_paths(root, rate_function):
+    terminal = defaultdict(float)
+
+    def visit(state, probability):
+        if state.terminal_cause is not None:
+            terminal[state] += probability
+            return
+        for _action, child, edge_probability in jump_distribution(
+            state, rate_function, support_floor=1e-8
+        ):
+            visit(child, probability * edge_probability)
+
+    visit(root, 1.0)
+    return dict(terminal)
+
+
+def stop_column_index_v5(flat_rate_width: int) -> int:
+    _require(flat_rate_width >= 5, "flat rate vector is too narrow")
+    _require((flat_rate_width - 1) % 4 == 0, "flat rate width is not 4k+1")
+    return flat_rate_width - 1
+
+
+@torch.no_grad()
+def sample_many_setflow_v5(
+    model,
+    roots: Sequence[FlowState],
+    metadata: Sequence["SetFlowGenerationMetadataV3"],
+    mode_ids: Sequence[int],
+    seeds: Sequence[int],
+    *,
+    source_cache: SourceTokenCacheIndexV3,
+    device: torch.device,
+    forward_batch_size: int,
+    stop_rate_scale: float = 1.0,
+) -> list[tuple[FlowState, tuple[str, ...], int]]:
+    """V4 sampler loop with one explicit STOP-column rescale (F3, default 1.0)."""
+
+    _require(device.type == "cuda", "SetFlow V5 sampling requires CUDA")
+    _require(
+        math.isfinite(stop_rate_scale) and stop_rate_scale > 0.0,
+        "SetFlow V5 STOP rate scale must be finite and positive",
+    )
+    model.eval()
+    states = list(roots)
+    generators = [random.Random(int(seed)) for seed in seeds]
+    action_ids: list[list[str]] = [[] for _ in roots]
+    forward_counts = [0 for _ in roots]
+    while True:
+        active = [
+            index for index, state in enumerate(states)
+            if state.terminal_cause is None
+        ]
+        if not active:
+            break
+        for start in range(0, len(active), forward_batch_size):
+            indices = active[start : start + forward_batch_size]
+            batch = _move(
+                collate_generation_states_v3(
+                    [states[index] for index in indices],
+                    [metadata[index] for index in indices],
+                    source_cache=source_cache,
+                ),
+                device,
+            )
+            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                output = model(batch)
+            active_mode_ids = torch.tensor(
+                [int(mode_ids[index]) for index in indices],
+                dtype=torch.long,
+                device=device,
+            )
+            rates = select_trajectory_mode_rates_v4(
+                output["mode_rates"], active_mode_ids
+            )
+            masks = output["legal_action_mask"]
+            weights = torch.where(
+                masks, rates.double(), torch.zeros_like(rates, dtype=torch.float64)
+            )
+            if stop_rate_scale != 1.0:
+                stop_column = stop_column_index_v5(int(rates.shape[1]))
+                weights[:, stop_column] = weights[:, stop_column] * stop_rate_scale
+            totals = weights.sum(dim=1)
+            _require(
+                bool(torch.isfinite(weights).all().item())
+                and bool((totals > 0).all().item()),
+                "SetFlow V5 produced an invalid exit-rate distribution",
+            )
+            cumulative = weights.cumsum(dim=1) / totals.unsqueeze(1)
+            uniforms = torch.tensor(
+                [generators[index].random() for index in indices],
+                dtype=torch.float64,
+                device=device,
+            )
+            choices = (cumulative < uniforms.unsqueeze(1)).sum(dim=1).clamp_max(
+                rates.shape[1] - 1
+            )
+            rows = torch.arange(len(indices), device=device)
+            _require(
+                bool(masks[rows, choices].all().item()),
+                "SetFlow V5 sampled a masked action",
+            )
+            padded_length = (rates.shape[1] - 1) // 4
+            for trajectory_index, flat_index in zip(
+                indices, choices.tolist(), strict=True
+            ):
+                state = states[trajectory_index]
+                if flat_index == padded_length * 4:
+                    action = LegalAction(STOP)
+                else:
+                    position, alt_index = divmod(flat_index, 4)
+                    action = LegalAction("SUB", position, _BASE[alt_index])
+                _require(
+                    action in legal_actions(state),
+                    "SetFlow V5 selected an action outside hard legality",
+                )
+                states[trajectory_index] = apply_action(state, action)
+                action_ids[trajectory_index].append(action.action_id)
+                forward_counts[trajectory_index] += 1
+    return [
+        (states[index], tuple(action_ids[index]), forward_counts[index])
+        for index in range(len(states))
+    ]
+
+
+def small_graph_exact_check_v5(
+    model,
+    checkpoint: Mapping[str, Any],
+    device: torch.device,
+) -> dict[str, Any]:
+    source = "AC"
+    synthetic_cache = SourceTokenCacheIndexV3(
+        assemble_source_token_cache_v3(
+            [{"canonical_record_id": "small-graph", "source_sequence": source}],
+            sequence_to_index={source: 0},
+            encoded_tokens={0: torch.zeros(2, 768)},
+            model_id="SYNTHETIC_ZERO_FEATURE_FOR_DISTRIBUTION_CHECK_ONLY",
+            pretrained_parameter_count=113_389_056,
+            attention_backend="NOT_APPLICABLE_SYNTHETIC_CHECK",
+        )
+    )
+    metadata = SetFlowGenerationMetadataV3(
+        "small-graph", 0, 0, 0, 0, 0, 0, 0
+    )
+    root = initial_state(source, budget=2, assay_id="__UNK__", context_id="__UNK__")
+    priors, prior_compute = root_mode_priors_v4(
+        model,
+        [root],
+        [metadata],
+        source_cache=synthetic_cache,
+        device=device,
+        forward_batch_size=1,
+    )
+    dynamic_mixture = defaultdict(float)
+    enumerated_mixture = defaultdict(float)
+    per_mode_state_counts: dict[str, int] = {}
+    for mode_id, prior in enumerate(priors[0]):
+        def rate_function(state, actions, selected_mode=mode_id):
+            return setflow_rate_map_v4(
+                model,
+                state,
+                metadata,
+                selected_mode,
+                actions,
+                source_cache=synthetic_cache,
+                device=device,
+            )
+
+        dynamic = exact_terminal_distribution(
+            root, rate_function, support_floor=1e-8
+        )
+        enumerated = _enumerate_terminal_paths(root, rate_function)
+        per_mode_state_counts[str(mode_id)] = len(set(dynamic) | set(enumerated))
+        for state, probability in dynamic.items():
+            dynamic_mixture[state] += float(prior) * probability
+        for state, probability in enumerated.items():
+            enumerated_mixture[state] += float(prior) * probability
+    states = set(dynamic_mixture) | set(enumerated_mixture)
+    total_variation = 0.5 * math.fsum(
+        abs(dynamic_mixture.get(state, 0.0) - enumerated_mixture.get(state, 0.0))
+        for state in states
+    )
+    _require(total_variation <= 1e-12, "SetFlow V5 small-graph mixture differs from enumeration")
+    return {
+        "source_length": 2,
+        "edit_budget": 2,
+        "mode_count": model.mode_count,
+        "mode_prior": list(priors[0]),
+        "per_mode_terminal_state_count": per_mode_state_counts,
+        "mixture_terminal_state_count": len(states),
+        "dynamic_probability_sum": math.fsum(dynamic_mixture.values()),
+        "enumeration_probability_sum": math.fsum(enumerated_mixture.values()),
+        "total_variation": total_variation,
+        "tolerance": 1e-12,
+        "status": "PASS",
+        "prior_compute": prior_compute.__dict__,
+        "benchmark_compute_excludes_small_graph_mechanics_test": True,
+        "source_token_feature_policy": "SYNTHETIC_ZERO_FEATURE_MECHANICS_CHECK_NOT_PERFORMANCE",
+    }
+
+
+def validate_checkpoint(
+    config: Mapping[str, Any],
+    *,
+    run_id: str,
+    checkpoint_pass: int,
+    authorization_path: Path,
+    output_directory: Path,
+    physical_gpu_index: int,
+) -> dict[str, Any]:
+    spec = screen_run_spec_v5(config, run_id)
+    run_stage, training_seed = setflow_validation_stage_seed_v5(config)
+    authorization = _read_json(authorization_path)
+    preflight = _read_json(Path(config["preflight_output_path"]))
+    source_data_audit = _read_json(Path(config["source_level_data_audit_path"]))
+    validation_git_head = _git_head()
+    training_git_heads = require_training_package_provenance_v5(config)
+    training_git_head = training_git_heads[run_id]
+    _require(
+        run_stage == "SCREEN",
+        "SetFlow V5 checkpoint validation only supports the SCREEN stage for now",
+    )
+    require_setflow_v5_screen_launch_authorization(
+        config,
+        authorization,
+        preflight,
+        source_data_audit,
+        run_id=run_id,
+        current_git_head=training_git_head,
+    )
+    _require(not output_directory.exists(), "SetFlow V4 checkpoint validation already exists")
+    _require(
+        physical_gpu_index in config["gpu_policy"]["physical_gpu_scope"],
+        "SetFlow V5 validation GPU is outside the config-declared scope",
+    )
+    _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
+    _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
+    device = torch.device(f"cuda:{physical_gpu_index}")
+    torch.cuda.set_device(device)
+    _require(torch.cuda.is_bf16_supported(), "BF16 is unavailable on selected GPU")
+    cuda = cuda_device_observation(
+        physical_gpu_index, require_physical_index_match=True
+    )
+    model, checkpoint, training_summary = load_checkpoint_v5(
+        config,
+        run_id=run_id,
+        checkpoint_pass=checkpoint_pass,
+        device=device,
+    )
+    validation_rows = load_projection_rows(
+        [Path(config["validation_projection_path"])],
+        allowed_splits=("VALIDATION",),
+    )
+    _require(
+        len(validation_rows)
+        == int(config["data_geometry"]["expected_validation_projection_candidate_row_count"]),
+        "SetFlow V5 Validation projection count changed",
+    )
+    cache = SourceTokenCacheIndexV3(
+        load_source_token_cache_v3(Path(config["source_token_cache_path"]))
+    )
+    torch.cuda.reset_peak_memory_stats(device)
+    started = time.time()
+    common_nll = evaluate_common_validation_nll_v5(
+        model,
+        validation_rows,
+        checkpoint,
+        source_cache=cache,
+        device=device,
+        state_seed=int(
+            config["validation_generation"]["common_validation_state_seed"]
+        ),
+        batch_size=32,
+    )
+    sources = load_sources(Path(config["source_eligibility_manifest"]))
+    validation_generation = config["validation_generation"]
+    _require(
+        len(sources) == int(validation_generation["eligible_source_count"]) == 891,
+        "SetFlow V5 generation source cohort changed",
+    )
+    _require(
+        all(
+            int(source["candidate_budget"])
+            == int(validation_generation["candidate_cap_per_source"])
+            == 32
+            for source in sources
+        ),
+        "SetFlow V5 candidate cap changed",
+    )
+    source_metadata = build_generation_metadata_v3(
+        sources, validation_rows, checkpoint["vocabs"]
+    )
+    source_roots = [
+        initial_state(
+            source["source_sequence"],
+            budget=int(source["edit_budget"]),
+            assay_id=str(source["assay_id"]),
+            context_id=str(source["biological_context_id"]),
+        )
+        for source in sources
+    ]
+    forward_batch_size = 64
+    mode_prior_temperature = float(
+        config["validation_generation"].get("mode_prior_temperature", 1.0)
+    )
+    stop_rate_scale = float(
+        config["validation_generation"].get("stop_rate_scale", 1.0)
+    )
+    _require(mode_prior_temperature > 0.0, "SetFlow V5 mode-prior temperature is invalid")
+    _require(stop_rate_scale > 0.0, "SetFlow V5 STOP rate scale is invalid")
+    priors, prior_compute = root_mode_priors_v4(
+        model,
+        source_roots,
+        source_metadata,
+        source_cache=cache,
+        device=device,
+        forward_batch_size=forward_batch_size,
+    )
+    tempered_priors = [
+        temper_mode_prior_v5(prior, temperature=mode_prior_temperature)
+        if mode_prior_temperature != 1.0
+        else prior
+        for prior in priors
+    ]
+    roots = []
+    trajectory_metadata = []
+    mode_ids = []
+    seeds = []
+    source_indices = []
+    aggregate_mode_allocations = Counter()
+    decoder_seed_base = int(validation_generation["decoder_seed_base"])
+    for source_index, (root, metadata, prior) in enumerate(
+        zip(source_roots, source_metadata, tempered_priors, strict=True)
+    ):
+        allocated_modes = stratified_trajectory_mode_ids_v4(prior)
+        _require(len(allocated_modes) == 32, "SetFlow V5 source trajectory budget changed")
+        for trajectory_slot, mode_id in enumerate(allocated_modes):
+            roots.append(root)
+            trajectory_metadata.append(metadata)
+            mode_ids.append(mode_id)
+            seeds.append(
+                decoder_seed_base
+                + source_index * 1_000_003
+                + trajectory_slot
+            )
+            source_indices.append(source_index)
+            aggregate_mode_allocations[mode_id] += 1
+    _require(len(roots) == int(validation_generation["eligible_source_count"]) * 32,
+             "SetFlow V5 trajectory count changed")
+    sampler = sample_many_setflow_v5 if stop_rate_scale != 1.0 else sample_many_setflow_v4
+    sampled, primary_compute = sampler(
+        model,
+        roots,
+        trajectory_metadata,
+        mode_ids,
+        seeds,
+        source_cache=cache,
+        device=device,
+        forward_batch_size=forward_batch_size,
+        **({"stop_rate_scale": stop_rate_scale} if stop_rate_scale != 1.0 else {}),
+    )
+    replayed, replay_compute = sampler(
+        model,
+        roots,
+        trajectory_metadata,
+        mode_ids,
+        seeds,
+        source_cache=cache,
+        device=device,
+        forward_batch_size=forward_batch_size,
+        **({"stop_rate_scale": stop_rate_scale} if stop_rate_scale != 1.0 else {}),
+    )
+    candidates = []
+    replay_failures = 0
+    edit_budget_violations = 0
+    terminal_causes = Counter()
+    method_id = (
+        f"unguided_xeditsetflow_v5_{run_id}_pass{checkpoint_pass}_seed{training_seed}"
+    )
+    for trajectory_index, (first, second) in enumerate(
+        zip(sampled, replayed, strict=True)
+    ):
+        terminal, actions, forwards = first
+        replay_terminal, replay_actions, replay_forwards = second
+        replay_ok = (
+            terminal == replay_terminal
+            and actions == replay_actions
+            and forwards == replay_forwards
+        )
+        replay_failures += int(not replay_ok)
+        source = sources[source_indices[trajectory_index]]
+        edit_budget_violations += int(
+            terminal.edit_count > int(source["edit_budget"])
+        )
+        terminal_causes[str(terminal.terminal_cause)] += 1
+        candidates.append(
+            {
+                "method_id": method_id,
+                "source_key": source["source_key"],
+                "candidate_sequence": terminal.current_sequence,
+                "terminal_cause": terminal.terminal_cause,
+                "edit_count": terminal.edit_count,
+                "trajectory_actions": list(actions),
+                "trajectory_seed": seeds[trajectory_index],
+                "trajectory_mode_id": mode_ids[trajectory_index],
+                "trajectory_replay_ok": replay_ok,
+                "generator_nfe": forwards,
+                "trunk_forwards": forwards,
+                "mode_head_forwards": forwards * model.mode_count,
+                "critic_forwards": 0,
+                "independent_evaluator_forwards": 0,
+                "generated_candidate_grants_canonical_credit": False,
+            }
+        )
+    empirical = Counter(
+        (row["source_key"], row["candidate_sequence"]) for row in candidates
+    )
+    totals = Counter(row["source_key"] for row in candidates)
+    for row in candidates:
+        row["generation_score"] = math.log(
+            empirical[(row["source_key"], row["candidate_sequence"])]
+            / totals[row["source_key"]]
+        )
+    manifest = load_source_manifest(Path(config["source_eligibility_manifest"]))
+    generation = evaluate_generation(manifest, candidates)
+    measured_rows = _read_jsonl(Path(config["measured_neighborhood_path"]))
+    validate_measured_pool(measured_rows, "DEVELOPMENT", "CLOSED")
+    measured = measured_neighborhood_metrics(
+        manifest,
+        candidates,
+        measured_rows,
+        k=int(validation_generation["measured_top_k"]),
+        candidate_support_mode="OPEN_GENERATED_SUPPORT",
+    )
+    small_graph = small_graph_exact_check_v5(model, checkpoint, device)
+    numerical_failures = terminal_causes.get("NUMERICAL_FAILURE", 0)
+    correctness = (
+        generation["hard_legality_rate"] == 1.0
+        and edit_budget_violations == 0
+        and generation["candidate_budget_violation_count"] == 0
+        and replay_failures == 0
+        and numerical_failures == 0
+        and small_graph["status"] == "PASS"
+    )
+    torch.cuda.synchronize(device)
+    elapsed = time.time() - started
+    compute = {
+        "common_nll_trunk_forward_batch_count": common_nll["forward_batch_count"],
+        "common_nll_trunk_forward_state_count": common_nll["forward_state_count"],
+        "common_nll_mode_head_forward_state_count": common_nll[
+            "mode_head_forward_state_count"
+        ],
+        "root_prior": prior_compute.__dict__,
+        "primary_generation": primary_compute.__dict__,
+        "replay_generation": replay_compute.__dict__,
+        "trajectory_count": len(candidates),
+        "candidate_count": len(candidates),
+        "critic_forward_count": 0,
+        "independent_evaluator_forward_count": 0,
+        "small_graph_mechanics_test_excluded": True,
+    }
+    output_directory.parent.mkdir(parents=True, exist_ok=True)
+    output_directory.mkdir()
+    (output_directory / "trajectories.private.jsonl").write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in candidates),
+        encoding="utf-8",
+    )
+    result = {
+        "schema_version": "route_a_v3_route2_xeditsetflow_v5_checkpoint_validation.v1",
+        "status": "TERMINAL_XEDITSETFLOW_V5_CHECKPOINT_VALIDATION_COMPLETE",
+        "g0_status": "FLOW_G0_READY" if correctness else "FLOW_G0_VALIDATION_FAIL",
+        "run_stage": run_stage,
+        "run_id": run_id,
+        "selectable": spec.selectable,
+        "mode_count": spec.mode_count,
+        "seed": training_seed,
+        "checkpoint_pass": checkpoint_pass,
+        "training_git_head": training_git_head,
+        "validation_git_head": validation_git_head,
+        "training_and_validation_git_heads_differ": (
+            training_git_head != validation_git_head
+        ),
+        "training_summary_status": training_summary["status"],
+        "common_validation_set_marginal_nll": common_nll[
+            "common_validation_set_marginal_nll"
+        ],
+        "common_validation": common_nll,
+        "source_count": len(sources),
+        "mode_prior_temperature": mode_prior_temperature,
+        "stop_rate_scale": stop_rate_scale,
+        "trajectory_count": len(candidates),
+        "candidate_count": len(candidates),
+        "candidate_cap_per_source": 32,
+        "duplicate_retry_or_rejection_count": 0,
+        "aggregate_mode_allocations": {
+            str(key): value for key, value in sorted(aggregate_mode_allocations.items())
+        },
+        "hard_legality_rate": generation["hard_legality_rate"],
+        "edit_budget_violation_count": edit_budget_violations,
+        "candidate_budget_violation_count": generation[
+            "candidate_budget_violation_count"
+        ],
+        "trajectory_replay_failure_count": replay_failures,
+        "numerical_failure_count": numerical_failures,
+        "source_macro_unique_candidate_rate": generation[
+            "source_macro_unique_candidate_rate"
+        ],
+        "source_macro_candidate_recovery_rate": measured[
+            "source_macro_candidate_recovery_rate"
+        ],
+        "source_macro_measured_top_k_recovery_at_k": measured[
+            "source_macro_measured_top_k_recovery_at_k"
+        ],
+        "terminal_causes": dict(sorted(terminal_causes.items())),
+        "small_graph_reference": small_graph,
+        "compute": compute,
+        "wall_time_seconds": elapsed,
+        "peak_vram_bytes": int(torch.cuda.max_memory_allocated(device)),
+        "physical_gpu_index": physical_gpu_index,
+        "torch_device": str(device),
+        "precision": "BF16",
+        "cpu_fallback_used": False,
+        "parameter_update_count": 0,
+        "critic_used": False,
+        "independent_evaluator_used": False,
+        "development_test_outcome_reads": 0,
+        "new_final_evaluation_outcome_reads": 0,
+        "generated_candidates_grant_canonical_credit": False,
+        "biological_optimization_established": False,
+        "generation_metrics": generation,
+        "measured_neighborhood_metrics": measured,
+        **cuda,
+    }
+    _write_atomic_terminal_v4(
+        output_directory / "validation_summary.json",
+        result,
+    )
+    return result
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", required=True, type=Path)
+    parser.add_argument("--run-id", required=True, help="one run id declared in the V5 config required_screen_runs")
+    parser.add_argument("--checkpoint-pass", required=True, type=int, help="one saved checkpoint pass declared in the V5 config")
+    parser.add_argument("--authorization", required=True, type=Path)
+    parser.add_argument("--physical-gpu-index", required=True, type=int)
+    parser.add_argument("--output-dir", type=Path)
+    arguments = parser.parse_args()
+    config = _read_json(arguments.config)
+    run_stage, training_seed = setflow_validation_stage_seed_v5(config)
+    output_directory = arguments.output_dir or (
+        Path(config["validation_output_root"])
+        / arguments.run_id
+        / f"pass_{arguments.checkpoint_pass}"
+    )
+    try:
+        result = validate_checkpoint(
+            config,
+            run_id=arguments.run_id,
+            checkpoint_pass=arguments.checkpoint_pass,
+            authorization_path=arguments.authorization,
+            output_directory=output_directory,
+            physical_gpu_index=arguments.physical_gpu_index,
+        )
+    except Exception as error:
+        failure_path = output_directory.with_name(
+            output_directory.name + ".failed.json"
+        )
+        _write_atomic_terminal_v4(
+            failure_path,
+            {
+                "schema_version": "route_a_v3_route2_xeditsetflow_v5_checkpoint_validation_failure.v1",
+                "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
+                "run_id": arguments.run_id,
+                "run_stage": run_stage,
+                "seed": training_seed,
+                "checkpoint_pass": arguments.checkpoint_pass,
+                "physical_gpu_index": arguments.physical_gpu_index,
+                "cpu_fallback_used": False,
+                "error_type": type(error).__name__,
+                "error": str(error),
+                "development_test_outcome_reads": 0,
+                "new_final_evaluation_outcome_reads": 0,
+            },
+        )
+        raise
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
