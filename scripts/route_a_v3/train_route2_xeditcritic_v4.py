@@ -68,6 +68,10 @@ from core.route2_xeditcritic_training_v4 import (
     physical_microbatch_partitions_v4,
     require_physical_gpu_scope_v4,
 )
+from core.route2_xeditcritic_gradient_norm_scale_v7 import (
+    GradientNormScalerV7,
+    XEditCriticV7GradientNormScaleError,
+)
 from core.route2_xeditcritic_v3 import XEditCriticV3
 from core.route2_xeditcritic_v4 import (
     XEditCriticV4,
@@ -1076,6 +1080,18 @@ def run(
         initial_parameter = next(model.parameters()).detach().clone()
         update_count = 0
         pass_rows: list[dict[str, Any]] = []
+        gradient_norm_scale_config = config["training"].get("gradient_norm_scale", None)
+        gradient_norm_scaler: GradientNormScalerV7 | None = None
+        if gradient_norm_scale_config is not None:
+            _require(
+                isinstance(gradient_norm_scale_config, dict)
+                and bool(gradient_norm_scale_config.get("enabled", False)),
+                "gradient_norm_scale must be an enabled dict or absent",
+            )
+            gradient_norm_scaler = GradientNormScalerV7(
+                ema_alpha=float(gradient_norm_scale_config.get("ema_alpha", 0.05)),
+                floor=float(gradient_norm_scale_config.get("floor", 1e-6)),
+            )
         for pass_index in range(int(geometry["pass_count"])):
             pass_number = pass_index + 1
             sampler.set_pass(pass_index)
@@ -1179,6 +1195,21 @@ def run(
                         config["training"].get("cell_offset_weight", 0.0)
                     ),
                 )
+                gradient_for_backward = objective.prediction_gradient
+                gradient_norm_scale_event = None
+                if gradient_norm_scaler is not None:
+                    _require(
+                        len(set(task_ids)) == 1,
+                        "gradient-norm scaling requires task-homogeneous batches",
+                    )
+                    gradient_for_backward, multiplier, norm = gradient_norm_scaler.scale(
+                        str(task_ids[0]), gradient_for_backward
+                    )
+                    gradient_norm_scale_event = {
+                        "task_id": str(task_ids[0]),
+                        "gradient_norm": norm,
+                        "multiplier": multiplier,
+                    }
                 optimizer.zero_grad(set_to_none=True)
                 router_balance_weight = float(
                     critic_v4_loss_weights(pass_number)["router_balance"]
@@ -1186,7 +1217,7 @@ def run(
                 if retained_graph is not None:
                     backward_retained_effective_batch_v4(
                         retained_graph,
-                        objective.prediction_gradient,
+                        gradient_for_backward,
                         router_balance_weight=router_balance_weight,
                         cell_offset_gradient=objective.cell_offset_gradient,
                     )
@@ -1202,7 +1233,7 @@ def run(
                         physical_batches,
                         states,
                         first_pass_predictions,
-                        objective.prediction_gradient,
+                        gradient_for_backward,
                         device=device,
                         forward=lambda batch: _forward_bf16(model, batch),
                         router_balance_weight=router_balance_weight,
@@ -1437,6 +1468,15 @@ def run(
                 float(spec.lambda_pairwise_weight)
                 if spec.lambda_pairwise_weight is not None
                 else float(config["training"].get("lambda_pairwise_weight", 0.0))
+            ),
+            "gradient_norm_scale": (
+                {
+                    **gradient_norm_scale_config,
+                    "ema_norms": gradient_norm_scaler.ema_norms(),
+                    "ema_reference": gradient_norm_scaler.reference(),
+                }
+                if gradient_norm_scaler is not None
+                else None
             ),
             "passes": pass_rows,
             "final_validation": final_metrics,
