@@ -414,10 +414,14 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
   edit_metadata_only/GPU3、no_candidate_sequence/GPU5），wave1 三臂 PENDING。首 family 1cc55fcb 因
   authorized_git_head 误绑定 licensed 失败冻结（JOB_MISSING_TERMINAL_ARTIFACT），未覆盖、未二次触发。
 
-### 方向 E 温度扫描 —— 修复后 RUNNING（第三次）
-- bug1: 缺 k/candidate_support_mode（缺参 TypeError）→ 修复 commit 408e41ff。
-- bug2: 候选无 ranking score（GenerationEvaluationError）→ 注入 generation_score commit 9d7ce3b1。
-- 修复版 PID 3303383（GPU1），存活稳定；输出 s1_temperature_sweep_457e15ae.json 原子写，完成后追加结论。
+### 方向 E 温度扫描 —— 25 格点全终态（COMPLETE，已记录 Iteration W）
+- bug1: 缺 k/candidate_support_mode（缺参 TypeError）→ 修复 commit 408e41ff；bug2: 候选无 ranking score
+  （GenerationEvaluationError）→ 注入 generation_score commit 9d7ce3b1；修复版存活稳定。
+- 输出 s1_temperature_sweep_457e15ae.json 已原子写全（status=XEDITSETFLOW_V4_S1_TEMPERATURE_SWEEP_V5_COMPLETE，
+  run_id v4_s1_full, checkpoint_pass 10, GPU1, cpu_fallback_used=false, protected reads=0）。
+- 25 格点单调性/Pareto 结论已追加（Iteration W）：s↑→recovery↑+unique↓；T↑→unique↑+recovery↓；
+  T>=1.0 后 p^(1/T) 饱和（T=1.0 与 1.25 全一致）。recovery 极值 T=0.5,s=4.0（0.2854）；unique 极值
+  T=1.5,s=0.25（0.5888）。无单点全支配；s 为主旋钮。禁止重跑。
 
 ### V5 Critic 指标反思 —— 待决策
 - v5_full (方向A w=0.5, seed 20260907): Spearman 0.167094 vs f34 0.160561 (+4.07%)；MAE -3.99%。

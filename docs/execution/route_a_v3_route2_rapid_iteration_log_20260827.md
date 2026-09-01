@@ -1308,3 +1308,35 @@ or terminal artifacts.
 - 未读取 protected DEVELOPMENT TEST / new final Evaluation outcome（两运行 protected reads=0）。
 - 未修改/重启/覆盖任何运行中实验或旧 artifacts；retry2/1cc55fcb/旧扫描日志均冻结只读。
 - GPU: retry3 用 GPU2/3/5（真实 CUDA）；温度扫描 GPU1；GPU0/4/6/7 未触碰。
+## Iteration W — 2026-09-01: 方向 E 温度扫描 25 格点全终态 + 单调性/Pareto 结论
+- 输出: audits/xeditsetflow_v4/s1_temperature_sweep_457e15ae.json
+  status=XEDITSETFLOW_V4_S1_TEMPERATURE_SWEEP_V5_COMPLETE（run_id v4_s1_full，checkpoint_pass 10）。
+- 证据: cuda_device_name=NVIDIA A100-PCIE-40GB, physical_gpu_index=1, cpu_fallback_used=False,
+  protected reads（development_test=0，new_final_evaluation=0），peak_vram_mb=1221.7，
+  diagnostic_only_no_gate_change=true，elapsed_seconds≈86796（约 24.1h）。
+- 25 格点（mode_prior_temperature ∈{0.5,0.75,1.0,1.25,1.5} × stop_rate_scale∈{0.25,0.5,1.0,2.0,4.0}），
+  每格 28512 条轨迹；合法性/预算字段为 None（本 sweep 为 diagnostic-only，未统计 legality）。
+
+### 单调性结论
+- 固定 T、s↑（0.25→4.0）: source_macro_candidate_recovery_rate 与 source_macro_measured_top_k_recovery_at_k
+  单调上升，source_macro_unique_candidate_rate 单调下降（recovery 与 unique 显著 trade-off）。
+  例（T=0.5）：recovery 0.2393→0.2854，unique 0.5459→0.5069，top_k 0.1723→0.2327。
+- 固定 s、T↑（0.5→1.5）: unique_rate 单调上升（例 s=0.25: 0.5459→0.5888），recovery_rate 单调下降
+  （s=0.25: 0.2393→0.2252）。
+- 关键现象: T≥1.0 后 T=1.0 与 T=1.25 全部 5 格结果完全一致（recovery 0.2262/0.2446/0.2576/0.2714/0.2834，
+  unique 一致）——mode-prior 温度缩放 p^(1/T) 在 T≥1.0 后进入饱和/恒等区，继续升温不再改变分布。T=1.5 仅
+  unique 继续小幅升高（s=0.25: 0.5888）。这与记忆结论「SetFlow 推理应用 p^(1/T) 与 STOP rate scaling 提升
+  unique rate」一致，但高温段边际收益递减且 recovery 承压。
+
+### Pareto 前沿与推荐
+- 前端（recovery 优先）: T=0.5, s=4.0 为全表最高 recovery 0.2854 / top_k 0.2327，unique 0.5069（最低）。
+- 后端（unique 优先）: T=1.5, s=0.25 为最高 unique 0.5888，recovery 0.2252（最低）。
+- 平衡带: T=1.5,s=1.0（recovery 0.2565 / unique 0.5756 / top_k 0.1989）、T=0.75,s=2.0（0.2732/0.5492/0.2161）。
+- 无单一格点同时支配群；s 是支配 recovery↔unique 的主旋钮，T 在 T≤1.0 区间二阶影响、T>1.0 饱和。
+- 建议：下游若需唯一性优先取 T=1.25,s=0.25；若 recovery/top-k 优先取 s=4.0 配合低中温 T≤1.0；后续若需
+  平衡可在 s∈{1.0,2.0}、T∈{0.75,1.25} 局部再插值，但需新 family（本轮未启）。
+
+### 处置边界
+- 输出 json 为脚本原子写，已全量化完成，禁止重跑（含禁止为补 legality 字段重跑）。
+- 未读取 protected DEVELOPMENT TEST / new final Evaluation；未修改重启任何运行中实验或旧 artifacts。
+- retry3 仍在 GPU2/3/5 运行（wave1 三臂 RUNNING，见本轮监控），温度扫描本身不改任何 gate。
