@@ -120,7 +120,7 @@
   "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
   "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
   "new_final_evaluation_outcomes_accessed": false,
-  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v6/v6_screen_seed_20260907_runner_7815fdeb",
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v6/v6_screen_seed_20260907_runner_586e08aa",
   "preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v6/v6_screen_seed_20260907_runner_7815fdeb/preflight.json",
   "projection_paths": [
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
@@ -161,7 +161,7 @@
       "selectable": true
     }
   ],
-  "runner_git_head": "7815fdeb2489d9408294f7e7ad0b321b7a3158c5",
+  "runner_git_head": "586e08aaf7c999ed7233b10693338f6a711ec643",
   "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_config.v1",
   "screen_gate": {
     "failure_status": "XEDITCRITIC_V4_SCREEN_NO_GO",
