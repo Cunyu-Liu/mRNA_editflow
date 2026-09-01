@@ -31,7 +31,7 @@ from core.route2_xeditsetflow_runtime_v5 import screen_run_spec_v5
 
 PYTHON = "/home/cunyuliu/miniconda3/envs/editflow/bin/python"
 ARMS = ["b_fix1", "b_fix2", "b_fix3", "b_arch1"]
-ARM_GPU = {"b_fix1": 3, "b_fix2": 6, "b_fix3": 7, "b_arch1": 4}
+ARM_GPU = {"b_fix1": 3, "b_fix2": 1, "b_fix3": 4, "b_arch1": 0}  # non-MIG GPUs (6/7 are MIG-enabled)
 
 
 def eprint(*args): print(*args, file=sys.stderr, flush=True)
