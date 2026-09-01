@@ -1193,3 +1193,80 @@ or terminal artifacts.
   validation task-macro Spearman（+4.07%）与标准化 MAE（−3.99%），与 Iteration P 假设一致
   （V4 因 cross-source 训练无法区分同 source 候选 → candidate-specific 信息缺失）。
 - V5 family 单臂完整终态；无技术失败，不擅自重跑同一 family。
+
+
+## Iteration U — 2026-08-31: V6 首训（W1-f + W2-a 并行）启动 + 数据核查 + 交接三件套落地
+
+### U1. F1–F16 诊断事实锁存（2026-08-31 只读分析结论，本迭代将作为 V6/V7/V8 依据）
+
+1. 标签信噪比天花板：MPRAU allelic skew（ENCSR854RUF，2,008 变体 x 6 细胞）= 0.683（3+3 split-half [0.671,0.710]），V5 pair 级 0.103 → 完成度 15%。
+2. PROXIMAL_POLYA = 0.90（ICC），V5 0.82 → 91% 达标，移出改进叙事进 benchmark。
+3. RNA_HALF_LIFE 两 region = 0.0014/0.013（ICC）→ 标签近纯噪声，任何模型不可能超过，须归因声明。
+4. MRL 无重复结构，只跟踪。
+5. 模型对同一变体 6 细胞预测 std=0.018 vs 标签 std=0.126 → 未学跨细胞差异。
+6. 预测 pair 间 std 0.108 vs 标签 0.269 → 压缩 60% 变异。
+7. 10 桶分析：仅最高预测桶 target 均值有区分，其余 9 桶贴零 → 中低效应区排序近似随机（Spearman 直接病灶）。
+8. study_scale 仅 7 个标量（代码审查），排除"缩放吸方差"捷径。
+9. pair-mean 正确机制 = 提供更干净监督目标（Spearman-Brown：单细胞信度 0.417 → 6 细胞均值 0.683）。
+10. 三轴长尾：任务级（62%/29%/...）/组级（6/9 任务每 source 1 候选）/效应量级。
+11. 真实规模 89,580 行 = 43,730 独立序列（12,635 近重复组件）；独立效应观测 5–8k；参数:观测 ≈ 20–30:1。
+12. train soft_spearman 0.235 vs val 0.167 + loss 未收敛 + 中低区欠学习 = 局部过拟合与全局欠学习并存。
+13. 贪心不相交 pairing（32→16 对而非 C(32,2)）→ pair 覆盖率 N/2/batch，V7 候选。
+14. EditFlow 论文全文无 reward/critic/potential → Potential 式引导为自有设计，CFG 式登记 Plan B。
+15. V5 vs f34 同 seed 对照 +4.07% rho / -3.99% MAE，但 source-group bootstrap CI=[-0.027,+0.040] p=0.743 → 无统计证据。
+16. V5 task-macro 0.16709 / MAE 1.93476 已终态，V5=压缩器。
+
+### U2. 三个决策定案（D0/D1/D2）
+
+- D0 B≈C>A：critic 定位为实验优先排序器（任务族）+ 跨 context 变体效应注释器；引导打分器（A）被 SetFlow readiness 阻塞。
+- D1 双轨：主监督 pair-mean（共享效应）+ 辅助头细胞偏移（HEK293FT 区分度判据）；追加 per-task rank 变换；已实现 LambdaRankIC。
+- D2 天花板归一化达标（每任务逼近自身物理上限，Tier A ≥60% / polyA 91%），决策指标 hit@1/NDCG@K，宏平均降 secondary。
+- 用户裁定：ensemble 不做、SSL 不做、SWA 降级离线、H2 移除、3 seeds 启动门 = V6 主判据过门。
+
+### U3. V6 代码实现（W1 已提交并推送 GitHub）
+
+- commit 7f01d17c：LambdaRankIC 位移加权 pairwise（5 单测，默认关 = V5 bit 级一致）。
+- commit 7815fdeb：W1-a pair-mean、W1-b cell-offset 头、W1-c per-task rank、W1-d per-pass checkpoint、W1-e extended eval。
+- commit 7487751c + 568ad281：V6 screen config 冻结 + A100 sync audit builder（排除 V403 lineage guard）。
+- commit bf96d5e5（本迭代）：preflight 模型构建补传 cell_offset_head 参数。
+- 分支 route-a-v3-v6-lambda-pairwise-prep-20260831 已推送 origin。
+
+### U4. 正式参数/内存 preflight（当前 HEAD bf96d5e5，重跑）
+
+- trainable_parameter_count=170,679,590（含 cell-offset 头；165–175M 设计目标内）。
+- selected_peak_allocated_gib≈6.64，physical_batch=32，BF16，cache/online 对齐 max diff 0.0182 < 0.02 容差。
+- status=XEDITCRITIC_V4_PREFLIGHT_PASS；cpu_fallback_used=false；protected reads=0。
+- 说明：初版 preflight 在无 cell_offset 参数下运行（计数 170,481,957），与训练模型计数不符导致 launch 被 fail-closed 拦截；已用当前代码重跑并重建授权（授权=bf96d5e5 绑定）。
+
+### U5. W1-f + W2-a 四臂并行启动（2026-08-31 ~15:55 CST）
+
+| run_id | 别名 | GPU | seed | lambda_pairwise_weight | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| v6_full | W1-f 首训 | GPU4 | 20260907 | 1.0 | RUNNING |
+| v6_h3_lambda_0_5 | W2-a | GPU1 | 20260907 | 0.5 | RUNNING |
+| v6_h3_lambda_0_75 | W2-a | GPU2 | 20260907 | 0.75 | RUNNING |
+| v6_h3_lambda_1_0 | W2-a | GPU0 | 20260907 | 1.0 | RUNNING |
+
+- 环境：HEAD bf96d5e5、screen config 冻结（pair_mean_targets=true、cell_offset_weight=0.5、within_source 0.5、pass_3_8 loss）、8 passes、22,416 updates、CUDA/BF16-only、禁 CUDA_VISIBLE_DEVICES 重映射、每臂独立进程真实多卡并行。
+- 教训：1) GPU6/7 为 MIG 分区（容量仅 4.75GB）不可用于 40GB 级训练，H3 两臂改挂 GPU0/2，GPU 选择必须以 nvidia-smi -L 核实非 MIG；2) run 目录残留失败 attempt 会触发 fail-closed，已按 -aborted- 归档保留证据后重挂。
+
+### U6. 训练数据核查（科学前提）
+
+- projections train.jsonl 89,580 行 / validation.jsonl 18,293 行，合计 107,873 = data_geometry.expected_record_count。
+- MPRAU（ENCSR854RUF）pair 结构用真实序列键统计：train 9,284 变体 x 6 cell（55,704 行）全部 size=6 uniform；validation 2,008 变体 x 6 cell（12,048 行）uniform → W1-a "12,048 行 collapse 2,008 pair 均值" 成立，pair-mean 科学前提（0.683 天花板）得到投影数据背书。
+- pair 分组键（record.task, record.study, record.source, record.candidate）中 source/candidate 取自 source_sequence/candidate_sequence（非 source_group_id），避免跨变体误聚合。
+
+### U7. 交接治理
+
+- spec.md / tasks.md / checklist.md 三件套已重建至 V6 worktree .trae/specs/ 并提交。
+- W2-b（3 seeds 额外 2 seed）等 screen gate 判定（V6 主判据过门）后，走 V4 confirmation 协议（seeds 20260908/09/10，config schema confirmation_runtime.v1）启动。
+- W2-c SWA 离线平均（pass 6/7/8）与 W2-d expert 路由诊断在 W1-f 终态后以 CPU 执行。
+
+### Iteration V — 2026-09-01: V6 screen gate 判定（主判据未过门）+ H3 lambda 消融无效审计
+
+- 四臂全部 TERMINAL：8/8 pass、22,416 updates、GPU 验证（CUDA/A100/BF16、cpu_fallback=false）、protected reads=0、HEAD bf96d5e5、170.68M 参数。工程完备性成立。
+- **gate 判定脚本不适用**：现有 `adjudicate_route2_xeditcritic_v4_screen.py` + `route2_xeditcritic_gate_v4.py` 硬编码 V4 8 臂（c0_v4/source_only/…/no_moe），且要求 run_summary passes 的 validation_metric_read=False；V6 因 per_pass_validation=True（W1-d）写入 True → 实测报 `XEditCriticGateV4Error: v6_full read active Validation metrics`。V6 专属判定脚本为交接缺口。
+- **主判据核算（pair 级，variant 聚合 2,008）**：v5 基线 ρ=0.1025（复现 spec 0.103）；v6_full pair-mean ρ=0.0511，bootstrap 95% CI=[0.0070,0.0963]，CI 上界 < v5 基线 → **预注册主判据未过门（NO-GO）**。
+- **H3 lambda 消融无效（数据完整性）**：v6_full / v6_h3_lambda_0_5 / v6_h3_lambda_0_75 三臂 final_validation_predictions.jsonl **字节级相同**（md5 95577ecf…），pass_1 验证预测四臂全同（md5 e1388c84…）。根因：V6 screen config `training` 块为单一 `lambda_pairwise_weight=1.0`，launcher/config 无 per-run 覆盖机制；run_id 中 0_5/0_75 仅命名，三臂确定性同配置训练 → **U5 表中"lambda_pairwise_weight=0.5/0.75"未真实生效，W2-a 无效**。
+- 判定产物：`audits/route_a_v3_route2_xeditcritic_v6_screen_nogo_v1.json`（schema v1，scientific_claim_status=NOT_ESTABLISHED）。
+- **用户裁定**：① V6 主判据记录负结果 → 进入架构侧 V7（梯度范数缩放 loss 优先）/V8（LoRA/减块）候选；② 修复 per-run lambda_pairwise_weight 传递后**重跑 H3 消融 0.5/0.75/1.0**。

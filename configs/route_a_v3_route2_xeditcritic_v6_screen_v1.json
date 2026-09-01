@@ -130,6 +130,7 @@
   "required_screen_runs": [
     {
       "control": "NONE",
+      "lambda_pairwise_weight": 1.0,
       "mechanism": "FULL",
       "model": "V4-FULL",
       "run_id": "v6_full",
@@ -137,6 +138,7 @@
     },
     {
       "control": "NONE",
+      "lambda_pairwise_weight": 0.5,
       "mechanism": "FULL",
       "model": "V4-FULL",
       "run_id": "v6_h3_lambda_0_5",
@@ -144,6 +146,7 @@
     },
     {
       "control": "NONE",
+      "lambda_pairwise_weight": 0.75,
       "mechanism": "FULL",
       "model": "V4-FULL",
       "run_id": "v6_h3_lambda_0_75",
@@ -151,6 +154,7 @@
     },
     {
       "control": "NONE",
+      "lambda_pairwise_weight": 1.0,
       "mechanism": "FULL",
       "model": "V4-FULL",
       "run_id": "v6_h3_lambda_1_0",

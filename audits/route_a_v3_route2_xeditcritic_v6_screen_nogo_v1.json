@@ -1,0 +1,88 @@
+{
+  "authority": {
+    "config": "configs/route_a_v3_route2_xeditcritic_v6_screen_v1.json",
+    "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v6/v6_screen_seed_20260907_runner_7815fdeb",
+    "seed": 20260907,
+    "spec": "SPECS_CRITIC_V6/spec.md (pre-registered acceptance: main criterion pair-mean rho vs V5 0.103, pair-level bootstrap CI not crossing zero)",
+    "training_git_head": "bf96d5e5f78ac77f9cd1705d0600e16d8f1fb21a",
+    "v5_baseline_pair_level_rho": "spec F3 / v5_screen_seed_20260907_runner_1113cd2c0dd9acb508f58782eecb40f458d2cab3 (recomputed 0.1025)"
+  },
+  "engineering_readiness": {
+    "arms": {
+      "v6_full": {
+        "a100_device_verified": true,
+        "cpu_fallback_used": false,
+        "cuda_available": true,
+        "pass": "8/8",
+        "peak_vram_gib": 8.15,
+        "physical_gpu_index": 4,
+        "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+        "updates": 22416
+      },
+      "v6_h3_lambda_0_5": {
+        "a100_device_verified": true,
+        "cpu_fallback_used": false,
+        "cuda_available": true,
+        "pass": "8/8",
+        "peak_vram_gib": 8.15,
+        "physical_gpu_index": 1,
+        "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+        "updates": 22416
+      },
+      "v6_h3_lambda_0_75": {
+        "a100_device_verified": true,
+        "cpu_fallback_used": false,
+        "cuda_available": true,
+        "pass": "8/8",
+        "peak_vram_gib": 8.15,
+        "physical_gpu_index": 2,
+        "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+        "updates": 22416
+      },
+      "v6_h3_lambda_1_0": {
+        "a100_device_verified": true,
+        "cpu_fallback_used": false,
+        "cuda_available": true,
+        "pass": "8/8",
+        "peak_vram_gib": 8.15,
+        "physical_gpu_index": 0,
+        "status": "TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE",
+        "updates": 22416
+      }
+    },
+    "protected_outcomes": {
+      "development_test_outcome_reads": 0,
+      "new_final_evaluation_outcome_reads": 0,
+      "withheld_test_record_count": 18292
+    },
+    "status": "ALL_FOUR_ARMS_TERMINAL_GPU_VERIFIED"
+  },
+  "gate_adjudication_script_status": {
+    "available": false,
+    "existing_v4_gate_requirement": "run_summary passes require validation_metric_read=False; V6 per_pass_validation=True (W1-d) writes True -> observed XEditCriticGateV4Error: v6_full read active Validation metrics",
+    "existing_v4_script": "scripts/route_a_v3/adjudicate_route2_xeditcritic_v4_screen.py (hard-coded 8-arm V4 screen; not applicable to V6 4-arm + per-pass validation)"
+  },
+  "h3_ablation_validity": {
+    "evidence": "v6_full / v6_h3_lambda_0_5 / v6_h3_lambda_0_75 final_validation_predictions.jsonl are byte-identical (md5 95577ecf3c9d6f1534dafa197f08c418); pass_1 validation predictions identical across all four arms (md5 e1388c8433bf1e3f856c0193dfbe2d87)",
+    "impact": "W2-a H3 lambda ablation (0.5/0.75/1.0) experiment is INVALID and must be rerun after implementing per-run lambda_pairwise_weight passing",
+    "lambda_1_0_note": "v6_h3_lambda_1_0 final predictions differ (md5 c189fa0d...), attributed to relaunch trajectory; not treated as valid ablation either",
+    "root_cause": "V6 screen config training block is a single lambda_pairwise_weight=1.0 with no per-run override mechanism; run ids v6_h3_lambda_0_5 / 0_75 are naming-only, the three arms trained identically (deterministic same-seed same-config)",
+    "valid": false
+  },
+  "main_criteria_adjudication": {
+    "criterion_text": "pair-mean rho vs V5 0.103 (pair-level bootstrap CI not crossing zero)",
+    "delta_v6_minus_v5": -0.051495,
+    "passed": false,
+    "reason": "v6_full pair-mean rho (0.051) is below V5 baseline (0.103) and its 95% CI upper bound (0.096) does not reach the V5 baseline; delta is negative and CI excludes zero on the negative side",
+    "v5_pair_level_mprau_rho": 0.102545,
+    "v6_full_pair_level_bootstrap95_ci": [
+      0.007,
+      0.0963
+    ],
+    "v6_full_pair_mean_mprau_rho": 0.05105
+  },
+  "next_action": "RECORD_NEGATIVE_RESULT_ENTER_ARCHITECTURE_SIDE_V7_V8_AND_REPAIR_H3_ABLATION_RERUN",
+  "observed_at": "2026-09-01T21:40:00+08:00",
+  "schema_version": "route_a_v3_route2_xeditcritic_v6_screen_no_go.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

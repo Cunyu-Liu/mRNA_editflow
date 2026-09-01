@@ -121,6 +121,7 @@ class ScreenRunSpecV4:
     mechanism_mode: str
     candidate_bundle_permutation: bool
     selectable: bool
+    lambda_pairwise_weight: float | None = None
 
 
 def screen_run_spec_v4(
@@ -135,6 +136,11 @@ def screen_run_spec_v4(
     row = matches[0]
     permutation = bool(row.get("candidate_bundle_permutation", False))
     control = "CANDIDATE_BUNDLE_PERMUTATION" if permutation else str(row["control"])
+    per_run_lambda = row.get("lambda_pairwise_weight")
+    _require(
+        per_run_lambda is None or (isinstance(per_run_lambda, (int, float)) and float(per_run_lambda) >= 0.0),
+        "per-run lambda_pairwise_weight must be a non-negative float or absent",
+    )
     return ScreenRunSpecV4(
         run_id=str(row["run_id"]),
         model_kind=str(row["model"]),
@@ -142,6 +148,9 @@ def screen_run_spec_v4(
         mechanism_mode=str(row["mechanism"]),
         candidate_bundle_permutation=permutation,
         selectable=bool(row["selectable"]),
+        lambda_pairwise_weight=(
+            float(per_run_lambda) if per_run_lambda is not None else None
+        ),
     )
 
 
@@ -1155,7 +1164,9 @@ def run(
                         config["training"].get("within_source_ranking_weight", 0.0)
                     ),
                     lambda_pairwise_weight=float(
-                        config["training"].get("lambda_pairwise_weight", 0.0)
+                        spec.lambda_pairwise_weight
+                        if spec.lambda_pairwise_weight is not None
+                        else config["training"].get("lambda_pairwise_weight", 0.0)
                     ),
                     cell_offset_predictions=(
                         retained_graph.cell_offset.detach().float()
@@ -1422,6 +1433,11 @@ def run(
                 "updates_per_pass": int(geometry["updates_per_pass"]),
             },
             "target_scaler": scaler.to_dict(),
+            "lambda_pairwise_weight": (
+                float(spec.lambda_pairwise_weight)
+                if spec.lambda_pairwise_weight is not None
+                else float(config["training"].get("lambda_pairwise_weight", 0.0))
+            ),
             "passes": pass_rows,
             "final_validation": final_metrics,
             "extended_validation_metrics": extended_metrics,
