@@ -1,0 +1,185 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v5_screen_config.v1",
+  "claim_boundary": "V5_SCREEN_IS_NOT_FINAL_SCIENTIFIC_EVIDENCE_BASE_MODEL_REPAIR_SELECTION_INPUT",
+  "run_stage": "SCREEN",
+  "amendment_identity": "XEDITSETFLOW_V5_BASE_REPAIR_ABLATION_SCREEN",
+  "parent_protocol": "docs/paper/route2_xeditsetflow_v5_protocol_v1.md",
+  "architecture": {
+    "action_space": "SUB+STOP",
+    "frozen_source_mrnabert_width": 768,
+    "formal_endpoint_vocab_cardinalities": {
+      "assay": 7,
+      "context": 28,
+      "denominator": 6,
+      "measurement": 5,
+      "numerator": 6,
+      "quantity": 6
+    },
+    "local_attention_window": 64,
+    "study_identity_input": false,
+    "default_profile": "V4_FULL",
+    "architecture_profiles": {
+      "V4_FULL": {
+        "model_width": 640,
+        "depth": 18,
+        "attention_heads": 10,
+        "ffn_width": 2560,
+        "mode_residual_rank": 64,
+        "stop_bottleneck_width": 128,
+        "dropout": 0.1
+      },
+      "A1": {
+        "model_width": 384,
+        "depth": 6,
+        "attention_heads": 8,
+        "ffn_width": 1536,
+        "mode_residual_rank": 32,
+        "stop_bottleneck_width": 64,
+        "dropout": 0.15
+      }
+    }
+  },
+  "required_screen_runs": [
+    {
+      "run_id": "b_fix1",
+      "mode_count": 1,
+      "mode_information_weight": 0.0,
+      "coverage_weight": 0.1,
+      "selectable": true,
+      "architecture_profile": "V4_FULL"
+    },
+    {
+      "run_id": "b_fix2",
+      "mode_count": 1,
+      "mode_information_weight": 0.0,
+      "coverage_weight": 0.0,
+      "selectable": true,
+      "architecture_profile": "V4_FULL"
+    },
+    {
+      "run_id": "b_fix3",
+      "mode_count": 2,
+      "mode_information_weight": 0.05,
+      "coverage_weight": 0.1,
+      "selectable": true,
+      "architecture_profile": "V4_FULL"
+    },
+    {
+      "run_id": "b_arch1",
+      "mode_count": 1,
+      "mode_information_weight": 0.0,
+      "coverage_weight": 0.1,
+      "selectable": true,
+      "architecture_profile": "A1"
+    }
+  ],
+  "objective": {
+    "identity": "XEDITSETFLOW_V5_BASE_REPAIR",
+    "remaining_count_weight": 0.2,
+    "unconditional_action_entropy_bonus": false,
+    "unconditional_action_entropy_bonus_weight": 0.0,
+    "critic_or_independent_evaluator_in_gradient": false
+  },
+  "training": {
+    "optimizer": "AdamW",
+    "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
+    "learning_rate": 0.0002,
+    "weight_decay": 0.001,
+    "gradient_clip_norm": 1.0,
+    "warmup_fraction": 0.05,
+    "precision": "BF16",
+    "pass_count": 6,
+    "saved_checkpoint_passes": [
+      2,
+      4,
+      6
+    ],
+    "screen_seed": 20260915,
+    "early_stopping": false,
+    "checkpoint_selection_after_terminal_training_only": true,
+    "validation_generation_during_training": false,
+    "gate_b0_rule": "LAST_2_PASS_RELATIVE_DROP_LT_5_PERCENT"
+  },
+  "data_geometry": {
+    "edit_budgets": [
+      1,
+      3,
+      5
+    ],
+    "eligible_validation_source_count": 891,
+    "expected_train_projection_candidate_row_count": 89580,
+    "expected_validation_projection_candidate_row_count": 18293,
+    "expected_validation_source_record_count": 15327,
+    "maximum_source_repeats_per_pass": 4,
+    "physical_and_effective_batch_size": 32,
+    "sampling": "TASK_AND_SOURCE_GROUP_BALANCED_SOURCE_LEVEL",
+    "states_per_source_per_pass": 4,
+    "withheld_development_test_record_count": 18292
+  },
+  "gpu_policy": {
+    "cpu_fallback": false,
+    "cuda_bf16_only": true,
+    "free_or_estimated_memory_gate": true,
+    "free_or_estimated_memory_sorting": false,
+    "gpu_inventory_required": true,
+    "memory_values_are_diagnostic_only": true,
+    "physical_gpu_scope": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "train_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+  "validation_projection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl",
+  "source_token_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditsetflow_v3/source_token_cache_v1.pt",
+  "source_level_data_audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/screen_20260915/preflight_attempt_1/source_level_data_audit.json",
+  "preflight_output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/screen_20260915/preflight_attempt_1/preflight.json",
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
+  "screen_gate": {
+    "failure_status": "XEDITSETFLOW_V5_SCREEN_NO_GO",
+    "success_status": "XEDITSETFLOW_V5_SCREEN_PASS",
+    "maximum_development_test_outcome_reads": 0,
+    "maximum_new_evaluation_outcome_reads": 0,
+    "base_gate_b1": {
+      "nll_threshold": 2.068,
+      "minimum_unique_candidate_rate": 0.85,
+      "hard_legality_rate": 1.0
+    },
+    "gate_b0": {
+      "window": 2,
+      "tolerance_relative_drop": 0.05
+    }
+  },
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/screen_20260915",
+  "validation_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/screen_20260915/outcome_free_validation_generation",
+  "measurement_and_protected_read_boundary": "DEVELOPMENT_MEASURED_NEIGHBORHOOD_CLOSED",
+  "source_eligibility_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
+  "measured_neighborhood_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/measured_neighborhood.private.jsonl",
+  "terminal_f2_reference": {
+    "common_validation_nll": 2.0680908163671576,
+    "role": "READ_ONLY_TERMINAL_REFERENCE_NEVER_RETRAIN",
+    "source_macro_recovery": 0.2924616535727647,
+    "source_macro_top_k_recovery": 0.168278220268518,
+    "source_macro_unique_candidate_rate": 0.6793630751964085
+  },
+  "validation_generation": {
+    "candidate_cap_per_source": 32,
+    "common_validation_state_seed": 2026090301,
+    "common_validation_states_per_record": 2,
+    "decoder_seed_base": 2026091501,
+    "eligible_source_count": 891,
+    "extra_retry_or_duplicate_rejection": false,
+    "forward_wall_time_and_peak_vram_recorded": true,
+    "measured_top_k": 10,
+    "mode_prior_temperature": 1.0,
+    "stop_rate_scale": 1.0,
+    "remaining_allocation": "SMOOTHED_MODE_PRIOR_LARGEST_REMAINDER",
+    "same_decoder_seed_streams_across_checkpoints_and_runs": true,
+    "trajectory_count_per_source": 32
+  }
+}
