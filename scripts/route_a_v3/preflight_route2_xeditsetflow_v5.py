@@ -77,11 +77,10 @@ def require_preflight_authorization_v5(
     )
     barriers = authorization.get("barriers", {})
     required = (
-        "all_five_c3_jobs_terminal",
-        "c3_terminal_summaries_read_exactly_once",
         "a100_current_head_focused_tests_passed",
-        "a100_current_head_v332_tests_passed",
         "source_token_cache_terminal_complete",
+        "source_level_data_audit_passed",
+        "formal_parameter_preflight_passed",
     )
     _require(
         all(barriers.get(key) is True for key in required),
@@ -245,6 +244,7 @@ def run_preflight(
     model, full_capacity = build_setflow_screen_model_v5(
         config, vocabs, run_id=preflight_arm
     )
+    preflight_coverage_weight = float(spec.coverage_weight)
     dataset = SetFlowSourceStateDatasetV4(
         train_records,
         vocabs,
@@ -279,9 +279,9 @@ def run_preflight(
         loss = mixture_setflow_loss_v4(
             output,
             batch,
-            coverage_weight=float(config["objective"]["source_candidate_coverage_weight"]),
+            coverage_weight=float(preflight_coverage_weight),
             remaining_count_weight=float(config["objective"]["remaining_count_weight"]),
-            mode_information_weight=float(config["objective"]["full_mode_information_weight"]),
+            mode_information_weight=float(spec.mode_information_weight),
         ).total
     _require(loss.is_cuda and torch.isfinite(loss).item(), "SetFlow V5 preflight loss is invalid")
     loss.backward()

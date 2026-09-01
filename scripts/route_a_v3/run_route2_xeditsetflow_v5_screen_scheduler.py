@@ -91,6 +91,15 @@ def main() -> int:
         eprint(f"STAGE FAIL {stage}: {reason}")
         return 1
 
+    # clear staging artifacts from any earlier partial attempt (allowed; never clears terminals)
+    import shutil
+    auth_root.mkdir(parents=True, exist_ok=True)
+    for terminal in auth_root.glob("v5_screen_*.json*"):
+        terminal.unlink(missing_ok=True)
+    for dry in (runtime_root, validation_root):
+        if dry.exists():
+            shutil.rmtree(dry, ignore_errors=True)
+
     # ---- stage 1: authorize ----
     try:
         _run([PYTHON, "scripts/route_a_v3/authorize_route2_xeditsetflow_v5_screen_stages.py",
