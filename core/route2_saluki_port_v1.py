@@ -65,13 +65,16 @@ def _reorder_gru_gates(matrix: np.ndarray, axis: int) -> np.ndarray:
 def encode_saluki_six_channel_v1(sequence: str, seq_len: int | None = None) -> np.ndarray:
     """Encode a UTR sequence into the official 6-channel layout.
 
-    Channels 0-3 are the A/C/G/T(U) one-hot in the official ``dna_1hot`` order.
-    Channels 4-5 replicate the official ``tf.one_hot(v, 1)`` indicator
-    semantics: the channel value is 1.0 at ordinary positions and 0.0 where the
-    annotation marks a codon-first / splice5p position. A UTR-only input
-    without CDS/splice annotation is therefore all ordinary positions, i.e.
-    channels 4-5 are all ones. ``seq_len`` right-pads with zeros or crops to
-    the last ``seq_len`` positions, matching the official helper.
+    Channels 0-3 are the base one-hot in the official ``dna_1hot`` order
+    (A/C/G/T-U). Channels 4-5 are the raw ``coding`` / ``splice`` indicator
+    values of the 2022-era data pipeline (1.0 at codon-first / splice
+    positions, 0.0 at ordinary positions — verified against the official
+    f7_c0 test set: this polarity reproduces the published test pearson
+    0.758; the master repo's later ``tf.one_hot(v, 1)`` refactor inverts it
+    and does NOT match the frozen checkpoints). A UTR-only input without
+    CDS/splice annotation is therefore all ordinary positions: channels 4-5
+    are all zeros. ``seq_len`` right-pads with zeros or crops to the last
+    ``seq_len`` positions, matching the official helper.
     """
     text = str(sequence).upper().replace("U", "T")
     _require(len(text) > 0, "Saluki input sequence is empty")
@@ -81,8 +84,6 @@ def encode_saluki_six_channel_v1(sequence: str, seq_len: int | None = None) -> n
         slot = table.get(nucleotide)
         if slot is not None:
             encoded[index, slot] = 1.0
-    encoded[:, 4] = 1.0  # ordinary-position frame indicator (no CDS annotation)
-    encoded[:, 5] = 1.0  # ordinary-position splice5p indicator (no splice annotation)
     if seq_len is not None:
         if len(text) < seq_len:
             padding = np.zeros((seq_len - len(text), SALUKI_INPUT_CHANNELS), dtype=np.float32)
@@ -222,8 +223,24 @@ class SalukiGRUV1(nn.Module):
 
             arrays["dense_kernel"] = load(handle, "dense/dense/kernel:0")
             arrays["dense_bias"] = load(handle, "dense/dense/bias:0")
-            arrays["dense1_kernel"] = load(handle, "dense_1/dense_1/kernel:0")
-            arrays["dense1_bias"] = load(handle, "dense_1/dense_1/bias:0")
+            # model1 checkpoints name the output dense layer dense_2 (Keras
+            # auto-naming drifted within the training session); model0 uses
+            # dense_1. Accept either, verified by the (64, 1) geometry.
+            dense1_kernel = None
+            dense1_bias = None
+            for dense_name in ("dense_1", "dense_2"):
+                try:
+                    candidate_kernel = load(handle, f"{dense_name}/{dense_name}/kernel:0")
+                    candidate_bias = load(handle, f"{dense_name}/{dense_name}/bias:0")
+                except KeyError:
+                    continue
+                if candidate_kernel.shape == (SALUKI_FILTERS, 1):
+                    dense1_kernel = candidate_kernel
+                    dense1_bias = candidate_bias
+                    break
+            _require(dense1_kernel is not None, "Saluki output dense layer is absent")
+            arrays["dense1_kernel"] = dense1_kernel
+            arrays["dense1_bias"] = dense1_bias
             _require(tuple(arrays["dense_kernel"].shape) == (SALUKI_FILTERS, SALUKI_FILTERS), "Saluki dense geometry changed")
             _require(tuple(arrays["dense1_kernel"].shape) == (SALUKI_FILTERS, 1), "Saluki dense_1 geometry changed")
 
@@ -254,7 +271,11 @@ class SalukiGRUV1(nn.Module):
                 SALUKI_LN_EPSILON,
             )
             x = F.relu(x)
-        sequence = x.transpose(0, 1)
+        # Official rnann.py builds the GRU with go_backwards=True: timesteps
+        # are consumed last-to-first, so the returned state reads the sequence
+        # START last (never the right zero-padding tail). Equivalent PyTorch:
+        # time-flip, then take the final output.
+        sequence = torch.flip(x.transpose(0, 1), dims=[0])
         output, _ = self.gru(sequence)
         hidden = output[-1]
         hidden = F.batch_norm(

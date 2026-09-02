@@ -15,6 +15,7 @@ import argparse
 import json
 import struct
 import sys
+import zlib
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -93,16 +94,18 @@ def parse_example(payload: bytes) -> dict[str, tuple[str, list]]:
 
 
 def iter_tfrecords(path: Path):
-    with open(path, "rb") as handle:
-        while True:
-            header = handle.read(8)
-            if len(header) < 8:
-                break
-            length = struct.unpack("<Q", header)[0]
-            handle.read(4)
-            payload = handle.read(length)
-            handle.read(4)
-            yield payload
+    """Yield TFRecord payloads; basenji shards are zlib-compressed streams."""
+    raw = Path(path).read_bytes()
+    if raw[:2] in (b"\x78\x9c", b"\x78\x01", b"\x78\xda"):
+        raw = zlib.decompress(raw)
+    position = 0
+    while position + 12 <= len(raw):
+        length = struct.unpack("<Q", raw[position : position + 8])[0]
+        position += 12  # length + length crc
+        if length == 0 or position + length + 4 > len(raw):
+            break
+        yield raw[position : position + length]
+        position += length + 4  # payload + payload crc
 
 
 def decode_inputs_from_example(features: dict[str, tuple[str, list]], seq_len: int) -> np.ndarray:
@@ -113,13 +116,27 @@ def decode_inputs_from_example(features: dict[str, tuple[str, list]], seq_len: i
     one_hot[np.arange(length), sequence] = 1.0
 
     def indicator_channel(name: str) -> np.ndarray:
-        channel = np.ones((length, 1), dtype=np.float32)
+        # 2022-era pipeline: the channel carries the raw indicator value
+        # (1.0 at codon-first / splice positions, 0.0 at ordinary positions).
+        # Verified against the official f7_c0 test set (reproduces the
+        # published pearson 0.758); the master repo's tf.one_hot(v, 1)
+        # refactor inverts this and does not match the frozen checkpoints.
+        channel = np.zeros((length, 1), dtype=np.float32)
         if name in features:
-            values = np.asarray(features[name][1], dtype=np.int64)
-            channel[values == 1] = 0.0  # tf.one_hot(v, 1): v=0 -> 1.0 ; v=1 -> 0.0
+            kind, payload = features[name]
+            if kind == "bytes":
+                values = np.frombuffer(payload[0], dtype=np.uint8).astype(np.int64)
+            else:
+                values = np.asarray(payload, dtype=np.int64)
+            channel[values == 1] = 1.0
         return channel
 
-    inputs = np.concatenate([one_hot, indicator_channel("frame"), indicator_channel("splice5p")], axis=1)
+    # 2022-era shards use the feature names `coding` and `splice`; the master
+    # parser calls them `frame` and `splice5p` (plus a later `splice3p` the
+    # 6-channel model never consumed).
+    coding = indicator_channel("coding") if "coding" in features else indicator_channel("frame")
+    splice = indicator_channel("splice") if "splice" in features else indicator_channel("splice5p")
+    inputs = np.concatenate([one_hot, coding, splice], axis=1)
     padded = np.zeros((seq_len, SALUKI_INPUT_CHANNELS), dtype=np.float32)
     padded[:length] = inputs  # official parse right-pads zeros to length_full
     return padded
@@ -175,7 +192,8 @@ def main() -> int:
             values = model(tensor).cpu().numpy()
         with h5py.File(args.parity_preds, "r") as handle:
             keys = list(handle.keys())
-            preds = np.asarray(handle[keys[0]]).reshape(-1)
+            prediction_key = "preds" if "preds" in handle else keys[0]
+            preds = np.asarray(handle[prediction_key]).reshape(-1)
         count = min(len(values), len(preds))
         diffs = np.abs(values[:count] - preds[:count].astype(np.float32))
         report["parity"] = {

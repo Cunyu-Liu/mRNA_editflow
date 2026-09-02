@@ -98,8 +98,9 @@ def test_encoder_matches_official_channel_order() -> None:
     assert encoded[2, 2] == 1.0                                  # G
     assert encoded[3, 3] == 1.0                                  # U maps onto the T slot
     assert encoded[4, :4].sum() == 0.0                           # unknown base stays zero
-    # Official tf.one_hot(v, 1) indicator semantics: ordinary positions are 1.0.
-    assert np.all(encoded[:, 4] == 1.0) and np.all(encoded[:, 5] == 1.0)
+    # 2022-era raw indicator semantics: ordinary positions are 0.0 on the
+    # coding/splice channels (verified against the official test set).
+    assert np.all(encoded[:, 4] == 0.0) and np.all(encoded[:, 5] == 0.0)
     padded = encode_saluki_six_channel_v1("ACGU", seq_len=8)
     assert padded.shape == (8, SALUKI_INPUT_CHANNELS)
     assert padded[4:].sum() == 0.0  # official right-padding is all-zero
