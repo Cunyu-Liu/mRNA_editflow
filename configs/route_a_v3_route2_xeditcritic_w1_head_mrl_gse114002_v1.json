@@ -122,7 +122,7 @@
   "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
   "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
   "new_final_evaluation_outcomes_accessed": false,
-  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_w1/w1_screen_seed_20260907_runner_PLACEHOLDER",
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_w1/w1_screen_seed_20260907_runner_2b014489",
   "preflight_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v6/v6_screen_seed_20260907_runner_7815fdeb/preflight.json",
   "projection_paths": [
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
@@ -139,7 +139,7 @@
       "selectable": true
     }
   ],
-  "runner_git_head": "PLACEHOLDER",
+  "runner_git_head": "2b014489",
   "schema_version": "route_a_v3_route2_xeditcritic_v4_screen_config.v1",
   "screen_gate": {
     "failure_status": "XEDITCRITIC_V4_SCREEN_NO_GO",
@@ -170,7 +170,7 @@
       "task": "MEAN_RIBOSOME_LOAD::region=0"
     }
   },
-  "screen_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_w1/w1_screen_seed_20260907_runner_PLACEHOLDER/w1_head_mrl_gse114002/screen_gate.json",
+  "screen_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_w1/w1_screen_seed_20260907_runner_2b014489/w1_head_mrl_gse114002/screen_gate.json",
   "status": "FROZEN_BEFORE_V4_PARAMETER_UPDATE_OR_VALIDATION_OUTCOME_READ",
   "study_filter": [
     "GSE114002"
