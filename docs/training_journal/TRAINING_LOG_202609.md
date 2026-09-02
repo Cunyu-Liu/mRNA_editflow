@@ -304,3 +304,41 @@ screen_gate.json（recovery 恢复流程自动 adjudicate，2026-09-03 凌晨落
 - Saluki frozen-delta GSE217518 全量（100 checkpoint）在跑（GPU4，PID 811572）
 - SetFlow guided generation 侦察完成：guidance 核心（potential_guided_rates_v3/v4 + SMC）与 critic 接口（FrozenRoute2MRNABERTCritic）现成，需写 SetFlow V5 guided runner（采样器无 critic 钩子）；b_fix2 pass_2.pt 就位
 - Stage 0b（Optimus from-scratch 对照）与 Stage 0c（280K 泄漏审计）待做
+
+## 2026-09-03（上午，第六批：Stage 0b/0c 完成 + 路线 A Stage 1 发射）
+
+### Stage 0b：Optimus 架构 from-scratch 对照（GPU2，~10 min）
+
+同 Optimus5Prime 架构随机初始化，仅在 GSE114002 TRAIN（2,443 对，绝对端点回归）上训练 300 epochs：
+
+| 方法 | Spearman | 结论 |
+|---|---|---|
+| **Optimus 架构 from-scratch（2.4K 任务数据）** | **0.0984** | 低于内靶 control 0.1192 |
+| frozen-Optimus（280K 先验，零任务训练）| 0.3132 | 全部性能来自先验 |
+| W0（170M critic from-scratch 同数据）| 0.1987 | 大架构从 2.4K 提取更多 |
+
+**判别结论**：架构单独买不到性能（0.098 << 0.313），280K 先验承载全部——按预注册决策规则（0a=0.3132≥0.15 且 0b=0.0984<0.20）**路线 A GO 确认（高信心）**。副产品洞见：W0 从头 0.1987 > Optimus 从头 0.0984，说明 170M 表征从小数据提取能力强于 0.5M CNN——喂上 280K 后有超越 0.3132 的可能。
+
+### Stage 0c：280K 文库获取 + 泄漏审计（硬门通过）
+
+- **获取**：GEO GSE114002 supplementary egfp_unmod_1/2（GSM3130435/36，95MB gz）。NCBI 单流限速 24KB/s → 写并行分块下载器（16×2MB range 请求，~7 分钟完成）
+- **数据结构**：CSV 每行 (utr 50nt, 14 个分数占比, counts, **rl 列 = 预计算 MRL**)——无需从 counts 重建
+- **规模**：两重复并集 677,608 条序列
+- **泄漏审计（3-block 鸽笼 seeding，≤2 mismatches/50-mer = ≥96% 同源）**：677,608 文库序列 vs 4,858 条受保护序列（GSE114002 全 split source+candidate）→ **flagged = 0**，随机 50-mer 与人源 UTR 窗口零碰撞。审计 JSON 落盘 `xeditcritic_route_a/280k_prefinetune_20260903/leakage_audit.json`
+
+### 路线 A Stage 1：mRNABERT 280K LoRA 预微调（发射）
+
+- **配置**：mRNABERT 全 12 层 + LoRA r16 α32 dropout0.05（Wqkv/attn-out/mlp-gated/mlp-wo，48 Linears）+ masked mean pool + linear head；可训练 3,046,657 参数
+- **目标**：677,608 条 (utr → standardized rl) 监督回归（supervised domain-library pre-finetuning，措辞纪律遵守）
+- **训练**：2 epochs / batch 128 / AdamW lr1e-4 wd1e-4 / cosine+5% warmup / bf16 autocast / seed 20260903；GPU2
+- **修复记录**：首发射崩溃（`AutoModel.from_pretrained` 与自定义 ALiBi 代码 meta 初始化不兼容）→ 改用工作管线的加载模式（`from_config` + 手动加载 `pytorch_model.bin` 剥 `bert.` 前缀 + flash_attn 置 None）后正常
+- **进度**：MSE 1.02 → 0.67（step 800/10.6K），GPU2 73% 利用率，预计 ~50 min
+- **评估（训练后自动）**：frozen-delta 协议（GSE114002 VALIDATION，K=10）——直接对标 frozen-Optimus 0.3132
+
+### SetFlow guided generation（B2）委托执行中
+
+后台 agent 在 setflow worktree 实现 V5 guided runner（b_fix2 pass_2 + FrozenRoute2MRNABERTCritic potential 引导 + B2 adjudication），完成后收割。
+
+### V7
+
+pass 7/8，即将终态——监控 cron 跟踪。
