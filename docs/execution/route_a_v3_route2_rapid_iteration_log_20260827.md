@@ -1355,3 +1355,20 @@ or terminal artifacts.
 - 未来若需加密平衡带，只扫 s∈{0.5,1.0,2.0} × T∈{0.75,1.0} 局部 4-6 格即可，其余区已证无增益，省算力。
 - 边界与警示：diagnostic_only（不改任何 gate）；legality_rate=null 需另行验证，不因本扫描跳过合法性评估；
   与 Critic 正交（Critic 优化排序/估值，SetFlow 两旋钮优化生成多样性），可独立推进无需互等。
+## Iteration X — 2026-09-02: Critic V4.0.3 controls retry3 监控推进（wave0 全终态 + v4_no_cross COMPLETED）
+- retry3 runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING`（正常，非终态）。
+- wave0 三臂全部 TERMINAL_SUMMARY：v4_source_only/GPU2、v4_edit_metadata_only/GPU3、
+  v4_no_candidate_sequence/GPU5（return_code=0，terminal_artifact_kind=SUMMARY）。
+- wave1 推进：v4_no_cross（GPU3）训练进程已退出（ps 状态 Zs defunct，待 scheduler 3288205 回收），
+  training_attempt.json status=COMPLETED、cpu_fallback_used=false（真实 CUDA，update_count=22416 完整）。
+  → 六臂累计 4/6 终态。
+- 仍在运行：v4_candidate_bundle_permutation（GPU2, pid 1177923, Rsl）、v4_no_moe（GPU5, pid 1178073, Rsl）；
+  nvidia-smi 确认两进程在 GPU 上占用显存（11362/11122 MiB），真实 CUDA、无 CPU 静默降级。
+- first_terminal_failure=null；development_test_outcome_reads=0、new_final_evaluation_outcome_reads=0（未读 protected）。
+- 六臂尚未全终态 → cross-root gate 未运行；无技术失败 → 不启 retry4；本轮无需用户决策。
+
+### 处置边界
+- 方向 E 温度扫描输出 s1_temperature_sweep_457e15ae.json 仍 COMPLETE（frozen，未重跑、未二次触发）。
+- 未读取 protected DEVELOPMENT TEST / new final Evaluation；未修改/重启/覆盖任何运行中实验或旧 artifacts。
+- 独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831 未写入任何记录类文件；
+  detached HEAD 工作树（@ ebf99ebf）只读未动。

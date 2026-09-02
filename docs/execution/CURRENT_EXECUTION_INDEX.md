@@ -426,4 +426,10 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
 ### V5 Critic 指标反思 —— 待决策
 - v5_full (方向A w=0.5, seed 20260907): Spearman 0.167094 vs f34 0.160561 (+4.07%)；MAE -3.99%。
 - 多数 task Spearman 仍低；假设清单（延长训练/峰重选/更高 weight/seed 稳健性）见迭代日志 Iteration V。
-- 不擅重训 V5；待 retry3 与温度扫描推进后并行决策。
+- 不擅重训 V5；待 retry3 与温度扫描推进后并行决策。## 14. 运行状态更新（2026-09-02 08:06 CST）
+### Critic controls retry3 —— RUNNING（wave1 推进，4/6 终态）
+- runtime status = `XEDITCRITIC_V403_CONTROL_RECOVERY_RUNNING`（正常）。
+- wave0 三臂全 TERMINAL_SUMMARY；wave1: v4_no_cross COMPLETED（真实 CUDA、cpu_fallback_used=false），
+  v4_candidate_bundle_permutation（GPU2）与 v4_no_moe（GPU5）RUNNING（nvidia-smi 确认显存占用，非 CPU 降级）。
+- first_terminal_failure=null、protected reads=0；六臂未全终态 → cross-root gate 未运行；无技术失败 → 不启 retry4。
+- 温度扫描冻结 COMPLETE 未变；未触碰运行中实验/旧 artifacts/训练工作树/detached HEAD 工作树。
