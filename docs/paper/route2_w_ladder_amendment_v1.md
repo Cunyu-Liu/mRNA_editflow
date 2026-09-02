@@ -51,3 +51,11 @@
 4. 数据集构建处 cache identity 同 1（默认值 = 原行为）
 
 无 `study_filter` 键的既有 config（V6/V7）行为逐位不变——已通过 py_compile + 既有 focused 单测验证。
+
+## 5. Addendum A（2026-09-02 15:45，首次发射尝试后、任何训练开始前）
+
+首次 W0-MRL 发射在数据集构建阶段被 bottom-six cache view 的精确覆盖检查拦截（要求 projection 记录集与缓存记录集完全相等）。补充第 5 处向后兼容代码 delta：
+
+5. `core/route2_xeditcritic_batch_v4.py` `FrozenBottomEncoderChunkCacheViewV4`：覆盖不变量由"精确相等"放宽为"子集覆盖"（缓存 ⊇ projection）——本质不变量（每个 projection 记录都有 donor）保持；全量数据集运行行为不变；缓存为冻结 outcome-free 特征，超集安全。对应单测 `test_v4_cache_view_requires_full_projection_coverage` 更新为双断言（子集通过 + 缺失记录仍拒绝）。
+
+首次失败已如实入账本（screen_w0_mrl_gse114002_928f676c → FAILED, TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE），失败目录保留为 `w0_mrl_gse114002_aborted_by_cache_view_subset_20260902`。本 Addendum 于重发射前冻结。

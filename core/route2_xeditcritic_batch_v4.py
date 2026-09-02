@@ -37,7 +37,13 @@ class FrozenBottomEncoderChunkCacheViewV4:
         if validate_payload:
             validate_frozen_bottom_encoder_chunk_cache_v4(payload)
         record_ids = [str(value) for value in payload["record_ids"]]
-        _require(set(record_ids) == expected_record_ids, "V4 bottom-six cache does not exactly cover the projection")
+        # W0 single-study diagnosis: the cache may be a superset of the
+        # projection (the frozen full-dataset cache covers every study subset).
+        # The essential invariant is full donor coverage of the projection.
+        _require(
+            expected_record_ids <= set(record_ids),
+            "V4 bottom-six cache does not cover every projection record",
+        )
         self.payload = payload
         self.record_index = {
             record_id: index for index, record_id in enumerate(record_ids)

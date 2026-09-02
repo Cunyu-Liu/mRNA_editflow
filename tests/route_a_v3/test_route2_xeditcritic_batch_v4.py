@@ -135,9 +135,13 @@ def test_v4_collator_allows_repeat_cap_rows_while_deduplicating_chunks() -> None
     assert batch["record_edit_offsets"].tolist() == [0, 1, 2, 3, 4]
 
 
-def test_v4_cache_view_requires_exact_projection_coverage() -> None:
-    with pytest.raises(XEditCriticBatchV4Error, match="exactly cover"):
-        FrozenBottomEncoderChunkCacheViewV4(_payload(), {"record-0"})
+def test_v4_cache_view_requires_full_projection_coverage() -> None:
+    # W0 addendum A: a superset cache (single-study projection over the
+    # full-dataset frozen cache) is valid coverage.
+    FrozenBottomEncoderChunkCacheViewV4(_payload(), {"record-0"})
+    # A projection record absent from the cache must still be rejected.
+    with pytest.raises(XEditCriticBatchV4Error, match="cover every projection record"):
+        FrozenBottomEncoderChunkCacheViewV4(_payload(), {"record-0", "record-absent"})
 
 
 def test_validated_cache_view_does_not_rescan_full_payload_per_batch(
