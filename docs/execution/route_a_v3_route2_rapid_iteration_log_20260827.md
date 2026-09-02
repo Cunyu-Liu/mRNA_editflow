@@ -1372,3 +1372,42 @@ or terminal artifacts.
 - 未读取 protected DEVELOPMENT TEST / new final Evaluation；未修改/重启/覆盖任何运行中实验或旧 artifacts。
 - 独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831 未写入任何记录类文件；
   detached HEAD 工作树（@ ebf99ebf）只读未动。
+
+## Iteration Y — 2026-09-02: retry3 六臂全终态；cross-root gate 受 WORKTREE HEAD 绑定阻塞（需用户决策）
+- retry3 runtime status = XEDITCRITIC_V403_CONTROL_RECOVERY_ALL_SIX_SUMMARIES_TERMINAL（终态成功）。
+- 六臂全部 TERMINAL_SUMMARY / return_code=0 / terminal_artifact_kind=SUMMARY：
+  - wave0：v4_source_only/GPU2、v4_edit_metadata_only/GPU3、v4_no_candidate_sequence/GPU5；
+  - wave1：v4_candidate_bundle_permutation/GPU2、v4_no_cross/GPU3、v4_no_moe/GPU5。
+  training_git_head=f507e217（授权 HEAD）；真实 CUDA、无 CPU fallback；protected reads=0。
+- cross_root_adjudication_run=false（gate 尚未成功产出正式判定）。
+- 方向 E 温度扫描（监控对象2）：输出 s1_temperature_sweep_457e15ae.json 已
+  XEDITSETFLOW_V4_S1_TEMPERATURE_SWEEP_V5_COMPLETE（25 格点全量，CPU 真实 A100、cpu_fallback_used=false、
+  protected reads=0）；单调性/Pareto 结论已在 Iteration W 记录并 push（commit f55f6e8b；记录工作树远端
+  HEAD 1d7c61ec 已同步），本轮无需重复记录、禁止重跑。
+- cross-root gate 尝试（按指令在记录工作树运行）→ 立即 SCHEDULE_WORKTREE_IDENTITY_DRIFT 技术失败：
+  脚本经 WORKTREE=parents[2]=脚本所在工作树决定工作树身份，校验其 git HEAD 必须等于 schedule 固定的
+  expected_control_runner_head=f507e217；记录工作树 route_a_v3_v403_controls_retry1_20260829 的 HEAD 为
+  1d7c61ec（记录 commit），不匹配，fail-closed。
+
+### 根因
+- cross-root gate 脚本把「脚本命中工作树 == 授权训练 HEAD f507e217」作为硬校验，f507e217 只存在于独立训练
+  工作树 route_a_v3_v403_controls_retry3_training_20260831（分支 route-a-v3-v403-controls-retry3-20260831）。
+- 脚本默认 FULL_TERMINAL_AUDIT 指向 WORKTREE/audits/...，即训练工作树下的
+  audits/route_a_v3_route2_xeditcritic_v403_full_terminal_v1.json，与 schedule 的
+  historical_full_terminal_audit 路径一致。
+- 结论：该 gate 应以训练工作树上下文执行，而非记录工作树；在记录工作树运行必然触发
+  SCHEDULE_WORKTREE_IDENTITY_DRIFT。
+
+### 后果（已原子写入证据，需用户决策）
+- 已写入技术失败证据：
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_cross_root_controls_retry3_f507e2173bdc9963c153a97b99c69589b05f8cd6/screen_gate.failed.json
+  （status=XEDITCRITIC_V403_CROSS_ROOT_SCREEN_TECHNICAL_FAILURE，failure_stage=PRE_PAYLOAD_WORKTREE_IDENTITY，
+  observed_git_head=1d7c61ec，expected_git_head=f507e217，terminal_summary_payload_consumption=NOT_STARTED）。
+- 该证据已持久占用 schedule 预声明的 gate 输出路径；gate 脚本要求 failure 证据不存在才允许运行，
+  正式 gate 需先处理该证据并在训练工作树上下文执行。
+- 按警示约定：只记录根因，不擅自改 retry3 代码、不删除/改写证据文件、不擅自重跑 gate；向用户报告请求决策。
+
+### 处置边界
+- 未读取 protected DEVELOPMENT TEST / new final Evaluation；未修改/重启/覆盖任何运行中实验或旧 artifacts。
+- 独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831 未写入任何记录类文件（本记录仅在记录
+  工作树 commit+push）；记录工作树本轮仅追加本文档与执行索引；detached HEAD 工作树（@ ebf99ebf）只读未动。

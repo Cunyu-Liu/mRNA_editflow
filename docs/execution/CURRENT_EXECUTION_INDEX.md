@@ -433,3 +433,23 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
   v4_candidate_bundle_permutation（GPU2）与 v4_no_moe（GPU5）RUNNING（nvidia-smi 确认显存占用，非 CPU 降级）。
 - first_terminal_failure=null、protected reads=0；六臂未全终态 → cross-root gate 未运行；无技术失败 → 不启 retry4。
 - 温度扫描冻结 COMPLETE 未变；未触碰运行中实验/旧 artifacts/训练工作树/detached HEAD 工作树。
+
+## 15. 运行状态更新（2026-09-02 10:1x CST）
+### Critic controls retry3 —— 六臂全终态（status=ALL_SIX_SUMMARIES_TERMINAL），gate 待用户决策
+- runtime status = XEDITCRITIC_V403_CONTROL_RECOVERY_ALL_SIX_SUMMARIES_TERMINAL（终态，六臂全部
+  TERMINAL_SUMMARY/return_code=0/SUMMARY，training_git_head=f507e217，真实 CUDA、protected reads=0）。
+- cross_root_adjudication_run=false。
+
+### cross-root gate 触发 WORKTREE IDENTITY 阻塞（需决策）
+- 按指令在记录工作树运行 cross-root gate → SCHEDULE_WORKTREE_IDENTITY_DRIFT 技术失败：
+  gate 脚本校验「脚本所在工作树 HEAD==f507e217」，记录工作树 HEAD=1d7c61ec 不匹配。
+- f507e217 只存在于独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831；gate 应以训练工作树
+  上下文执行，而非记录工作树（详见迭代日志 Iteration Y）。
+- 已原子写入技术失败证据 screen_seed_20260907_v403_cross_root_controls_retry3_f507e217.../screen_gate.failed.json；
+  它占用 schedule 预声明的 gate 输出路径，正式 gate 需先处理该证据并在训练工作树上下文执行。
+- 处置：不擅自改 retry3 代码、不删证据、不重跑 gate；向用户报告请求决策。
+
+### 方向 E 温度扫描 —— 冻结 COMPLETE（Iteration W 已记录，未二次触发）
+- 输出 s1_temperature_sweep_457e15ae.json XEDITSETFLOW_V4_S1_TEMPERATURE_SWEEP_V5_COMPLETE，25 格点全量；
+  单调性/Pareto 结论已记（Iteration W），禁止重跑。
+- V5 Critic 指标反思仍待用户决策（Iteration V 假设清单）；retry3 gate 决策与 V5 决策并行推进。
