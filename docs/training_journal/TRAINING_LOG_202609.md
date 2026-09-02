@@ -50,3 +50,63 @@
 4. W0-MRL 若"架构无虞"→ 明日启动 W1'-MRL（LoRA 微调，多任务终态 ckpt 初始化）
 5. Saluki 移植（模型权重到手后 native port，接入 GSE217518 两 region）
 6. Task 4 frozen 评估 → Task 6 榜单冻结
+
+## 2026-09-02（晚，第一批 W 阶梯结果）
+
+### W0-MRL 终态收割（17:55）
+
+| 指标 | 数值 |
+|---|---|
+| status | TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE |
+| **MRL validation Spearman（730 rec）** | **0.1987** |
+| standardized MAE | 0.7063 |
+| 训练 | 616 updates / 8 passes，pass 级 soft-spearman loss 单调下降 0.62→0.33（未平台化）|
+
+**预注册判定带结论**：0.1987 < 0.20（架构可疑带边界）——按字面落入"架构可疑"，但考虑：
+- vs V5 多任务 0.1354：单任务训练 **+47% 相对提升** → 多任务稀释确实是差距来源之一（配方问题成立）
+- vs Optimus adapter 0.3132：仍差 0.115 → **架构/容量也有实质差距**（W0 用同一架构 616 updates 从头训练）
+- loss 未平台化 → 预算可能不足（Optimus adapter 训练预算更大），但 8-pass 是冻结管线的固定结构
+
+**裁决：混合结论——架构与配方双因素。W1'（LoRA 表征适配）与 W2（per-task 容量）并行推进。**
+
+### W1' 两臂（MRL，V5 终态初始化）
+
+发射过程（4 次修复迭代，全部如实入账本，失败目录 `_aborted_by_*` 保留）：
+1. v1（GPU6/7 MIG 4.75G）→ OOM（误用 MIG 切片卡；GPU6/7 非完整 A100，教训记档）
+2. v2 → state_dict vs parameters() 计数口径错（persistent buffers），修复
+3. v3 → cell_offset_weight=0.5 撞 V5 架构（无 cell_offset_head）→ 置 0；LoRA 路径 intermediate/output → 实为 mlp.gated_layers/mlp.wo，修复
+4. v4 → 冻结 router 的 router_balance loss 无 grad_fn 进入 multi-tensor backward → core 修复（grad-free 叶子过滤，梯度贡献本为零，全可训练时行为不变）；LoRA 新参数在 CPU → policy 末尾 to(device)
+5. v5 → auth HEAD 跨 ssh 会话变量丢失写空 → 修正重发（最终 HEAD 07bb58df）
+
+代码修复全部走 commit 预注册（0980d8eb / d3168791 / 8f01b672 / 07bb58df），单测每轮通过。
+
+**W1-head（head_only，readout+effect_head 13,768,193 参数可训练）终态（21:05）**：
+
+| 指标 | 数值 |
+|---|---|
+| **MRL validation Spearman** | **0.1336** |
+| standardized MAE | 0.6651 |
+
+**结论：head_only 无增益**（vs V5 0.1354 持平）——冻结的多任务表征本身是瓶颈，只调头不够。与 W0（0.1987，从头单任务训练表征）对照：**任务专属表征适配是关键路径** → LoRA 臂（正在跑）是决定性测试。
+
+**W1-lora（upper-6 LoRA rank16 α32 + head，GPU1）**：pass 3/8 健康（231 updates），预计 ~22:00 终态。
+
+### MRL 差距机制图景（更新）
+
+| 方法 | Spearman | 增量来源 |
+|---|---|---|
+| V5 多任务 | 0.1354 | 基线 |
+| W1-head（V5 init + 只调头）| 0.1336 | +0（表征不动）|
+| W0（同架构从头单任务）| 0.1987 | +0.063（任务专属训练全栈）|
+| Optimus adapter | 0.3132 | 外部架构上限参照 |
+| 内靶 control | 0.1192 | — |
+
+待 W1-lora 补全"W1 init + 表征 LoRA 适配"行——若显著 >0.15 则表征适配有效，W2（容量解除）接力；若 ≈0.13 则 V5 初始化的表征对 MRL 有害，W0 路线（从头）优先。
+
+### 其他在途（22:00 快照）
+
+- W0-polyA（GPU2）：pass 1-2/8，预计 ~23:30-24:00 终态
+- V6 H3 三臂（GPU1/2/4）：运行中（λ=0.75 曾至 pass_5）
+- V7 v7_full（GPU3）：运行中
+- V5 b_fix1/b_fix3（GPU3/4）：运行中；scheduler 健在
+- Saluki 权重：本地 HTTP-range 提取 train_gru 模型文件（~198MB，f0_c4 折已到）——完成后 scp 至 external_model_assets/saluki/
