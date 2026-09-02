@@ -193,3 +193,85 @@
 2. 从头单任务 0.1987 是该 170M 架构在此数据量上的天花板邻域；距 Optimus 0.3132 的 0.115 差距只能来自**先验来源（外部大库监督）或架构本身**
 3. **D3 证据链闭合**：W1-lora（路线 B 模拟）弱 + W0-continue（预算）排除 + Optimus 赢法 = 280K 大库 → 路线 A（外部大库预微调 → LoRA 迁移）是唯一未测试且证据指向的路径。待 V6 H3 终态后按 spec 硬约束呈报 D3 拍板
 4. 后续若 D3 批准路线 A：Step 1 需要 Sample 2019 280K 5'UTR 文库（GSE114002 原生配套，GEO 可得——A100 GitHub/NCBI 连通性需验证）
+
+## 2026-09-03（凌晨-晨，第四批：一夜终态正式收割）
+
+### 收割总览
+
+一夜之间全部在途出数：W0-polyA（23:21 终态）、V6 H3 三臂（~01:30 终态）、SetFlow V5 12/12 验证收敛 + gate adjudicate（screen_gate.json 落盘）。V7 仍在跑（02:04 快照 pass 5/8）。
+
+### ⚠️ 口径陷阱事件（先记录，本批最重要的一课）
+
+正式裁决发现 **run_summary 的 `extended_validation_metrics.pair_mean_spearman` 是全任务池化值**（2,660 对 = MPRAU 2,008 变体 + polyA 321 + 其他 ~331），**不是预注册的 MPRAU 主判据**。监控 cron 曾把 H3 池化值 0.2334 与 V5 的 MPRAU 专口径 0.1025 对比得出"2.1-2.3× 提升"——**苹果比橘子，结论错误**。
+
+口径验证（三重交叉确认）：
+- 按变体口径（record_id 去 context 后缀分组，2,008 变体）算 V5 = 0.1025，与 Task 1 冻结参考 0.10254 **精确一致** ✓
+- H3 λ=1.0 臂（= V6 首训同 seed 复跑）算出 0.0510，与 spec G6 记载的 V6_full 0.05105 **精确一致** ✓
+- Task 1 的 critic_v5/critic_v6_full mprau_pair 段直接对上 ✓
+
+**教训入档**：(1) 池化指标不得当任务专口径主判据使用；(2) run_summary 扩展指标的 pair_mean 字段需在下一 family 修复为按任务分列（已知问题，本批不做代码手术——正式裁决脚本 `analysis_w_ladder_adjudication_20260903/results.json` 为 canonical）；(3) 监控 cron prompt 已加口径警示。
+
+### V6 H3 最终裁决（负结果，预注册主判据：MPRAU 变体 pair-mean ρ，paired bootstrap 2,000 iters vs V5）
+
+| 臂 | MPRAU pair-mean ρ | Δ vs V5 0.1025 | 95% CI | 判定 |
+|---|---|---|---|---|
+| λ=0.5 | 0.0883 | −0.0142 | [−0.049, +0.019] | CI 跨零 → **未过门** |
+| λ=0.75 | 0.0839 | −0.0186 | [−0.054, +0.017] | CI 跨零 → **未过门** |
+| λ=1.0 | 0.0510 | −0.0515 | [−0.084, −0.019] | **显著更差** → 未过门 |
+
+**V6 线终局结论**：V6 首训（0.0510，spec G6 已载）+ H3 λ 扫描（0.0883/0.0839/0.0510）全部未过 MPRAU 主判据门 → **loss 机制线（pair-mean 监督 + rank 变换 + LambdaRankIC + within-source 权重扫描）负结果收官**。按 spec："未过门 → 记录负结果，回到 D1 备选"。λ 趋势：λ=0.5 略好于 λ=1.0（+0.037），但都不及 V5 基线。3-seeds confirmation 不启动。天花板完成度：λ=0.5 = 12.9%（目标 40%）。
+
+### SetFlow V5 screen gate：**PASS**（生成线重大正结果）
+
+screen_gate.json（recovery 恢复流程自动 adjudicate，2026-09-03 凌晨落盘）：
+
+| 臂 | Profile | B1 NLL（阈 2.068）| unique（阈 0.85）| legality | B1 判定 |
+|---|---|---|---|---|---|
+| b_arch1 | A1 | 2.3538 ✗ | 0.7063 ✗ | 1.0 | FAIL |
+| b_fix1 | V4_FULL | 2.0884 ✗（差 0.020）| 0.8283 ✗ | 1.0 | FAIL |
+| **b_fix2** | V4_FULL | **2.0670 ✓**（压线过）| **0.8572 ✓** | **1.0 ✓** | **PASS** |
+| b_fix3 | V4_FULL | **2.0366**（最优）✓ | 0.7708 ✗ | 1.0 | FAIL（多样性不足）|
+
+- 整体 status = **XEDITSETFLOW_V5_SCREEN_PASS**，stage_acceptance = BASE_MODEL_REPAIR_SELECTION，confirmation_authorized = **true**，protected reads = 0
+- 选中 b_fix2 的 **pass-2 checkpoint**（NLL/unique 随训练恶化：pass 2→6 NLL 2.067→5.796——四臂共同模式，快速过拟合，B0 均未收敛；b_fix2 是早期 checkpoint 过门）
+- b_fix3 训练质量最好（NLL 最低）但生成多样性不达标（unique 0.77）——修复方向间的 trade-off 实证
+- **下一阶段（已授权）**：guided generation（Gate B2：guided vs unguided recovery Δ≥+0.05 CI 不跨零；B3：guided recovery ≥0.35）——需要冻结 critic 做 potential 式率修正；critic 候选 = V5 终态（V6 线已负，V5 为最强多任务 critic）
+
+### W0-polyA 判定带（Task-1 同口径对齐评估，K=10）
+
+| 指标 | W0-polyA | 判定带参照 |
+|---|---|---|
+| Spearman | **0.8142** | APARENT 0.7343（Δ+0.080，CI [+0.055, +0.106] 显著胜）|
+| top-1 | 0.5080 | 过带线 0.55 / 可疑线 0.50 / APARENT 0.6011（Δ−0.093 CI [−0.134,−0.052] 显著负）|
+| NDCG@10 | 0.8702 | 过带线 0.885 / APARENT 0.8906（Δ−0.020 CI [−0.033,−0.008] 显著负）|
+
+**判定：MIXED 带**（top-1 0.508 落在 0.50-0.55 之间）。解读：单任务从头训练 0.5080 ≈ V5 多任务 0.5007 / V6 0.5482——**polyA 任务上架构无碍**（无可疑信号，接近饱和任务），对 APARENT 的决策口径差距与多任务线同构（配方/监督问题而非架构问题）。
+
+### MRL W 阶梯全臂同口径对齐评估（GSE114002，K=10，统一口径终版）
+
+| 方法 | Spearman | top-1 | NDCG@10 |
+|---|---|---|---|
+| 内靶 control | 0.1192 | — | — |
+| V5 多任务 | 0.1354 | 0.3810 | — |
+| W1-head | 0.1336 | 0.3961 | 0.8360 |
+| W1-lora | 0.1486 | 0.4026 | 0.8385 |
+| W0-continue | 0.1800 | 0.4286 | 0.8473 |
+| **W0（从头单任务）** | **0.1987** | 0.3983 | 0.8475 |
+| Optimus adapter | 0.3132 | 0.4069 | — |
+
+（注意 top-1 口径上 W0-continue 0.4286 已超 Optimus 0.4069——Spearman 与决策口径的分歧，与 polyA 的模式同构，入档备查。）
+
+### D3 决策包（证据链闭合，待用户拍板）
+
+四条独立证据全部指向同一结论：
+1. **V6/H3 loss 机制线负结果**（本批）：pair-mean/rank/λ 扫描全未过门
+2. **W1' 域内先验弱**（0.1336/0.1486 ≈ V5 基线）：多任务初始化不解决 MRL
+3. **W0 预算限制排除**（continue 0.1800 回落）：从头训练 0.1987 是本架构天花板邻域
+4. **Optimus 的赢法 = 280K 外部大库监督先验**——唯一未测试的差距来源
+
+→ **路线 A（外部大库预微调 → per-task LoRA 迁移）是证据指向的路径**（spec 2026-09-02 增补 D3 选项 1）。V7 若也负，则 loss 线证据完全闭合。待用户拍板后起草路线 A 预注册（Step 1 需 Sample 2019 280K 5'UTR 文库，GEO 可得性待验证）。
+
+### 当前在途
+
+- V7 v7_full：pass 5/8（GPU3），预计今日内终态——loss 线最后一块拼图
+- GPU1/2/4 已释放（V6 H3 三臂 + SetFlow 验证完成）
