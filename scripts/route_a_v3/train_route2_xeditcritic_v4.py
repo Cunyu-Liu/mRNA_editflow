@@ -183,11 +183,18 @@ def evaluation_index_batches_v4(
 def _require_bottom_six_preflight_identity_v4(
     config: Mapping[str, Any], preflight: Mapping[str, Any]
 ) -> None:
+    geometry = config["data_geometry"]
     require_frozen_bottom_encoder_chunk_cache_identity_receipt_v4(
         preflight.get("bottom_six_cache_identity"),
         expected_model_id=str(config["model_id"]),
-        expected_record_count=int(config["data_geometry"]["expected_record_count"]),
-        expected_unique_sequence_count=43730,
+        expected_record_count=int(
+            geometry.get(
+                "bottom_six_cache_record_count", geometry["expected_record_count"]
+            )
+        ),
+        expected_unique_sequence_count=int(
+            geometry.get("bottom_six_cache_unique_sequence_count", 43730)
+        ),
         expected_embedding_width=int(config["architecture"]["pretrained_width"]),
     )
 
@@ -924,8 +931,18 @@ def run(
         projection_rows = load_projection_rows(
             [Path(path) for path in config["projection_paths"]]
         )
-        records = records_from_projection_rows(projection_rows)
+        all_records = records_from_projection_rows(projection_rows)
         geometry = config["data_geometry"]
+        study_filter = config.get("study_filter")
+        if study_filter is not None:
+            allowed_studies = {str(study) for study in study_filter}
+            _require(bool(allowed_studies), "study_filter must name at least one study")
+            records = [
+                record for record in all_records if record.study in allowed_studies
+            ]
+            _require(bool(records), "study_filter removed every projection record")
+        else:
+            records = all_records
         _require(len(records) == int(geometry["expected_record_count"]), "projection record count changed")
         if run_stage in {"REFIT", "LOSO"}:
             train_records, validation_records = split_posttest_records_v4(
@@ -958,7 +975,10 @@ def run(
         _require(len(train_records) == int(geometry["expected_train_count"]), "TRAIN count changed")
         _require(len(validation_records) == int(geometry["expected_validation_count"]), "VALIDATION count changed")
         record_by_id = {record.record_id: record for record in records}
-        vocabs = build_vocabs(records)
+        # W0 single-task diagnosis: vocab is built over the full projection so
+        # the model capacity (study/assay calibration heads) stays identical to
+        # the multi-task screen preflight; only the training splits are filtered.
+        vocabs = build_vocabs(records if study_filter is None else all_records)
         scaler = fit_task_robust_scaler(
             train_records,
             floor=float(config["training"]["target_scale_floor"]),
@@ -1005,8 +1025,15 @@ def run(
                 require_frozen_bottom_encoder_chunk_cache_identity_v4(
                     cache_payload,
                     expected_model_id=str(config["model_id"]),
-                    expected_record_count=int(geometry["expected_record_count"]),
-                    expected_unique_sequence_count=43730,
+                    expected_record_count=int(
+                        geometry.get(
+                            "bottom_six_cache_record_count",
+                            geometry["expected_record_count"],
+                        )
+                    ),
+                    expected_unique_sequence_count=int(
+                        geometry.get("bottom_six_cache_unique_sequence_count", 43730)
+                    ),
                     expected_embedding_width=int(
                         config["architecture"]["pretrained_width"]
                     ),
