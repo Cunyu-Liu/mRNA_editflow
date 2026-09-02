@@ -731,7 +731,7 @@ def _permutation_overrides(
 
 
 def _apply_w1_finetune_policy(
-    model: torch.nn.Module, w1_config: Mapping[str, Any]
+    model: torch.nn.Module, w1_config: Mapping[str, Any], *, device: torch.device
 ) -> dict[str, Any]:
     """Freeze + init + (optional) LoRA policy for the W1' two-stage arm."""
 
@@ -777,6 +777,9 @@ def _apply_w1_finetune_policy(
                     )
                     wrapped += 1
         _require(wrapped > 0, "W1 LoRA wrapping found no target Linears")
+    # Freshly created LoRA parameters live on CPU; move the whole policy
+    # result back onto the training device.
+    model.to(device)
     trainable_modules: list[str] = []
     for name in ("readout", "effect_head"):
         module = getattr(model, name, None)
@@ -1175,7 +1178,9 @@ def run(
         w1_config = config.get("w1_finetune")
         w1_policy_summary: dict[str, Any] | None = None
         if w1_config is not None:
-            w1_policy_summary = _apply_w1_finetune_policy(model, w1_config)
+            w1_policy_summary = _apply_w1_finetune_policy(
+                model, w1_config, device=device
+            )
             capacity = dict(capacity)
             capacity["w1_full_backbone_trainable_parameter_count"] = capacity[
                 "trainable_parameter_count"
