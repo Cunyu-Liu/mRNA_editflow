@@ -135,3 +135,31 @@
 - V6 H3 三臂（GPU1/2/4）、V7（GPU3）、V5 b_fix1/b_fix3（GPU3/4）：运行中；2 小时巡检 cron 持续跟踪
 
 **时间戳勘误（2026-09-02 晚）**：本日志初稿三处终态时间按会话时钟估计有误，已按服务器 run_summary.json mtime 修正为实测值：W0-MRL 16:28 / W1-head 17:36 / W1-lora 18:11。W0-polyA 18:57 快照为 pass 4/8（约 45 min/pass），预计 ~22:00 服务器时间终态。
+
+## 2026-09-02（深夜，第三批：W0-continue + Saluki port + D3 增补阅读）
+
+### 交接文档更新阅读（用户 17:41 更新）
+
+1. **新增 `SPECS_BASELINE_LEADERBOARD/BENCHMARK_GUIDE.md`**：benchmark 全量参考（三层数据结构/14 研究/9 任务/指标口径/天花板归一化/权利边界/四轴差异）——作为 Task 6 榜单冻结与论文 Table 底稿依据。
+2. **`SPECS_CRITIC_V6/spec.md` 2026-09-02 增补**：mRNABERT 跨任务微调提案（路线 A 外部大库预微调→LoRA / 路线 B 域内多任务）+ **决策点 D3 待拍板**。与今日 W 阶梯数据的交叉：W1-lora（0.1486）≈ 路线 B 近似模拟已测弱；W0（0.1987）确认架构/先验差距；Optimus 0.3132 的赢法 = 280K 大库先验 → **路线 A 是唯一未测试的差距来源**。D3 按 spec 硬约束等 V6 H3 裁决后呈报证据包拍板。
+
+### W0-continue 臂发射（Addendum B，用户批准"现在启动"）
+
+- **触发**：W0-MRL loss 未平台化（0.62→0.33）→ 预算限制假说
+- **代码**：`full_continue` 模式加入 W1 policy（严格加载 W0 终态、全参数可训练、标准三组优化器 + 全新 cosine warm-restart）；commit 10fced68 + ae2b43d4
+- **发射**：`w0_continue_mrl_gse114002`，GPU1，19:0x 服务器时间，pass 1 顺利完成；20:0x 至 pass 3/8；预计 ~21:00 终态
+- **预注册判定带**（Addendum B）：≥0.25 预算是主要限制；0.20-0.25 部分限制；≈0.20 或回落 → 差距主因架构/先验（强化 D3 路线 A）
+
+### Saluki native port（Task 3 主体完成）
+
+- **资产**：51 折 × 2 模型权重 + params.json 已在 `external_model_assets/saluki/datasets/deeplearning/train_gru/`（Zenodo 本地 HTTP-range 提取）
+- **架构考据**（以 h5 内嵌 model_config 为准，43 层）：conv k5 无偏置 → LN(0.007) → ReLU → 6×[conv k5 → Dropout0.3 → MaxPool2 → LN → ReLU] → GRU64(reset_after) → BN → ReLU → Dense64 → BN → ReLU → Dense1；输入 6 通道 [A,C,G,T/U,frame,splice5p]
+- **两个移植陷阱已定案**：(1) Keras GRU 列序 [z,r,h] → PyTorch 行序 [r,z,n] 重排；(2) 官方 `tf.one_hot(v,1)` 语义 = 普通位 1.0 / 标注位 0.0 → UTR-only 输入的 frame/splice 通道应为全 1（初稿误写全 0，已修）
+- **第三个发现**：架构最小长度 = **320**（每池化块的 conv 也 −4；官方推理长度 12288 右侧零填充）——短 UTR 输入必须 pad
+- **交付**：`core/route2_saluki_port_v1.py` + 5 单测（含 Keras reset_after GRU 单步公式精确匹配——最大风险点验证 ✓）+ GPU 冒烟脚本；commit c00dcce7
+- **GPU 冒烟通过**：f7_c0/model0 真实权重，CUDA，长度 350/512/1000 输出有限
+- **官方预测对齐（parity）**：冒烟脚本内置无依赖 TFRecord 解析器；f7_c0 test 工件提取中（Zenodo 连接不稳重试中）——对齐结果出来后单独入档（R6 native 对齐证据）
+
+### 执行顺序确认（用户问询后拍板）
+
+用户批准：W2（W0-continue）与 Saluki port 不等在途、立即启动；W0-polyA/V6/V5/V7 收割等各自终态。
