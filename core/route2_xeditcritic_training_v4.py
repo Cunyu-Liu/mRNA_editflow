@@ -502,16 +502,25 @@ def backward_retained_effective_batch_v4(
             and cell_offset_gradient.shape == (EFFECTIVE_BATCH_V4,),
             "Critic V6 retained cell-offset gradient is invalid",
         )
-        extra_leaves = (graph.cell_offset, graph.router_balance_loss)
-        extra_grads = (
-            cell_offset_gradient,
-            graph.prediction.new_tensor(router_balance_weight),
-        )
+        # W1' frozen-backbone mode: auxiliary leaves without a grad path
+        # (frozen router / frozen cell-offset head) contribute zero gradient
+        # and must be excluded from the multi-tensor backward call.
+        leaf_pairs = [
+            (leaf, grad)
+            for leaf, grad in (
+                (graph.cell_offset, cell_offset_gradient),
+                (graph.router_balance_loss, graph.prediction.new_tensor(router_balance_weight)),
+            )
+            if leaf is not None and leaf.requires_grad
+        ]
         torch.autograd.backward(
-            (graph.prediction, *extra_leaves),
-            (prediction_gradient, *extra_grads),
+            (graph.prediction, *(leaf for leaf, _ in leaf_pairs)),
+            (prediction_gradient, *(grad for _, grad in leaf_pairs)),
         )
-    elif router_balance_weight > 0:
+    elif router_balance_weight > 0 and (
+        graph.router_balance_loss is not None
+        and graph.router_balance_loss.requires_grad
+    ):
         torch.autograd.backward(
             (graph.prediction, graph.router_balance_loss),
             (

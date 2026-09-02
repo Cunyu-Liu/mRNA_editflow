@@ -792,6 +792,11 @@ def _apply_w1_finetune_policy(
         <= int(w1_config.get("maximum_trainable_parameter_count", 30_000_000)),
         "W1 trainable budget exceeded",
     )
+    lora_parameter_count = sum(
+        parameter.numel()
+        for name, parameter in model.named_parameters()
+        if ".lora_a" in name or ".lora_b" in name
+    )
     return {
         "mode": mode,
         "init_checkpoint": str(init_path),
@@ -799,6 +804,7 @@ def _apply_w1_finetune_policy(
         "w1_trainable_parameter_count": trainable_count,
         "w1_trainable_modules": trainable_modules,
         "w1_lora_wrapped_linears": wrapped,
+        "w1_lora_parameter_count": lora_parameter_count,
         "w1_total_parameter_count_after_policy": sum(
             value.numel() for value in model.state_dict().values()
         ),
@@ -1189,7 +1195,8 @@ def run(
             assert w1_policy_summary is not None
             _require(
                 int(w1_policy_summary["w1_total_parameter_count_after_policy"])
-                == int(w1_policy_summary["init_checkpoint_total_parameter_count"]),
+                == int(w1_policy_summary["init_checkpoint_total_parameter_count"])
+                + int(w1_policy_summary.get("w1_lora_parameter_count", 0)),
                 "W1 policy changed the total parameter count",
             )
         optimizer, initial_learning_rates = _build_optimizer(
