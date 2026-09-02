@@ -154,11 +154,12 @@
 
 - **资产**：51 折 × 2 模型权重 + params.json 已在 `external_model_assets/saluki/datasets/deeplearning/train_gru/`（Zenodo 本地 HTTP-range 提取）
 - **架构考据**（以 h5 内嵌 model_config 为准，43 层）：conv k5 无偏置 → LN(0.007) → ReLU → 6×[conv k5 → Dropout0.3 → MaxPool2 → LN → ReLU] → GRU64(reset_after) → BN → ReLU → Dense64 → BN → ReLU → Dense1；输入 6 通道 [A,C,G,T/U,frame,splice5p]
-- **两个移植陷阱已定案**：(1) Keras GRU 列序 [z,r,h] → PyTorch 行序 [r,z,n] 重排；(2) 官方 `tf.one_hot(v,1)` 语义 = 普通位 1.0 / 标注位 0.0 → UTR-only 输入的 frame/splice 通道应为全 1（初稿误写全 0，已修）
+- **两个移植陷阱已定案**：(1) Keras GRU 列序 [z,r,h] → PyTorch 行序 [r,z,n] 重排；(2) 指示通道极性——中间一度按 master 代码的 `tf.one_hot(v,1)` 推断为"普通位 1.0"，**官方测试集取证推翻**：2022 版为原始值（codon/splice 位=1.0，UTR-only 输入全 0），详见下方 parity 条目
 - **第三个发现**：架构最小长度 = **320**（每池化块的 conv 也 −4；官方推理长度 12288 右侧零填充）——短 UTR 输入必须 pad
 - **交付**：`core/route2_saluki_port_v1.py` + 5 单测（含 Keras reset_after GRU 单步公式精确匹配——最大风险点验证 ✓）+ GPU 冒烟脚本；commit c00dcce7
 - **GPU 冒烟通过**：f7_c0/model0 真实权重，CUDA，长度 350/512/1000 输出有限
-- **官方预测对齐（parity）**：冒烟脚本内置无依赖 TFRecord 解析器；f7_c0 test 工件提取中（Zenodo 连接不稳重试中）——对齐结果出来后单独入档（R6 native 对齐证据）
+- **官方预测对齐（parity）——数值级达成（R6 黄金证据）**：通过官方 f7_c0 测试集取证定位三个根因并修复：(1) GRU `go_backwards=True`（rnann.py L44 + 保存 config 证实）——port 时间翻转，终态读序列起点（前向方向会把所有输入坍缩为常数 1.794）；(2) 2022 版指示通道为**原始值**（codon/splice 位=1.0）——master 仓库后期的 `tf.one_hot(v,1)` 反转与冻结权重不符（用原始极性复现官方发表 pearson 0.758/0.706）；(3) 官方 tfr 为 zlib 压缩 + model1 的输出层名为 dense_2（Keras 自动命名漂移）。**对齐结果（各 128 条，右填充 12288）**：model0 vs test0/preds max diff 0.0034 / mean 0.0015 / 100% ≤0.01；model1 vs test1/preds max 0.0012 / mean 0.0004 / 100% ≤0.01；交叉组合不匹配证实 model_M↔data_M↔test_M 配对。佐证：pearson(tfr targets, 官方 preds)=0.7626 vs 官方 acc.txt 0.758。commit 8e871062
+- **过程中的方法学副产品**：Zenodo 18.75GB zip 的分块抓取器（512KB/块、逐块重试、ZIP64 解析——单流读取在 ~3MB 处必断）；无依赖 TFRecord/protobuf 解析器（含 zlib 流）
 
 ### 执行顺序确认（用户问询后拍板）
 
