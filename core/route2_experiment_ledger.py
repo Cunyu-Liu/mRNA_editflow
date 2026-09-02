@@ -298,12 +298,17 @@ def record_training_attempt(
         )
         merged = dict(match or {})
         for key in TRAINING_ATTEMPT_COLUMNS:
-            if key in {"started_at", "code_commit"} and match and match.get(key):
+            value = row.get(key, "")
+            if key in {"started_at", "code_commit"} and match and match.get(key) and not value:
                 # A long run may finish after the shared worktree advances.  Its
                 # start commit and start time describe the code that actually ran.
+                # An explicit fresh value from the caller (e.g. the code_commit
+                # captured when this run started) always wins over the preserved
+                # earlier state, so an aborted pre-fix launch that reused the same
+                # deterministic attempt_id cannot leak its stale provenance into
+                # the relaunched run's terminal records.
                 merged[key] = match[key]
                 continue
-            value = row.get(key, "")
             if value not in {None, ""}:
                 merged[key] = value
             elif key not in merged:

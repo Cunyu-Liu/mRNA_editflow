@@ -337,6 +337,7 @@ def train(
     frozen_pretrained_count = int(cache_payload["pretrained_parameter_count"])
     attempt_details = {
         "started_at": started_at,
+        "code_commit": current_head,
         "record_counts": {
             "TRAIN": len(train_records),
             "VALIDATION": int(source_data_audit["validation_source_count"]),
