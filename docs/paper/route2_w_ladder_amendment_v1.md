@@ -59,3 +59,17 @@
 5. `core/route2_xeditcritic_batch_v4.py` `FrozenBottomEncoderChunkCacheViewV4`：覆盖不变量由"精确相等"放宽为"子集覆盖"（缓存 ⊇ projection）——本质不变量（每个 projection 记录都有 donor）保持；全量数据集运行行为不变；缓存为冻结 outcome-free 特征，超集安全。对应单测 `test_v4_cache_view_requires_full_projection_coverage` 更新为双断言（子集通过 + 缺失记录仍拒绝）。
 
 首次失败已如实入账本（screen_w0_mrl_gse114002_928f676c → FAILED, TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE），失败目录保留为 `w0_mrl_gse114002_aborted_by_cache_view_subset_20260902`。本 Addendum 于重发射前冻结。
+
+## 6. Addendum B（2026-09-02 晚，W1' 两臂终态收割后、发射前）
+
+**触发**：W0-MRL 终态 0.1987，pass 级 soft-spearman loss 单调下降 0.62→0.33 未平台化 → 预算限制假说待检验。用户批准"现在启动"（2026-09-02 晚）。
+
+**新增 W0-continue 臂（run_id `w0_continue_mrl_gse114002`）**：
+- 初始化 = W0-MRL `final_pass_8_checkpoint.pt` 严格加载（state_dict 509 键，含 cell_offset_head；arch/config 与 W0 逐字段一致）
+- **全参数继续训练**（无冻结、无 LoRA）；标准三组优化器（head 2e-4 / semantic 1e-4 / upper-6 1e-5）+ 全新 cosine warm-restart 调度；同 seed 20260907、同 8-pass 冻结 loss schedule、同 study_filter（GSE114002）/data_geometry（77 updates/pass × 8 = 616）
+- **与 W1' 禁全参条款的关系（纪律说明）**：坑 A 条款针对"多任务 init 适配到 2.4K 行小任务"的过拟合场景（V5 多任务表征 + 全参微调）；本臂是**同一单任务训练的预算延长**——W0 已在完全相同的 2,443 行 TRAIN 上训练 616 updates 且验证指标仍在改善区间，继续训练不改变参数:观测比的过拟合结构。本臂按协议外新形态特此预注册。
+
+**预注册判定带**（同评估器/VALIDATION split/K=10；对照 W0 0.1987 / Optimus adapter 0.3132 / 内靶 0.1192）：
+- **≥0.25**：预算是主要限制 → W0-continue 路线加码（更长训练），W2 容量线并行
+- **0.20–0.25**：预算部分限制，混合归因
+- **≈0.20 或更低（验证回落）**：预算不是限制（过拟合已开始）→ 差距主因架构/先验 → 强化 D3 路线 A（外部大库预微调）优先级

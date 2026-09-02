@@ -736,7 +736,10 @@ def _apply_w1_finetune_policy(
     """Freeze + init + (optional) LoRA policy for the W1' two-stage arm."""
 
     mode = str(w1_config["mode"])
-    _require(mode in {"head_only", "lora_top_six_head"}, "unknown W1 finetune mode")
+    _require(
+        mode in {"head_only", "lora_top_six_head", "full_continue"},
+        "unknown W1 finetune mode",
+    )
     init_path = Path(str(w1_config["init_checkpoint"]))
     _require(init_path.is_file(), "W1 init checkpoint is absent")
     payload = torch.load(init_path, map_location="cpu", weights_only=False)
@@ -752,7 +755,8 @@ def _apply_w1_finetune_policy(
         "W1 init checkpoint total parameter count differs from the built model",
     )
     model.load_state_dict(state, strict=True)
-    model.requires_grad_(False)
+    if mode != "full_continue":
+        model.requires_grad_(False)
     wrapped = 0
     if mode == "lora_top_six_head":
         rank = int(w1_config.get("lora_rank", 16))
@@ -781,6 +785,8 @@ def _apply_w1_finetune_policy(
     # result back onto the training device.
     model.to(device)
     trainable_modules: list[str] = []
+    if mode == "full_continue":
+        trainable_modules = ["FULL_MODEL_CONTINUE"]
     for name in ("readout", "effect_head"):
         module = getattr(model, name, None)
         if module is not None:
@@ -790,11 +796,12 @@ def _apply_w1_finetune_policy(
         parameter.numel() for parameter in model.parameters() if parameter.requires_grad
     )
     _require(trainable_count > 0, "W1 finetune left nothing trainable")
-    _require(
-        trainable_count
-        <= int(w1_config.get("maximum_trainable_parameter_count", 30_000_000)),
-        "W1 trainable budget exceeded",
-    )
+    if mode != "full_continue":
+        _require(
+            trainable_count
+            <= int(w1_config.get("maximum_trainable_parameter_count", 30_000_000)),
+            "W1 trainable budget exceeded",
+        )
     lora_parameter_count = sum(
         parameter.numel()
         for name, parameter in model.named_parameters()
@@ -898,7 +905,7 @@ def _build_optimizer(
     w1_config: Mapping[str, Any] | None = None,
 ) -> tuple[torch.optim.Optimizer, list[float]]:
     rates = config["training"]["learning_rates"]
-    if w1_config is not None:
+    if w1_config is not None and str(w1_config.get("mode")) != "full_continue":
         trainable = [
             parameter for parameter in model.parameters() if parameter.requires_grad
         ]
