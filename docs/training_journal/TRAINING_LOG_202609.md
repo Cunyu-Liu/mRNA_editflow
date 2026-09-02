@@ -275,3 +275,32 @@ screen_gate.json（recovery 恢复流程自动 adjudicate，2026-09-03 凌晨落
 
 - V7 v7_full：pass 5/8（GPU3），预计今日内终态——loss 线最后一块拼图
 - GPU1/2/4 已释放（V6 H3 三臂 + SetFlow 验证完成）
+
+## 2026-09-03（晨，第五批：D3 拍板 + Stage 0a 判别实验）
+
+### D3 拍板与路线 A 前置分析
+
+用户批准 A+B，但要求先论证路线 A 的必要性与确定性（"不清楚用这么大量数据集微调会有什么后果"）。交付 `docs/paper/route2_route_a_necessity_certainty_analysis.md`（commit 00d03adc）：五项后果（泄漏硬门/H2 口径风险/遗忘→LoRA/措辞/算力）+ 分阶段 GO/NO-GO 设计（Stage 0 判别先行）。
+
+### Stage 0a：frozen-Optimus/FramePool delta（决定性结果）
+
+**方法**：官方 280K 预训练权重直接打分 source/candidate（零任务微调），delta 评估同口径（GSE114002 VALIDATION，K=10）。
+
+| 模型 | frozen delta Spearman | 原"adapter"行 |
+|---|---|---|
+| Optimus | **0.3132** | 0.3132（完全一致）|
+| FramePool | **0.2956** | 0.2956（完全一致）|
+
+**验证**：spearman(frozen_delta, HPO adapter 预测) = **1.000000**，pearson = 1.0——Track B 的"adapter"行实为 frozen 权重 delta + 线性校准（对 Spearman 不变）。**榜单标签需修正**（Task 6 时改为 frozen-delta 口径）。
+
+**科学结论（路线 A 确定性跃升）**：
+1. **280K 外部大库先验单独（零任务训练）= 0.3132 全部性能**——MRL 差距的主因确认是外部库先验，不是任务微调
+2. 按预注册决策规则（0a ≥ 0.15 → GO）：**路线 A 高信心 GO**
+3. 路线 A 的核心问题精确化为：**mRNABERT 吃同样 280K 监督能否达到 CNN 同等水平**——Step 1 产物可直接用同一 frozen-delta 协议评估
+4. H2 假说获重要数据点：绝对 MRL 预测器的差分直接携带 Δy 排序信号（0.3132）
+
+### 并行推进状态
+
+- Saluki frozen-delta GSE217518 全量（100 checkpoint）在跑（GPU4，PID 811572）
+- SetFlow guided generation 侦察完成：guidance 核心（potential_guided_rates_v3/v4 + SMC）与 critic 接口（FrozenRoute2MRNABERTCritic）现成，需写 SetFlow V5 guided runner（采样器无 critic 钩子）；b_fix2 pass_2.pt 就位
+- Stage 0b（Optimus from-scratch 对照）与 Stage 0c（280K 泄漏审计）待做
