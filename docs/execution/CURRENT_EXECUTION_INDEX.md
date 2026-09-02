@@ -466,3 +466,11 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
   v403_cross_root_retry3_erroneous_failure_from_record_worktree_run_f507e217.screen_gate.failed.json。
 - 详录 Iteration Z（迭代日志）。V5 Critic 指标反思、SetFlow 温度扫描结论仍待用户决策；
   NO-GO 判定不改变上述两条待决策项。
+
+## 17. 运行状态更新（2026-09-02 11:2x CST）
+### Critic V4/V5 全训练结果指标统计已入日志
+- 9 份终态 run_summary（v4_full、6 臂 controls、c0_v4、v5_full）整体与逐任务 Spearman/MAE 已汇总，
+  详见迭代日志 Iteration AA。
+- 核心发现：v4_no_cross（去 cross-source 对）macro Spearman 0.1706 为 V4 族最高、高于 v4_full 与 v5_full；
+  v5_full 0.1671（+4.1% vs v4_full）仍未达 0.30 阈值。
+- 为指标统计记录，不改判 gate（V4 仍 NO-GO）。V4/V5 后续方向（cross-source 消融等）待用户决策。

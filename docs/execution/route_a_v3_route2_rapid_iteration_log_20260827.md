@@ -1445,3 +1445,60 @@ or terminal artifacts.
 ### 处置边界
 - 未修改/重启/覆盖任何运行中实验或旧 artifacts；记录工作树本轮仅追加本文档与执行索引并 commit+push；
   独立训练工作树与 detached HEAD 工作树（@ ebf99ebf）未写入任何记录类文件。
+
+
+## Iteration AA — 2026-09-02: Critic V4/V5 全训练结果指标统计（9 份 run_summary 汇总）
+- 依用户要求，从 A100 收集全部 9 份终态 run_summary.json 的核心指标（seed 均 20260907，
+  8 passes/22416 updates，均为真实 A100 CUDA、cpu_fallback_used=false、protected reads=0）。
+
+### 整体指标（task-macro，validation 集）
+| 训练结果 | 机制 | GPU | Spearman | MAE | 正任务 |
+|---|---|---|---|---|---|
+| c0_v4 (93703ade) | RAW 基线 | 5 | 0.0955 | 1.9680 | 7/9 |
+| v4_full (f34ab7d8) | FULL | 5 | 0.1606 | 2.0151 | 9/9 |
+| v4_source_only | 仅 source | 2 | 0.0393 | 2.2197 | 6/9 |
+| v4_edit_metadata_only | 仅 edit 元数据 | 3 | 0.0617 | 2.1851 | 5/9 |
+| v4_no_candidate_sequence | 去候选序列 | 5 | 0.0738 | 2.1581 | 7/9 |
+| v4_candidate_bundle_permutation | 候选随机置换 | 2 | 0.0703 | 2.2246 | 6/9 |
+| v4_no_cross | 去 cross-source 对 | 3 | 0.1706 | 2.0016 | 8/9 |
+| v4_no_moe | 去 MoE | 5 | 0.1458 | 2.0065 | 7/9 |
+| v5_full (1113cd2c) | FULL+within-source w=0.5 | 2 | 0.1671 | 1.9348 | 9/9 |
+
+### 逐任务 Spearman
+| 任务 | c0_v4 | v4_full | src_only | edit_md | no_cand | perm | no_cross | no_moe | v5_full |
+|---|---|---|---|---|---|---|---|---|---|
+| MEAN_RIBOSOME::region=0 | 0.163 | 0.117 | 0.027 | 0.089 | 0.105 | 0.069 | 0.174 | 0.148 | 0.135 |
+| MPRAU_ALLELIC::region=1 | 0.041 | 0.074 | -0.004 | 0.012 | 0.010 | 0.074 | 0.063 | 0.075 | 0.073 |
+| POLYA_USAGE::region=1 | 0.655 | 0.824 | 0.123 | 0.604 | 0.591 | 0.475 | 0.815 | 0.804 | 0.822 |
+| REF_VS_ALT_LMM::region=1 | 0.044 | 0.038 | 0.005 | -0.054 | -0.121 | 0.035 | -0.001 | 0.067 | 0.064 |
+| RNA_HL::region=0 | -0.042 | 0.049 | -0.118 | -0.013 | 0.073 | -0.023 | 0.055 | 0.068 | 0.061 |
+| RNA_HL::region=1 | 0.040 | 0.083 | 0.069 | 0.030 | -0.047 | -0.028 | 0.132 | -0.018 | 0.046 |
+| TOTAL_POLYSOME::region=1 | 0.034 | 0.031 | -0.016 | 0.000 | 0.004 | 0.005 | 0.050 | 0.013 | 0.058 |
+| TE_POLYSOME::region=0 | -0.160 | 0.181 | 0.107 | -0.003 | 0.034 | 0.085 | 0.129 | -0.128 | 0.195 |
+| TRANSCRIPT::region=0 | 0.084 | 0.049 | 0.161 | -0.110 | 0.016 | -0.059 | 0.118 | 0.282 | 0.050 |
+
+### 逐任务 MAE
+| 任务 | c0_v4 | v4_full | src_only | edit_md | no_cand | perm | no_cross | no_moe | v5_full |
+|---|---|---|---|---|---|---|---|---|---|
+| MEAN_RIBOSOME::region=0 | 1.040 | 0.953 | 0.947 | 0.979 | 0.982 | 1.025 | 0.916 | 0.940 | 0.947 |
+| MPRAU_ALLELIC::region=1 | 1.069 | 1.080 | 1.023 | 1.112 | 1.123 | 1.091 | 1.086 | 1.078 | 1.082 |
+| POLYA_USAGE::region=1 | 0.892 | 0.642 | 1.162 | 0.914 | 0.911 | 0.952 | 0.676 | 0.663 | 0.650 |
+| REF_VS_ALT_LMM::region=1 | 1.335 | 1.303 | 1.308 | 1.315 | 1.357 | 1.307 | 1.304 | 1.287 | 1.286 |
+| RNA_HL::region=0 | 9.374 | 9.344 | 9.520 | 9.545 | 9.514 | 9.842 | 9.392 | 9.544 | 9.333 |
+| RNA_HL::region=1 | 1.926 | 1.872 | 1.854 | 1.911 | 1.945 | 1.915 | 1.855 | 1.883 | 1.874 |
+| TOTAL_POLYSOME::region=1 | 1.184 | 1.303 | 1.127 | 1.356 | 1.342 | 1.366 | 1.303 | 1.315 | 1.296 |
+| TE_POLYSOME::region=0 | 0.326 | 0.665 | 0.826 | 1.216 | 0.910 | 0.959 | 0.194 | 0.913 | 0.501 |
+| TRANSCRIPT::region=0 | 0.565 | 0.976 | 2.211 | 1.317 | 1.340 | 1.563 | 1.287 | 0.437 | 0.443 |
+
+### 关键观察
+- cross-source 是核心假阳性源：v4_no_cross（去 cross-source 对）是唯一 macro Spearman 高于 v4_full（0.1706 vs
+  0.1606）且主任务不降级的 arm（RNA_HL r1 0.132 vs 0.083；MEAN_RIBOSOME 0.174 vs 0.117）。与 V4 学习经验
+  「cross-source group pairs 导致候选区分失败」一致。
+- 候选序列信息贡献有限：src_only=0.0393、edit_metadata_only=0.0617、no_candidate_sequence=0.0738 均远低于
+  full，三者缺一不可，source 贡献最大。
+- v5 vs v4_full：增益主要在 TE_POLYSOME r0（0.195 vs 0.181，MAE 0.501 vs 0.665）与 REF_VS_ALT（0.064 vs 0.038）
+  + 整体 MAE 2.015→1.935（-3.9%）；主任务几乎无变化，macro Spearman 0.1671 vs 0.1606（+4.1%）仍未达 0.30
+  gate 阈值，且低于 v4_no_cross（0.1706）——v5 within-source 方向可能不及直接消融 cross-source 有效。
+- 所有指标均来自 validation 集，protected 数据未读取（development_test=0，new_final_evaluation=0）。
+- 备注：以上为指标统计记录，不构成 gate 判定改判；V4 cross-root 判定仍为 XEDITCRITIC_V4_SCREEN_NO_GO
+  （Iteration Z），V5 反思假设清单（Iteration V）与后续方向（含 cross-source 消融/禁 cross 训练）待用户决策。
