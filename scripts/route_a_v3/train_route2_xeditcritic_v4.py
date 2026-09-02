@@ -72,6 +72,7 @@ from core.route2_xeditcritic_gradient_norm_scale_v7 import (
     GradientNormScalerV7,
     XEditCriticV7GradientNormScaleError,
 )
+from core.route2_mrnabert_lora_v3 import LoRALinearV3
 from core.route2_xeditcritic_v3 import XEditCriticV3
 from core.route2_xeditcritic_v4 import (
     XEditCriticV4,
@@ -729,6 +730,81 @@ def _permutation_overrides(
     }
 
 
+def _apply_w1_finetune_policy(
+    model: torch.nn.Module, w1_config: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Freeze + init + (optional) LoRA policy for the W1' two-stage arm."""
+
+    mode = str(w1_config["mode"])
+    _require(mode in {"head_only", "lora_top_six_head"}, "unknown W1 finetune mode")
+    init_path = Path(str(w1_config["init_checkpoint"]))
+    _require(init_path.is_file(), "W1 init checkpoint is absent")
+    payload = torch.load(init_path, map_location="cpu", weights_only=False)
+    _require(
+        isinstance(payload, dict) and "model_state_dict" in payload,
+        "W1 init checkpoint lacks a model state dict",
+    )
+    state = payload["model_state_dict"]
+    total_built = sum(parameter.numel() for parameter in model.parameters())
+    total_init = sum(value.numel() for value in state.values())
+    _require(
+        total_built == total_init,
+        "W1 init checkpoint total parameter count differs from the built model",
+    )
+    model.load_state_dict(state, strict=True)
+    model.requires_grad_(False)
+    wrapped = 0
+    if mode == "lora_top_six_head":
+        rank = int(w1_config.get("lora_rank", 16))
+        alpha = float(w1_config.get("lora_alpha", 32.0))
+        dropout = float(w1_config.get("lora_dropout", 0.05))
+        for layer in model.upper_encoder.layers:
+            for attr_path in (
+                ("attention", "self", "Wqkv"),
+                ("attention", "output", "dense"),
+                ("intermediate", "dense"),
+                ("output", "dense"),
+            ):
+                parent = layer
+                for step in attr_path[:-1]:
+                    parent = getattr(parent, step)
+                base = getattr(parent, attr_path[-1])
+                if isinstance(base, torch.nn.Linear):
+                    setattr(
+                        parent,
+                        attr_path[-1],
+                        LoRALinearV3(base, rank=rank, alpha=alpha, dropout=dropout),
+                    )
+                    wrapped += 1
+        _require(wrapped > 0, "W1 LoRA wrapping found no target Linears")
+    trainable_modules: list[str] = []
+    for name in ("readout", "effect_head"):
+        module = getattr(model, name, None)
+        if module is not None:
+            module.requires_grad_(True)
+            trainable_modules.append(name)
+    trainable_count = sum(
+        parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+    )
+    _require(trainable_count > 0, "W1 finetune left nothing trainable")
+    _require(
+        trainable_count
+        <= int(w1_config.get("maximum_trainable_parameter_count", 30_000_000)),
+        "W1 trainable budget exceeded",
+    )
+    return {
+        "mode": mode,
+        "init_checkpoint": str(init_path),
+        "init_checkpoint_total_parameter_count": total_init,
+        "w1_trainable_parameter_count": trainable_count,
+        "w1_trainable_modules": trainable_modules,
+        "w1_lora_wrapped_linears": wrapped,
+        "w1_total_parameter_count_after_policy": sum(
+            parameter.numel() for parameter in model.parameters()
+        ),
+    }
+
+
 def _build_model(
     config: Mapping[str, Any],
     spec: ScreenRunSpecV4,
@@ -810,8 +886,26 @@ def _build_optimizer(
     config: Mapping[str, Any],
     *,
     is_c0: bool,
+    w1_config: Mapping[str, Any] | None = None,
 ) -> tuple[torch.optim.Optimizer, list[float]]:
     rates = config["training"]["learning_rates"]
+    if w1_config is not None:
+        trainable = [
+            parameter for parameter in model.parameters() if parameter.requires_grad
+        ]
+        _require(bool(trainable), "W1 optimizer received no trainable parameters")
+        groups: list[dict[str, object]] = [
+            {
+                "name": "W1_HEAD_AND_LORA",
+                "params": trainable,
+                "lr": float(rates["new_head_and_v4_trunk"]),
+            }
+        ]
+        optimizer = torch.optim.AdamW(
+            groups,
+            weight_decay=float(config["training"]["weight_decay"]),
+        )
+        return optimizer, [float(rates["new_head_and_v4_trunk"])]
     if is_c0:
         groups: list[dict[str, object]] = [
             {
@@ -1072,14 +1166,34 @@ def run(
                 minimum_physical_batch=int(config["memory_preflight"]["minimum_physical_batch"]),
             )
         model, capacity = _build_model(config, spec, vocabs, device=device)
-        _require(
-            spec.model_kind == "C0-V4"
-            or int(capacity["trainable_parameter_count"])
-            == int(preflight["trainable_parameter_count"]),
-            "formal model parameter count differs from preflight",
-        )
+        w1_config = config.get("w1_finetune")
+        w1_policy_summary: dict[str, Any] | None = None
+        if w1_config is not None:
+            w1_policy_summary = _apply_w1_finetune_policy(model, w1_config)
+            capacity = dict(capacity)
+            capacity["w1_full_backbone_trainable_parameter_count"] = capacity[
+                "trainable_parameter_count"
+            ]
+            capacity["trainable_parameter_count"] = int(
+                w1_policy_summary["w1_trainable_parameter_count"]
+            )
+            capacity["w1_finetune"] = w1_policy_summary
+        if w1_config is None:
+            _require(
+                spec.model_kind == "C0-V4"
+                or int(capacity["trainable_parameter_count"])
+                == int(preflight["trainable_parameter_count"]),
+                "formal model parameter count differs from preflight",
+            )
+        else:
+            assert w1_policy_summary is not None
+            _require(
+                int(w1_policy_summary["w1_total_parameter_count_after_policy"])
+                == int(w1_policy_summary["init_checkpoint_total_parameter_count"]),
+                "W1 policy changed the total parameter count",
+            )
         optimizer, initial_learning_rates = _build_optimizer(
-            model, config, is_c0=spec.model_kind == "C0-V4"
+            model, config, is_c0=spec.model_kind == "C0-V4", w1_config=w1_config
         )
         attempt_details = critic_v4_attempt_details(
             config,
@@ -1104,7 +1218,11 @@ def run(
             repeat_cap=int(geometry["maximum_record_repeats_per_pass"]),
             effective_batch=int(geometry["effective_batch_size"]),
         )
-        initial_parameter = next(model.parameters()).detach().clone()
+        initial_parameter = next(
+            parameter
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        ).detach().clone()
         update_count = 0
         pass_rows: list[dict[str, Any]] = []
         gradient_norm_scale_config = config["training"].get("gradient_norm_scale", None)
