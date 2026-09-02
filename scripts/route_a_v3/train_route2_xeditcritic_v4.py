@@ -762,8 +762,8 @@ def _apply_w1_finetune_policy(
             for attr_path in (
                 ("attention", "self", "Wqkv"),
                 ("attention", "output", "dense"),
-                ("intermediate", "dense"),
-                ("output", "dense"),
+                ("mlp", "gated_layers"),
+                ("mlp", "wo"),
             ):
                 parent = layer
                 for step in attr_path[:-1]:

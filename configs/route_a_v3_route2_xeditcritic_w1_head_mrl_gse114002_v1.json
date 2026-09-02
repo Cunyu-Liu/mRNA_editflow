@@ -179,7 +179,7 @@
     "ceiling_by_task": {
       "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1": 0.683
     },
-    "cell_offset_weight": 0.5,
+    "cell_offset_weight": 0.0,
     "checkpoint_selection": "FINAL_PASS_8_FIXED_NO_VALIDATION_PEAK_RESELECTION",
     "decay": "COSINE_TO_TEN_PERCENT_OF_INITIAL_LR",
     "extended_validation_metrics": true,
