@@ -103,10 +103,33 @@
 
 待 W1-lora 补全"W1 init + 表征 LoRA 适配"行——若显著 >0.15 则表征适配有效，W2（容量解除）接力；若 ≈0.13 则 V5 初始化的表征对 MRL 有害，W0 路线（从头）优先。
 
-### 其他在途（22:00 快照）
+### W1-lora 终态（22:50）
 
-- W0-polyA（GPU2）：pass 1-2/8，预计 ~23:30-24:00 终态
-- V6 H3 三臂（GPU1/2/4）：运行中（λ=0.75 曾至 pass_5）
-- V7 v7_full（GPU3）：运行中
-- V5 b_fix1/b_fix3（GPU3/4）：运行中；scheduler 健在
-- Saluki 权重：本地 HTTP-range 提取 train_gru 模型文件（~198MB，f0_c4 折已到）——完成后 scp 至 external_model_assets/saluki/
+| 指标 | 数值 |
+|---|---|
+| status | TERMINAL_XEDITCRITIC_V4_SCREEN_RUN_COMPLETE |
+| **MRL validation Spearman** | **0.1486** |
+| standardized MAE | 0.6876 |
+| W1 细节 | LoRA 24 Linears（rank16，1,474,560 参数）+ head；可训练 15,242,753 |
+
+### MRL 完整机制图景（终版，2026-09-02）
+
+| 方法 | Spearman | 判读 |
+|---|---|---|
+| 内靶 control | 0.1192 | 下界 |
+| V5 多任务 | 0.1354 | 基线 |
+| W1-head（V5 init + 只调头）| 0.1336 | +0.000——表征不动则无增益 |
+| W1-lora（V5 init + LoRA 适配 + head）| 0.1486 | +0.013——LoRA 有限增益 |
+| W0（同架构从头单任务 616 updates）| **0.1987** | +0.063——任务专属从头训练最优 |
+| Optimus adapter（0.5M 参数 CNN）| **0.3132** | 外部对位靶 |
+
+**W 阶梯裁决（MRL，2026-09-02）**：
+1. **W1' 路线对 MRL 无效**：V5 多任务初始化不是好的 MRL 起点（W1-head ≈ W1-lora ≈ V5 << W0）——多任务表征对 MRL 有干扰，小容量适配救不回
+2. **W0 路线有效但仍不足**：从头单任务 +0.063，但距 Optimus 仍差 0.115 → **架构/容量层面差距确认**（170M mRNABERT 系 vs 0.5M CNN 在 MRL 上落后）
+3. **下一步（W2 设计，明日预注册后启动）**：(a) W0-continue 臂——W0 终态初始化 + 全参继续 8 pass（检验预算是否是 W0 的限制；利用新 W1' init 机制，仅需 config）；(b) W2 容量方向——per-task 容量解除/架构侧修订（edit_blocks 97M 是容量大头，MRL 或许需要不同分配）
+4. polyA 判定带等 W0-polyA 终态（今夜 ~23:30）
+
+### 其他在途（22:55 快照）
+
+- W0-polyA（GPU2）：运行中
+- V6 H3 三臂（GPU1/2/4）、V7（GPU3）、V5 b_fix1/b_fix3（GPU3/4）：运行中；2 小时巡检 cron 持续跟踪
