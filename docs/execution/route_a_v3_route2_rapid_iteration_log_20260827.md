@@ -1411,3 +1411,37 @@ or terminal artifacts.
 - 未读取 protected DEVELOPMENT TEST / new final Evaluation；未修改/重启/覆盖任何运行中实验或旧 artifacts。
 - 独立训练工作树 route_a_v3_v403_controls_retry3_training_20260831 未写入任何记录类文件（本记录仅在记录
   工作树 commit+push）；记录工作树本轮仅追加本文档与执行索引；detached HEAD 工作树（@ ebf99ebf）只读未动。
+
+## Iteration Z — 2026-09-02: retry3 cross-root gate 正式判定 XEDITCRITIC_V4_SCREEN_NO_GO（科学 NO-GO）
+- 依用户决策，在训练工作树上下文（route_a_v3_v403_controls_retry3_training_20260831，HEAD=f507e217，clean）
+  运行 cross-root gate 脚本 transition_adjudicate_route2_xeditcritic_v403_cross_root_screen.py，GATE_EXIT_CODE=0，
+  正式 gate 产物已原子写入：
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v4/screen_seed_20260907_v403_cross_root_controls_retry3_f507e2173bdc9963c153a97b99c69589b05f8cd6/screen_gate.json
+  （schema route_a_v3_route2_xeditcritic_v4_screen_gate.v1，terminal_summary_payloads_read=8）。
+
+### 判定结果
+- status = XEDITCRITIC_V4_SCREEN_NO_GO，passed=false，selectable_model=null。
+- v4_full task-macro Spearman = 0.16056，minimum_required = 0.30（未达标，差 0.139）。
+- margins（v4_full 相对各对照）：over_c0_v4=+0.0650、over_source_only=+0.1213、
+  over_edit_metadata_only=+0.0989、over_no_candidate_sequence=+0.0867、
+  over_candidate_bundle_permutation=+0.0902、over_no_moe=+0.0148、
+  **over_no_cross=-0.0100（唯一负边际）**。
+- permutation_task_win_count=5（6 任务中 5 胜，达标 ≥5）；MAE 判据未超额；唯一失败项为
+  minimum_task_macro_spearman=0.30 未达标 + no_cross 负边际。
+- v4_full_task_macro_standardized_mae=2.01513。
+
+### 结论与边界
+- NO-GO 为科学判定（阈值冻结合同语义），非技术失败；六臂 controls 全部真实 CUDA 终态、
+  protected reads=0、无 WORKTREE/代码污染。
+- 与历史 v5_full（方向A within-source w=0.5，Spearman 0.16709，Iteration V 待决策）对照：
+  v5_full 也低于 0.30 阈值；NO-GO 判定不因 within-source 缓解。
+- 未读取 protected DEVELOPMENT TEST / new final Evaluation（development_test_outcome_reads=0、
+  new_final_evaluation_outcome_reads=0）。
+- 脚本默认 full_terminal_audit/worktree 均绑定训练工作树 f507e217 —— 已在 Iteration Y 说明，本次验证成立；
+  上一轮在记录工作树的误触发失败证据已归档（未删除）：
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditcritic_v4/v403_cross_root_retry3_erroneous_failure_from_record_worktree_run_f507e217.screen_gate.failed.json
+- runtime.json 的 cross_root_adjudication_run 仍为 false（宿主 runner/heartbeat 职责，未擅自改写），仅记录。
+
+### 处置边界
+- 未修改/重启/覆盖任何运行中实验或旧 artifacts；记录工作树本轮仅追加本文档与执行索引并 commit+push；
+  独立训练工作树与 detached HEAD 工作树（@ ebf99ebf）未写入任何记录类文件。

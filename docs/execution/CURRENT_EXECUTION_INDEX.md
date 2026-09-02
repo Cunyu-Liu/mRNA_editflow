@@ -453,3 +453,16 @@ bootstrap、科学门槛、GPU0–5 固定映射、no-VRAM-gate、包级首失�
 - 输出 s1_temperature_sweep_457e15ae.json XEDITSETFLOW_V4_S1_TEMPERATURE_SWEEP_V5_COMPLETE，25 格点全量；
   单调性/Pareto 结论已记（Iteration W），禁止重跑。
 - V5 Critic 指标反思仍待用户决策（Iteration V 假设清单）；retry3 gate 决策与 V5 决策并行推进。
+
+## 16. 运行状态更新（2026-09-02 10:51 CST）
+### Critic controls retry3 cross-root gate —— 已判定，结果：XEDITCRITIC_V4_SCREEN_NO_GO（科学 NO-GO）
+- 按用户决策在训练工作树上下文运行 cross-root gate（HEAD=f507e217，clean）→ GATE_EXIT_CODE=0，
+  正式 gate 已写入 screen_seed_20260907_v403_cross_root_controls_retry3_f507e217.../screen_gate.json
+  （route_a_v3_route2_xeditcritic_v4_screen_gate.v1，payloads_read=8，status=XEDITCRITIC_V4_SCREEN_NO_GO）。
+- v4_full Spearman 0.16056 < 0.30 阈值（passed=false）；margins 仅 over_no_cross 为负（-0.0100）；
+  permutation 5/6 胜、MAE 2.015 未超额。无技术失败；六臂真实 CUDA、protected reads=0。
+- 未擅改 runtime.json 的 cross_root_adjudication_run（宿主职责）；误触失败证据已归档至
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/xeditcritic_v4/
+  v403_cross_root_retry3_erroneous_failure_from_record_worktree_run_f507e217.screen_gate.failed.json。
+- 详录 Iteration Z（迭代日志）。V5 Critic 指标反思、SetFlow 温度扫描结论仍待用户决策；
+  NO-GO 判定不改变上述两条待决策项。
