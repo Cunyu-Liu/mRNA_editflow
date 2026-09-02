@@ -745,7 +745,7 @@ def _apply_w1_finetune_policy(
         "W1 init checkpoint lacks a model state dict",
     )
     state = payload["model_state_dict"]
-    total_built = sum(parameter.numel() for parameter in model.parameters())
+    total_built = sum(value.numel() for value in model.state_dict().values())
     total_init = sum(value.numel() for value in state.values())
     _require(
         total_built == total_init,
@@ -800,7 +800,7 @@ def _apply_w1_finetune_policy(
         "w1_trainable_modules": trainable_modules,
         "w1_lora_wrapped_linears": wrapped,
         "w1_total_parameter_count_after_policy": sum(
-            parameter.numel() for parameter in model.parameters()
+            value.numel() for value in model.state_dict().values()
         ),
     }
 
