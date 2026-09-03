@@ -452,3 +452,11 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 - **清理僵尸进程**：`v4_source_only`（PID 1766545，GPU5 15.2G，Aug26 启动的 v402 recovery 线）runtime.json 最后更新 2026-08-26 13:10（8 天零产物写入）——判定僵尸，kill 释放（V4 线早已科学 NO-GO 收官，无在途验收依赖）
 - polyA Route A 首次发射（15:45，GPU5）在 CPU tokenize 阶段发现 GPU5 剩余显存不足 → 主动终止，无训练损失；输出目录已清理
 - **自动接力部署**：`/home/cunyuliu/mrna_editflow_goal/monitor/polya_auto_launcher.sh`——监测 B2（GPU1）终态（guided_run_summary.json 出现）后 120s 自动在 GPU1 以原预注册协议（batch 128，FINAL-EPOCH-6-FIXED）启动 polyA 训练；B2 无终态产物死亡则不启动并等待人工
+
+### 监控与收割链修复部署（18:25）
+
+- **发现并修复关键 bug**：B2 runner 的终态产物  写在  顶层（smoke run 证实），而 16:24 部署的 polyA auto-launcher 检查的是  子目录与  glob——两者均无法命中。若不修复，B2 正常完成后 launcher 会误判"B2 无终态死亡"并拒绝启动 polyA。已改为顶层路径检查（v2，18:21 重启，PID 1005196）。
+- **部署 B2 自动收割 watcher**（，PID 1023582）：检测  后自动执行 adjudication（Gate B2/B3 判定）、追加事实性日志条目、W0 worktree commit+push。
+- **部署 polyA 自动收割 watcher**（，PID 1025537）：检测  后自动执行 vs APARENT/critic V5 判定（FINAL-EPOCH-6-FIXED）、追加日志、commit+push。
+- **修复 2h cron monitor** 的同一终态判定路径；每 5min 轮询进程死亡告警（死亡且无终态产物 → 告警并留证，不盲目重启）。
+- B2 进度校准：smoke guided wall 550s/8 源 ≈ 68.7s/源 → 891 源 ≈ 17h，12:20 启动 → **ETA 明晨 ~05:40**；unguided 臂已 12:42 完成（recovery=0.1205，合法性 1.0）。polyA 将在 B2 终态后 120s 于 GPU1 以预注册协议自动启动。
