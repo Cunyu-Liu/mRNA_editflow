@@ -342,3 +342,40 @@ screen_gate.json（recovery 恢复流程自动 adjudicate，2026-09-03 凌晨落
 ### V7
 
 pass 7/8，即将终态——监控 cron 跟踪。
+## 2026-09-03（午后，第七批：full-FT 消融收割 + B2 全量发射 + full-FT V2 预算扩展）
+
+### Full-FT 消融终态收割（04:11 出数，本轮入档）
+
+Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗文库 677,608 条，2 epochs，lr 2e-5，seed 20260903）frozen-delta 评估（GSE114002 VALIDATION，K=10）：
+
+| 方法 | Spearman | top-1 | NDCG@10 |
+|---|---|---|---|
+| critic V5 多任务 | 0.1354 | 0.3810 | — |
+| W0 从头单任务 | 0.1987 | 0.3983 | 0.8475 |
+| Route A Step-1 LoRA（2ep）| 0.2470 | — | — |
+| **Route A full-FT（2ep）** | **0.2555** | **0.4351** | 0.8550 |
+| frozen FramePool（280K 先验）| 0.2956 | 0.2485 | 0.8647 |
+| frozen Optimus（280K 先验）| 0.3132 | 0.4069 | 0.8655 |
+
+**裁决**：(1) full-FT > LoRA（+0.0085）——容量限制部分成立但幅度小；(2) **top-1 0.4351 超 frozen-Optimus 0.4069（决策口径首次超越外部最强行）**，NDCG 0.8550 vs 0.8655 微差、Spearman 差 0.058——三口径分裂，按预注册决策口径（hit@1/NDCG 优先）为混合结果，不宣称过线；(3) 剩余 Spearman 差距归因候选 = 收敛不足（2ep）/架构归纳偏置。
+
+### Full-FT V2 预算扩展发射（12:23，GPU5，PID 1933044）
+
+- **预注册**：`run_route2_mrnabert_280k_fullft_v2.py`——2ep→6ep 预算扩展，其余全部相同（seed 20260903 / batch 128 / lr 2e-5 / cosine+5% warmup / bf16）；**主判据 = FINAL-EPOCH-6-FIXED frozen-delta**（防 peak-picking，沿 FINAL_PASS_8_FIXED 先例）；每 epoch checkpoint + 每 epoch frozen-delta 诊断曲线（收敛归因用）
+- 动机：full-FT 2ep 已是房内最佳 0.2555 且训练 loss 无平台证据；测试剩余 0.058 Spearman 差距中收敛不足成分
+- 产物目录：`experiments/xeditcritic_route_a/280k_fullft_v2_6ep_20260903/`（含 training_losses.jsonl 每 50 步 + epoch_frozen_delta_metrics.jsonl）
+- 预计 ~6h 终态（每 epoch ~45min + 评估）
+
+### SetFlow V5 B2 全量发射（12:20，GPU1，PID 1909082）
+
+- 冒烟（8 源，guided wall 550s）通过后发射全量：`b2_full_891`（891 源 × 双臂 unguided+guided × 32 trajectories/source，critic = V5 终态 frozen，β = G0 冻结奖励策略，seed 链沿 screen）
+- git HEAD c30904a1（setflow worktree，V5 guided runner + V5 critic potential 支持）
+- 预计 ~17-20h（guided 臂为主）
+- Gate B2 判定：Δrecovery ≥ +0.05 且 CI 不跨零且 hit@1 不劣化；B3：guided recovery ≥ 0.35
+- 中途 sanity：self-pair adjudication（guided=unguided）delta=0 已确认（`smoke_b2_adjudication_self_pair.json` / `b2_baseline_self_pair_full_891.json`）
+- **注意**：首发射因预建输出目录被 runner 拒绝（要求目录不存在）——重启一次，无科学影响
+
+### 监控与治理（本轮）
+
+- 服务器监控 cron（每 2h）原指向 v403/s1 旧 runtime，本轮更新为当前在途（fullft_v2 日志 + B2 运行 + GPU 快照）
+- 客户端（本地 TRAE）设置定时监控任务跟踪两条训练线
