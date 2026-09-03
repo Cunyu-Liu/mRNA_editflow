@@ -113,12 +113,12 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=SEED)
     args = parser.parse_args()
     epochs = args.epochs
-    SEED = args.seed
+    seed = args.seed
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA unavailable - GPU required")
     device = torch.device(f"cuda:{args.physical_gpu_index}")
-    torch.manual_seed(SEED)
+    torch.manual_seed(seed)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     library = load_library()
@@ -236,7 +236,7 @@ def main() -> int:
             "schema_version": "route_a_v3_route2_mrnabert_280k_fullft_v2.v1",
             "model_state_dict": {k: v for k, v in model.state_dict().items()},
             "target_mean": float(mean), "target_std": float(std),
-            "seed": SEED, "epochs_total": epochs, "epoch": epoch + 1,
+            "seed": seed, "epochs_total": epochs, "epoch": epoch + 1,
             "library_clean_count": len(clean),
         }, OUT_DIR / f"fullft_epoch_{epoch + 1}.pt")
         m, preds = frozen_delta_metrics()
@@ -257,7 +257,7 @@ def main() -> int:
         "trainable_parameter_count": sum(p.numel() for p in trainable),
         "library_clean_count": len(clean),
         "epochs": epochs,
-        "seed": SEED,
+        "seed": seed,
         "metrics": final_metrics,
         "reference": {
             "route_a_step1_lora_2ep": 0.2470,
