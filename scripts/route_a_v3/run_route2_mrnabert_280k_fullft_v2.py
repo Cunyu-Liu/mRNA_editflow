@@ -44,7 +44,8 @@ LIB_DIR = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_ass
 MRNABERT_PATH = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40")
 MANIFEST = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl")
 CANONICAL_GSE114002 = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl")
-OUT_DIR = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/280k_fullft_v2_6ep_20260903")
+import os as _os2
+OUT_DIR = Path(os.environ.get("FULLFT_V2_OUT_DIR", "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/280k_fullft_v2_6ep_20260903"))
 
 BATCH = 128
 LR = 2e-5
@@ -109,8 +110,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-gpu-index", required=True, type=int)
     parser.add_argument("--epochs", type=int, default=6)
+    parser.add_argument("--seed", type=int, default=SEED)
     args = parser.parse_args()
     epochs = args.epochs
+    SEED = args.seed
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA unavailable - GPU required")
