@@ -20,6 +20,7 @@ import argparse
 import gzip
 import importlib.util
 import json
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -44,7 +45,6 @@ LIB_DIR = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_ass
 MRNABERT_PATH = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40")
 MANIFEST = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl")
 CANONICAL_GSE114002 = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl")
-import os as _os2
 OUT_DIR = Path(os.environ.get("FULLFT_V2_OUT_DIR", "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/280k_fullft_v2_6ep_20260903"))
 
 BATCH = 128
