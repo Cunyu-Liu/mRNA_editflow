@@ -455,8 +455,8 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 
 ### 监控与收割链修复部署（18:25）
 
-- **发现并修复关键 bug**：B2 runner 的终态产物  写在  顶层（smoke run 证实），而 16:24 部署的 polyA auto-launcher 检查的是  子目录与  glob——两者均无法命中。若不修复，B2 正常完成后 launcher 会误判"B2 无终态死亡"并拒绝启动 polyA。已改为顶层路径检查（v2，18:21 重启，PID 1005196）。
-- **部署 B2 自动收割 watcher**（，PID 1023582）：检测  后自动执行 adjudication（Gate B2/B3 判定）、追加事实性日志条目、W0 worktree commit+push。
-- **部署 polyA 自动收割 watcher**（，PID 1025537）：检测  后自动执行 vs APARENT/critic V5 判定（FINAL-EPOCH-6-FIXED）、追加日志、commit+push。
-- **修复 2h cron monitor** 的同一终态判定路径；每 5min 轮询进程死亡告警（死亡且无终态产物 → 告警并留证，不盲目重启）。
-- B2 进度校准：smoke guided wall 550s/8 源 ≈ 68.7s/源 → 891 源 ≈ 17h，12:20 启动 → **ETA 明晨 ~05:40**；unguided 臂已 12:42 完成（recovery=0.1205，合法性 1.0）。polyA 将在 B2 终态后 120s 于 GPU1 以预注册协议自动启动。
+- **发现并修复关键 bug**：B2 runner 的终态产物 guided_run_summary.json 写在 b2_full_891/ 顶层（smoke run 证实），而 16:24 部署的 polyA auto-launcher 检查的是 guided/guided_run_summary.json 子目录与 */guided_run_summary.json glob——两者均无法命中。若不修复，B2 正常完成后 launcher 会误判「B2 无终态死亡」并拒绝启动 polyA。已改为顶层路径检查（v2，18:21 重启，PID 1005196）。
+- **部署 B2 自动收割 watcher**（monitor/b2_harvest_watcher.sh，PID 1023582）：检测 b2_full_891/guided_run_summary.json 后自动执行 adjudication（Gate B2/B3 判定）、追加事实性日志条目、W0 worktree commit+push。
+- **部署 polyA 自动收割 watcher**（monitor/polya_harvest_watcher.sh，PID 1025537）：检测 frozen_delta_results.json 后自动执行 vs APARENT/critic V5 判定（FINAL-EPOCH-6-FIXED）、追加日志、commit+push。
+- **修复 2h cron monitor** 的同一终态判定路径；两个收割 watcher 每 5min 轮询，进程死亡且无终态产物时告警并留证（不盲目重启）。
+- B2 进度校准：smoke guided wall 550s / 8 源 ≈ 68.7s/源 → 891 源 ≈ 17h，12:20 启动 → **ETA 明晨 ~05:40**；unguided 臂已 12:42 完成（recovery=0.1205，hard legality 1.0）。polyA 将在 B2 终态后 120s 于 GPU1 以预注册协议自动启动。
