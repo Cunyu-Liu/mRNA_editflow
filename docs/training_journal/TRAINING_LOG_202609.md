@@ -445,3 +445,10 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 - **训练**：mRNABERT full-FT 同协议（113M 全参 / lr 2e-5 / 6ep / batch 128 / bf16 / seed 20260903 / FINAL-EPOCH-6-FIXED 主判据 + 每 epoch 诊断）
 - **目标参照**：critic V5 0.8219 / V6 0.8273 / APARENT 0.7343 / W0-polyA 0.8142（Spearman 口径）；决策口径（top-1/NDCG）是 polyA 主缺口（V5 top-1 0.5007 vs APARENT 0.6011）
 - 预计 ~2.5h 终态（2.74M 行 × 6ep）
+
+### GPU 资源事件（16:20-16:30）
+
+- 服务器非 MIG 卡（0-5）全部被其他用户挤占（37-40G/40G）；GPU6/7 为 MIG 切分（7×5G / 2×20G 实例）不适用大 batch 全参训练
+- **清理僵尸进程**：`v4_source_only`（PID 1766545，GPU5 15.2G，Aug26 启动的 v402 recovery 线）runtime.json 最后更新 2026-08-26 13:10（8 天零产物写入）——判定僵尸，kill 释放（V4 线早已科学 NO-GO 收官，无在途验收依赖）
+- polyA Route A 首次发射（15:45，GPU5）在 CPU tokenize 阶段发现 GPU5 剩余显存不足 → 主动终止，无训练损失；输出目录已清理
+- **自动接力部署**：`/home/cunyuliu/mrna_editflow_goal/monitor/polya_auto_launcher.sh`——监测 B2（GPU1）终态（guided_run_summary.json 出现）后 120s 自动在 GPU1 以原预注册协议（batch 128，FINAL-EPOCH-6-FIXED）启动 polyA 训练；B2 无终态产物死亡则不启动并等待人工
