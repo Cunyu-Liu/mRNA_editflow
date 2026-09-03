@@ -460,3 +460,27 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 - **部署 polyA 自动收割 watcher**（monitor/polya_harvest_watcher.sh，PID 1025537）：检测 frozen_delta_results.json 后自动执行 vs APARENT/critic V5 判定（FINAL-EPOCH-6-FIXED）、追加日志、commit+push。
 - **修复 2h cron monitor** 的同一终态判定路径；两个收割 watcher 每 5min 轮询，进程死亡且无终态产物时告警并留证（不盲目重启）。
 - B2 进度校准：smoke guided wall 550s / 8 源 ≈ 68.7s/源 → 891 源 ≈ 17h，12:20 启动 → **ETA 明晨 ~05:40**；unguided 臂已 12:42 完成（recovery=0.1205，hard legality 1.0）。polyA 将在 B2 终态后 120s 于 GPU1 以预注册协议自动启动。
+
+## 2026-09-04（凌晨，第十批：例行监控观测，无新终态）
+
+### B2 guided 线（PID 1909082，GPU1）
+
+- 启动 09-03 12:20，观测时 elapsed 11h45m；unguided 臂已于 12:42 终态（recovery 0.12046 / hard legality 1.0 / 28,512 candidates），guided 臂在途。
+- 健康性验证：CPU ticks 2s 采样推进（非挂死），GPU1 上下文活跃（util 28%、主进程 23.3GB）；smoke 校准 ETA ~05:40。
+- 终态产物 b2_full_891/guided_run_summary.json **未出现** → 非终态，harvest_b2.sh 待命。
+- 合规抽查：所有 run_summary 的 cpu_fallback_used=false，无 CPU 静默降级。
+
+### polyA APA 线（GSE113849 2.74M 预微调）
+
+- 仍在 B2 终态后排队（watcher 健在：polya_auto_launcher PID 1005196 / polya_harvest_watcher PID 1025537），尚未启动训练。
+- 终态产物 frozen_delta_results.json **不存在** → 非终态，harvest_polya.sh 待命。
+
+### GPU / 节点抽查
+
+- GPU0-5 均被占用（39-40GB/40G，util 11-100%，节点多用户共享）；本线 GPU1 正常推进。
+- GPU6/7 为 MIG 切片（util 显示 N/A），有他人作业在跑，不影响本线。
+- status.log 近端条目仅 B2 alive=1 / APA queued behind B2 - normal；历史 CRT/SET TECHNICAL_FAILURE 均属已归档 V4/V4-S1 NO-GO 线，与本批无关。
+
+### 判定
+
+- 两线均无新终态、无异常。下一检查点：B2 guided ETA 09-04 ~05:40；polyA 在 B2 终态后 120s 自动接力。收割脚本与 watcher 就绪。
