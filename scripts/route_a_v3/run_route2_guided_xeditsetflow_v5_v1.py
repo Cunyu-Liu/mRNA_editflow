@@ -3,8 +3,13 @@
 
 Runs the frozen 891x32 generation protocol of the V5 screen with matched
 decoder seed streams: once with the unmodified V5 sampler (unguided arm) and
-once with the frozen Critic V2 potential tilting every transition rate
+once with a frozen critic potential tilting every transition rate
 (guided arm, U_q = U_p * exp(beta * (V(child) - V(state)))).
+
+The guided critic family is selected by --critic-kind.  The pre-authorized
+default is the terminal XEditCritic V5 screen checkpoint (the Critic V2
+all-development refit never executed; see
+route2_xeditcritic_v5_frozen_guidance_v1.py for the substitution record).
 
 The tilt follows the frozen G0 reward policy
 (configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json:
@@ -73,6 +78,9 @@ from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_source
 from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
     FrozenRoute2MRNABERTCritic,
 )
+from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (
+    FrozenXEditCriticV5,
+)
 from scripts.route_a_v3.validate_route2_xeditsetflow_v5_checkpoint import (
     load_checkpoint_v5,
     sample_many_setflow_v5,
@@ -94,6 +102,11 @@ EXPECTED_CRITIC_CHECKPOINT = Path(
 EXPECTED_MRNABERT_MODEL = Path(
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/"
     "mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40"
+)
+EXPECTED_XEDITCRITIC_V5_CHECKPOINT = Path(
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v5/"
+    "v5_screen_seed_20260907_runner_1113cd2c0dd9acb508f58782eecb40f458d2cab3/"
+    "v5_full/final_pass_8_checkpoint.pt"
 )
 CRITIC_REGIONS = {"5UTR", "3UTR"}
 
@@ -253,7 +266,10 @@ def sample_one_source_setflow_v5_guided(
                 *[child for columns in query_children for _, child in columns],
             ]
             values = critic.potentials(
-                flat_query, endpoint_id=endpoint_id, region=region
+                flat_query,
+                endpoint_id=endpoint_id,
+                region=region,
+                source_row=source_row,
             )
             current_potential = torch.tensor(
                 values[: len(indices)], dtype=torch.float64, device=device
@@ -314,6 +330,7 @@ def sample_one_source_setflow_v5_guided(
         [terminal for terminal, _, _ in terminals],
         endpoint_id=endpoint_id,
         region=region,
+        source_row=source_row,
     )
     return terminals, terminal_potentials
 
@@ -711,27 +728,55 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
             "unguided arm violated a hard legality or budget constraint",
         )
     if "guided" in arms:
-        _require(
-            Path(arguments.critic_checkpoint).is_file(),
-            f"frozen Critic V2 checkpoint is absent: {arguments.critic_checkpoint}",
-        )
-        _require(
-            Path(arguments.mrnabert_model).is_dir(),
-            f"mRNABERT model directory is absent: {arguments.mrnabert_model}",
-        )
         transform = reward_policy["potential_transform"]
-        critic = FrozenRoute2MRNABERTCritic(
-            Path(arguments.critic_checkpoint),
-            Path(arguments.mrnabert_model),
-            device,
-            potential_minimum=float(transform["minimum"]),
-            potential_maximum=float(transform["maximum"]),
-            encoder_attention_backend=str(arguments.encoder_attention_backend),
-        )
-        method_id = (
-            f"frozen_mrnabert_critic_v2_guided_xeditsetflow_v5_{run_id}"
-            f"_pass{checkpoint_pass}_seed{training_seed}"
-        )
+        critic_kind = str(arguments.critic_kind)
+        if critic_kind == "v5":
+            # Pre-authorized frozen-critic substitution: the Critic V2
+            # all-development refit never executed (checkpoint absent, ~80h
+            # serial refit), so the session task list froze the guided-arm
+            # critic to the terminal gate-passing XEditCritic V5 screen
+            # checkpoint under the unchanged frozen G0 reward policy.
+            v5_checkpoint = Path(arguments.v5_critic_checkpoint)
+            _require(
+                v5_checkpoint.is_file(),
+                f"frozen XEditCritic V5 checkpoint is absent: {v5_checkpoint}",
+            )
+            _require(
+                Path(arguments.mrnabert_model).is_dir(),
+                f"mRNABERT model directory is absent: {arguments.mrnabert_model}",
+            )
+            critic = FrozenXEditCriticV5(
+                v5_checkpoint,
+                Path(arguments.mrnabert_model),
+                device,
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+            )
+            method_id = (
+                f"frozen_xeditcritic_v5_guided_xeditsetflow_v5_{run_id}"
+                f"_pass{checkpoint_pass}_seed{training_seed}"
+            )
+        else:
+            _require(
+                Path(arguments.critic_checkpoint).is_file(),
+                f"frozen Critic V2 checkpoint is absent: {arguments.critic_checkpoint}",
+            )
+            _require(
+                Path(arguments.mrnabert_model).is_dir(),
+                f"mRNABERT model directory is absent: {arguments.mrnabert_model}",
+            )
+            critic = FrozenRoute2MRNABERTCritic(
+                Path(arguments.critic_checkpoint),
+                Path(arguments.mrnabert_model),
+                device,
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+                encoder_attention_backend=str(arguments.encoder_attention_backend),
+            )
+            method_id = (
+                f"frozen_mrnabert_critic_v2_guided_xeditsetflow_v5_{run_id}"
+                f"_pass{checkpoint_pass}_seed{training_seed}"
+            )
         sampled: list[tuple[FlowState, tuple[str, ...], int]] = []
         terminal_potentials: list[float] = []
         critic_forwards_by_source: dict[int, int] = {}
@@ -794,6 +839,27 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
                     "GUIDED_ARM_DECLARES_EXTRA_CRITIC_FORWARDS_SEPARATELY"
                 ),
                 "root_prior_compute": vars(prior_compute),
+                **(
+                    {
+                        "critic_kind": "XEDITCRITIC_V5_FROZEN_GUIDANCE",
+                        "critic_bottom_six_encoded_sequences": (
+                            critic.encoded_sequence_count
+                        ),
+                        "critic_potential_query_count": (
+                            critic.potential_query_count
+                        ),
+                        "critic_potential_newly_scored_count": (
+                            critic.potential_newly_scored_count
+                        ),
+                        "critic_potential_memo_hit_count": (
+                            critic.potential_query_count
+                            - critic.potential_newly_scored_count
+                        ),
+                        "critic_scoring_batch_count": critic.scoring_batch_count,
+                    }
+                    if critic_kind == "v5"
+                    else {}
+                ),
             },
         )
         arm_directory = output_directory / "guided"
@@ -833,7 +899,17 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
         "beta": beta,
         "beta_schedule": "CONSTANT_G0_FROZEN_REWARD_POLICY",
         "transition_rule": "BASE_TRANSITION_RATE_TIMES_EXP_POTENTIAL_DIFFERENCE",
-        "critic_checkpoint_path": str(arguments.critic_checkpoint),
+        "critic_kind": str(arguments.critic_kind),
+        "critic_checkpoint_path": str(
+            arguments.v5_critic_checkpoint
+            if str(arguments.critic_kind) == "v5"
+            else arguments.critic_checkpoint
+        ),
+        **(
+            {"critic_guidance_provenance": critic.guidance_provenance()}
+            if "guided" in arms and str(arguments.critic_kind) == "v5"
+            else {}
+        ),
         "critic_reward_policy_path": str(FROZEN_REWARD_POLICY_PATH),
         "encoder_attention_backend": str(arguments.encoder_attention_backend),
         "arm_summaries": arm_summaries,
@@ -884,9 +960,23 @@ def main() -> int:
         help="constant guidance strength; defaults to the frozen G0 reward policy value",
     )
     parser.add_argument(
+        "--critic-kind",
+        default="v5",
+        choices=["v2", "v5"],
+        help=(
+            "frozen guided-arm critic family; v5 is the pre-authorized "
+            "substitution for the never-executed Critic V2 refit"
+        ),
+    )
+    parser.add_argument(
         "--critic-checkpoint",
         type=Path,
         default=EXPECTED_CRITIC_CHECKPOINT,
+    )
+    parser.add_argument(
+        "--v5-critic-checkpoint",
+        type=Path,
+        default=EXPECTED_XEDITCRITIC_V5_CHECKPOINT,
     )
     parser.add_argument(
         "--mrnabert-model",
@@ -913,6 +1003,7 @@ def main() -> int:
         "device": f"cuda:{arguments.physical_gpu_index}",
         "output_directory": str(arguments.output_dir),
         "arms": arguments.arms,
+        "critic_kind": str(arguments.critic_kind),
     }
     try:
         result = execute(arguments)

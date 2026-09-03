@@ -193,7 +193,11 @@ class FrozenRoute2MRNABERTCritic:
         *,
         endpoint_id: str,
         region: str,
+        source_row: Mapping[str, Any] | None = None,
     ) -> list[float]:
+        # source_row is accepted so the guided V5 runner can pass its task
+        # metadata uniformly; the V2 critic is endpoint/region keyed only and
+        # ignores it.
         ordered = list(states)
         _require(bool(ordered), "potential state batch is empty")
         source = ordered[0].source_sequence
