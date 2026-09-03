@@ -414,3 +414,34 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 2. 收敛归因：epoch 3 已达峰值域（0.3292），epoch 4-6 稳定在 0.317-0.320 平台——6ep 足够收敛，剩余 vs Optimus 的点估计差为噪声/检验力问题
 3. 底线判定（spec v5.1：必须超过所有 baseline）：MRL 行**未完全过线**（平局非超越）——需多 seed 平均或更大 validation 才能分辨；但"从显著落后到统计平局+点估计领先"是 W 阶梯实质进展，作为本周一版结果的 MRL 主体
 4. 证据：`experiments/analysis_fullft_v2_adjudication_20260903/{adjudication_results.json, vs_critic_v5.json}`
+## 2026-09-03（傍晚，第九批：3-seed ensemble 终局判定 + polyA Route A 发射）
+
+### MRL full-FT V2 三 seed 终态（FINAL-EPOCH-6-FIXED，GSE114002 VALIDATION，K=10）
+
+| seed | Spearman | top-1 | NDCG@10 |
+|---|---|---|---|
+| 20260903 | 0.3198 | 0.4481 | 0.8613 |
+| 20260904 | 0.2873 | 0.4221 | 0.8505 |
+| 20260905 | 0.3157 | **0.5087** | **0.8808** |
+| **3-seed ensemble（z-mean）** | **0.3158** | 0.4416 | 0.8624 |
+| frozen-Optimus | 0.3132 | 0.4069 | 0.8655 |
+
+**Ensemble vs frozen-Optimus paired bootstrap（2,000 iters，seed 20260816）**：
+- ΔSpearman +0.0027，CI [−0.045, +0.048] 跨零 → 统计平局
+- Δtop-1 +0.0346，CI [−0.022, +0.095] 跨零 → 平局（点估计领先）
+- ΔNDCG −0.0031，CI 跨零 → 平局
+
+**MRL 终局结论**：
+1. Route A（外部 280K 监督预微调）三 seed 复现：Spearman 0.287-0.320（均值 ~0.308），seed 方差 ±0.016
+2. **vs critic V5（0.1354）：+0.18 量级提升，CI 不跨零（单 seed 已判定显著）**——房内 MRL 能力从"显著落后"到"与最强外部统计不可区分、点估计领先"
+3. 决策口径（top-1）三 seed 全部超 Optimus（0.4221-0.5087 vs 0.4069），seed 20260905 达 0.5087（+0.102）
+4. 严格按底线（"必须超过所有 baseline"）MRL 未完全过线——统计平局非显著超越；730-record validation 检验力为物理约束（分辨 ~0.05 级 delta 需 >2,000 records）。如实报告，不宣称过线
+5. 证据：`experiments/analysis_fullft_v2_adjudication_20260903/ensemble_3seed_vs_optimus.json`
+
+### polyA Route A 发射（15:45，GPU5）
+
+- **数据**：APARENT 训练库 GSE113849 isoforms（GEO supplementary 155MB，NCBI 限速下并行分块下载 ~1.5h）；过滤 count≥10 后 **2,740,320 行**；目标 = proximal usage log2 odds（对齐 GSE269595 endpoint 口径）
+- **泄漏审计（硬门）**：2.74M 文库序列 vs GSE269595 全 split 3,347 唯一 source/candidate 序列（3-block 17bp 鸽笼 ≤2 mismatch）→ **flagged = 0**（审计 JSON 已落盘）
+- **训练**：mRNABERT full-FT 同协议（113M 全参 / lr 2e-5 / 6ep / batch 128 / bf16 / seed 20260903 / FINAL-EPOCH-6-FIXED 主判据 + 每 epoch 诊断）
+- **目标参照**：critic V5 0.8219 / V6 0.8273 / APARENT 0.7343 / W0-polyA 0.8142（Spearman 口径）；决策口径（top-1/NDCG）是 polyA 主缺口（V5 top-1 0.5007 vs APARENT 0.6011）
+- 预计 ~2.5h 终态（2.74M 行 × 6ep）
