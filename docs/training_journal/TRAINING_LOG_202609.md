@@ -484,3 +484,29 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 ### 判定
 
 - 两线均无新终态、无异常。下一检查点：B2 guided ETA 09-04 ~05:40；polyA 在 B2 终态后 120s 自动接力。收割脚本与 watcher 就绪。
+
+## 2026-09-04（04:07，第十一批：例行监控观测，无新终态）
+
+### B2 guided 线（PID 1909082，GPU1）
+
+- 启动 09-03 12:21，本批 elapsed 15h46m；unguided 臂 12:42 已终态，guided 臂仍在途；终态产物 b2_full_891/guided_run_summary.json 未出现 → harvest_b2.sh 待命。
+- 深检"进程活着但零输出"疑点，结论 = 慢速推进非卡死：
+  - /proc/1909082/io：syscw=27、write_bytes≈21MB（= 12:42 unguided 臂产物量），12:42:28 后无任何写系统调用——符合"全部臂产物终态一次性原子落盘"的设计，不能据此判死；
+  - rchar 6.76GB 且 45s 窗口零增长——source/measured 池全部驻留内存缓存（SourceTokenCacheIndexV3），无磁盘读不代表停滞；
+  - nvidia-smi dmon 45s：GPU1 每秒均有 kernel 启动（SM 9-74% 波动、mem% 0-2%、功率 43-76W）——小 batch 生成器前向 + critic potential memo 命中（smoke 口径 177k memo vs 103k 新评分）为主，与真卡死（纯 CPU 空转）可区分；
+  - smoke 校准：guided 8 源 wall 550s ≈ 68.7s/源 → 891 源 ≈ 17.0h；guided 臂自 12:42:30 起跑，ETA ~05:45，本批已过 ~90%。
+- 合规复检：所有 run_summary + failed.json 的 cpu_fallback_used=false；本进程直接持有 cuda:1（23.3GB）且每秒有 GPU kernel → 无 CPU 静默降级。
+- 监控盲区（建议，下批次执行）：runner 无 per-source 进度打印（全文件仅末行一次 print），导致挂起与慢速不可从日志区分；建议增加"每 N 源落盘 progress.jsonl"心跳 + while 循环 forwards 预算断言，供审计与在线监控。
+
+### polyA APA 线（GSE113849 2.74M 预微调）
+
+- 仍在 B2 终态后排队：polya_auto_launcher PID 1005196 / polya_harvest_watcher PID 1025537 健在，B2 未终态故未启动；终态产物 frozen_delta_results.json 不存在 → harvest_polya.sh 待命。
+
+### GPU / 节点抽查
+
+- GPU0-5 满显存占用（39-40GB/40G，util 11-100%，节点共享）；本线 GPU1 正常推进；GPU6/7 为 MIG 切片（util N/A），无碍。
+- status.log 近端仅 B2 alive=1 / APA queued behind B2 - normal；needs_attention.txt 为空。
+
+### 判定
+
+- 两线均无新终态、无异常。下一检查点：B2 guided ETA 09-04 ~05:45（约 1.5h 后）；polyA 在 B2 终态后 120s 自动接力 GPU1。收割脚本与 watcher 就绪。
