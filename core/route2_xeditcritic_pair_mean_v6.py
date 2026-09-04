@@ -13,8 +13,10 @@ cell measurement.  This module provides, as pure CPU-testable functions:
    that flattens the long effect-size tail (Spearman invariant, MAE reported
    in two currencies).
 3. ``extended_validation_metrics_v6`` — W1-e helpers: within-source rho,
-   pair-mean rho + ceiling ratio, hit@K / NDCG@K over the measured pair
-   neighborhood, and Tier-B task marking.
+   pair-mean rho + ceiling ratio (all-task pooled values under
+   ``*_pooled_legacy`` keys plus per-task columns ``*_by_task``; 2026-09-04
+   Task 3.1), hit@K / NDCG@K over the measured pair neighborhood, and Tier-B
+   task marking.
 
 Every switch defaults OFF so the V5 executor stays bit-identical; a run only
 adopts a transform when its config field is explicitly true.
@@ -202,6 +204,15 @@ def extended_validation_metrics_v6(
 ) -> dict[str, object]:
     """W1-e extension: within-source rho, pair-mean rho + ceiling ratio, hit@K, NDCG@K.
 
+    Pair-mean metrics are emitted in two currencies: all-task pooled values
+    under ``*_pooled_legacy`` keys (kept for continuity; NOT any task's
+    criterion — see the 2026-09-03 caliber-trap incident) and per-task
+    columns ``pair_mean_{spearman,pair_count,ceiling,ceiling_ratio}_by_task``.
+    The per-task caliber matches the adjudication scripts: pair/variant
+    groups (pair key excludes context) with >= 2 measured contexts,
+    group means of target and prediction, Spearman across group means
+    within each task.
+
     All metric families are computed from pure record-level bundles; no TEST or
     Evaluation outcome is read.
     """
@@ -237,21 +248,49 @@ def extended_validation_metrics_v6(
         flat_predictions = [p for members in eligible for _, p in members]
         within_rho = _safe_rho(flat_targets, flat_predictions)
 
-    # Pair-mean rho + ceiling ratio.
-    pair_buckets: dict[tuple[str, str, str, str], list[tuple[float, float]]] = {}
-    for target, prediction, key in zip(targets, predictions, pair_keys):
-        pair_buckets.setdefault(key, []).append(
+    # Pair-mean rho + ceiling ratio (all-task pooled) and per-task columns.
+    # 2026-09-04 Task 3.1 (SPECS_CRITIC_V6): the pooled pair-mean spearman
+    # (e.g. 2,660 pooled pairs = MPRAU 2,008 variants + polyA 321 + ~331
+    # others) is NOT any task's criterion and was once misquoted as the MPRAU
+    # caliber (2026-09-03 caliber-trap incident).  Pooled fields keep a
+    # _pooled_legacy suffix so stale readers fail loudly (KeyError) instead
+    # of silently quoting a pooled number; pair_mean_spearman_by_task is the
+    # supported read.  Per-task caliber matches the adjudication scripts:
+    # pair/variant groups (pair key excludes context) with >= 2 measured
+    # contexts, group means of target and prediction, Spearman across group
+    # means within each task.
+    task_groups: dict[str, dict[tuple[str, str, str, str], list[tuple[float, float]]]] = {}
+    for target, prediction, task, key in zip(targets, predictions, tasks, pair_keys):
+        task_groups.setdefault(str(task), {}).setdefault(key, []).append(
             (float(target), float(prediction))
         )
+
+    def _pair_mean_rows(
+        groups: Mapping[tuple[str, str, str, str], list[tuple[float, float]]],
+    ) -> list[tuple[float, float]]:
+        return [
+            (
+                sum(t for t, _ in members) / len(members),
+                sum(p for _, p in members) / len(members),
+            )
+            for members in groups.values()
+            if len(members) >= 2
+        ]
+
     pair_rows = [
-        (
-            sum(t for t, _ in members) / len(members),
-            sum(p for _, p in members) / len(members),
-        )
-        for members in pair_buckets.values()
-        if len(members) >= 2
+        row
+        for groups in task_groups.values()
+        for row in _pair_mean_rows(groups)
     ]
     pair_rho = _safe_rho([t for t, _ in pair_rows], [p for _, p in pair_rows])
+    pair_mean_spearman_by_task: dict[str, float | None] = {}
+    pair_mean_pair_count_by_task: dict[str, int] = {}
+    for task in sorted(task_groups):
+        rows = _pair_mean_rows(task_groups[task])
+        pair_mean_pair_count_by_task[task] = len(rows)
+        pair_mean_spearman_by_task[task] = _safe_rho(
+            [t for t, _ in rows], [p for _, p in rows]
+        )
     ceiling_ratio = None
     tier_b_tasks: set[str] = set()
     if pair_rho is not None and ceiling_by_task:
@@ -263,15 +302,25 @@ def extended_validation_metrics_v6(
                 tier_b_tasks.add(task)
         if ratios:
             ceiling_ratio = float(sum(ratios) / len(ratios))
+    # Task 3.2 (same site): per-task ceiling echo + completion ratio
+    # (rho_task / ceiling_task).  Ceilings arrive via config
+    # training.ceiling_by_task; tasks without a registered ceiling read null.
+    pair_mean_ceiling_by_task: dict[str, float | None] = {}
+    pair_mean_ceiling_ratio_by_task: dict[str, float | None] = {}
+    for task, rho in pair_mean_spearman_by_task.items():
+        ceiling = None
+        if ceiling_by_task is not None and task in ceiling_by_task:
+            ceiling = float(ceiling_by_task[task])
+        pair_mean_ceiling_by_task[task] = ceiling
+        pair_mean_ceiling_ratio_by_task[task] = (
+            rho / ceiling
+            if ceiling is not None and ceiling > 0.0 and rho is not None
+            else None
+        )
 
     # hit@K / NDCG@K over the measured pair neighborhood.
     per_task_hits: dict[str, dict[str, float]] = {}
     per_task_ndcg: dict[str, dict[str, float]] = {}
-    task_groups: dict[str, dict[tuple[str, str, str, str], list[tuple[float, float]]]] = {}
-    for target, prediction, task, key in zip(targets, predictions, tasks, pair_keys):
-        task_groups.setdefault(str(task), {}).setdefault(key, []).append(
-            (float(target), float(prediction))
-        )
     for task, groups in task_groups.items():
         valid_groups = [members for members in groups.values() if len(members) >= 2]
         for k in set(hit_at_k) | set(ndcg_at_k):
@@ -303,11 +352,15 @@ def extended_validation_metrics_v6(
                 )
 
     return {
-        "schema_version": "route_a_v3_route2_xeditcritic_v6_extended_metrics.v1",
+        "schema_version": "route_a_v3_route2_xeditcritic_v6_extended_metrics.v2",
         "within_source_spearman": within_rho,
-        "pair_mean_spearman": pair_rho,
-        "pair_mean_ceiling_ratio": ceiling_ratio,
-        "pair_mean_pair_count": len(pair_rows),
+        "pair_mean_spearman_pooled_legacy": pair_rho,
+        "pair_mean_ceiling_ratio_pooled_legacy": ceiling_ratio,
+        "pair_mean_pair_count_pooled_legacy": len(pair_rows),
+        "pair_mean_spearman_by_task": pair_mean_spearman_by_task,
+        "pair_mean_pair_count_by_task": pair_mean_pair_count_by_task,
+        "pair_mean_ceiling_by_task": pair_mean_ceiling_by_task,
+        "pair_mean_ceiling_ratio_by_task": pair_mean_ceiling_ratio_by_task,
         "hit_at_k_by_task": per_task_hits,
         "ndcg_at_k_by_task": per_task_ndcg,
         "tier_b_tasks": sorted(tier_b_tasks),

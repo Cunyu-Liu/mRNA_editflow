@@ -168,9 +168,72 @@ def test_extended_validation_metrics_pair_mean_rho():
         keys,
         ceiling_by_task={MPRAU_TASK_ID: 0.683},
     )
-    assert metrics["pair_mean_spearman"] is not None
-    assert metrics["pair_mean_spearman"] > 0.8
-    assert metrics["pair_mean_ceiling_ratio"] is not None
-    assert metrics["pair_mean_ceiling_ratio"] > 1.0
+    assert metrics["pair_mean_spearman_pooled_legacy"] is not None
+    assert metrics["pair_mean_spearman_pooled_legacy"] > 0.8
+    assert metrics["pair_mean_ceiling_ratio_pooled_legacy"] is not None
+    assert metrics["pair_mean_ceiling_ratio_pooled_legacy"] > 1.0
     assert MPRAU_TASK_ID in metrics["tier_b_tasks"]
-    assert metrics["schema_version"] == "route_a_v3_route2_xeditcritic_v6_extended_metrics.v1"
+    assert metrics["schema_version"] == "route_a_v3_route2_xeditcritic_v6_extended_metrics.v2"
+    # Task 3.1: the un-suffixed pooled key is gone (stale readers fail
+    # loudly); single-task fixture pools to the only task's per-task value.
+    assert "pair_mean_spearman" not in metrics
+    assert metrics["pair_mean_spearman_by_task"][MPRAU_TASK_ID] == pytest.approx(
+        metrics["pair_mean_spearman_pooled_legacy"]
+    )
+    assert metrics["pair_mean_pair_count_by_task"][MPRAU_TASK_ID] == 10
+    assert metrics["pair_mean_pair_count_pooled_legacy"] == 10
+
+
+def test_extended_validation_metrics_pair_mean_by_task_two_tasks():
+    # Task 3.1 regression: two tasks with opposite pair-mean orderings must be
+    # reported separately; the pooled legacy value mixes both task pools and
+    # matches neither per-task column (the 2026-09-03 misreport mechanism).
+    other_task = "OTHER_TASK::region=0"
+    targets = []
+    predictions = []
+    tasks = []
+    groups = []
+    keys = []
+    for variant in range(10):
+        mprau_key = (MPRAU_TASK_ID, "ENCSR854RUF", f"src{variant}", f"cand{variant}")
+        for cell_index in range(6):
+            targets.append(float(variant * 0.1 + cell_index * 0.001))
+            predictions.append(float(variant * 0.09 + cell_index * 0.0001))
+            tasks.append(MPRAU_TASK_ID)
+            groups.append(f"ENCSR854RUF::SG{variant}::CELL{cell_index}::{MPRAU_TASK_ID}")
+            keys.append(mprau_key)
+        other_key = (other_task, "STUDY2", f"src{variant}", f"cand{variant}")
+        for rep in range(3):
+            # anti-monotone predictions: per-task pair-mean rho = -1
+            targets.append(1.0 + variant * 0.1 + rep * 0.001)
+            predictions.append(1.8 - variant * 0.09 - rep * 0.0001)
+            tasks.append(other_task)
+            groups.append(f"STUDY2::SG{variant}::REP{rep}::{other_task}")
+            keys.append(other_key)
+    metrics = extended_validation_metrics_v6(
+        targets,
+        predictions,
+        tasks,
+        groups,
+        keys,
+        ceiling_by_task={MPRAU_TASK_ID: 0.683, other_task: 0.21},
+    )
+    by_task = metrics["pair_mean_spearman_by_task"]
+    assert set(by_task) == {MPRAU_TASK_ID, other_task}
+    assert by_task[MPRAU_TASK_ID] > 0.99
+    assert by_task[other_task] < -0.99
+    pooled = metrics["pair_mean_spearman_pooled_legacy"]
+    assert pooled is not None
+    assert pooled != by_task[MPRAU_TASK_ID]
+    assert pooled != by_task[other_task]
+    assert metrics["pair_mean_pair_count_by_task"] == {
+        MPRAU_TASK_ID: 10,
+        other_task: 10,
+    }
+    assert metrics["pair_mean_pair_count_pooled_legacy"] == 20
+    ceilings = metrics["pair_mean_ceiling_by_task"]
+    assert ceilings[MPRAU_TASK_ID] == pytest.approx(0.683)
+    assert ceilings[other_task] == pytest.approx(0.21)
+    ratios = metrics["pair_mean_ceiling_ratio_by_task"]
+    assert ratios[MPRAU_TASK_ID] == pytest.approx(by_task[MPRAU_TASK_ID] / 0.683)
+    assert ratios[other_task] == pytest.approx(by_task[other_task] / 0.21)
