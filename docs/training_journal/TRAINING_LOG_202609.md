@@ -536,3 +536,58 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 ### 判定
 
 - 两线均无新终态。B2 guided 超出 smoke 校准 ETA 但实时证据（CPU ticks + GPU kernel 每秒 + SM 满频）证明为慢速推进而非卡死，暂不干预；下个检查点若仍无终态产物，建议按监控盲区修复方案给 runner 补 progress.jsonl 心跳以定位剩余源数。polyA 在 B2 终态后 120s 自动接力 GPU1。收割脚本与 watcher 就绪。
+
+## 2026-09-04（18:45，第十三批：D6 Baseline 补强 frozen-Δ 全覆盖——RNA-FM / UTR-LM 8 任务 16 组合收官）
+
+### 交付与复用声明
+
+- **薄封装** `scripts/route_a_v3/run_route2_frozen_delta_full_coverage_v1.py`：以库方式导入 `run_route2_frozen_delta_te_family_v1.py` 管线（te 模块级 TASKS 扩展 4 个 generalist spec），参数 task × model，输出 schema 沿用 frozen_delta_results.json（`route_a_v3_route2_frozen_delta_full_coverage.v1`）。
+- **P0（Task 5.3 四任务）今天 18:03 已由 `analysis_frozen_delta_te_family_20260904/` 完成**（cuda:5；smoke port-validation 复现 MRL frozen 行：UTR-LM 0.1107267878538859 精确一致、RNA-FM |Δ|=2.4e-6）。管线 seed 20260816 全确定性，重跑必得同值 → 本批**导入而非重算**（`imported_runs` 字段溯源；榜单只增行），per-run 目录随汇总自包含复制。
+- **P1（generalist 四任务 × 2 模型 = 8 组合）本批 GPU2 新跑**（cuda:2，A100-PCIE-40GB，UUID d46dc272-4b72-0b54-aacd-f9ace57d622f；VALIDATION only；protected reads=0；不碰 GPU1/3/4/5 任何进程）。冒烟 50 行 × 8 组合先行通过（`analysis_frozen_delta_full_coverage_20260904_smoke/`）。
+- MPRAU 主判据另算**变体 pair-mean ρ**（W-ladder 裁决口径：rid 去 `:context:` 后缀分组、≥2 context、per-variant 均值、2,008 变体 Spearman；非配对 bootstrap CI 2,000 iters seed 20260816）——与 Saluki MPRAU 脚本逐字同口径。
+
+### 结果表（16 组合全部到位）
+
+**P1 generalist 新行（本批 GPU2 执行）：**
+
+| 任务 | n | RNA-FM ρ | UTR-LM ρ | critic V5 | 内靶 global_scaled | 既有外部行 |
+|---|---|---|---|---|---|---|
+| polyA 3'UTR | 2,628 | 0.7114 | 0.7490 | 0.8219 | 0.7308 | APARENT 0.7343 |
+| MPRAU pair-mean ρ | 12,048（2,008 变体） | 0.0180 CI[−0.025,+0.061] | 0.0147 CI[−0.031,+0.058] | 0.1025 | 0.0248 | Saluki 0.1205 CI[0.077,0.164] |
+| HALF_LIFE 5'UTR | 400 | 0.0271 | −0.0199 | 0.0607 | −0.0522 | Saluki 0.0193 |
+| HALF_LIFE 3'UTR | 503 | 0.0500 | −0.0986 | 0.0456 | −0.0029 | Saluki 0.0985 |
+
+polyA 决策口径（top-1 / NDCG@10）：RNA-FM 0.4779 / 0.8481，UTR-LM 0.5020 / 0.8609（V5 0.5007 / 0.8710，APARENT 0.6011 / 0.8906）。MPRAU record-level ρ：RNA-FM 0.0131 / UTR-LM 0.0109（V5 record-level 0.0732）。
+
+**P0（Task 5.3 导入行，源自 te_family run）：**
+
+| 任务 | n | RNA-FM ρ | UTR-LM ρ | critic V5 | 内靶 global_scaled |
+|---|---|---|---|---|---|
+| GSE200304 TE | 1,614 | 0.0009 | 0.0113 | 0.0579 | −0.0266 |
+| GSE149487 TE | 48 | −0.0153 | −0.0277 | 0.1953 | 0.1747 |
+| GSE149487 RNA | 48 | 0.2958 | 0.0433 | 0.0500 | 0.2230 |
+| GSE186455 | 274 | 0.1043 | −0.1233 | 0.0639 | −0.0052 |
+
+GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜单 §1.5 口径记 null。
+
+### 对位判读
+
+1. **polyA**：两外部 frozen 行均**负于 V5**（−0.110 / −0.073），UTR-LM 0.7490 点估计略超 APARENT（+0.0147）与内靶（+0.0182）、RNA-FM 0.7114 低于两者（−0.0229 vs APARENT）→ 落位"APARENT 同档"；V5 保持 polyA 最强行（外部行 0 通道越 V5）。
+2. **MPRAU**：pair-mean ρ 0.0180 / 0.0147，CI 全跨零 = **无信号**，远负于 V5（0.1025）与 Saluki 弱对照（0.1205）→ 外部通用 LM frozen 行不能填补 R5 结构性空白主张的对照位；matched-FT 双臂（今日已预注册，GPU3/4）另线检验。
+3. **HALF_LIFE**：四行全部 |ρ|<0.1（+0.027 / −0.020 / +0.050 / −0.099）→ **"物理不可学"归因从推断升级为实证闭环**（外部现代 LM 同样 ≈0）；维持该任务不参与"全任务好"叙事的预注册声明。
+4. **P0 导入行**：RNA-FM 在 GSE149487 RNA（0.2958，+0.2458 vs V5、+0.0728 vs 内靶）与 GSE186455（0.1043，+0.0404 vs V5、+0.1095 vs 内靶）点估计胜出——均为小样本任务（n=48 / 274），无 CI 口径不宣称显著；其余 P0 组合负于 V5。UTR-LM 全线 ≈0 或负。
+5. **宏观**：16 组合 vs V5 = **2 胜 / 2 平 / 12 负**（判读规则预声明：|Δρ|≥0.01 计胜负；两胜均为 RNA-FM）→ 任务特异性 critic 在无外部靶任务上整体保持领先；外部现代 LM frozen 行价值 =（a）HL 不可学实证化，（b）为 matched-FT 对照提供 frozen 锚点（MPRAU 0.015–0.018）。
+
+### 输入适配声明（逐行，写入 frozen_delta_results.json per-model input_adaptation）
+
+- **RNA-FM**：multimolecule RnaTokenizer（T→U、动态 padding）、fp32 前向、非特殊 token masked-mean-pool；>1000nt 分块策略（build_route2_rnafm_feature_cache_v1 口径）**P1 未触发**（P1 最长 164nt ≪ 1024 token 上限，零截断）；length-sorted batch ≤32 序列 / ≤8192 token。
+- **UTR-LM**：官方 SISS checkpoint epoch93.pkl（git b77b589）、BOS token 第 6 层表征、rotary 位置编码无硬长度限制；batch ≤128 序列 / ≤16384 token（内存适配，padding + attention mask 保证与计数分批结果一致）。
+- P1 唯一序列 29,311 条（101–164nt）；probe = MRL frozen 行原协议（Linear 读出 + AdamW lr 1e-3 / wd 1e-4 × 100 epoch full-batch、seed 20260816、source-group 加权 MSE、VALIDATION epoch 选择——HPO_VALIDATION_ONLY 边界，fit 记录数与各任务 TRAIN 精确一致：polyA 25,710 / MPRAU 55,704 / HL5' 893 / HL3' 1,308）。
+
+### locator
+
+- 汇总（16 组合 + interpretation 判读表 + imported_runs 溯源）：`experiments/analysis_frozen_delta_full_coverage_20260904/frozen_delta_results.json`
+- per-run：同目录 `{task}__{model}/predictions.jsonl + run_detail.json`（16 个，行数与 VALIDATION n 精确一致）
+- 冒烟：`experiments/analysis_frozen_delta_full_coverage_20260904_smoke/`（50 行链路验证）
+- P0 源：`experiments/analysis_frozen_delta_te_family_20260904/`（cuda:5）及其 smoke port-validation
+- 代码：`scripts/route_a_v3/run_route2_frozen_delta_full_coverage_v1.py`（本批）+ `run_route2_frozen_delta_te_family_v1.py`（P0 管线，本批一并入库）
