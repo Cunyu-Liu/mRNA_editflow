@@ -314,6 +314,20 @@ def main() -> int:
     parser.add_argument("--config", type=str, default=str(CONFIG_PATH))
     parser.add_argument("--family-dir", type=str, default=str(FAMILY_DIR))
     parser.add_argument("--output-dir", type=str, default=str(DEFAULT_OUTPUT_DIR))
+    parser.add_argument(
+        "--physical-batch",
+        type=int,
+        default=16,
+        choices=(4, 8, 16, 32),
+        help="physical inference batch; smaller values reduce peak VRAM on "
+        "MIG slices (prediction values are batch-size independent)",
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="resume inference from the existing partial predictions file "
+        "(batches are written atomically, so the file ends on a batch boundary)",
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)
@@ -377,19 +391,39 @@ def main() -> int:
     model.eval()
 
     print("[5/6] full VALIDATION inference with SWA weights (CUDA BF16)...", flush=True)
+    swa_predictions_path = output_dir / "swa_validation_predictions.jsonl"
     swa_rows: list[dict[str, Any]] = []
-    with torch.inference_mode():
-        for batch_index, (indices, valid_count) in enumerate(
-            evaluation_index_batches_v4(len(dataset), 32)
-        ):
-            batch = _move(collator([dataset[i] for i in indices]), device)
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                output = model(batch)
-            scaled_prediction = output["mean"].float()[:valid_count]
-            prediction = scaled_prediction * batch["target_scale"][:valid_count]
-            for index in range(valid_count):
-                swa_rows.append(
-                    {
+    done_record_ids: set[str] = set()
+    if args.resume and swa_predictions_path.exists():
+        with swa_predictions_path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                row = json.loads(line)
+                swa_rows.append(row)
+                done_record_ids.add(str(row["record_id"]))
+        print(
+            f"  resuming: {len(done_record_ids)} rows already predicted",
+            flush=True,
+        )
+    with swa_predictions_path.open("a", encoding="utf-8") as prediction_handle:
+        with torch.inference_mode():
+            for batch_index, (indices, valid_count) in enumerate(
+                evaluation_index_batches_v4(len(dataset), args.physical_batch)
+            ):
+                if all(
+                    str(dataset.records[index].record_id) in done_record_ids
+                    for index in indices[:valid_count]
+                ):
+                    continue
+                batch = _move(collator([dataset[i] for i in indices]), device)
+                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                    output = model(batch)
+                scaled_prediction = output["mean"].float()[:valid_count]
+                prediction = scaled_prediction * batch["target_scale"][:valid_count]
+                for index in range(valid_count):
+                    record_id = str(batch["record_ids"][index])
+                    if record_id in done_record_ids:
+                        continue
+                    row = {
                         "record_id": batch["record_ids"][index],
                         "source_group_id": batch["source_groups"][index],
                         "task_id": batch["task_ids"][index],
@@ -398,18 +432,19 @@ def main() -> int:
                         "scaled_target": float(batch["scaled_target"][index]),
                         "scaled_prediction": float(scaled_prediction[index]),
                     }
-                )
-            if (batch_index + 1) % 100 == 0:
-                print(
-                    f"  batch {batch_index + 1}: rows={len(swa_rows)} "
-                    f"elapsed={time.time() - started:.0f}s",
-                    flush=True,
-                )
+                    swa_rows.append(row)
+                    done_record_ids.add(record_id)
+                    prediction_handle.write(json.dumps(row, sort_keys=True) + "\n")
+                if (batch_index + 1) % 25 == 0:
+                    torch.cuda.empty_cache()
+                    prediction_handle.flush()
+                if (batch_index + 1) % 100 == 0:
+                    print(
+                        f"  batch {batch_index + 1}: rows={len(swa_rows)} "
+                        f"elapsed={time.time() - started:.0f}s",
+                        flush=True,
+                    )
     assert len(swa_rows) == len(dataset), "padded rows entered the SWA cohort"
-    swa_predictions_path = output_dir / "swa_validation_predictions.jsonl"
-    with swa_predictions_path.open("w", encoding="utf-8") as handle:
-        for row in swa_rows:
-            handle.write(json.dumps(row, sort_keys=True) + "\n")
 
     print("[6/6] computing SWA metrics and comparison...", flush=True)
     swa_metrics = metrics_from_rows(swa_rows)
