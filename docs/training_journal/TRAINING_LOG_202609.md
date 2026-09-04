@@ -510,3 +510,29 @@ Route A Step-1 全参消融臂（113,389,825 可训练参数，同 280K 清洗�
 ### 判定
 
 - 两线均无新终态、无异常。下一检查点：B2 guided ETA 09-04 ~05:45（约 1.5h 后）；polyA 在 B2 终态后 120s 自动接力 GPU1。收割脚本与 watcher 就绪。
+
+## 2026-09-04（08:05，第十二批：例行监控观测，无新终态）
+
+### B2 guided 线（PID 1909082，GPU1）
+
+- 启动 09-03 12:21，本批 elapsed 19h46m；unguided 臂 12:42 已终态，guided 臂仍在途；终态产物 b2_full_891/guided_run_summary.json 与 guided/ 子目录均未出现 → harvest_b2.sh 待命。
+- **超时提示**：smoke 校准 ETA ~05:45 已过约 2h20m 仍无终态。深检确认 = 慢速推进非卡死，8 源 smoke 校准低估了全量尾段耗时：
+  - CPU ticks 120s 窗口推进 6429 jiffies（≈53% 单核持续），非空转；
+  - GPU1 dmon 每秒均有 kernel（SM 9-43%、mem 0-5%），SM 时钟满频 1410MHz；与 04:07 批次的健康画像一致；
+  - /proc io 仍为终态一次性落盘 + 全内存缓存特征（write_bytes≈21MB 冻结，符合 runner 设计，见 _write_atomic 终态写 guided_run_summary.json）；
+  - 疑因：全量 891 源尾段存在长轨迹/高 edit-budget 慢源，超过 8 源均值外推；runner 无 per-source 进度输出（已知盲区），无法精确定位剩余源数。
+- 12:16 的 b2_full_891.failed.json 复核 = 双启动防护误触（output directory already exists，cpu_fallback_used=false），非本进程失败，12:20 重启后正常。
+- 合规：xeditsetflow_v5 + xeditcritic_route_a 全部 run_summary 的 cpu_fallback_used=false，无 CPU 静默降级。
+
+### polyA APA 线（GSE113849 2.74M 预微调）
+
+- 仍在 B2 终态后排队：polya_auto_launcher PID 1005196 / polya_harvest_watcher PID 1025537 / b2_harvest_watcher PID 1023582 均健在，B2 未终态故未启动；APA 线 frozen_delta_results.json 不存在 → harvest_polya.sh 待命。
+
+### GPU / 节点抽查
+
+- GPU0-5 满显存占用（39-40GB/40G，util 15-100%，节点共享）；本线 GPU1 正常推进（SM 时钟满频）；GPU6/7 为 MIG 切片（util N/A），无碍。
+- status.log 近端仅 B2 alive=1 / APA queued behind B2 - normal；needs_attention.txt 为空（无异常）。
+
+### 判定
+
+- 两线均无新终态。B2 guided 超出 smoke 校准 ETA 但实时证据（CPU ticks + GPU kernel 每秒 + SM 满频）证明为慢速推进而非卡死，暂不干预；下个检查点若仍无终态产物，建议按监控盲区修复方案给 runner 补 progress.jsonl 心跳以定位剩余源数。polyA 在 B2 终态后 120s 自动接力 GPU1。收割脚本与 watcher 就绪。
