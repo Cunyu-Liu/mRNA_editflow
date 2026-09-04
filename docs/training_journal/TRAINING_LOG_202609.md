@@ -591,3 +591,40 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - 冒烟：`experiments/analysis_frozen_delta_full_coverage_20260904_smoke/`（50 行链路验证）
 - P0 源：`experiments/analysis_frozen_delta_te_family_20260904/`（cuda:5）及其 smoke port-validation
 - 代码：`scripts/route_a_v3/run_route2_frozen_delta_full_coverage_v1.py`（本批）+ `run_route2_frozen_delta_te_family_v1.py`（P0 管线，本批一并入库）
+
+## 2026-09-04（19:00，第十四批：D6 Baseline 补强 P0——MPRAU matched-FT 外部双臂 RNA-FM / UTR-LM 收官，空白主张实证成立）
+
+### 交付与预注册声明
+
+- **预注册** `docs/paper/route2_mprau_matched_ft_external_prereg_v1.md`（commit 4a8fac9f）：把 R5「外部行结构性空白」升级为可检验主张——外部通用 LM 在与我方 per-task 臂**相同任务数据 + 相同更新预算**（12,048 行/pass × 8 passes × batch 32 = 3,016 updates，uniform 子采样自 55,704 行 TRAIN 池）下对位微调，做不动 → 空白主张成立；反超 → 如实报告进 W 阶梯。
+- **微调方式（预注册选择）**：两臂均**全参微调**——RNA-FM（multimolecule 官方 README = HF Trainer 全参示例，无 LoRA 示例）；UTR-LM（官方下游 `Finetune_extract_append_predictor_*.py --finetune` 分支 = backbone+head 全参）。优化器 AdamW wd 1e-4 + cosine 至 10% + 5% warmup（协议统一项，与官方 UTR-LM SGD momentum 0.9 的差异记入预注册 §8）。LR 一次性声明：RNA-FM backbone 2e-5 / head 1e-4（99.5M 量级标准）；UTR-LM backbone 1e-4 / head 2e-4（1.2M 微型模型）。
+- **脚本** `scripts/route_a_v3/run_route2_mprau_matched_ft_external_v1.py`（commit fb2aebe1）：loss/数据/评估逐行镜像 directft 臂 A（huber δ=1.0 + 跨源 pairwise softplus + soft-Spearman 0.2 + within-source 0.5，pass 1–2 {1.0,0.25,0.0} / pass 3–8 {1.0,0.5,0.25}）；frozen-delta（pred = f(cand) − f(src)）；readout RNA-FM = 非特殊 token masked-mean-pool / UTR-LM = BOS 第 6 层表征（各与本项目 frozen 基线同口径）+ fresh 线性 head；seed 20260907；FINAL-PASS-8-FIXED。
+- **冒烟修复（诚实记录）**：首版对 UTR-LM `lm_head.requires_grad_(False)` 会经 weight-tying 连带冻结 `embed_tokens`（smoke trainable 1,190,017 异常核查发现），改为 identity guard 排除绑定权重后修复（1,191,297 = +1,280 embeddings），重新冒烟通过后才发射；RNA-FM 冻结未用 pooler（honest trainable count 99,112,321）。首次双发射命令有 log 路径竞态（UTR-LM nohup 先于 mkdir 执行），UTR-LM 干净补启，无数据影响。
+- 执行：GPU3 = RNA-FM 臂（PID 1946281，18:34–18:40，~7 min 终态）、GPU4 = UTR-LM 臂（PID 1951854，18:36–18:37，~2 min 终态）；两进程均干净退出、显存释放；VALIDATION only、protected reads=0、BF16、未触碰 GPU0/1/2/5 任何进程。
+
+### 结果表（VALIDATION 12,048 行，主判据 = 变体 pair-mean ρ，2,008 变体，FINAL-PASS-8-FIXED）
+
+| 臂 | trainable | pass1→8 pair-mean ρ 曲线 | 终态 pair-mean ρ | task_macro_spm | top-1 | NDCG@10 |
+|---|---|---|---|---|---|---|
+| RNA-FM 全参（99.5M，lr 2e-5/1e-4） | 99,112,321 | 0.0576 → **0.0917**(p2) → −0.0457 → −0.0648 → −0.0514 → −0.0387 → −0.0781 → **−0.0747** | **−0.0747** | −0.0541 | 0.500 | 0.8155 |
+| UTR-LM 全参（1.2M，lr 1e-4/2e-4） | 1,191,297 | 0.0801 → 0.0752 → −0.0616 → −0.0544 → −0.0751 → −0.1037 → −0.1084 → **−0.1066** | **−0.1066** | −0.0765 | 0.361 | 0.7642 |
+
+**paired bootstrap 判定表（2,000 iters，seed 20260816，2,008 共享变体）：**
+
+| 臂 | vs V5 0.1025：Δ [95% CI] | CI 排零？ | vs Saluki frozen 0.1205：Δ [95% CI] | CI 排零？ |
+|---|---|---|---|---|
+| RNA-FM | **−0.1773 [−0.2484, −0.1068]** | 是（显著更差） | **−0.1952 [−0.2699, −0.1222]** | 是（显著更差） |
+| UTR-LM | **−0.2091 [−0.2791, −0.1387]** | 是（显著更差） | **−0.2270 [−0.3038, −0.1533]** | 是（显著更差） |
+
+### 对位判读
+
+1. **空白主张成立（预注册 §7 第一行形态）**：外部通用 RNA LM（99.5M RNA-FM、1.2M UTR-LM）全参对位微调，终态 pair-mean ρ 双双显著为负（四个 CI 全部排零、方向为负），既做不过 V5 0.1025 也做不过 Saluki frozen 弱对照 0.1205，更未接近 W-ladder 0.0510–0.0883 的正区间 → MPRAU 等位偏移端点在外部通用 LM 上「微调也做不动」，R5 结构性空白从推断升级为**实证闭环**（frozen 锚点 0.018/0.015 + matched-FT 终态 −0.075/−0.107，13 批 + 本批）。
+2. **pass-3 坍塌为跨 backbone 普适现象**：四个 backbone（mRNABERT LoRA、RNA-FM 全参、UTR-LM 全参）在 loss 调度切换（pairwise 0.25→0.5 + soft-Spearman 启用）后 pair-mean 全部由正转负（+0.107→−0.085 / +0.092→−0.046 / +0.080→−0.062），且 pass 1–2 峰值（0.092/0.080）本身也未超 V5——说明坍塌不是某 backbone 失败，而是该端点对排序强化阶段的抗性（任务级发现，供 W 阶梯 loss 复查）。
+3. **预注册纪律遵守**：峰值 0.0917（RNA-FM p2）略高于 W-ladder 上沿 0.0883，但选择规则 = FINAL-PASS-8-FIXED（禁 peak-picking），终态判定如上；峰值仅作曲线记录，不进任何主张。
+4. **mRNABERT directft 臂 A 对照（−0.0908）**：三臂终态同带（−0.075 / −0.091 / −0.107），LoRA vs 全参、86M vs 99.5M vs 1.2M 均无实质差异 → 「做不动」与适配器方式、参数量级无关。
+
+### locator
+
+- 结果：`experiments/analysis_mprau_matched_ft_external_20260904/{rnafm,utrlm}/matched_ft_results.json`（含 pass_history 全曲线 + 双 bootstrap + 差异清单）、`predictions.jsonl`（各 12,048 行）、`matched_ft_checkpoint.pt`（398MB / 4.9MB）；日志 `.../logs/{rnafm,utrlm}.log`
+- 代码：`scripts/route_a_v3/run_route2_mprau_matched_ft_external_v1.py`（fb2aebe1）；预注册：`docs/paper/route2_mprau_matched_ft_external_prereg_v1.md`（4a8fac9f）；worktree `route_a_v3_w0_diagnosis_20260902` 分支已 push GitHub
+- 进程：RNA-FM PID 1946281 / UTR-LM PID 1951854 均已终态退出（GPU3/4 释放）；冒烟产物 `/tmp/matched_ft_smoke/`（一次性）
