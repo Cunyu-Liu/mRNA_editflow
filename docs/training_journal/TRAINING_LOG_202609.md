@@ -712,3 +712,14 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **四线并行达成**：APA（GPU3 batch32，step 11000 mse 0.228↓）/ V8-S（GPU7 MIG-A batch64）/ V8-H（GPU7 MIG-B batch64）/ **v8p polyA-only 基线（GPU1 batch64，PID 1000249，epochs 6）**。
 - **排障两连**：(1) manager 文件被异步改写为残缺版（有 v8p 循环检查、缺 job_v8p/v8p_running 函数定义）→ job_v8p 调用静默 command-not-found（stderr→/dev/null）→ 改用服务器端 heredoc 原子重写 v4；(2) heredoc 双引号 awk 程序导致运行时 `$1: unbound variable`（set -u）→ free_mib 恒空 → 修正为单引号 awk。修复后 pick_slot 正常（GPU1 15.5GB→batch64），v8p 发射成功，reservation 现为 {1,3}。
 - 防回归：running 检查全部锚定 python 二进制路径（瞬态 ssh/bash 命令行不再误匹配）；manager v4 已 commit ccb423e8 push。
+
+### 巡检 2026-09-06（2026-09-06 00:07，监控巡检记录）
+
+- **连通性**：巡检期间 SSH banner 超时 ~1 分钟（服务器重载），自动恢复；非进程故障。
+- **manager 存活**：是。但当前有 3 个 mrna_training_manager.sh 实例并存（PID 999885/1114349/1187064），存在重复发射竞态风险，建议后续去重为单实例。needs_attention.txt 不存在（无告警）。
+- **GPU0-5 全忙**：util 83-100%；GPU6/7 MIG。无 idle A100。
+- **APA polyA**：PID 1114351（gpu4 batch32 seed20260903）存活；日志已 load polya 库 2,740,320 行，处于早期训练/初始化；终态 frozen_delta_results.json 未出现（未判定）。无 CPU fallback、无 OOM。
+- **V8 Stage1 S 臂**：PID 667111（MIG-A，mrl+polya，batch64 epochs2）存活，epoch1 step~6500；mse 0.3-0.5，mrl/polya 在收敛。终态 run_report.json 未出现。
+- **V8 Stage1 H 臂**：PID 667112（MIG-B，mrl+polya）存活，epoch1 step~3000；进度略慢于 S 臂。终态未出现。
+- **v8p polyA-only 基线**：PID 1187066（gpu5 batch32）存活（manager 00:05 发射）。
+- **结论**：四线均在跑、无终态产物、无 CPU 静默降级、无 OOM。一切正常，无需人工干预。
