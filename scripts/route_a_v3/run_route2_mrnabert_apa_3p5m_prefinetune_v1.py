@@ -127,9 +127,11 @@ def main() -> int:
     parser.add_argument("--physical-gpu-index", required=True, type=int)
     parser.add_argument("--epochs", type=int, default=6)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--batch", type=int, default=BATCH)
     args = parser.parse_args()
     epochs = args.epochs
     seed = args.seed
+    batch = args.batch
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA unavailable - GPU required")
@@ -216,7 +218,7 @@ def main() -> int:
     trainable = [p for p in model.parameters() if p.requires_grad]
     print(f"trainable parameters (FULL): {sum(p.numel() for p in trainable):,}", flush=True)
     optimizer = torch.optim.AdamW(trainable, lr=LR, weight_decay=WEIGHT_DECAY)
-    total_steps = (len(sequences) // BATCH + 1) * epochs
+    total_steps = (len(sequences) // batch + 1) * epochs
     scheduler = torch.optim.lr_scheduler.LambdaLR(
         optimizer,
         lambda step: 0.1 + 0.9 * 0.5 * (1 + np.cos(np.pi * min(step / max(total_steps, 1), 1.0))) if step > total_steps * 0.05 else step / max(total_steps * 0.05, 1),
@@ -230,8 +232,8 @@ def main() -> int:
     final_metrics, final_predictions = None, None
     for epoch in range(epochs):
         losses = []
-        for start in range(0, len(order), BATCH):
-            idx = order[start:start + BATCH]
+        for start in range(0, len(order), batch):
+            idx = order[start:start + batch]
             batch_ids = input_ids[idx].to(device)
             batch_mask = attention_mask[idx].to(device)
             batch_targets = targets[idx].to(device)
