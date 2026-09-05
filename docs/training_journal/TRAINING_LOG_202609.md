@@ -700,3 +700,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
   - V8-H → MIG-10b9b777（GPU7 slice B），batch 64，PID 667112
   - amendment：batch 64（预注册 128）+ MIG 部署理由同上，pre-launch 已记录；lr 2e-5 / seed 20260903 / epochs 2 / BF16 照预注册 route2_v8_stage1_prereg_v1.md。
 - **当前在途三线**（21:40）：APA GPU3 batch32 训练中（step ~3000，mse 0.29↓，~3.3 step/s 受主机 load 113-196 拖累）；V8-S/H GPU7 MIG batch64 tokenize 中。manager 单实例（PID 512372）继续守 GPU0-5 兜底。
+
+### 批次十五c：V8 预注册 §2 补齐运行 + Stage 1 自动判定上线（2026-09-05 21:55，cunyuliu 交接审计）
+
+- **发现预注册遗漏**：route2_v8_stage1_prereg_v1.md §2 要求 polyA 单域基线由本 runner 以 `--arch s --libraries polya`（epochs 6）补齐（作为 polyA 非破坏门参照，§8.1），首轮发射只发了 S/H 两臂 → manager 新增第 4 job `v8p`（epochs 6，batch 自适应 32-128），GPU0-5 有 ≥7GiB 槽位即自动发射。
+- **Stage 1 判定脚本上线**（scripts/route_a_v3/adjudicate_route2_v8_stage1_v1.py，commit f4e9b274）：按 §8 判定门实现——MRL 非破坏门 0.9×M臂3-seed均值（自动从三个 seed frozen_delta_results.json 算，缺失时回退注册常数 0.3076）；polyA 非破坏门 0.9×s_polya 基线；S vs H（S ≥ H−0.02 选 S）；smoke 报告直接拒绝；输出 adjudication_v8_stage1.json。manager 自动触发（S/H 终态即跑，polyA 基线终态后全量重跑），commit bfd85fe6。
+- 纪律：判定只用 FINAL-EPOCH-FIXED primary 记录；smoke/proxy/训练集结果不构成科学结论（判定脚本硬拒 smoke）。
