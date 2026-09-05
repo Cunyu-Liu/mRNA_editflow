@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# mRNA EditFlow training manager (replaces apa_relaunch_watcher.sh).
-# Launches APA polyA pre-finetune + V8 Stage 1 arms (S/H) on whichever full A100
-# (GPU0-5) has the most free VRAM, batch sized to fit with margin. MIG slices
-# (GPU 6/7) are excluded by project discipline. Auto-heals: on death without
-# terminal marker, requeues; batch halves per repeated launch (floor 32).
-#
-# Prereg amendments (logged, pre-launch): batch adaptively reduced from the
-# preregistered 128 on contended shared cards (user instruction: use any GPU
-# with VRAM; no ≥30GiB gate). All other prereg fields unchanged.
+# mRNA EditFlow training manager (v4, 2026-09-05 22:15).
+# Launches APA polyA pre-finetune + V8 Stage 1 arms (S/H) + polyA-only baseline
+# (v8p) on whichever full A100 (GPU0-5) has the most free VRAM, batch sized to
+# fit with margin. MIG slices (GPU 6/7) excluded here (V8 S/H run on GPU7 MIG
+# via manual CUDA_VISIBLE_DEVICES launches). Auto-heals: death without terminal
+# marker -> requeue (batch halved per relaunch, floor 32). Auto-runs APA
+# harvest + V8 Stage 1 adjudication. Self-dedup at start; running checks
+# anchored to the python binary (no transient ssh/bash false positives).
 set -u
 MDIR=/home/cunyuliu/mrna_editflow_goal/monitor
 LOG=$MDIR/training_manager.log
@@ -20,17 +19,30 @@ PY=/home/cunyuliu/miniconda3/envs/editflow/bin/python
 APA_LOG=$RT/xeditcritic_route_a/apa_3p5m_prefinetune_20260903_relaunch.log
 V8S_LOG=$RT/xeditcritic_route_a/v8_stage1_s_arm.log
 V8H_LOG=$RT/xeditcritic_route_a/v8_stage1_h_arm.log
+V8P_LOG=$RT/xeditcritic_route_a/v8_stage1_polya_base.log
 
-log() { echo "$(date '+%F %T') $*" >>"$LOG"; }
+log() { echo "$(date "+%F %T") $*" >>"$LOG"; }
 
-# launch counters per job (halve batch on repeated failed launches)
+dedup() {
+  local p
+  for p in $(pgrep -f "^bash /home/cunyuliu/mrna_editflow_goal/monitor/mrna_training_manager.sh$" 2>/dev/null); do
+    if [ "$p" != "$$" ]; then kill "$p" 2>/dev/null && log "killed duplicate manager $p"; fi
+  done
+}
+dedup
+
 n_launch() { local f=$MDIR/state_$1.n; [ -f "$f" ] && cat "$f" || echo 0; }
 bump() { local f=$MDIR/state_$1.n; echo "$(($(n_launch "$1") + 1))" > "$f"; }
 
-# "idx free_mib" lines for GPU0-5
+RESV=$MDIR/state_reserved_gpus.txt
+reserve() { echo "$1" >>"$RESV"; }
+is_reserved() { grep -qx "$1" "$RESV" 2>/dev/null; }
+
 free_mib() {
   nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits 2>/dev/null \
-    | awk -F', ' '$1<=5 {print $1, $2}'
+    | awk -F,  '$1<=5 {print $1, $2}' | while read -r idx free; do
+        if ! is_reserved "$idx"; then echo "$idx $free"; fi
+      done
 }
 
 batch_for() {
@@ -43,7 +55,6 @@ batch_for() {
   else echo 0; fi
 }
 
-# pick (gpu batch) for a job with `attempts` prior launches
 pick_slot() {
   local attempts=$1 best_gpu=-1 best_free=0
   while read -r idx free; do
@@ -55,6 +66,7 @@ pick_slot() {
   local b
   b=$(batch_for "$best_free")
   while [ "$attempts" -gt 0 ] && [ "$b" -gt 32 ]; do b=$((b/2)); attempts=$((attempts-1)); done
+  if [ "$b" -lt 32 ]; then echo "-1 0"; return; fi
   echo "$best_gpu $b"
 }
 
@@ -91,18 +103,30 @@ job_v8h() {
   bump v8h
 }
 
-# terminal markers
+# polyA-only single-domain baseline (prereg route2_v8_stage1_prereg_v1.md §2)
+job_v8p() {
+  local gpu=$1 batch=$2
+  reserve "$gpu"
+  (cd "$V8WT" && nohup env PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+    "$PY" scripts/route_a_v3/run_route2_v8_stage1_joint_prefinetune_v1.py \
+    --arch s --libraries polya --physical-gpu-index "$gpu" --seed 20260903 \
+    --epochs 6 --batch "$batch" >"$V8P_LOG" 2>&1 &)
+  log "LAUNCH v8_polyabase gpu=$gpu batch=$batch pid=$!"
+  bump v8p
+}
+
 apa_terminal() { [ -f "$APA_OUT/frozen_delta_results.json" ]; }
 v8s_terminal() { [ -f "$V8_OUT/s_mrl-polya/run_report.json" ]; }
 v8h_terminal() { [ -f "$V8_OUT/h_mrl-polya/run_report.json" ]; }
+v8p_terminal() { [ -f "$V8_OUT/s_polya/run_report.json" ]; }
 
-apa_running()  { pgrep -f "run_route2_mrnabert_apa_3p5m_prefinetune_v1.py" >/dev/null; }
-v8s_running()  { pgrep -f "run_route2_v8_stage1_joint_prefinetune_v1.py --arch s" >/dev/null; }
-v8h_running()  { pgrep -f "run_route2_v8_stage1_joint_prefinetune_v1.py --arch h" >/dev/null; }
+apa_running()  { pgrep -f "^/home/cunyuliu/miniconda3/envs/editflow/bin/python .*run_route2_mrnabert_apa_3p5m_prefinetune_v1.py" >/dev/null; }
+v8s_running()  { pgrep -f "^/home/cunyuliu/miniconda3/envs/editflow/bin/python .*v8_stage1_joint_prefinetune_v1.py --arch s --libraries mrl,polya" >/dev/null; }
+v8h_running()  { pgrep -f "^/home/cunyuliu/miniconda3/envs/editflow/bin/python .*v8_stage1_joint_prefinetune_v1.py --arch h" >/dev/null; }
+v8p_running()  { pgrep -f "^/home/cunyuliu/miniconda3/envs/editflow/bin/python .*v8_stage1_joint_prefinetune_v1.py --arch s --libraries polya" >/dev/null; }
 
 log "training manager started (adaptive batch, no 30GiB gate)"
 
-# APA harvest-once (after terminal)
 APA_HARVESTED=$MDIR/apa_harvested.marker
 
 while true; do
@@ -140,8 +164,6 @@ while true; do
     if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_v8p "$gpu" "$batch"; fi
   fi
 
-  # V8 Stage 1 adjudication (idempotent): run when S/H terminal; full rerun
-  # after the polyA-only baseline lands (polyA non-destruction gate).
   V8_ADJ_FULL=$MDIR/v8_stage1_adj_full.marker
   if v8s_terminal && v8h_terminal && { [ ! -f "$V8_OUT/adjudication_v8_stage1.json" ] || { v8p_terminal && [ ! -f "$V8_ADJ_FULL" ]; }; }; then
     log "V8 Stage 1 adjudicator run (S/H terminal; polyA baseline terminal=$([ -f "$V8_OUT/s_polya/run_report.json" ] && echo yes || echo no))"
