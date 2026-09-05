@@ -646,3 +646,16 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
   - polya_harvest_watcher 已于 09-04 19:06 退出并 ALERT；needs_attention.txt 自 09-04 20:00 每小时记“APA NOT RUNNING AND NO WATCHER”。
   - 09-05 全天 status.log APA alive= watcher= 均空；crontab 仅 monitor 每 2h，无 APA 重启 watcher。GPU0-5 全部被 f3/dr/review、toktokenbench、gmx 等外部任务占用；**09-05 无任何 mRNA-EditFlow 训练进程在跑**。
 - **修复建议**：APA 需人工在空闲 GPU（当前 6/7 为 MIG；0-5 均被占）重建 2.74M full-FT（mRNABERT，batch 128，lr 2e-5，seed 20260903，FINAL-EPOCH-6-FIXED）；或等待抢占型 GPU 空档；并补注册 polya watcher 重启/告警常驻。
+
+### B2 per-task Δ 分解（手动补跑 2026-09-05 18:52，修复 per-task watcher 的 manifest 路径 bug）
+
+> 原 b2_per_task_watcher 的 manifest 路径误写为 `experiments/generation_eligibility`（正确为 `route2/generation_eligibility`），已修复留证；本节为修正后手动执行结果。
+
+| endpoint | n | unguided | guided | Δrecovery | Δhit@1 |
+|---|---|---|---|---|---|
+| MEAN_RIBOSOME_LOAD | 652 | 0.1547 | 0.1587 | +0.0041 | −0.0034 |
+| MPRAU_ALLELIC_SKEW | 108 | 0.0278 | 0.0324 | +0.0046 | +0.0000 |
+| PROXIMAL_POLYA_SITE_USAGE | 20 | 0.0000 | 0.0000 | +0.0000 | +0.0000 |
+| RNA_HALF_LIFE_MINUTES | 111 | 0.0315 | 0.0495 | +0.0180 | +0.0000 |
+
+**三分归因判读（B2 FAIL 后的预登记决策树）**：四任务增益均匀微弱（全部 << +0.05 门），**未出现**polyA 源大增益 / 弱任务源无增益的 critic 质量模式 → 指向**引导形式约束**（potential 式率修正的增益传导不足），非 critic per-task 质量。注意事项：(a) polyA 源仅 20 个（891 源中 MRL 占 652），源分布高度不均衡，per-task 结论受小样本限制；(b) unguided 基线 polyA 源 recovery=0 → polyA 源候选邻域可能未被生成器覆盖（base 侧探索不足也可能是共因）。**后继动作（按 spec contingency）**：TreeG sample-then-select 备选评估提上日程；critic 升级（V8）后重跑 B2 仍值得（当前 critic 引导增益传导弱的归因未完全闭合）。证据：`b2_full_891_adjudication_per_task.json`。
