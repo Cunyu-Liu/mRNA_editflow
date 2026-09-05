@@ -636,3 +636,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **Gate B2**（Δrecovery≥+0.05 且 CI 不跨零 且 hit@1 不劣化）: **False**
 - **Gate B3**（guided recovery≥0.35）: **False**
 - 依据：/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/guided_b2_20260903/b2_full_891_adjudication.json（VALIDATION 口径，protected reads=0，产物在 /mnt）
+
+### 批次十四：双线在途监测 + B2 收割复核 + APA 核心异常（观测 2026-09-05 18:44，cunyuliu 交接审计）
+
+- **B2 guided（xeditsetflow_v5/guided_b2_20260903/b2_full_891）**：TERMINAL。报备 PID 1909082 已不在进程表；watcher 已于 09-05 12:16 自动收割（commit 6d625cb7）。复核 adjudication：guided recovery 0.12626 vs unguided 0.12046；Δrecovery +0.0058 CI [-0.0042,+0.0163] 跨零；Δhit@1 -0.0025 CI [-0.0087,+0.0032] 跨零；**Gate B2 FAIL / Gate B3 FAIL**。run_summary cpu_fallback_used=false、precision=BF16 → 无 CPU 静默降级。protected reads=0。
+- **APA polyA 线（category 2.74M 库 = apa_3p5m_prefinetune）**：**报警级异常**。
+  - 09-04 19:00 GPU2 CUDA OOM 崩死（Tried to allocate 142MB，GPU2 空闲仅 93MB；被其它用户 job 占 31GB+），崩于 mRNABERT forward GELU。
+  - 无终态产物：epoch_frozen_delta_metrics.jsonl / training_losses.jsonl 均 0 字节，无 frozen_delta_results.json → **harvest_polya 不得运行（无 frozen_delta_results.json）**。
+  - polya_harvest_watcher 已于 09-04 19:06 退出并 ALERT；needs_attention.txt 自 09-04 20:00 每小时记“APA NOT RUNNING AND NO WATCHER”。
+  - 09-05 全天 status.log APA alive= watcher= 均空；crontab 仅 monitor 每 2h，无 APA 重启 watcher。GPU0-5 全部被 f3/dr/review、toktokenbench、gmx 等外部任务占用；**09-05 无任何 mRNA-EditFlow 训练进程在跑**。
+- **修复建议**：APA 需人工在空闲 GPU（当前 6/7 为 MIG；0-5 均被占）重建 2.74M full-FT（mRNABERT，batch 128，lr 2e-5，seed 20260903，FINAL-EPOCH-6-FIXED）；或等待抢占型 GPU 空档；并补注册 polya watcher 重启/告警常驻。
