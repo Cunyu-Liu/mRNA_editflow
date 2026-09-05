@@ -735,3 +735,15 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **GPU 状态**：GPU0 100%（游离 70MiB，APA 所在）、GPU1 96%（外部任务）、GPU2 99%、GPU3 81%、GPU4 90% 但仅用 7.5GiB（游离 33GB，v8p 重发首选）、GPU5 60%（外部任务）；GPU6 MIG 1g.5gb、GPU7 MIG 3g.20gb×2（S/H 臂，沿用 09-05 有显存即用决策）。GPU0-5 无空闲整卡。
 - **纪律检查**：APA/S/H 三条日志均无 cpu_fallback_used=true，无 CPU 静默降级；除 v8p OOM（已记录）外无新 OOM。needs_attention.txt 不存在（无告警）。
 - **结论**：APA + V8-S/H 三线健康在跑；唯一异常为 v8p 基线 OOM 死亡（外部任务挤占 GPU5）；manager 已去重为单实例。无紧急人工干预项。
+
+### 巡检 2026-09-06 06:05（监控巡检记录）
+
+- **连通性**：SSH 正常，单次调用完成。
+- **manager 存活**：单实例 PID 1899326（03:10 去重后保持），日志最后 LAUNCH 01:08 apa gpu=0；status.log 06:00 MGR alive=1。无重复实例。
+- **APA polyA 预微调**：PID 1899327（gpu0 batch32 seed20260903 epochs6）存活；03:10 step~19000 → 06:03 step 54000（~11.7k steps/h），mse 0.41→0.20 收敛中，lr 1.95e-05。终态 frozen_delta_results.json 未出现（epoch1/6，约半程）。无 cpu_fallback、无 OOM。
+- **V8 Stage1 S 臂**：PID 667111（GPU7 MIG-A，mrl+polya，batch64 epochs2）存活；epoch1 完成（stage1_s_epoch1.pt 03:36 落盘），epoch2 step 86000，mse 0.2-0.5、mrl 0.36-0.45、polya ~0.18 收敛。终态 run_report.json 未出现。
+- **V8 Stage1 H 臂**：PID 667112（GPU7 MIG-B）存活；epoch1 完成（stage1_h_epoch1.pt 04:44 落盘），epoch2 step 70500。终态未出现。
+- **【延续异常】v8p polyA-only 基线**：仍死亡（00:05 后 manager 未再发射；03:10 记录 OOM 于 GPU5）。现 GPU3 游离 16.6GB（util 100% 为外部任务、内存侧可用）——若 manager 仍不发，建议手工重发 v8p（batch32）至 GPU3，或待外部任务释放。polyA 非破坏门参照仍缺失，Stage1 判定脚本无法全量裁决。
+- **GPU 状态**：GPU0 100%（游离 2.9GB）/GPU1 99%（2.7GB）/GPU2 99%（5.3GB）/GPU3 100%（16.6GB）/GPU4 99%（1.8GB）/GPU5 96%（7.2GB）；GPU6/7 MIG（S/H 臂 + gmx）。无空闲整卡。
+- **纪律检查**：APA/S/H 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM。needs_attention.txt 不存在（无告警）。
+- **结论**：APA + V8-S/H 三线健康在跑，V8 双臂均已进入 epoch2 接近终态；唯一未决项为 v8p 基线（OOM 后未重发），GPU3 有可用游离显存可作重发点。
