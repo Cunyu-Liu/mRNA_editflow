@@ -125,15 +125,15 @@ while true; do
 
   if ! apa_terminal && ! apa_running; then
     read -r gpu batch < <(pick_slot "$(n_launch apa)")
-    if [ "$gpu" -ge 0 ]; then job_apa "$gpu" "$batch"; fi
+    if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_apa "$gpu" "$batch"; fi
   fi
   if ! v8s_terminal && ! v8s_running; then
     read -r gpu batch < <(pick_slot "$(n_launch v8s)")
-    if [ "$gpu" -ge 0 ]; then job_v8s "$gpu" "$batch"; fi
+    if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_v8s "$gpu" "$batch"; fi
   fi
   if ! v8h_terminal && ! v8h_running; then
     read -r gpu batch < <(pick_slot "$(n_launch v8h)")
-    if [ "$gpu" -ge 0 ]; then job_v8h "$gpu" "$batch"; fi
+    if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_v8h "$gpu" "$batch"; fi
   fi
   sleep 120
 done
