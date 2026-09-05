@@ -659,3 +659,19 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 | RNA_HALF_LIFE_MINUTES | 111 | 0.0315 | 0.0495 | +0.0180 | +0.0000 |
 
 **三分归因判读（B2 FAIL 后的预登记决策树）**：四任务增益均匀微弱（全部 << +0.05 门），**未出现**polyA 源大增益 / 弱任务源无增益的 critic 质量模式 → 指向**引导形式约束**（potential 式率修正的增益传导不足），非 critic per-task 质量。注意事项：(a) polyA 源仅 20 个（891 源中 MRL 占 652），源分布高度不均衡，per-task 结论受小样本限制；(b) unguided 基线 polyA 源 recovery=0 → polyA 源候选邻域可能未被生成器覆盖（base 侧探索不足也可能是共因）。**后继动作（按 spec contingency）**：TreeG sample-then-select 备选评估提上日程；critic 升级（V8）后重跑 B2 仍值得（当前 critic 引导增益传导弱的归因未完全闭合）。证据：`b2_full_891_adjudication_per_task.json`。
+
+### 批次十五：训练 manager 部署 + APA 自适应重启 + V8 Stage 1 S/H 发射（2026-09-05 21:05，cunyuliu 交接审计）
+
+- **问题**：apa_relaunch_watcher 要求 ≥30GiB 空闲整卡才启动，GPU0-5 全天被外部任务占满（99-100% util，仅 3-10GB 游离显存）→ 一天零进展。用户指示：**有显存即用，禁止显存 gate；多 GPU 并行**。
+- **方案（amendment，pre-launch 记录）**：
+  - APA runner 新增 `--batch` 参数（默认 128 不变=预注册；显存挤占时降 batch），commit e9789855 已 push。
+  - 新部署 `monitor/mrna_training_manager.sh`（替换 apa_relaunch_watcher）：扫描 GPU0-5 取游离显存最大卡，按 free≥28GiB→128 / ≥20GiB→96 / ≥15GiB→64 / ≥11GiB→48 / ≥7GiB→32 自适应；GPU 预留机制防重复占卡；死亡无终态自动重发（batch 逐次减半，floor 32）；APA 终态自动 harvest_polya.sh + journal commit。
+  - 新监控 `monitor/mrna_editflow_monitor.sh` v3（crontab 每 2h 复用）：跟踪 manager/APA/V8-S/V8-H + needs_attention 告警。
+  - TRAE 侧定时任务「mRNA-EditFlow 训练监控」每 30 分钟巡检（ID b2f628e0）。
+- **发射记录**（20:48-20:53）：
+  - V8-S 冒烟重跑 GPU2（--max-steps 20 --batch 32 --out-dir v8_stage1_smoke_20260904_rerun/s，PID 4158076）：MRL 库 677,608 行泄漏审计 flagged=0 ✅，polyA 2.74M tokenize 中。
+  - APA GPU3（batch 32，PID 4192010）：库 2,740,320 行 leakage flagged=0，tokenize 中。
+  - V8-H GPU0（batch 32，PID 15915）：库加载中。
+- **排障记录**：清理了 09-04 中断会话遗留的陈旧 wrapper（PID 2160080，等待 GPU5 arch-s 后要发 H 冒烟）；修复了 manager 双发射竞态（APA/V8-H 同抢 GPU3 → GPU 预留文件 state_reserved_gpus.txt）。
+- **纪律核验**：三任务全部 CUDA BF16（run_summary cpu_fallback_used 待终态核验）；protected reads=0；产物 /mnt、代码 /home + push（e9789855）。
+- **风险提示**：共享卡上 batch 32 全参微调仍可能被外部任务挤爆 OOM → manager 自动重发兜底；GPU0 已从 6.9GB 被挤到 1.5GB，V8-H 有 OOM 风险（自动迁移）。
