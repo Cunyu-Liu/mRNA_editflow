@@ -706,3 +706,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **发现预注册遗漏**：route2_v8_stage1_prereg_v1.md §2 要求 polyA 单域基线由本 runner 以 `--arch s --libraries polya`（epochs 6）补齐（作为 polyA 非破坏门参照，§8.1），首轮发射只发了 S/H 两臂 → manager 新增第 4 job `v8p`（epochs 6，batch 自适应 32-128），GPU0-5 有 ≥7GiB 槽位即自动发射。
 - **Stage 1 判定脚本上线**（scripts/route_a_v3/adjudicate_route2_v8_stage1_v1.py，commit f4e9b274）：按 §8 判定门实现——MRL 非破坏门 0.9×M臂3-seed均值（自动从三个 seed frozen_delta_results.json 算，缺失时回退注册常数 0.3076）；polyA 非破坏门 0.9×s_polya 基线；S vs H（S ≥ H−0.02 选 S）；smoke 报告直接拒绝；输出 adjudication_v8_stage1.json。manager 自动触发（S/H 终态即跑，polyA 基线终态后全量重跑），commit bfd85fe6。
 - 纪律：判定只用 FINAL-EPOCH-FIXED primary 记录；smoke/proxy/训练集结果不构成科学结论（判定脚本硬拒 smoke）。
+
+### 批次十五d：v8p polyA 单域基线发射成功 + manager v4（2026-09-05 22:20，cunyuliu 交接审计）
+
+- **四线并行达成**：APA（GPU3 batch32，step 11000 mse 0.228↓）/ V8-S（GPU7 MIG-A batch64）/ V8-H（GPU7 MIG-B batch64）/ **v8p polyA-only 基线（GPU1 batch64，PID 1000249，epochs 6）**。
+- **排障两连**：(1) manager 文件被异步改写为残缺版（有 v8p 循环检查、缺 job_v8p/v8p_running 函数定义）→ job_v8p 调用静默 command-not-found（stderr→/dev/null）→ 改用服务器端 heredoc 原子重写 v4；(2) heredoc 双引号 awk 程序导致运行时 `$1: unbound variable`（set -u）→ free_mib 恒空 → 修正为单引号 awk。修复后 pick_slot 正常（GPU1 15.5GB→batch64），v8p 发射成功，reservation 现为 {1,3}。
+- 防回归：running 检查全部锚定 python 二进制路径（瞬态 ssh/bash 命令行不再误匹配）；manager v4 已 commit ccb423e8 push。
