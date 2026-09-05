@@ -691,3 +691,12 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
   1. 终止冒烟 PID 4158076（及其 wrapper 4157952）→ `v8s_running()` 恢复 false → manager 于下一轮自动发射真实 S 臂（批量自适应）。此为本次唯一阻塞项。
   2. APA / V8-H 均正常推进，维持 manager 自动兜底；共享卡 OOM 风险持续盯防。
   3. 建议顺手清除 needs_attention 陈旧告警（APA 已健康）。
+
+### 批次十五b：V8 S/H 双发射到 GPU7 MIG 3g.20gb + manager 修复（2026-09-05 21:40，cunyuliu 交接审计）
+
+- **batch=0 事故与修复**：manager 在游离显存 <7GiB 时 pick_slot 返回 batch=0 且启动守卫只查 gpu≥0 → 21:24/21:26 误发 v8_s/v8_h 两进程（batch=0，训练循环必崩）；同时 deploy 命令疑似被重放产生重复 manager 实例（reservation 文件被重置为仅 "3"）。处置：杀掉全部重复实例与 batch=0 进程；manager 增加 (a) pick_slot 返回 "-1 0"（batch<32 不放行）、(b) 启动守卫 `batch>=32`、(c) 启动时 self-dedup（pgrep 精确匹配 "bash mrna_training_manager.sh" 杀掉重复实例）。无训练损失（被误发进程尚在 tokenize）。
+- **V8 S/H 发射到 MIG**：GPU0-5 全被外部任务挤爆（游离 0.1-5GB），仅 GPU7 两个 MIG 3g.20gb 切片有 14-20GB 可用且 SM 隔离无争用 → 按用户"有显存即用"指示发射（旧纪律"禁 6/7"针对 4.75GB 切片与索引陷阱，20GB 切片 + CUDA_VISIBLE_DEVICES=MIG-UUID 显式索引不适用该陷阱）：
+  - V8-S → MIG-6e59f9af（GPU7 slice A），batch 64，PID 667111
+  - V8-H → MIG-10b9b777（GPU7 slice B），batch 64，PID 667112
+  - amendment：batch 64（预注册 128）+ MIG 部署理由同上，pre-launch 已记录；lr 2e-5 / seed 20260903 / epochs 2 / BF16 照预注册 route2_v8_stage1_prereg_v1.md。
+- **当前在途三线**（21:40）：APA GPU3 batch32 训练中（step ~3000，mse 0.29↓，~3.3 step/s 受主机 load 113-196 拖累）；V8-S/H GPU7 MIG batch64 tokenize 中。manager 单实例（PID 512372）继续守 GPU0-5 兜底。
