@@ -628,3 +628,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - 结果：`experiments/analysis_mprau_matched_ft_external_20260904/{rnafm,utrlm}/matched_ft_results.json`（含 pass_history 全曲线 + 双 bootstrap + 差异清单）、`predictions.jsonl`（各 12,048 行）、`matched_ft_checkpoint.pt`（398MB / 4.9MB）；日志 `.../logs/{rnafm,utrlm}.log`
 - 代码：`scripts/route_a_v3/run_route2_mprau_matched_ft_external_v1.py`（fb2aebe1）；预注册：`docs/paper/route2_mprau_matched_ft_external_prereg_v1.md`（4a8fac9f）；worktree `route_a_v3_w0_diagnosis_20260902` 分支已 push GitHub
 - 进程：RNA-FM PID 1946281 / UTR-LM PID 1951854 均已终态退出（GPU3/4 释放）；冒烟产物 `/tmp/matched_ft_smoke/`（一次性）
+
+### SetFlow V5 B2 guided 终局判定（自动收割 2026-09-05 12:16:26）
+
+- 全量 891 源，unguided recovery = 0.1205 | guided recovery = 0.1263（wall 47.9 h）
+- Δrecovery = 0.0058，CI [-0.0042, 0.0163]；Δhit@1 = -0.0025，CI [-0.0087, 0.0032]（paired bootstrap 2000 iters，seed 20260816）
+- **Gate B2**（Δrecovery≥+0.05 且 CI 不跨零 且 hit@1 不劣化）: **False**
+- **Gate B3**（guided recovery≥0.35）: **False**
+- 依据：/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5/guided_b2_20260903/b2_full_891_adjudication.json（VALIDATION 口径，protected reads=0，产物在 /mnt）
