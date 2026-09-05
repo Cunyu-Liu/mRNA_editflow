@@ -675,3 +675,19 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **排障记录**：清理了 09-04 中断会话遗留的陈旧 wrapper（PID 2160080，等待 GPU5 arch-s 后要发 H 冒烟）；修复了 manager 双发射竞态（APA/V8-H 同抢 GPU3 → GPU 预留文件 state_reserved_gpus.txt）。
 - **纪律核验**：三任务全部 CUDA BF16（run_summary cpu_fallback_used 待终态核验）；protected reads=0；产物 /mnt、代码 /home + push（e9789855）。
 - **风险提示**：共享卡上 batch 32 全参微调仍可能被外部任务挤爆 OOM → manager 自动重发兜底；GPU0 已从 6.9GB 被挤到 1.5GB，V8-H 有 OOM 风险（自动迁移）。
+
+### 批次十六：双线巡检（观测 2026-09-05 21:10，cunyuliu 定时巡检）
+
+- **manager**：ALIVE（PID 15741/15914；20:51、20:53 两次重启，日志正常 LAUNCH）。
+- **APA polyA 预微调**：RUNNING，gpu=3，PID 4192010（batch 32，调整后）。库 2,740,320 行泄漏 flagged=0 ✅，tokenize 中（日志停在 `library clean ... target mean 0.318`）。无终态 frozen_delta_results.json → 暂不运行 harvest_polya。无 CPU fallback；CUDA BF16。GPU 显存当前仅占 ~860MiB（tokenize/数据阶段，正常）。
+- **V8-H 臂**：RUNNING，gpu=0，PID 15915。库加载/flag=0，tokenize 中。无终态 run_report.json（正常，启动不足）。
+- **⚠️ V8-S 臂：真实训练未运行（疑似被冒烟进程占位）**。
+  - 进程表唯一 `--arch s` 进程 PID 4158076 = **冒烟测试**（20:48 手动发射，`--max-steps 20 --batch 32 --out-dir v8_stage1_smoke_20260904_rerun/s`），观测时已活 16+ 分钟仍在 tokenize（143% CPU）。
+  - 该冒烟 cmdline 恰含 `run_route2_v8_stage1_joint_prefinetune_v1.py --arch s`，命中 manager `v8s_running()` 的 `pgrep -f --arch s` → manager 认为 S 臂存活，**不启动真实 S 臂**。
+  - 真实 S 臂 out-dir `v8_stage1_joint_prefinetune_20260904/`（s 臂产物目录）**当前不存在**；manager 日志仅出现 LAUNCH v8_h，无 LAUNCH v8_s。
+- **GPU 总览**：GPU0-5 均被外部任务 99-100% 占满（f3/dr/review、toktokenbench、gmx）；6/7 为 MIG 禁用。B15 已预告的 V8-H 挤占/迁移风险仍在。
+- **needs_attention.txt**：仍残留 `20:00:01 APA NOT RUNNING AND NO WATCHER` 陈旧告警——APA 已于 20:51 重启并存活，告警未清除（monitor 每 2h 重写前仍挂）。
+- **结论/下一步建议**：
+  1. 终止冒烟 PID 4158076（及其 wrapper 4157952）→ `v8s_running()` 恢复 false → manager 于下一轮自动发射真实 S 臂（批量自适应）。此为本次唯一阻塞项。
+  2. APA / V8-H 均正常推进，维持 manager 自动兜底；共享卡 OOM 风险持续盯防。
+  3. 建议顺手清除 needs_attention 陈旧告警（APA 已健康）。
