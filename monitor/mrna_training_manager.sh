@@ -135,5 +135,22 @@ while true; do
     read -r gpu batch < <(pick_slot "$(n_launch v8h)")
     if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_v8h "$gpu" "$batch"; fi
   fi
+  if ! v8p_terminal && ! v8p_running; then
+    read -r gpu batch < <(pick_slot "$(n_launch v8p)")
+    if [ "$gpu" -ge 0 ] && [ "$batch" -ge 32 ]; then job_v8p "$gpu" "$batch"; fi
+  fi
+
+  # V8 Stage 1 adjudication (idempotent): run when S/H terminal; full rerun
+  # after the polyA-only baseline lands (polyA non-destruction gate).
+  V8_ADJ_FULL=$MDIR/v8_stage1_adj_full.marker
+  if v8s_terminal && v8h_terminal && { [ ! -f "$V8_OUT/adjudication_v8_stage1.json" ] || { v8p_terminal && [ ! -f "$V8_ADJ_FULL" ]; }; }; then
+    log "V8 Stage 1 adjudicator run (S/H terminal; polyA baseline terminal=$([ -f "$V8_OUT/s_polya/run_report.json" ] && echo yes || echo no))"
+    if (cd "$V8WT" && "$PY" scripts/route_a_v3/adjudicate_route2_v8_stage1_v1.py) >>"$LOG" 2>&1; then
+      if v8p_terminal; then touch "$V8_ADJ_FULL"; fi
+      log "V8 adjudication OK"
+    else
+      log "V8 adjudication FAILED - NEEDS HUMAN"
+    fi
+  fi
   sleep 120
 done
