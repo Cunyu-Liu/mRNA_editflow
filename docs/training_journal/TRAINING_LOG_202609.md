@@ -723,3 +723,15 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **V8 Stage1 H 臂**：PID 667112（MIG-B，mrl+polya）存活，epoch1 step~3000；进度略慢于 S 臂。终态未出现。
 - **v8p polyA-only 基线**：PID 1187066（gpu5 batch32）存活（manager 00:05 发射）。
 - **结论**：四线均在跑、无终态产物、无 CPU 静默降级、无 OOM。一切正常，无需人工干预。
+
+### 巡检 2026-09-06 03:10（监控巡检记录）
+
+- **连通性**：SSH 正常（前一日约 40 分钟断连已恢复，非进程故障）。
+- **manager 去重处置**：巡检发现陈旧实例 PID 999885（09-05 22:17 启动，pre-v4，00:07 巡检已标记）仍存活且无训练子进程（仅 sleep 120 兜底循环），存在对已死 job（如 v8p）重复发射竞态 → 按 manager v4 self-dedup 约定 kill 999885。现单实例 PID 1899326（持有当前 APA 子进程 1899327），确认无训练受影响。
+- **APA polyA 预微调**：PID 1899327（gpu0 batch32 seed20260903 epochs6）存活，epoch1 step~19000，mse 0.41→0.22 稳步下降，lr warmup 1.48e-05；日志 03:01 仍在写。终态 frozen_delta_results.json 未出现（未到判定时点）。
+- **V8 Stage1 S 臂**：PID 667111（GPU7 MIG-A，mrl+polya，batch64）存活，epoch1 step~45500；末步 mse 0.8751 为单步尖峰，mrl=0.4425/polya=0.1861 稳定（区间均值 ~0.2-0.3），判为噪声非发散。终态 run_report.json 未出现。
+- **V8 Stage1 H 臂**：PID 667112（GPU7 MIG-B）存活，epoch1 step~30500，mse 0.2-0.4 区间收敛，mrl/polya 正常；进度慢于 S 臂（发射顺序所致）。
+- **【异常】v8p polyA-only 基线进程死亡（OOM）**：manager 两次发射（22:17 gpu1 / 00:05 gpu5）均已死；v8_stage1_polya_base.log 00:35 记 CUDA OOM：GPU5 仅 13MiB 游离时申请 52MiB 失败，被外部用户 honghuiyang metddi 多 worker（各约 2.44GiB）挤占。无终态 run_report.json → polyA 非破坏门参照缺失，Stage1 判定脚本暂无法全量裁决。建议：改发 GPU4（33GB 游离）重跑 v8p，或待外部任务释放后由 manager 自动重发。
+- **GPU 状态**：GPU0 100%（游离 70MiB，APA 所在）、GPU1 96%（外部任务）、GPU2 99%、GPU3 81%、GPU4 90% 但仅用 7.5GiB（游离 33GB，v8p 重发首选）、GPU5 60%（外部任务）；GPU6 MIG 1g.5gb、GPU7 MIG 3g.20gb×2（S/H 臂，沿用 09-05 有显存即用决策）。GPU0-5 无空闲整卡。
+- **纪律检查**：APA/S/H 三条日志均无 cpu_fallback_used=true，无 CPU 静默降级；除 v8p OOM（已记录）外无新 OOM。needs_attention.txt 不存在（无告警）。
+- **结论**：APA + V8-S/H 三线健康在跑；唯一异常为 v8p 基线 OOM 死亡（外部任务挤占 GPU5）；manager 已去重为单实例。无紧急人工干预项。
