@@ -823,3 +823,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - manager（pid 1735812）存活；needs_attention.txt 无告警；cpu_fallback_used=true 两任务均 0（无 CPU 静默降级）。
 - GPU 状态：全部 0-5 被占用（GPU0 util 100% / GPU1 99% / GPU2-5 57-69%），无空闲整卡，GPU6/7 MIG 未用于正式训练。
 - 判定：无新终态、无进程死亡、无 OOM、无进度异常。
+
+### 批次二十三：在途任务巡检（v8p + APA）（2026-09-07 00:04）
+
+- **v8p polyA 单域基线**（GPU1，batch128，epoch6，pid 1735814）：epoch 6 step 117000，mse 0.2981 polya 0.1633（总步 128,454，~91%，FINAL-EPOCH-FIXED）——正常逼近终态，run_report.json 未出现，终态门未触发。（注：step 级 mse 由 ~0.17 升至 0.2981，polya 域指标稳定 0.1633，继续观察，最终以判定脚本为准）
+- **APA polyA 预微调**（GPU0，batch32，epoch6，pid 1899327）：epoch 4 step 302000，mse 0.1713 lr 8.55e-06（总步 ~513,750，~59%）——正常，frozen_delta_results.json 未出现，终态门未触发。
+- manager（pid 1735812）存活；needs_attention.txt 无告警；无 CPU 静默降级迹象。
+- GPU 状态：全部 0-5 被占用（util 100/100/93/64/28/99），空闲显存 1.2-4.7 GiB/卡，无 OOM 风险信号；GPU6/7 MIG 未用于正式训练。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。
