@@ -777,3 +777,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **GPU 状态**：GPU0 100%（APA+外部 toktokenbench）、GPU1 96%（v8p+外部 review）、GPU2 97%/GPU3 100%/GPU5 93% 为外部任务占用、GPU4 39%（低占 3.6GiB 可作候选发射点）；GPU6/7 MIG（gmx 等外部）。无空闲整卡、无 OOM。
 - **纪律检查**：APA/v8p 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM。
 - **结论/建议**：双线健康在跑、无新终态；唯一动作是清除过期 manager 实例（dedup 失效问题建议后续在脚本中核实 pgrep 锚点  与 nohup 实际 cmdline 是否一致，否则再次重复拉起仍会双实例）。下次巡检关注 APA epoch6 终态与 v8p 收敛。
+
+### 批次十八：CMS array 库构建完成 + 泄漏审计硬门通过（2026-09-06 12:45，cunyuliu 交接审计）
+
+- **数据落地**：APARENT2（4 文件 414 tensors 验证）+ ENCFF090JTW/770UJN + Griesemer 2021 supplementary mmc1-5.xlsx + MPRAu 官方 CMS_arrayassign 归属表 → external_model_assets/{aparent2,cms_array}/（用户本地浏览器 + curl 代下载）。
+- **CMS 库构建**（build_cms_library_v1.py，commit d0acebcf）：Oligo Variant Info 区域界定 CMS 变体（rs/chr 双命名）→ fasta 构建序列（fa_key 去 _ref/_alt/_2/_5'End 后缀）→ Variant MPRAu Results Skew log2FC（MPRAu 列名 HEPG2/SKNSH）→ **cms_array_activity.csv 85,475 行（7,284 变体 × 5 细胞系 × 双背景构建，cell_context int 0-4，101bp 序列）**。
+- **泄漏审计**：3-block 17bp 鸽笼 ≤2 mismatch vs ENCSR854RUF canonical 全 split（13,205 条）→ **flagged=0 硬门通过**；load_cms_library 加载验证 OK（activity −6.48~6.83）。
+- **已知限制**：CMS 变体覆盖 7,284/9,740（74.8%）；缺失 25% 为 rs-id 变体无法从 fasta 关联 log2FC（部分在 770UJN 以 rs header 存在但 MPRAu 结果用 chr_pos 命名，rs↔chr 映射缺失）。V8 Stage 2 可用 85K 行 P0 先验注入。
+- **在途**：v8p（GPU1 batch128 epoch1 step ~7K）、APA（GPU0 epoch2 step ~122K）。
