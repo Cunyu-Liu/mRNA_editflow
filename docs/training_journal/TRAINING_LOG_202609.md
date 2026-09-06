@@ -807,3 +807,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **V8 S/H MPRAU zero-shot**：pair-mean ρ S −0.0005 / H −0.0064（2,008 变体）——双臂 ≈0，跨域先验无信号，Stage 2 必须 CMS 域内适配（zero-shot 对照臂基线 0 入档）。
 - **TreeG k=2**：hit@1 与 k=1 一致（critic top-1 排序 k 不敏感）。
 - GPU 并行利用：GPU5（TreeG k2）/ GPU2（H zero-shot）/ GPU4（S zero-shot）/ GPU6 MIG（APARENT2）。
+
+### 批次二十一：在途任务巡检（v8p + APA）（2026-09-06 20:03）
+
+- **v8p polyA 单域基线**（GPU1，batch128，epoch6，pid 1735814）：epoch 5 step 89000，mse 0.1752 polya 0.1671（总步 128,454，~5.7/6 epochs）——正常逼近终态，run_report.json 未出现，终态门未触发。
+- **APA polyA 预微调**（GPU0，batch32，epoch6，pid 1899327）：epoch 3 step 250000，mse 0.1887 lr 1.14e-05（总步 ~513,750，~49%）——正常，frozen_delta_results.json 未出现，终态门未触发。
+- manager（pid 1735812）存活，日志正常；needs_attention.txt 无告警。
+- 注意：GPU0 空闲显存仅 225 MiB（util 100%），进程存活但余量极低，持续观察防 OOM。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。
