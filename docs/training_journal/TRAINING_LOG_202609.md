@@ -815,3 +815,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - manager（pid 1735812）存活，日志正常；needs_attention.txt 无告警。
 - 注意：GPU0 空闲显存仅 225 MiB（util 100%），进程存活但余量极低，持续观察防 OOM。
 - 判定：无新终态、无进程死亡、无 OOM、无进度异常。
+
+### 批次二十二：在途任务巡检（v8p + APA）（2026-09-06 22:04）
+
+- **v8p polyA 单域基线**（GPU1，batch128，epoch6，pid 1735814）：epoch 5 step 104500，mse 0.1689 polya 0.1693（总步 128,454，~81%）——正常逼近终态，run_report.json 未出现，终态门未触发。
+- **APA polyA 预微调**（GPU0，batch32，epoch6，pid 1899327）：epoch 4 step 277000，mse 0.1779 lr 9.90e-06（总步 ~513,750，~54%）——正常，frozen_delta_results.json 未出现，终态门未触发。
+- manager（pid 1735812）存活；needs_attention.txt 无告警；cpu_fallback_used=true 两任务均 0（无 CPU 静默降级）。
+- GPU 状态：全部 0-5 被占用（GPU0 util 100% / GPU1 99% / GPU2-5 57-69%），无空闲整卡，GPU6/7 MIG 未用于正式训练。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。
