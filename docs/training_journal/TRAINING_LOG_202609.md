@@ -760,3 +760,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **GPU 状态**：GPU0-5 util 73-100% 且显存近满（0=37.7/1=37.5/2=36.2/3=38.4/4=37.4/5=23.1GiB）；GPU6 1g.5gb / GPU7 3g.20gb 为 MIG（不用于正式训练）。无空闲整卡；GPU5 属外部任务重度过订阅（非本项目）。
 - **纪律检查**：APA/S/H 日志均无 cpu_fallback_used=true、无 CPU 静默降级；无新 OOM（仅 v8p 基线沿用 00:35 OOM 记录）。
 - **结论/建议**：V8 Stage1 S/H 双臂均取到终态指标 → MRL 门双过、裁决选 S；但因 polyA-only 基线 OOM 且未重发，polyA 非破坏门参照缺失，Stage1 暂记"部分合卷、待 polyA 门补齐"。下一步：建议把 v8p（--arch s --libraries polya，batch32）改发 GPU4/GPU3 等有可游离显存的卡重跑，或在外部任务释放后由 manager 自动重发；待基线落盘 run_report.json 后再对 polyA 门做最终裁决并淘汰该工作流判定。APA 无异常，继续盯。
+
+### 批次十七：SSH 恢复 + V8 Stage 1 双臂终态 + TreeG 全量负结果（2026-09-06 10:55，cunyuliu 交接审计）
+
+- **V8 Stage 1 双臂终态（FINAL-EPOCH-FIXED，VALIDATION）**：S 臂 MRL 0.3078 / polyA 0.1122；H 臂 MRL 0.2876 / polyA 0.5262。MRL 非破坏门双过（阈值 0.2768）；S vs H（MRL）裁决 S（Δ+0.0202）。stage1_success = PROVISIONAL_MRL_ONLY（polyA 门等 v8p 基线）。adjudication_v8_stage1.json 落盘。
+- **TreeG 全量 891（V5-critic top-1 选择）**：hit@1 0.0045 vs unguided 0.0367，Δ−0.0322 CI 全负（显著有害）；recovery 0.0022 vs 0.1205（shot-count caveat）。**引导形式双备选（potential/select）均证伪 → 归因收敛 critic 打分质量侧 → V8 Stage 3 是决定性实验**。脚本 commit 4783ba17。
+- **manager v5 死锁修复**：v4 永久 reserve 在换卡多次后全卡死锁（9.5h 零发射）；v5 改 job 级 gpu + 死亡即释放，v8p 已 batch 128 重发 GPU1。
+- **在途**：APA GPU0 epoch2 step ~109K（mse 0.19↓）；v8p GPU1 batch128 tokenize；外部负载回落（load ~49）。
