@@ -785,3 +785,12 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **泄漏审计**：3-block 17bp 鸽笼 ≤2 mismatch vs ENCSR854RUF canonical 全 split（13,205 条）→ **flagged=0 硬门通过**；load_cms_library 加载验证 OK（activity −6.48~6.83）。
 - **已知限制**：CMS 变体覆盖 7,284/9,740（74.8%）；缺失 25% 为 rs-id 变体无法从 fasta 关联 log2FC（部分在 770UJN 以 rs header 存在但 MPRAu 结果用 chr_pos 命名，rs↔chr 映射缺失）。V8 Stage 2 可用 85K 行 P0 先验注入。
 - **在途**：v8p（GPU1 batch128 epoch1 step ~7K）、APA（GPU0 epoch2 step ~122K）。
+
+### 批次十九：巡检快照（2026-09-06 18:29，cunyuliu 定时监控）
+
+- **manager**：v5 单实例存活（PID 1735812）；needs_attention.txt 为空（无告警）；无新增 LAUNCH/DUPLICATE 告警。
+- **APA polyA 预微调（GPU0，batch32，epochs6）**：PID 1899327 存活，GPU0 100%（22099MiB，含外部 toktokenbench 15250MiB）；进至 **epoch3 step~227000**，mse~0.18 缓降；checkpoint 已存 epoch_1/epoch_2（frozen_delta 缺失 epoch>2 说明尚未终态）；frozen_delta_results.json **未出现**（未到终态）。epoch2 指标 task_macro_spearman=0.449 / top_1=0.477 / ndcg@10=0.845。
+- **V8 Stage1 polyA-only 基线（GPU1，batch128，epochs6）**：PID 1735814 存活，GPU1 99%（19743MiB）；进至 **epoch4 step~74950/128k(~60%)**，epoch_domain_loss mse_polya 0.225→0.191→0.184，step 级 mse_polya~0.17 续降；checkpoint stage1_s_epoch{1,2,3}.pt 已存；run_report.json **未出现**（未到终态）。
+- **GPU 状态**：GPU0 100%（APA）、GPU1 99%（v8p）、GPU2 98%/GPU3 78%/GPU4 74%/GPU5 52% 为外部 review 任务占用；GPU6/7 MIG（gmx 等）。无 OOM、无空闲整卡虚悬。
+- **纪律检查**：APA/v8p 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM，GPU 利用率高证明实际走卡。
+- **结论/建议**：双线健康中段推进、**无新终态**；APA 约半程（epoch3/6）、v8p 稍快（epoch4/6）。下次巡检关注 APA 与 v8p 的 epoch6 终态文件触发 harvest/adjudicate。
