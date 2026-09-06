@@ -767,3 +767,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **TreeG 全量 891（V5-critic top-1 选择）**：hit@1 0.0045 vs unguided 0.0367，Δ−0.0322 CI 全负（显著有害）；recovery 0.0022 vs 0.1205（shot-count caveat）。**引导形式双备选（potential/select）均证伪 → 归因收敛 critic 打分质量侧 → V8 Stage 3 是决定性实验**。脚本 commit 4783ba17。
 - **manager v5 死锁修复**：v4 永久 reserve 在换卡多次后全卡死锁（9.5h 零发射）；v5 改 job 级 gpu + 死亡即释放，v8p 已 batch 128 重发 GPU1。
 - **在途**：APA GPU0 epoch2 step ~109K（mse 0.19↓）；v8p GPU1 batch128 tokenize；外部负载回落（load ~49）。
+
+### 巡检 2026-09-06 12:10（监控巡检记录）
+
+- **连通性**：SSH 正常；load 正常回落。
+- **manager 存活**：发现**双实例**（1705202@10:45 过期、1735812@10:47 当前，dedup 未生效、killed duplicate 计数=0，疑似 manager 被重复 nohup 拉起且旧实例未退出）。**已手动 kill 1705202 恢复单实例**，现仅 1735812 存活；v8p 当前批由 1735812 于 10:47 以 batch128 重发（state_v8p.gpu=1），state_apa.gpu=0。needs_attention.txt 不存在（无告警）。
+- **APA polyA 预微调（GPU0，batch32，epochs6）**：PID 1899327 存活（etime 10:58:39，GPU0 100%）；日志 epoch2 step~125000，mse~0.19 缓降中；frozen_delta_results.json 未出现（未到终态）。
+- **V8 Stage1 polyA-only 基线（GPU1，batch128，epochs6）**：PID 1735814 存活（child of 1735812，GPU1 96%）；日志 epoch1 step~9500/21409，mse 0.3365→0.1757↓、polya 0.3554→0.2068↓，正常收敛；run_report.json 未出现（未到终态）。batch 由 manager 自适应重发为 128（规格相符）。
+- **GPU 状态**：GPU0 100%（APA+外部 toktokenbench）、GPU1 96%（v8p+外部 review）、GPU2 97%/GPU3 100%/GPU5 93% 为外部任务占用、GPU4 39%（低占 3.6GiB 可作候选发射点）；GPU6/7 MIG（gmx 等外部）。无空闲整卡、无 OOM。
+- **纪律检查**：APA/v8p 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM。
+- **结论/建议**：双线健康在跑、无新终态；唯一动作是清除过期 manager 实例（dedup 失效问题建议后续在脚本中核实 pgrep 锚点  与 nohup 实际 cmdline 是否一致，否则再次重复拉起仍会双实例）。下次巡检关注 APA epoch6 终态与 v8p 收敛。
