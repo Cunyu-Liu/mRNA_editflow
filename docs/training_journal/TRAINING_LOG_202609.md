@@ -848,3 +848,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager**（pid 2540034）：存活，uptime 02:00:03（批次二十四 02:04 重启后持续运行），无再次死亡。
 - 基础设施：needs_attention.txt 无告警；GPU0-5 均有空闲显存（3690~15267 MiB），util 27~100%，无 OOM 风险；GPU6/7 MIG 未用于正式训练；无 CPU 静默降级迹象。
 - 判定：无新终态、无进程死亡、无 OOM、无进度异常。v8p Stage 1 判定结论已确认（RESOLVED / S wins / success=True）。
+
+## 巡检批次二十六 2026-09-07 06:05
+- **v8p polyA 单域基线**：已终态（批次二十四判定、批次二十五幂等复核）。本次定位 adjudication_v8_stage1.json 实际位于 experiments 根目录 v8_stage1_joint_prefinetune_20260904/（非 s_polya/ 内），内容与 log 摘要一致：polyA 门 RESOLVED、stage1_success=True、S 胜出（delta_s_minus_h +0.0202）、m_arm_mean=0.3076。注意项：arm-s polya 非破坏校验 FAILED（task_macro_spearman 0.1122 < 阈值 0.1883），该 flag 未阻断 stage1_success，建议进入下游前复核 arm-s 在 polyA 域 GSE269595 的验证评估是否符合 pre-reg §8 预期。训练进程已退出，GPU1 空闲 11.9 GiB。
+- **APA polyA 预微调**（GPU0，batch32，epoch6，pid 1899327，uptime 1d4h56m）：epoch 5 step 374000，mse 0.1627 lr 5.09e-06（总步 ~513,750，~73%）——正常推进，较批次二十五 +26k 步；frozen_delta_results.json 未出现，终态门未触发。
+- **manager**（pid 2540034）：存活，uptime 03:59:31；manager 日志 02:04:51 已自动写入 v8 adjudication JSON（双保险确认）。
+- 基础设施：needs_attention.txt 无告警；GPU0 空闲 17.1 GiB/util 100%、GPU1 11.9 GiB/43%、GPU2-5 均有余量，无 OOM；GPU6/7 MIG 未用于正式训练；无 CPU 静默降级迹象。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。唯一注意项：v8p arm-s polya 非破坏 flag FAILED（0.1122<0.1883），建议下游使用前复核。
