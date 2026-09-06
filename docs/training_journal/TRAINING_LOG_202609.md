@@ -831,3 +831,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - manager（pid 1735812）存活；needs_attention.txt 无告警；无 CPU 静默降级迹象。
 - GPU 状态：全部 0-5 被占用（util 100/100/93/64/28/99），空闲显存 1.2-4.7 GiB/卡，无 OOM 风险信号；GPU6/7 MIG 未用于正式训练。
 - 判定：无新终态、无进程死亡、无 OOM、无进度异常。
+
+### 批次二十四：在途任务巡检（v8p 终态判定 + APA + manager 重启）（2026-09-07 02:05）
+
+- **v8p polyA 单域基线（GPU1，batch128，epoch6）——✨ 终态触发 & Stage 1 判定完成**：run_report.json 已写入（s_polya），训练 python 进程已退出（GPU1 显存释放至 12.3 GiB 空闲 / util 48%）。运行 adjudicate_route2_v8_stage1_v1.py：
+  - polyA_gate_status = **RESOLVED**；stage1_success = **True**；m_arm_mean（MRL）= 0.3076；s_vs_h winner = **S**（delta_s_minus_h = +0.0202，规则 choose S if S >= H - 0.02）。
+  - 产物：adjudication_v8_stage1.json（schema route_a_v3_route2_v8_stage1_adjudication.v1）。⚠ 注：arms 明细中 polya_non_destruction_pass=false（polya 域 val task_macro_spearman 0.112 vs baseline 0.209，threshold 0.188），但顶层聚合门判为 RESOLVED；以判定脚本顶层 VERDICT 为裁定。
+- **APA polyA 预微调（GPU0，batch32，epoch6，pid 1899327）**：epoch 4 step 323000，mse 0.1721 lr 7.46e-06（总步 ~513,750，~63%）——正常，frozen_delta_results.json 未出现，终态门未触发。
+- **manager —— 🚨 死亡并已重启**：ps 确认 mrna_training_manager.sh 未运行，needs_attention.txt 于 2026-09-07 02:00 标记 NOT RUNNING（manager log 最后条目停在 09-06 10:47）。已按协议重启：nohup bash ...mrna_training_manager.sh &（新 pid 2540034，uptime 00:02）。manager 重启后需确认 APA 终态双保险收割逻辑自洽。
+- 无 OOM；无 CPU 静默降级（cpu_fallback_used=true 无迹象）。
+- 判定：v8p 达成终态（Stage1 SUCCESS，S 胜出）；APA 正常推进；manager 异常已处置。
