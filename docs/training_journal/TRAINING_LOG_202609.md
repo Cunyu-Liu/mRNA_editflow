@@ -747,3 +747,16 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **GPU 状态**：GPU0 100%（游离 2.9GB）/GPU1 99%（2.7GB）/GPU2 99%（5.3GB）/GPU3 100%（16.6GB）/GPU4 99%（1.8GB）/GPU5 96%（7.2GB）；GPU6/7 MIG（S/H 臂 + gmx）。无空闲整卡。
 - **纪律检查**：APA/S/H 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM。needs_attention.txt 不存在（无告警）。
 - **结论**：APA + V8-S/H 三线健康在跑，V8 双臂均已进入 epoch2 接近终态；唯一未决项为 v8p 基线（OOM 后未重发），GPU3 有可用游离显存可作重发点。
+
+### 巡检 2026-09-06 09:05（监控巡检记录）
+
+- **连通性**：SSH 正常。
+- **manager 存活**：单实例（PID 1117143/1899326 系同一管理；日志 22:17 后多次 self-restart，最新 LAUNCH 01:08 apa gpu=0）。needs_attention.txt 不存在（无告警）。
+- **【新终态】V8 Stage1 S 臂已完成（07:34 run_report.json）**：mrl+polya epochs2 全程跑完 106,812 步（epochs_completed=2，smoke=false，selection=FINAL_EPOCH_FIXED）。zero-shot（VALIDATION frozen-Δ）：mrl task_macro_spearman=0.3078 / ndcg@10=0.868；polya task_macro_spearman=0.1122。**过 MRL 非破坏门（0.3078 ≥ 0.9×0.3076=0.2768）✓**。
+- **【新终态】V8 Stage1 H 臂已完成（08:43 run_report.json）**：同预算 106,812 步，CNN stem 生效（参数 113,929,185）。zero-shot：mrl task_macro_spearman=0.2876 ；polya=0.5262。**过 MRL 非破坏门（0.2876 ≥ 0.2768）✓**。
+- **S vs H 裁决（§8 门2，MRL 口径）**：S=0.3078 ≥ H−0.02=0.2676 → **判选 S**（简单优先）。polyA 次级证据 H 强于 S（0.5262 vs 0.1122），不单独裁决。（注：S 的 polyA 0.1122 显著弱于 H，polyA 豁免质量 H 明显胜出，仅作留档参考。）
+- **【延续阻塞】polyA-only 基线仍缺失 → polyA 非破坏门无法裁决**：s_polya 目录仅含 00:35 初始审计文件（leakage_audit.json 落盘即 OOM 死亡，training/zeroshot 全空、无 run_report.json）。GPU5 被外部 honghuiyang 多 worker 严重挤占（当前 GPU5 上即观察到 30+ 进程、累计显存远超单卡，00:35 OOM 申请 52MiB 仅剩 13MiB）。06:05 巡检后 manager 仍未重发 v8p。**Stage1 正式判定须待 polyA-only 基线补齐后合卷。**
+- **APA polyA 预微调**：PID 1899327（batch32 seed20260903 epochs6）存活，06:03 step~54000 → 续跑中；终态 frozen_delta_results.json 未出现（未判时点）。无 cpu_fallback、无 OOM。
+- **GPU 状态**：GPU0-5 util 73-100% 且显存近满（0=37.7/1=37.5/2=36.2/3=38.4/4=37.4/5=23.1GiB）；GPU6 1g.5gb / GPU7 3g.20gb 为 MIG（不用于正式训练）。无空闲整卡；GPU5 属外部任务重度过订阅（非本项目）。
+- **纪律检查**：APA/S/H 日志均无 cpu_fallback_used=true、无 CPU 静默降级；无新 OOM（仅 v8p 基线沿用 00:35 OOM 记录）。
+- **结论/建议**：V8 Stage1 S/H 双臂均取到终态指标 → MRL 门双过、裁决选 S；但因 polyA-only 基线 OOM 且未重发，polyA 非破坏门参照缺失，Stage1 暂记"部分合卷、待 polyA 门补齐"。下一步：建议把 v8p（--arch s --libraries polya，batch32）改发 GPU4/GPU3 等有可游离显存的卡重跑，或在外部任务释放后由 manager 自动重发；待基线落盘 run_report.json 后再对 polyA 门做最终裁决并淘汰该工作流判定。APA 无异常，继续盯。
