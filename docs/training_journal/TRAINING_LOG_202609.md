@@ -794,3 +794,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **GPU 状态**：GPU0 100%（APA）、GPU1 99%（v8p）、GPU2 98%/GPU3 78%/GPU4 74%/GPU5 52% 为外部 review 任务占用；GPU6/7 MIG（gmx 等）。无 OOM、无空闲整卡虚悬。
 - **纪律检查**：APA/v8p 日志均无 cpu_fallback_used=true、无 CPU 静默降级、无新 OOM，GPU 利用率高证明实际走卡。
 - **结论/建议**：双线健康中段推进、**无新终态**；APA 约半程（epoch3/6）、v8p 稍快（epoch4/6）。下次巡检关注 APA 与 v8p 的 epoch6 终态文件触发 harvest/adjudicate。
+
+### 批次十九：并行任务（TreeG k2 + V8 MPRAU zero-shot 双臂）（2026-09-06 19:10）
+
+- **TreeG k=2**（GPU5）：hit@1 0.0045 与 k=1 完全一致（critic top-1 排序对 k 不敏感，k 只增 recovery shot count 0.0022→0.0052）——critic 排序劣化结论稳健。
+- **V8 S/H MPRAU zero-shot**（polya 域条件，2,008 变体 pair-mean 口径）：S pair-mean ρ −0.0005 / H −0.0064（record spearman −0.006/−0.004）——**双臂 ≈0**。科学含义：V8 联合先验（mrl+polya）跨域迁移不携带 3UTR 等位偏移信号；**MPRAU 必须同 assay 监督（CMS 85,475 行库），Stage 2 域内适配是唯一路径**；zero-shot 对照臂基线 = 0 已入档（Stage 2 判定门 >0.1025 CI 不跨零的对照起点）。
+- 并行工具：TreeG select-k 参数化 + V8 MPRAU zero-shot 脚本（commit d0acebcf 后新 commit）。GPU5 被外部任务挤爆（S 臂 OOM 一次），GPU4 重跑成功。
