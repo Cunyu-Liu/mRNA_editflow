@@ -50,8 +50,14 @@ from scripts.route_a_v3.evaluate_route2_generation_v1 import (  # noqa: E402
     load_source_manifest,
     validate_measured_pool,
 )
-from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (  # noqa: E402
-    FrozenRoute2MRNABERTCritic,
+from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources  # noqa: E402
+from core.route2_legal_xeditflow import (  # noqa: E402
+    LegalAction,
+    apply_action,
+    initial_state,
+)
+from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (  # noqa: E402
+    FrozenXEditCriticV5,
 )
 
 REWARD_POLICY = (
@@ -115,6 +121,7 @@ def main() -> int:
     measured_path = Path(config["measured_neighborhood_path"])
 
     source_rows = _read_jsonl(manifest_path)
+    source_by_key = {str(s["source_key"]): s for s in load_sources(manifest_path)}
     full_manifest = load_source_manifest(manifest_path)
     pool = _read_jsonl(args.candidates)
     covered = sorted({str(row["source_key"]) for row in pool})
@@ -135,13 +142,12 @@ def main() -> int:
     transform = json.loads(REWARD_POLICY.read_text())
     minimum = float(transform["potential_transform"]["minimum"])
     maximum = float(transform["potential_transform"]["maximum"])
-    critic = FrozenRoute2MRNABERTCritic(
+    critic = FrozenXEditCriticV5(
         Path(args.critic_checkpoint),
         Path(args.mrnabert_model),
         device,
         potential_minimum=minimum,
         potential_maximum=maximum,
-        encoder_attention_backend=str(args.encoder_attention_backend),
     )
 
     pool_method = str(pool[0]["method_id"])
@@ -153,17 +159,33 @@ def main() -> int:
     scoring = {"potential_query_count": 0, "scoring_batch_count": 0}
     for source_key in sorted(manifest):
         src = manifest[source_key]
+        src_full = source_by_key[source_key]
         rows = [r for r in pool if str(r["source_key"]) == source_key]
         _require(bool(rows), f"pool has no candidates for source: {source_key}")
-        source_seq = str(src["source_sequence"])
-        region = str(src["region"]).replace("′", "").replace("'", "")
-        scores = critic.score_candidates(
-            source_seq,
-            [str(r["candidate_sequence"]) for r in rows],
-            assay_id=str(src["assay_id"]),
-            context_id=str(src["biological_context_id"]),
-            endpoint_id=str(src["endpoint_id"]),
+        source_seq = str(src_full["source_sequence"])
+        region = str(src_full["region"]).replace("′", "").replace("'", "")
+        states = []
+        for r in rows:
+            state = initial_state(
+                source_seq,
+                budget=int(src_full["edit_budget"]),
+                assay_id=str(src_full["assay_id"]),
+                context_id=str(src_full["biological_context_id"]),
+            )
+            for act_str in r["trajectory_actions"]:
+                kind, *rest = str(act_str).split(":")
+                if kind == "STOP":
+                    state = apply_action(state, LegalAction("STOP"))
+                else:
+                    state = apply_action(state, LegalAction(kind, int(rest[0]), rest[1]))
+                if state.terminal_cause is not None:
+                    break
+            states.append(state)
+        scores = critic.potentials(
+            states,
+            endpoint_id=str(src_full["endpoint_id"]),
             region=region,
+            source_row=src_full,
         )
         scoring["potential_query_count"] += len(scores)
         scoring["scoring_batch_count"] += 1
