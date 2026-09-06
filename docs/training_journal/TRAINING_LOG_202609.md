@@ -800,3 +800,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **TreeG k=2**（GPU5）：hit@1 0.0045 与 k=1 完全一致（critic top-1 排序对 k 不敏感，k 只增 recovery shot count 0.0022→0.0052）——critic 排序劣化结论稳健。
 - **V8 S/H MPRAU zero-shot**（polya 域条件，2,008 变体 pair-mean 口径）：S pair-mean ρ −0.0005 / H −0.0064（record spearman −0.006/−0.004）——**双臂 ≈0**。科学含义：V8 联合先验（mrl+polya）跨域迁移不携带 3UTR 等位偏移信号；**MPRAU 必须同 assay 监督（CMS 85,475 行库），Stage 2 域内适配是唯一路径**；zero-shot 对照臂基线 = 0 已入档（Stage 2 判定门 >0.1025 CI 不跨零的对照起点）。
 - 并行工具：TreeG select-k 参数化 + V8 MPRAU zero-shot 脚本（commit d0acebcf 后新 commit）。GPU5 被外部任务挤爆（S 臂 OOM 一次），GPU4 重跑成功。
+
+### 批次二十：APARENT2 frozen-Δ 补测 + 三并行任务收官（2026-09-06 19:40）
+
+- **APARENT2 frozen-Δ（GPU6 MIG，GSE269595 VALIDATION 2,628）**：task_macro_spearman **0.6810**（vs APARENT 2019 0.7343 / V5 0.8219）——低于 2019 原版，**polyA 主 baseline 行不升级**（APARENT 2019 保持）；APARENT2 行作为附加外部行如实入档。排障：torch 2.5.1 <2.6 CVE 门（transformers 拒 .bin）→ 手动 config 构建 + weights_only=False 加载；APARENT2 固定 205 tokens → padding=max_length。
+- **V8 S/H MPRAU zero-shot**：pair-mean ρ S −0.0005 / H −0.0064（2,008 变体）——双臂 ≈0，跨域先验无信号，Stage 2 必须 CMS 域内适配（zero-shot 对照臂基线 0 入档）。
+- **TreeG k=2**：hit@1 与 k=1 一致（critic top-1 排序 k 不敏感）。
+- GPU 并行利用：GPU5（TreeG k2）/ GPU2（H zero-shot）/ GPU4（S zero-shot）/ GPU6 MIG（APARENT2）。
