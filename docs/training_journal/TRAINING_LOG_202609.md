@@ -841,3 +841,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager —— 🚨 死亡并已重启**：ps 确认 mrna_training_manager.sh 未运行，needs_attention.txt 于 2026-09-07 02:00 标记 NOT RUNNING（manager log 最后条目停在 09-06 10:47）。已按协议重启：nohup bash ...mrna_training_manager.sh &（新 pid 2540034，uptime 00:02）。manager 重启后需确认 APA 终态双保险收割逻辑自洽。
 - 无 OOM；无 CPU 静默降级（cpu_fallback_used=true 无迹象）。
 - 判定：v8p 达成终态（Stage1 SUCCESS，S 胜出）；APA 正常推进；manager 异常已处置。
+
+### 批次二十五：在途任务巡检（v8p 终态复核 + APA 推进 + 基础设施）（2026-09-07 04:05）
+- **v8p polyA 单域基线**：终态已于批次二十四处置（polyA 门 RESOLVED、stage1_success=True、S 胜出 delta +0.0202）；本次重新运行判定脚本幂等复核，输出与批次二十四完全一致，无新变化。判定摘要已补写入 v8_stage1_polya_base.log（批次二十四仅写 journal，本次补齐）。训练进程已退出，GPU1 显存空闲 11.7 GiB。
+- **APA polyA 预微调**（GPU0，batch32，epoch6，pid 1899327）：epoch 5 step 348000，mse 0.1701 lr 6.24e-06（总步 ~513,750，~68%）——正常，frozen_delta_results.json 未出现，终态门未触发。
+- **manager**（pid 2540034）：存活，uptime 02:00:03（批次二十四 02:04 重启后持续运行），无再次死亡。
+- 基础设施：needs_attention.txt 无告警；GPU0-5 均有空闲显存（3690~15267 MiB），util 27~100%，无 OOM 风险；GPU6/7 MIG 未用于正式训练；无 CPU 静默降级迹象。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。v8p Stage 1 判定结论已确认（RESOLVED / S wins / success=True）。
