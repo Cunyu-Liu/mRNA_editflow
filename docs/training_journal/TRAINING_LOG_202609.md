@@ -948,3 +948,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **日志**：b2_full_891.log 仅含 16:51 变压器警告一行（380B），逐源 SOURCE 标记未出现。判定：stdout 重定向至文件为 **block 缓冲**，smoke（8 源）亦为 run 结束一次性 dump JSON；grep SOURCE 当前=0 属缓冲现象**非训练停滞**（CPU/GPU 均确认在计算）。进度可见性缺口待目录侧输出文件/subprocess 日志佐证，本巡检不干预。
 - **无异常**：无 Traceback/OOM/cuda error；cpu_fallback_used=false；无终态（summary 未生成，属预期，~2 天）；manager 进程 UP（training_manager.log 含 15:31 polyA 提交告警，遗留项非本 run）。
 - **判定**：正常推进，无需处置。
+
+---
+## 批次三十四（2026-09-07 20:50，TRAE 定时巡检 #2 · Stage 3 B2 V8）
+
+- **巡检对象**：guided_b2_v8_20260907/b2_full_891（V8-S critic，guided-only，891 源）。
+- **进程**：存活且单实例（python PID **3289922**，与批次三十三一致；elapsed 3h56m，State=Rl，top 瞬时 %CPU 333%，273 threads，RSS 6.0GB，wchan=0）——确认为活跃计算非停滞。
+- **GPU**：物理 GPU1（cuda:1）util 100%，free ~10.2GB；本进程占用 2104 MiB，无显存瓶颈；GPU0/2/3 满载为其他任务，不影响本 run。
+- **日志**：仍 380B（16:51 变压器警告一行），mtime 16:51:47，逐源 SOURCE 标记未出现（grep=0）——与批次三十三判定一致：stdout block 缓冲所致，非训练停滞（CPU/GPU 均确认在算）。进度可见性缺口同前，本巡检不干预。
+- **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（summary 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）。
+- **判定**：正常推进，无需处置。
