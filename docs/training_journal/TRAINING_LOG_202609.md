@@ -1013,3 +1013,31 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 - **UTR-STCNet MRL frozen-delta 三臂全部判定 INVALID（R3 训练集泄漏）**：mpra_h 0.8135 / mpra_u 0.2667 / mpra_v 0.2120。归属核查（NCBI GEO 官方页）：三个训练数据文件（GSM3130435 egfp_unmod_1 / GSM3130443 designed_library / GSM4084997 varying_length）全部 Series=GSE114002 = MRL benchmark 研究本身；mpra_h 直接训练于 designed_library（benchmark VALIDATION 源样本）→ 0.8135 为分布内记忆。三行全部排除入榜；frozen_delta_results.json 已写泄漏判定 + 归属证据（commit 08ff6c2f）。
 - **HydraRNA（GSE217518 稳定性行）依赖阻塞**：权重已就位（HydraRNA_model.pt/V2/SS，336MB×3）；归属审计干净（通用 RNA LM，预训练于 ncRNA+pcRNA 转录组，非 benchmark MPRA 库）。但模型架构需要 flash-attn + mamba-ssm（triton/CUDA 编译依赖）：服务器无 nvcc，pip 源码编译失败；GitHub 预编译 wheel 无 torch2.5.1+cu121+cp310 匹配版本。重型编译（flash-attn 2.6.1 + mamba-ssm 2.2.2 + causal-conv1d，1h+，需先装 conda cuda 工具链）换一个 ICC≈0 任务的 ≈0 行——工程上不划算，**暂缓**。该任务已有覆盖：Saluki frozen（0.0193/0.0985）+ RNA-FM/UTR-LM 冻结行（≈0）。若后续需要，路径已记录（install_hydrarna_env.sh 依赖清单）。
+
+---
+## 批次三十九（2026-09-08 00:40，Stage 3 B2 V8 巡检 7# + A3 watcher 修复重启 + polyA APA 裁决补录）
+
+### B2 双臂（guided-only 891 源，~2 天）
+
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289921/3289922（alive，started 09-07 16:53:51，elapsed ~7h45m）；cmd=run_route2_guided_xeditsetflow_v5_v1.py --run-id b_fix2 --checkpoint-pass 2 --physical-gpu-index 1；GPU1 util 99%。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480728/480732（alive，started 09-07 21:09:03，elapsed ~3h30m）；cmd=同脚本 --run-id b_fix2 --checkpoint-pass 2 --physical-gpu-index 4；GPU4 util 38%（free 32.5G，采样瞬间批次间隙/IO）。
+- **日志**：两臂仍各 1 行（380B 仅 bert 加载横幅），stdout block 缓冲所致（与前期判定一致）；无 Traceback/OOM/cuda error；无 cpu_fallback 证据。
+- **无终态**：双臂 full run 的 guided_run_summary.json 均未生成，属预期（~2 天）；仅臂A 旧 smoke_guided_v8_8src summary。
+
+### A3 critic 混合池探针（V6 诊断线）——根因修复 + watcher 重启
+
+- **异常**：watcher（旧 PID 1096623，09-07 23:00:26 起）反复崩溃，00:06 与 00:26（抢到 GPU2 21475MB）两次 A3_FULL 均 rc=1：ModuleNotFoundError: No module named 'torch'。根因：watcher 脚本 PY=python3 指向系统 python3（无 torch）；editflow 环境 python（/home/cunyuliu/miniconda3/envs/editflow/bin/python，torch 2.5.1+cu121，CUDA True）未启用。
+- **修复**：watcher PY= 改指 editflow python（sed 留 .bak.20260908）；kill 旧 watcher 并以修复版重启（新 PID 1600186，00:37:08，start log 正常）。当前无空闲满血卡（GPU0-5 全忙 / 6-7 MIG-only）→ A3_FULL 进入 300s 轮询等待，下一空闲窗口以正确环境执行。已留证（watcher log 两次 Traceback + 修复前脚本）。
+- 后续：A3_FULL JSON 终态（status != DRY_SMOKE_STUB）即入档 H2 裁决；无需人工干预。
+
+### polyA APA Route A 终态裁决补录（manager NEEDS HUMAN 闭合）
+
+- **背景**：manager 09-07 15:30:53 检测 APA 终态跑 harvest 链；15:31:23 polyA journal commit FAILED - NEEDS HUMAN（nothing to commit）。根因：harvest_polya.sh 调用的裁决脚本只产出 adjudication_results.json、不写 journal，manager 提交时 journal 无 diff → FAIL；apa_harvested.marker 已 touch，不会自动重试。
+- **裁决数据**（analysis_apa_route_a_adjudication_20260903/adjudication_results.json，schema v1，GSE269595 VALIDATION K=10）：apa_route_a_ep6 spearman 0.2839 / top_1 0.4545 / ndcg_at_10 0.8456；vs APARENT adapter（0.7343/0.6011/0.8906）Δspearman -0.4504（95%CI [-0.5114,-0.3884] 不含 0）；vs critic V5（0.8219/0.5007/0.8710）Δspearman -0.5380（95%CI [-0.5984,-0.4778] 不含 0）；top_1/ndcg Δ 亦全为负且 CI 不含 0。
+- **结论**：APA Route A polyA 线 FAIL（Δ 全面显著为负，与前期 0.2839 FAIL 判定一致）——APARENT adapter 与 critic V5 均显著胜出，不构成对 V6/V8 竞争力威胁；数据入档，本条目补录闭合 NEEDS HUMAN。
+
+### 基础设施
+
+- **manager**：UP（PID 2540034，started 09-07 02:04:49）；日志尾部正常（harvest complete / APA harvest done）；除上述 polyA journal FAIL 外无新异常。
+- **GPU 快照**（00:20）：GPU0 8049MiB/100%、GPU1 10319MiB/99%、GPU2 26037MiB/94%、GPU3 13531MiB/99%、GPU4 32507MiB/38%、GPU5 7204MiB/46%；GPU6（free 38.7G）/GPU7（free 19.8G）util N/A → MIG-only → 当前无空闲满血卡，A3 保持等待态。
+- **判定**：B2 双臂推进正常；A3 watcher 已修复重启等待空闲卡；polyA APA 裁决补录闭合；无需其他处置。
