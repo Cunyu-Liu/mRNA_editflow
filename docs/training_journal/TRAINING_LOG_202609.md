@@ -922,3 +922,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **h_bench9（均衡多任务适配）终态**：MRL 0.2879 ✓ / polyA 0.8067 ✓ / MPRAU 0.0556 ✗ / TE 0.0717 ✗ / macro 0.1516 —— 均衡适配保住两个强任务，MPRAU 需要专才化
 - **h_mprau_lora 2-seed**：0.108 / 0.072（ensemble 脚本对 LoRA 臂无效——未解 LoRA wrap，单 seed 以 run_report 为准）
 - **LoRA 臂 ensemble 限制入档**：ensemble 脚本仅对 full-param 臂正确（state dict 直接兼容）；LoRA 臂需先解 wrap，暂以 run_report 单 seed 为准。
+
+---
+## 批次三十一（2026-09-07 17:10，s_mprau_in 5-seed ensemble 定论）
+
+- **s_mprau_in 5-seed ensemble（MPRAU pair-mean）**：seed 0.1527/0.1140/0.1120/0.1082/0.1101 —— **5/5 seed 全部 > V5 0.1025**；ensemble **0.1351**（vs V5 Δ+0.0325，CI [−0.0225, +0.088] 跨零）。
+- **裁决（诚实）**：MPRAU 攻坚线（V8-S 先验 + ENCSR854RUF 域内专才适配）**首次持续超过 V5 点估计（+32% relative）**；paired bootstrap CI 含零 = 检验力受限（2008 变体 + per-cell 噪声主导 CI 宽度；5-seed 与 3-seed CI 几乎同宽 → 更多 seed 无益）。D5/Stage 2 门（CI 不跨零）**未严格通过**，不作翻案；结论：方向性突破确立，显著性缺口来自数据体制（MPRAU VALIDATION 2,008 变体对 ~0.03 级 delta 检验力不足）。
+- 后继建议：① Stage 3 将 V8-S 专才接回 SetFlow B2（以生成质量结算 critic 攻坚）；② D5 amendment 重估目标带（以 0.135 为新的 in-house 参照）；③ 如需严格显著：增大 MPRAU 验证池（LOSO 拼表/TEST 开启需 Gate P 拍板）。
