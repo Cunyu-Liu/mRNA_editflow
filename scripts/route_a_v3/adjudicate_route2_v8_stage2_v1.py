@@ -21,7 +21,7 @@ from pathlib import Path
 
 OUT_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/v8_stage2_adapt_20260907")
 
-ARM_ORDER = ["h_cms_full", "s_cms_full", "h_cms_lora", "h_bench9"]
+ARM_ORDER = ["h_cms_full", "s_cms_full", "h_cms_lora", "h_bench9", "h_mprau_in", "s_mprau_in", "h_mprau_lora"]
 GATES = {
     "mprau": {"ref": 0.1025, "op": "gt_ci", "label": "MPRAU pair-mean > 0.1025 CI not cross zero"},
     "mrl": {"ref": 0.28, "op": "ge", "label": "MRL >= 0.28"},
