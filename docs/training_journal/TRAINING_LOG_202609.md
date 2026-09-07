@@ -905,3 +905,8 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **波次 3（3-seed 确认）发射（13:41）**：s_mprau_in_s2（GPU1 b128）/ s_mprau_in_s3（GPU2 b64）/ h_mprau_in_s2（GPU3 b64）/ h_mprau_lora_s2（GPU5 OOM → GPU7 MIG b32）。ensemble 脚本 commit 862edddb。
 - **APA**：epoch 6 step ~488K/513.75K（~95%），ETA 数十分钟内。
 - 纪律：全部 FINAL-EPOCH-FIXED、CUDA BF16、cpu_fallback=false、smoke 未入判定；产物 /mnt、代码已 push。
+
+### 巡检 2026-09-07 14:07 (v8p 终态 / APA 推进 / 基建健康)
+- **v8p（V8 Stage1 polyA 单域基线）已终态并判定**：run_report.json（s_polya，terminal:true，01:45）出现；判定（schema v1）polyA_gate_status=RESOLVED，stage1_success=True，s_vs_h 胜者 S（MRL delta_s_minus_h=+0.0202，阈 -0.02），m_arm_mean=0.3076。**异常标记**：arm-s polya non_destruction FAILED（task_macro_spearman 0.112 < 0.188 阈，GSE269595 epoch2），不阻断 stage1_success，但 arm-s 域内 polyA 专才化牺牲超预期，需 Stage2/下游关注。adjudication_v8_stage1.json 已落盘（v8_stage1_joint_prefinetune_20260904/ 子目录）；为复核对齐产物，14:07 重跑判定脚本确认一致（幂等）。
+- **APA（polyA Route A 预微调）推进中**：epoch 6 step 494000/~513750（~96.2%），mse 0.1559 lr 2.07e-06；frozen_delta_results.json 未现，终态未触发（据触发条件届时跑 harvest_polya.sh，manager 双保险）。进程 1899327 存活。
+- **基建**：manager 存活（2540034/2597533）；GPU0-5 全部在职（0/1/2/5 ~96-100%，3 ~15%，4 340MiB free 32%）；6/7 MIG 未用于正式训练；needs_attention.txt 无告警。负载正常，无 OOM，无 cpu_fallback。
