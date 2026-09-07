@@ -78,6 +78,7 @@ from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_source
 from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
     FrozenRoute2MRNABERTCritic,
 )
+from scripts.route_a_v3.route2_v8_frozen_guidance_v1 import FrozenV8Critic
 from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (
     FrozenXEditCriticV5,
 )
@@ -756,6 +757,23 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
                 f"frozen_xeditcritic_v5_guided_xeditsetflow_v5_{run_id}"
                 f"_pass{checkpoint_pass}_seed{training_seed}"
             )
+        elif critic_kind == "v8":
+            v8_checkpoint = Path(arguments.v8_critic_checkpoint)
+            _require(
+                v8_checkpoint.is_file(),
+                f"frozen V8 critic checkpoint is absent: {v8_checkpoint}",
+            )
+            critic = FrozenV8Critic(
+                v8_checkpoint,
+                Path(arguments.mrnabert_model),
+                device,
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+            )
+            method_id = (
+                f"frozen_v8_critic_guided_xeditsetflow_v5_{run_id}"
+                f"_pass{checkpoint_pass}_seed{training_seed}"
+            )
         else:
             _require(
                 Path(arguments.critic_checkpoint).is_file(),
@@ -962,7 +980,7 @@ def main() -> int:
     parser.add_argument(
         "--critic-kind",
         default="v5",
-        choices=["v2", "v5"],
+        choices=["v2", "v5", "v8"],
         help=(
             "frozen guided-arm critic family; v5 is the pre-authorized "
             "substitution for the never-executed Critic V2 refit"
@@ -977,6 +995,12 @@ def main() -> int:
         "--v5-critic-checkpoint",
         type=Path,
         default=EXPECTED_XEDITCRITIC_V5_CHECKPOINT,
+    )
+    parser.add_argument(
+        "--v8-critic-checkpoint",
+        type=Path,
+        default=None,
+        help="V8 critic checkpoint for --critic-kind v8 (Stage 3)",
     )
     parser.add_argument(
         "--mrnabert-model",
