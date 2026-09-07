@@ -1102,3 +1102,29 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - 已完成：B2-B 对位 + per-task 分解（产物落盘）；SPECS_SETFLOW_V6 三文档 + SPECS_SETFLOW_V5/tasks.md 更新；A3 数值入档。
 - 待续：臂 A 终态 → 双臂对位闭合 → V6 立项裁决终态；A3.3（V8 探针）。
 - **提醒**：DP2 拍板输入已齐备（Phase A 全定案 + 臂 B 对位），建议臂 A 终态后安排 DP2。
+
+---
+## 批次四十二（2026-09-08 04:30，Stage 3 B2 巡检 10#：臂 A 确诊卡死 → 留证重启）
+
+### 重大事件：臂 A（V8-S 专才，GPU1）确诊卡死 → 停止留证 → 同参数重启
+
+- **诊断升级**（依据批次四十一预案：wall ≥ 2×B2-B 升级深检）：
+  - 进程 3289922 elapsed **11h30m**（started 09-07 16:53:51），仍无输出目录/arm_summary；对照 B2-B 全程含设置 5.9h。
+  - **主线程单核旋占确诊**：ps -L 主线程 93.8% CPU、TIME 10:52:40（≈10.9h CPU / 11.5h wall）；其余 272 线程全部 0 CPU + Sl；二次采样 TIME 10:50:51→10:52:40 持续增长。
+  - **I/O 近零**：/proc/3289922/io read_bytes 1.97MB / write_bytes 16KB（11.5h 累计）→ 纯 CPU 空转零读写，非"慢速计算"。批次四十一"疑似显著慢速"更正为**确诊卡死**。
+  - 判定：满足纪律"cpu 静默降级立即停止留证"（GPU 无推进、CPU 忙等）。日志仅 transformers 启动警告 380B，无 Traceback/OOM/cuda error。
+- **留证**：guided_b2_v8_20260907/armA_stuck_diagnosis_20260908_0429.txt（ps/线程/io/缺目录/对照）；原日志改名 b2_full_891.log.stuck_20260908_0429。
+- **停止**：kill -9 3289921/3289922（bash+python）。
+- **重启**：同参数重发（bash 2869260 / **python 2869261**，GPU1，V8-S 专才 s_mprau_in stage2_s_benchmark_full_epoch6.pt，--arms guided --critic-kind v8，输出目录同路径 b2_full_891）；新日志已建（仅启动警告，脚本静默设计至终态）。
+- **疑因（未定）**：GPU1 重度争用下 torch expandable_segments 分配重试旋占（瞬态）vs 专才 critic 路径数据依赖死循环（确定性）。重启后观：若 60min 内仍无输出目录 + 主线程旋占 → 确定性 bug，转 --source-limit 减源诊断定位触发源。
+
+### 基础设施
+
+- manager UP（PID 2540034）；watcher 已正常退出（A3/A5 全链完成，非死亡）。
+- GPU：GPU0-5 忙（util 52–100%），GPU6/7 MIG-only → **无空闲满血卡**；臂 A 重启复用 GPU1（free 14.6GB 充足）。
+- 新进程启动干净，无 Traceback/OOM/cpu_fallback。
+
+### 处置
+
+- 已停旧进程 + 留证 + 同参数重启臂 A（新 PID 2869261）。
+- 待续：臂 A 重启推进确认（下次巡检）；若复现卡死 → 减源诊断；臂 A 终态 → 双臂对位闭合 → V6 立项裁决终态。
