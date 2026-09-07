@@ -1065,3 +1065,40 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager**：UP（PID 2540034，elapsed 23h17m）；日志尾行为 09-07 15:31 APA harvest done（事件驱动型，空闲期无新行属正常）；polyA NEEDS HUMAN 已由批次三十九补录闭合。
 - **GPU**：无全占；B2 相关卡显存充足（GPU1 free 11.4G / GPU4 free 24.5G）。
 - **判定**：B2 双臂推进正常；A3 watcher 已修复、等待空闲满血卡；无新异常，无需处置。
+
+---
+## 批次四十一（2026-09-08 04:30，Stage 3 B2 巡检 9#：臂 B 终态对位 + A3 数值终态入档 + 臂 A 慢速异常）
+
+### 重大事件一：臂 B（V8-S joint 对照，GPU4）终态对位——Δ 负向跨零，不支撑 critic 非瓶颈
+
+- **终态**：guided_b2_v8joint_20260907/b2_full_891/guided_run_summary.json status=GUIDED_XEDITSETFLOW_V5_B2_RUNNER_COMPLETE（wall 21311s≈5.9h，GPU4，seed 20260915，pass-2，cpu_fallback=false，peak VRAM 1.6GB，28512 候选 legality 1.0，critic_forwards 303642）；status.log 04:00 B2V8JOINT terminal=1。
+- **对位（口径同 guided_b2_20260903，unguided 参照 = 20260903 unguided 臂候选，recovery 0.12046）**：guided recovery **0.1188** → **Δrecovery −0.0017（bootstrap 2000 CI [−0.0046,+0.0011] 跨零，负向点估计）**；Δhit@1 −0.0002；**Gate B2/B3 双 FAIL**。
+- **per-task Δ**：MRL 652 源 −0.0015（0.1531 vs 0.1547）/ MPRAU 108 0.0000 / polyA 20 0.0000 / HL 111 −0.0045（0.0270 vs 0.0315）→ **四任务全≤0，且劣于 V5-critic guided 0.1263**。
+- **裁决（V6 立项中间态）**：臂 B 不满足"Δ 显著正 → critic 非瓶颈"；双臂跨零闭合待臂 A 终态。产物：b2_full_891_adjudication{,_per_task}.json。
+
+### 重大事件二：A3 critic 混合池探针——数值终态（H2 首次直接量化）
+
+- **watcher 全链完成**（03:10:52 A3_FULL done rc=0 → A5 pass4/pass6 聚合 → 03:15:54 全部完成退出 0；修正版 watcher 以 editflow python 正确环境执行，批次三十九根因修复验证通过）。
+- **A3 全量 891 源数值**（a3_critic_mixed_pool_probe_full.json，cuda:2，BF16，cpu_fallback=false，protected_reads=0，status=TERMINAL；critic=V5 final_pass_8）：总体 critic cond_acc@1 **0.0614** vs base 0.0367；measured_best 平均名次 **8.83** vs 23.36。
+- **per-task（critic cond_acc@1 vs base_reachable 天花板）**：MRL 652 **0.0422 < 12.4%** / MPRAU 108 **0.1111 > 2.8%** / HL 111 **0.1280 > 5.4%** / polyA 20 **0.05 > 0.0%**（n=20）。
+- **natural-hit 子集（216 源，24.2%）反劣**：critic 0.0764 vs base 0.1514；rank 6.76 vs 2.15。
+- **H2 裁决**：部分证实——critic 判别力在 MRL 主杠杆上低于 base 结构性天花板、natural-hit 子集反劣 → 判别力不足是约束之一；MPRAU/HL 超天花板 → added 触达优势真实。A3.3（V8 同款探针）待 Stage 3 产物。
+- **入档**：SPECS_SETFLOW_V6/{spec,tasks,checklist}.md 已更新（H2 数值表 + 裁决 + Phase A 收口）；**DP2 拍板输入齐备，提醒拍板临近**。
+
+### 臂 A（V8-S 专才，GPU1）——推进异常（慢速，待续观）
+
+- 进程 3289921/3289922 alive（elapsed ~11h10m）；GPU1 util 100%（9 进程共享，含 3×8.6GB 大任务）；进程 VRAM 2106MiB 恒定（与 smoke peak 1.6GB 量级一致，非卡死指标）；CPU ~100–140%（1–2 核）持续；**I/O 8s 窗口零增长**。
+- 对照：smoke 8 源 wall 218s → 外推 891 ≈ 6.7h；B2-B 实跑 5.9h。**臂 A 已 11h+ 无输出目录**（输出目录为终态一次性落盘设计，缺目录≠必然异常）。
+- 判定：GPU1 重度争用 + 专才 critic 前向画像可能差异 → 疑似显著慢速（2×+），非确诊卡死（CPU 持续在算、无 Traceback/OOM/cpu_fallback、state R）。**下次巡检若仍无终态且 wall ≥ 2×B2-B（≈12h，约 05:00 后），升级为深检（必要时重启留证）**。
+
+### 基础设施
+
+- manager UP（PID 2540034）；status.log 04:00 MGR alive。
+- GPU：GPU0-5 全忙（util 47–100%），GPU6/7 MIG-only → **无空闲满血卡**（A3 已结束，不影响）。
+- 无 Traceback/OOM/cuda error / cpu_fallback（两臂 + A3 均干净）。
+
+### 处置
+
+- 已完成：B2-B 对位 + per-task 分解（产物落盘）；SPECS_SETFLOW_V6 三文档 + SPECS_SETFLOW_V5/tasks.md 更新；A3 数值入档。
+- 待续：臂 A 终态 → 双臂对位闭合 → V6 立项裁决终态；A3.3（V8 探针）。
+- **提醒**：DP2 拍板输入已齐备（Phase A 全定案 + 臂 B 对位），建议臂 A 终态后安排 DP2。
