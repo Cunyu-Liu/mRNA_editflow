@@ -56,7 +56,7 @@ V5_MPRAU_REFERENCE = 0.1025
 
 # arm -> seed list (dir suffix naming)
 ARM_SEEDS = {
-    "s_mprau_in": ["", "_s2", "_s3"],
+    "s_mprau_in": ["", "_s2", "_s3", "_s4", "_s5"],
     "h_mprau_in": ["", "_s2"],
     "h_mprau_lora": ["", "_s2"],
 }
@@ -224,11 +224,11 @@ def main() -> int:
         print(f"seed {suffix or '(seed1)'}: rho={rho:.4f} variants={len(table)} ckpt={ckpt.name}", flush=True)
         # accumulate per-variant predictions (mean across seeds of per-cell means)
         if per_variant is None:
-            per_variant = {v: [p] for v, p in table.items()}
+            per_variant = {v: [p[1]] for v, p in table.items()}
         else:
             for v, p in table.items():
                 if v in per_variant:
-                    per_variant[v].append(p)
+                    per_variant[v].append(p[1])
     # variant-level target (mean of per-cell observed deltas) for the ensemble table
     variant_targets = {v: t[0] for v, t in ref_variants.items()}
     # ensemble = mean of per-variant predictions across seeds
