@@ -32,6 +32,13 @@ Pre-registered architecture decisions (docs/paper/route2_v8_stage1_prereg_v1.md)
   arms and trivial zero-shot application (the domain id is always known at
   inference).
 
+- Cell conditioning (Stage 2, optional): a learned 768d embedding per biological
+  context added to the pooled representation alongside the domain embedding.
+  Stage 2 keeps the original per-cell MPRAU labels (no pair-mean aggregation,
+  the V6 failure mode), so the readout must be able to see WHICH cell line a
+  row comes from. num_cells=0 (default) keeps Stage 1 behaviour bit-identical
+  (no extra parameters, no cell embeddings).
+
 mRNABERT loading pattern (from run_route2_mrnabert_directft_arm_a_v1.py): AutoConfig
 + AutoModel.from_config + manual strip of the "bert." prefix + flash_attn_
 qkvpacked_func = None (AutoModel.from_pretrained is incompatible with the custom
@@ -53,8 +60,15 @@ from torch.nn import functional as F
 NUCLEOTIDE_TOKEN_IDS = {"A": 5, "T": 6, "C": 7, "G": 8, "N": 9}
 _ONE_HOT_CHANNELS = 4
 
-DOMAIN_IDS = {"mrl": 0, "polya": 1, "cms": 2}
-NUM_DOMAINS = 3
+DOMAIN_IDS = {"mrl": 0, "polya": 1, "cms": 2, "mprau": 3, "gse149487": 4,
+              "gse186455": 5, "gse200304": 6, "gse217518": 7, "gse256185": 8}
+NUM_DOMAINS = 3  # Stage 1 model geometry (mrl/polya/cms); Stage 2 may extend.
+
+# Biological contexts used by the benchmark (ENCSR854RUF canonical records) and
+# the CMS array library (5 ENCODE cell lines -> subset). Stage 2 cell
+# conditioning maps every row to one of these ids.
+CELL_IDS = {"GM12878": 0, "HEK293FT": 1, "HEPG2": 2, "HMEC": 3, "K562": 4, "SKNSH": 5}
+NUM_CELLS = 6
 
 STEM_CONV1_CHANNELS = 96
 STEM_CONV1_KERNEL = 8
@@ -149,9 +163,14 @@ class V8JointRegressor(nn.Module):
     forward(input_ids, attention_mask, domain_ids) -> [B] activity prediction
     (domain-standardised scale). encode_pooled(...) exposes the conditioned
     pooled representation for diagnostics / Stage-2 reuse.
+
+    Stage 2 (optional): pass cell_ids (len(B), int) and num_cells>0 to add a
+    learned per-context embedding to the pooled representation. num_cells=0
+    (default) reproduces Stage 1 exactly (no extra parameters).
     """
 
-    def __init__(self, base_model: nn.Module, use_stem: bool, num_domains: int = NUM_DOMAINS) -> None:
+    def __init__(self, base_model: nn.Module, use_stem: bool, num_domains: int = NUM_DOMAINS,
+                 num_cells: int = 0) -> None:
         super().__init__()
         self.base = base_model
         self.use_stem = use_stem
@@ -159,6 +178,10 @@ class V8JointRegressor(nn.Module):
             self.stem = CNNMotifStem(output_dim=base_model.config.hidden_size)
         self.domain_embeddings = nn.Embedding(num_domains, base_model.config.hidden_size)
         nn.init.normal_(self.domain_embeddings.weight, mean=0.0, std=0.02)
+        self.num_cells = int(num_cells)
+        if self.num_cells > 0:
+            self.cell_embeddings = nn.Embedding(self.num_cells, base_model.config.hidden_size)
+            nn.init.normal_(self.cell_embeddings.weight, mean=0.0, std=0.02)
         self.head = nn.Linear(base_model.config.hidden_size, 1)
 
     def _sequence_output(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
@@ -179,14 +202,21 @@ class V8JointRegressor(nn.Module):
         encoder_outputs = self.base.encoder(embedding_output, attention_mask, output_all_encoded_layers=False)
         return encoder_outputs[-1]
 
-    def encode_pooled(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, domain_ids: torch.Tensor) -> torch.Tensor:
+    def encode_pooled(self, input_ids: torch.Tensor, attention_mask: torch.Tensor,
+                      domain_ids: torch.Tensor, cell_ids: Optional[torch.Tensor] = None) -> torch.Tensor:
         hidden = self._sequence_output(input_ids, attention_mask)
         mask = attention_mask.unsqueeze(-1).to(hidden.dtype)
         pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1)
-        return pooled + self.domain_embeddings(domain_ids)
+        pooled = pooled + self.domain_embeddings(domain_ids)
+        if cell_ids is not None:
+            if self.num_cells <= 0:
+                raise ValueError("cell_ids passed but cell conditioning is disabled (num_cells=0)")
+            pooled = pooled + self.cell_embeddings(cell_ids)
+        return pooled
 
-    def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, domain_ids: torch.Tensor) -> torch.Tensor:
-        pooled = self.encode_pooled(input_ids, attention_mask, domain_ids)
+    def forward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, domain_ids: torch.Tensor,
+                cell_ids: Optional[torch.Tensor] = None) -> torch.Tensor:
+        pooled = self.encode_pooled(input_ids, attention_mask, domain_ids, cell_ids)
         return self.head(pooled).squeeze(-1)
 
 
@@ -211,18 +241,20 @@ def load_mrnabert_base(mrnabert_path: Path):
     return base
 
 
-def build_v8_regressor(mrnabert_path: Path, arch: str, num_domains: int = NUM_DOMAINS) -> V8JointRegressor:
+def build_v8_regressor(mrnabert_path: Path, arch: str, num_domains: int = NUM_DOMAINS,
+                       num_cells: int = 0) -> V8JointRegressor:
     """arch in {"s", "h"}: pure mRNABERT / hybrid CNN-stem."""
     if arch not in ("s", "h"):
         raise ValueError(f"arch must be 's' or 'h', got {arch!r}")
     base = load_mrnabert_base(mrnabert_path)
-    return V8JointRegressor(base, use_stem=(arch == "h"), num_domains=num_domains)
+    return V8JointRegressor(base, use_stem=(arch == "h"), num_domains=num_domains, num_cells=num_cells)
 
 
 def parameter_report(model: V8JointRegressor) -> dict:
     """Trainable parameter accounting for the run manifest."""
     stem_count = model.stem.parameter_count() if model.use_stem else 0
     domain_count = model.domain_embeddings.weight.numel()
+    cell_count = model.cell_embeddings.weight.numel() if model.num_cells > 0 else 0
     head_count = sum(p.numel() for p in model.head.parameters())
     base_count = sum(p.numel() for p in model.base.parameters())
     return {
@@ -230,6 +262,7 @@ def parameter_report(model: V8JointRegressor) -> dict:
         "mrnabert_base": base_count,
         "cnn_stem": stem_count,
         "domain_embeddings": domain_count,
+        "cell_embeddings": cell_count,
         "linear_head": head_count,
         "use_stem": model.use_stem,
     }
