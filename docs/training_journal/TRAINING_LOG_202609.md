@@ -881,3 +881,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **APA**（GPU0 pid 1899327）：epoch 6 step ~449K/513.75K（~87%），ETA 09-07 下午；epoch 5 中间值 frozen-delta task_macro 0.3241（非终态）。终态自动 harvest_polya.sh。
 - 观测：GPU1 37.5→25.9GiB free（h_cms_full 占用）；GPU2 11GiB free、GPU3 3.7GiB free、GPU5 25.9GiB free，四臂均在推进；无 OOM、无 cpu_fallback_used=true。
 - 判定：无终态（APA/四臂均在途）；进程全部存活；定时任务监控已更新（v8p 段自然失效，Stage 2 四臂段新增）。
+## 巡检批次二十九 2026-09-07 12:15（09-07 12:13 巡检）
+- **v8p polyA 单域基线**：已终态无新增。复核 run_report.json（01:45）与 adjudication_v8_stage1.json（04:01）与历批次一致：polyA 门 RESOLVED、stage1_success=True、S 胜出（delta_s_minus_h +0.0202）、m_arm_mean=0.3076、polyA 基线 Spearman 0.2092。无独立 train 进程（pgrep 首查 2169241 为 manager bash -c 误报，与批次二十八一致）。持续注意项：arm-s polya 非破坏 FAIL（0.1122<0.1883）、arm-h PASS（0.5262），Stage 2 已主臂=H。
+- **APA polyA 预微调**（GPU0，pid 1899327）：epoch 6 step 467000，mse 0.1584 lr 2.37e-06（总步~513,750，~91%），较上批次 +18k；frozen_delta_results.json 未出现，终态门未触发（预计 09-07 下午，剩约 47k 步）。
+- **manager**（pid 2169241/2540034）：存活。
+- 观测：GPU0 util 100%、GPU5 util 99%（APA/Stage 2 四臂满载）；GPU1 37.4GiB free、GPU4 30.5GiB free，余量充足；无 OOM、无 cpu_fallback_used=true。
+- 判定：无新终态；进程全部存活；needs_attention.txt 无告警。
