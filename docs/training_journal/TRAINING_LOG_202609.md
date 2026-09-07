@@ -1041,3 +1041,27 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager**：UP（PID 2540034，started 09-07 02:04:49）；日志尾部正常（harvest complete / APA harvest done）；除上述 polyA journal FAIL 外无新异常。
 - **GPU 快照**（00:20）：GPU0 8049MiB/100%、GPU1 10319MiB/99%、GPU2 26037MiB/94%、GPU3 13531MiB/99%、GPU4 32507MiB/38%、GPU5 7204MiB/46%；GPU6（free 38.7G）/GPU7（free 19.8G）util N/A → MIG-only → 当前无空闲满血卡，A3 保持等待态。
 - **判定**：B2 双臂推进正常；A3 watcher 已修复重启等待空闲卡；polyA APA 裁决补录闭合；无需其他处置。
+
+---
+## 批次四十（2026-09-08 01:20，Stage 3 B2 V8 巡检 8# + A3 watcher 修复后等待态确认）
+
+### B2 双臂（guided-only 891 源，~2 天）
+
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922（alive，elapsed 8h28m，CPU 212%）；critic= v8_stage2_adapt_20260907/s_mprau_in/stage2_s_benchmark_full_epoch6.pt；GPU1 util 99%。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480732（alive，elapsed 4h13m，CPU 431%）；critic= v8_stage1_joint_prefinetune_20260904/s_mrl-polya/stage1_s_epoch2.pt；GPU4 util 94%。
+- **日志**：两臂仍各 1 行（380B 仅 bert 加载横幅），stdout block 缓冲所致（与前 7 期判定一致）；无 Traceback/OOM/cuda error；无 cpu_fallback 证据。
+- **无终态**：双臂 full run guided_run_summary.json 均未生成（属预期 ~2 天）；仅臂A 旧 smoke_guided_v8_8src summary（框架冒烟，忽略）。
+- **cron status.log**：B2V8/B2V8JOINT 行 22:00/00:00 均 alive=1 terminal=0，与巡检一致。
+
+### A3 critic 混合池探针（V6 诊断线）
+
+- **watcher**：alive（PID 1600186，批次三十九 00:37 修复版）；00:31–01:17 持续 "no free full GPU (all busy / MIG-only)"，sleep 300s 轮询。
+- **环境验证**：editflow python torch 2.5.1+cu121 CUDA True → 修复确认有效，下一空闲窗口 A3_FULL 将以正确环境执行。
+- **终态**：A3_critic_mixed_pool_probe.json 不存在（仅 dry_smoke_stub）；done_A3_FULL.json 为 3 次旧失败标记（exit_code=1，批次三十九已留证）；修复后无新 run、无 done 新变化。
+- **等待态**：当前无空闲满血卡（GPU0 100%/GPU1 99%/GPU2 23%/GPU3 99%/GPU4 94%/GPU5 50%，GPU6/7 MIG-only）→ A3 保持等待。
+
+### 基础设施
+
+- **manager**：UP（PID 2540034，elapsed 23h17m）；日志尾行为 09-07 15:31 APA harvest done（事件驱动型，空闲期无新行属正常）；polyA NEEDS HUMAN 已由批次三十九补录闭合。
+- **GPU**：无全占；B2 相关卡显存充足（GPU1 free 11.4G / GPU4 free 24.5G）。
+- **判定**：B2 双臂推进正常；A3 watcher 已修复、等待空闲满血卡；无新异常，无需处置。
