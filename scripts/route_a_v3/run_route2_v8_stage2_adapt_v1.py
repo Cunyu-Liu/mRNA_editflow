@@ -88,6 +88,9 @@ CANONICAL_ROOT = MNT / "canonical"
 V5_PRED_GLOB = str(MNT / "experiments/xeditcritic_v5/*/v5_full/final_validation_predictions.jsonl")
 OUT_ROOT = MNT / "experiments/xeditcritic_route_a/v8_stage2_adapt_20260907"
 
+# module-level output dir for the prediction persistence hook (set in main())
+_OUT_DIR: str = ""
+
 BATCH = 128
 EPOCHS = 6
 LR = 2e-5
@@ -391,6 +394,11 @@ def eval_mprau_validation(model, tokenizer, device, domain_id: int) -> dict:
     targets = {rid: float(records[rid]["direction_normalized_delta"]) for rid in ids}
     variants = mprau_variant_table(predictions, targets)
     rho = pair_mean_rho(variants)
+    # persist per-record predictions for the 3-seed ensemble / bootstrap (FINAL run)
+    _out = Path(_OUT_DIR) / "mprau_predictions.jsonl"
+    with _out.open("w") as _fh:
+        for rid in ids:
+            _fh.write(json.dumps({"canonical_record_id": rid, "prediction": float(predictions[rid])}) + "\n")
     report = {
         "study": "ENCSR854RUF",
         "split": "VALIDATION",
@@ -474,6 +482,8 @@ def main() -> int:
     mode = "benchmark" if args.benchmark else "library_cms"
     out_dir = Path(args.out_dir) if args.out_dir else OUT_ROOT / f"{args.arch}_{mode}_{args.adapt_mode}"
     out_dir.mkdir(parents=True, exist_ok=True)
+    global _OUT_DIR
+    _OUT_DIR = str(out_dir)
 
     if mode == "benchmark":
         num_domains = len(DOMAIN_IDS)  # full 9-domain geometry
