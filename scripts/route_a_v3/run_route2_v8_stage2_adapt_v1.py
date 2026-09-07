@@ -505,6 +505,7 @@ def main() -> int:
     # ---- adaptation params ----
     if args.adapt_mode == "lora":
         wrapped = wrap_lora(model)
+        model.to(device)  # LoRA modules are created in-place on CPU; move to device
         print(f"LoRA wrap: {wrapped} target modules (r={LORA_RANK} a={LORA_ALPHA})", flush=True)
         for p in model.parameters():
             p.requires_grad_(False)
