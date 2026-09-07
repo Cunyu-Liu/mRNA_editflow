@@ -910,3 +910,15 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **v8p（V8 Stage1 polyA 单域基线）已终态并判定**：run_report.json（s_polya，terminal:true，01:45）出现；判定（schema v1）polyA_gate_status=RESOLVED，stage1_success=True，s_vs_h 胜者 S（MRL delta_s_minus_h=+0.0202，阈 -0.02），m_arm_mean=0.3076。**异常标记**：arm-s polya non_destruction FAILED（task_macro_spearman 0.112 < 0.188 阈，GSE269595 epoch2），不阻断 stage1_success，但 arm-s 域内 polyA 专才化牺牲超预期，需 Stage2/下游关注。adjudication_v8_stage1.json 已落盘（v8_stage1_joint_prefinetune_20260904/ 子目录）；为复核对齐产物，14:07 重跑判定脚本确认一致（幂等）。
 - **APA（polyA Route A 预微调）推进中**：epoch 6 step 494000/~513750（~96.2%），mse 0.1559 lr 2.07e-06；frozen_delta_results.json 未现，终态未触发（据触发条件届时跑 harvest_polya.sh，manager 双保险）。进程 1899327 存活。
 - **基建**：manager 存活（2540034/2597533）；GPU0-5 全部在职（0/1/2/5 ~96-100%，3 ~15%，4 340MiB free 32%）；6/7 MIG 未用于正式训练；needs_attention.txt 无告警。负载正常，无 OOM，无 cpu_fallback。
+
+---
+## 批次三十（2026-09-07 16:10，APA 终态收割 + s_mprau_in 4-seed 结果）
+
+- **APA polyA Route A 终态收割（FINAL-EPOCH-6-FIXED，harvest_polya.sh 自动）**：task_macro_spearman **0.2839** / top1 0.4545 / ndcg 0.8456。vs APARENT 0.7343：Δ−0.450 CI [−0.511,−0.388] 全负；vs critic V5 0.8219：Δ−0.538 CI 全负 → **polyA 主行不升级，APA 线 FAIL（诚实负结果）**。归因：mRNABERT full-FT 2.74M 近端 usage 库不适配 polyA 决策基准（epoch 1-2 更好 0.443/0.449，但 FINAL-EPOCH-FIXED 禁挑峰）；APARENT 架构（CNN/位置建模）在近端 usage 显著优于通用 LM full-FT。
+- **s_mprau_in（V8-S 域内 ENCSR854RUF 专才）4-seed 全部超过 V5 0.1025**：
+  - seed1 0.1527 / seed2 0.1140 / seed3 0.1120 / seed4 0.1082（3-seed ensemble 0.1319，vs V5 Δ+0.029 CI [−0.024,+0.085] 跨零）
+  - **首个在 MPRAU pair-mean 上持续超过 V5 的模型**（4/4 seed 点估计 > 0.1025）；CI 仍含零（边际显著），5-seed（s5 训练中）ensemble 待定
+  - 判读：V8-S 联合先验 + 域内适配 = MPRAU 攻坚决定性路径；专才化代价 = MRL/polyA 崩塌（s_mprau_in MRL 0.0001 / polyA −0.16，adjudicator 已按专才臂只判 MPRAU 主判据）
+- **h_bench9（均衡多任务适配）终态**：MRL 0.2879 ✓ / polyA 0.8067 ✓ / MPRAU 0.0556 ✗ / TE 0.0717 ✗ / macro 0.1516 —— 均衡适配保住两个强任务，MPRAU 需要专才化
+- **h_mprau_lora 2-seed**：0.108 / 0.072（ensemble 脚本对 LoRA 臂无效——未解 LoRA wrap，单 seed 以 run_report 为准）
+- **LoRA 臂 ensemble 限制入档**：ensemble 脚本仅对 full-param 臂正确（state dict 直接兼容）；LoRA 臂需先解 wrap，暂以 run_report 单 seed 为准。
