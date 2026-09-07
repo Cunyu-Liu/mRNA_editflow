@@ -130,6 +130,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--adapt-mode", default="full", choices=("full", "lora"))
     parser.add_argument("--libraries", default="cms", help="comma list from {cms}")
     parser.add_argument("--benchmark", action="store_true", help="benchmark TRAIN pool mode (pair-delta balanced)")
+    parser.add_argument("--studies", default="", help="comma list of studies to train on (default: all with TRAIN rows); e.g. ENCSR854RUF")
     parser.add_argument("--epochs", type=int, default=EPOCHS)
     parser.add_argument("--batch", type=int, default=BATCH)
     parser.add_argument("--seed", type=int, default=SEED)
@@ -489,6 +490,12 @@ def main() -> int:
     libraries: dict[str, tuple[DomainLibrary, torch.Tensor]] = {}
     if mode == "benchmark":
         libraries = load_benchmark_domains(tokenizer)
+        if args.studies:
+            requested = {s.strip() for s in args.studies.split(",") if s.strip()}
+            missing = requested - set(libraries)
+            if missing:
+                raise SystemExit(f"requested studies not in TRAIN pool: {sorted(missing)}")
+            libraries = {s: v for s, v in libraries.items() if s in requested}
         # use study-domain sizes for the balanced sampler (records, not 2N)
         domain_sizes = {study: int(lib.targets.shape[0]) for study, (lib, _c) in libraries.items()}
     else:

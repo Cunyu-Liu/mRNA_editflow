@@ -86,3 +86,18 @@ DRAFT §1 预注册条款原文：「若 polyA 非破坏门在 S 上 FAIL 而 H 
 - Stage 2 终态后 24h 内执行 Stage 3：V8 冻结 → SetFlow B2 重跑（同 base/seed/预算）→
   V8-critic vs V5-critic guided Δrecovery 逐任务对位（SetFlow 侧预算另立）。
 - D5（MPRAU 目标带 40%）在 Stage 2 + CMS 首臂数据出齐后 amendment 修订（旧 40% 不删）。
+
+## 7. 波次 2 增补（2026-09-07 11:40，预注册澄清 + CMS 首波结果）
+
+- **DRAFT §2 澄清**：原 DRAFT「MPRAU：用 V8 权重 + ENCSR854RUF（TRAIN 55,704）适配；若适配仍负，CMS array 注入为注册后继」——即**域内 ENCSR854RUF TRAIN 是首要路径，CMS 是注册后继**。波次 1 先发 CMS 臂系执行顺序调整（runner 共用），现按 DRAFT 补发域内臂。
+- **波次 1（CMS 域内适配）三臂已终态（09-07 11:26）**：
+  - h_cms_full（full-FT，4008 步）：MPRAU pair-mean **0.0327**，vs V5 Δ−0.0698 CI [−0.133, −0.010] 全负 → **主判据 FAIL（显著低于 V5）**
+  - s_cms_full（full-FT，8016 步）：**0.0385**，CI [−0.125, +0.003] 跨零 → FAIL
+  - h_cms_lora（LoRA，8016 步）：**−0.0069**，CI 全负 → FAIL
+  - 判读：CMS 同 assay 库适配产生弱正信号（full-FT +0.033~0.039 vs zero-shot ≈0），但远低于 V5 0.1025；LoRA 容量不足（−0.007）。**CMS 作为外部 MPRAU 先验的假说未获确认**（适配后仍显著低于域内训练 V5）。
+- **波次 2（域内 ENCSR854RUF TRAIN 55,704 行，DRAFT 首要路径）**：
+  - h_mprau_in（GPU1，batch 128，full-FT）：发射 11:33
+  - s_mprau_in（GPU2，batch 64，full-FT）：发射 11:33
+  - h_mprau_lora（GPU5，batch 96，LoRA）：发射 11:45
+  - h_bench9（GPU3，batch 64，均衡多任务适配，epoch 3 在途）
+- 判定门不变（§3）；波次 2 结果并入 adjudication_v8_stage2.json（adjudicator 自动扫描 ARM_ORDER 已含新臂，需将新臂名加入扫描表）。
