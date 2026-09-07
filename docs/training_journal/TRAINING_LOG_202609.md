@@ -862,3 +862,10 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager**（pid 2540034）：存活。
 - 基础设施：needs_attention.txt 无告警；GPU0/1 均满载训练，GPU2-5 有余量，无 OOM；GPU6/7 MIG 未用于正式训练；无 CPU 静默降级迹象。
 - 判定：无新终态、无进程死亡、无 OOM、无进度异常。唯一注意项：v8p arm-s polya 非破坏 flag FAILED（0.1122<0.1883）。
+
+## 巡检批次二十八 2026-09-07 10:05
+- **v8p polyA 单域基线**：已终态，无新增。训练进程无存活（本批次 pgrep 首查返回的 1502199 为 bash -c 包装进程自匹配误报，精确复核确认无 v8_stage1 train 进程）。adjudication_v8_stage1.json 复核与批次二十六/二十七一致：polyA 门 RESOLVED、stage1_success=True、S 胜出（delta_s_minus_h +0.0202）、m_arm_mean=0.3076。持续注意项：arm-s polya 非破坏 FAILED（0.1122<阈值0.1883），进入下游前建议复核 arm-s 在 polyA 域验证评估。
+- **APA polyA 预微调**（GPU0，pid 1899327，--physical-gpu-index 0 --epochs 6 --batch 32）：epoch 6 step 435000，mse 0.1463 lr 3.02e-06（总步~513,750，~85%）——正常推进，较批次二十七 +30k 步；frozen_delta_results.json 未出现，终态门未触发（预计 09-07 下午，剩约 78k 步）。
+- **manager**（pid 2540034）：存活。
+- 基础设施：needs_attention.txt 无告警；GPU0 空闲 16.6 GiB/util100%、GPU1 空闲 37.5 GiB/util0%（v8p 退出后释放）、GPU2-5 有余量，无 OOM；GPU6/7 MIG 未用于正式训练；日志无 cpu_fallback_used=true，无 CPU 静默降级迹象。
+- 判定：无新终态、无进程死亡、无 OOM、无进度异常。唯一注意项：v8p arm-s polya 非破坏 flag FAILED（0.1122<0.1883）。
