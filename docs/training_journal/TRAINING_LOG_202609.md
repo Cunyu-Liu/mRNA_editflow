@@ -873,11 +873,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 ---
 ## 批次二十八（2026-09-07 11:10，接班人 cunyuliu 交接首班）
 
-- **v8p 终态判定（09-07 04:05 自动）**：polyA 单域基线 Spearman 0.2092； polyA 门 RESOLVED。**关键新事实：arm-s polyA 非破坏 FAIL（0.1122 < 阈值 0.1883），arm-h PASS（0.5262）**——DRAFT §1 amendment 条款触发 → Stage 2 主臂 = H。
-- **Stage 2 预注册 FROZEN**：（commit 779e3fd1，push 分支 route-a-v3-v8-stage1-prep-20260904）。判定门：MPRAU pair-mean >0.1025 且 CI 不跨零（主判据）/ MRL ≥0.28 / polyA ≥0.80 / TE ≥0.1317 / macro 升 vs 0.167。
-- **新代码**：backbone 增补 cell conditioning（6 ENCODE context embeddings，num_cells=0 保持 Stage 1 bit-identical）；（CMS 库适配 / benchmark TRAIN 池均衡 pair-delta 适配，full-param + LoRA r16 a32，MPRAU pair-mean + vs V5 bootstrap 2000 iters seed 20260816，9 任务 VALIDATION 评估）；（冻结门判定）。commit b2e7d730 push。
+- **v8p 终态判定（09-07 04:05 自动）**：polyA 单域基线 Spearman 0.2092；adjudication_v8_stage1.json polyA 门 RESOLVED。**关键新事实：arm-s polyA 非破坏 FAIL（0.1122 < 阈值 0.1883），arm-h PASS（0.5262）**——DRAFT §1 amendment 条款触发 → Stage 2 主臂 = H。
+- **Stage 2 预注册 FROZEN**：docs/paper/route2_v8_stage2_prereg_v1.md（commit 779e3fd1，push 分支 route-a-v3-v8-stage1-prep-20260904）。判定门：MPRAU pair-mean >0.1025 且 CI 不跨零（主判据）/ MRL ≥0.28 / polyA ≥0.80 / TE ≥0.1317 / macro 升 vs 0.167。
+- **新代码**：backbone 增补 cell conditioning（6 ENCODE context embeddings，num_cells=0 保持 Stage 1 bit-identical）；run_route2_v8_stage2_adapt_v1.py（CMS 库适配 / benchmark TRAIN 池均衡 pair-delta 适配，full-param + LoRA r16 a32，MPRAU pair-mean + vs V5 bootstrap 2000 iters seed 20260816，9 任务 VALIDATION 评估）；adjudicate_route2_v8_stage2_v1.py（冻结门判定）。commit b2e7d730 push。
 - **smoke 双模式全链验证通过**：CMS 库 85,475 行 0 flagged；MPRAU VALIDATION 2,008 变体 pair-mean 出数；V5 参考 0.10254 精确对齐；benchmark 模式 8 study 评估（GSE256185 无 VALIDATION 优雅跳过；GSE149487/GSE186455 等小样本如实出数）。CPU fallback=0，CUDA BF16。
-- **Stage 2 四臂发射（09-07 10:46，一臂一卡多 GPU 并行）**：GPU1 h_cms_full（batch 128 full-FT CMS）/ GPU2 s_cms_full（64）/ GPU3 h_bench9（64）/ GPU5 h_cms_lora（64 LoRA）。LoRA 臂首启崩（wrap 后模块留在 CPU）→ 修复  重发成功（trainable 2,956,801）。
+- **Stage 2 四臂发射（09-07 10:46，一臂一卡多 GPU 并行）**：GPU1 h_cms_full（batch 128 full-FT CMS）/ GPU2 s_cms_full（64）/ GPU3 h_bench9（64）/ GPU5 h_cms_lora（64 LoRA）。LoRA 臂首启崩（wrap 后模块留在 CPU）→ 修复 model.to(device) 重发成功（trainable 2,956,801）。
 - **APA**（GPU0 pid 1899327）：epoch 6 step ~449K/513.75K（~87%），ETA 09-07 下午；epoch 5 中间值 frozen-delta task_macro 0.3241（非终态）。终态自动 harvest_polya.sh。
 - 观测：GPU1 37.5→25.9GiB free（h_cms_full 占用）；GPU2 11GiB free、GPU3 3.7GiB free、GPU5 25.9GiB free，四臂均在推进；无 OOM、无 cpu_fallback_used=true。
 - 判定：无终态（APA/四臂均在途）；进程全部存活；定时任务监控已更新（v8p 段自然失效，Stage 2 四臂段新增）。
