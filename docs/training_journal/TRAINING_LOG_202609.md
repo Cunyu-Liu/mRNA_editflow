@@ -968,3 +968,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
   - ⛔ 用户阻塞：UTR-STCNet 权重（Google Drive 链接，README 确认）与 HydraRNA 权重（gdown 被拦）——均需用户浏览器中转 → external_model_assets/{utr_stcnet,hydrarna}/weights/ → frozen-Δ 行（MRL / GSE217518）
   - ⏸ 用户拍板推迟：LOSO-lite（SOTA 后）、SetFlow V6（Stage 3 后）
   - 低价值跳过：CMS dbSNP 覆盖补全（CMS 臂已 FAIL，补全不改变结论）
+
+## 批次三十五（2026-09-07 21:35，Stage 3 B2 V8 巡检 3#：正常推进）
+
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922，elapsed 4h39m，critic=；GPU1 util 100% / free ~13.6GB。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480732，elapsed 24m，critic=；GPU4 util 71% / free ~14GB。
+- **日志**：两臂均 380B（模型加载横幅），臂A mtime 16:51 / 臂B 21:07；逐源 SOURCE 标记未见——stdout block 缓冲所致，GPU 满载确认在算（与前 2 期判定一致）。
+- **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（summary 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）。
+- **判定**：双臂同步推进，调度正常，无需处置。
