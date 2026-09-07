@@ -929,3 +929,12 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **s_mprau_in 5-seed ensemble（MPRAU pair-mean）**：seed 0.1527/0.1140/0.1120/0.1082/0.1101 —— **5/5 seed 全部 > V5 0.1025**；ensemble **0.1351**（vs V5 Δ+0.0325，CI [−0.0225, +0.088] 跨零）。
 - **裁决（诚实）**：MPRAU 攻坚线（V8-S 先验 + ENCSR854RUF 域内专才适配）**首次持续超过 V5 点估计（+32% relative）**；paired bootstrap CI 含零 = 检验力受限（2008 变体 + per-cell 噪声主导 CI 宽度；5-seed 与 3-seed CI 几乎同宽 → 更多 seed 无益）。D5/Stage 2 门（CI 不跨零）**未严格通过**，不作翻案；结论：方向性突破确立，显著性缺口来自数据体制（MPRAU VALIDATION 2,008 变体对 ~0.03 级 delta 检验力不足）。
 - 后继建议：① Stage 3 将 V8-S 专才接回 SetFlow B2（以生成质量结算 critic 攻坚）；② D5 amendment 重估目标带（以 0.135 为新的 in-house 参照）；③ 如需严格显著：增大 MPRAU 验证池（LOSO 拼表/TEST 开启需 Gate P 拍板）。
+
+---
+## 批次三十二（2026-09-07 18:20，Stage 3 发射 + D5 amendment 提交）
+
+- **Stage 3 发射（用户拍板）**：V8-S 专才（s_mprau_in，5-seed ensemble 0.1351）冻结为 guidance critic，重跑 SetFlow B2（同 base b_fix2 pass2 / seed 20260915 / budget，guided-only，891 源）。新代码 route2_v8_frozen_guidance_v1.py（FrozenV8Critic：potential = clip(f(cand)-f(src), -5, 5) frozen-delta 口径，domain/cell 条件化传参留证，接口镜像 FrozenXEditCriticV5）+ runner --critic-kind v8（commit aad9ce92 已 push 分支 route-a-v3-setflow-v5-base-fix-20260901）。
+- **smoke 验证通过**（8 源，GPU1）：RUNNER_COMPLETE、legality 1.0、cpu_fallback_used=false、256 candidates、method_id=frozen_v8_critic_guided_xeditsetflow_v5_b_fix2_pass2_seed20260915。
+- **full 891 发射**（guided_b2_v8_20260907/b2_full_891，GPU1，PID 3253502，预计 ~2 天）；服务器 monitor v5 已跟踪（每 2h status.log）；TRAE 定时任务更新超时（环境问题）——以服务器侧为准。
+- **D5 amendment v1 提交（用户拍板）**：docs/paper/route2_v8_d5_mprau_target_amendment_v1.md（commit 346c4f19 push）：目标带重述为「>0.1351 且 paired bootstrap CI 不跨零」（近期验收）+ 原 40% 保留为远期延伸目标（留痕）；检验力条款（2,008 变体对 ~0.03 级 delta 分辨不足）入档。
+- 对位基准（Stage 3 终态判定用）：unguided 0.1205 / v5-guided 0.1263（Δ+0.0058 CI 跨零 FAIL）。
