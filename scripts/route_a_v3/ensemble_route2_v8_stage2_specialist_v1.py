@@ -20,6 +20,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -35,6 +36,11 @@ from core.route2_v8_joint_library_v1 import (  # noqa: E402
     MNT,
     format_sequence,
 )
+from core.route2_mrnabert_lora_v3 import LoRALinearV3  # noqa: E402
+
+LORA_RANK = 16
+LORA_ALPHA = 32.0
+LORA_DROPOUT = 0.05
 
 EVAL_REPO = "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_setflow_v5_base_fix_20260901"
 _ev_spec = importlib.util.spec_from_file_location(
@@ -60,6 +66,27 @@ ARM_SEEDS = {
     "h_mprau_in": ["", "_s2"],
     "h_mprau_lora": ["", "_s2"],
 }
+
+
+def _wrap_lora(model) -> int:
+    """In-place LoRA wrap matching the Stage 2 runner (r16 a32, qkv+o+mlp)."""
+    wrapped = 0
+    for layer in model.base.encoder.layer:
+        for attr_path in (
+            ("attention", "self", "Wqkv"),
+            ("attention", "output", "dense"),
+            ("mlp", "gated_layers"),
+            ("mlp", "wo"),
+        ):
+            parent = layer
+            for step in attr_path[:-1]:
+                parent = getattr(parent, step)
+            base = getattr(parent, attr_path[-1])
+            if isinstance(base, nn.Linear):
+                setattr(parent, attr_path[-1],
+                        LoRALinearV3(base, rank=LORA_RANK, alpha=LORA_ALPHA, dropout=LORA_DROPOUT))
+                wrapped += 1
+    return wrapped
 
 
 def load_final_checkpoint(arm_dir: Path, arch: str) -> Path:
@@ -207,6 +234,9 @@ def main() -> int:
         raw = torch.load(ckpt, map_location="cpu", weights_only=False)
         state = raw["model_state_dict"]
         model = build_v8_regressor(MRNABERT_PATH, arch, num_domains=len(DOMAIN_IDS), num_cells=max(CELL_IDS.values()) + 1)
+        if any("lora_a" in k or "lora_b" in k for k in state):
+            n_wrapped = _wrap_lora(model)
+            print(f"seed {suffix or '(seed1)'}: LoRA checkpoint detected, wrapped {n_wrapped} modules", flush=True)
         model_state = model.state_dict()
         compatible = {k: v for k, v in state.items() if k in model_state and model_state[k].shape == v.shape}
         model.load_state_dict(compatible, strict=False)
