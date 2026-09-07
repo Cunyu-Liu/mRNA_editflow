@@ -21,7 +21,9 @@ from pathlib import Path
 
 OUT_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/v8_stage2_adapt_20260907")
 
-ARM_ORDER = ["h_cms_full", "s_cms_full", "h_cms_lora", "h_bench9", "h_mprau_in", "s_mprau_in", "h_mprau_lora"]
+ARM_ORDER = ["h_cms_full", "s_cms_full", "h_cms_lora", "h_bench9", "h_mprau_in",
+             "s_mprau_in", "h_mprau_lora", "s_mprau_in_s2", "s_mprau_in_s3",
+             "h_mprau_lora_s2", "h_mprau_in_s2"]
 GATES = {
     "mprau": {"ref": 0.1025, "op": "gt_ci", "label": "MPRAU pair-mean > 0.1025 CI not cross zero"},
     "mrl": {"ref": 0.28, "op": "ge", "label": "MRL >= 0.28"},
@@ -74,6 +76,17 @@ def arm_extract(report: dict) -> dict:
     }
 
 
+def judge_mprau_only(ext: dict) -> dict:
+    """MPRAU primary gate only (specialist arms)."""
+    m = ext.get("mprau_pair_mean")
+    ci = ext.get("mprau_delta_ci95")
+    return {
+        "pass": m is not None and float(m) > GATES["mprau"]["ref"]
+                and not bool(ext.get("mprau_delta_crosses_zero")),
+        "value": m, "ci95": ci, "criterion": GATES["mprau"]["label"],
+    }
+
+
 def judge(ext: dict) -> dict:
     gates = {}
     m = ext.get("mprau_pair_mean")
@@ -110,7 +123,15 @@ def main() -> int:
             arms[arm] = {"status": "REJECTED_SELECTION", "reason": report.get("selection_rule")}
             continue
         ext = arm_extract(report)
-        arms[arm] = {"status": "TERMINAL", "numbers": ext, **judge(ext)}
+        # Specialist arms (MPRAU adaptation, single-study) are judged on the
+        # MPRAU primary gate only - they intentionally sacrifice other tasks.
+        # The multi-task arm (h_bench9) is judged on all gates.
+        if arm == "h_bench9":
+            verdict = judge(ext)
+        else:
+            verdict = {"all_gates_pass": None, "mprau_primary": judge_mprau_only(ext),
+                       "gates": {"mprau": judge(ext)["gates"]["mprau"]}}
+        arms[arm] = {"status": "TERMINAL", "numbers": ext, **verdict}
     result = {
         "schema_version": "route_a_v3_route2_v8_stage2_adjudication.v1",
         "adjudicated_at": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
