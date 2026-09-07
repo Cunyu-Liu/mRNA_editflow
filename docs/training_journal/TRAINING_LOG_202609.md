@@ -971,8 +971,8 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 ## 批次三十五（2026-09-07 21:35，Stage 3 B2 V8 巡检 3#：正常推进）
 
-- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922，elapsed 4h39m，critic=；GPU1 util 100% / free ~13.6GB。
-- **臂B（V8-S joint 对照，GPU4）**：python PID 480732，elapsed 24m，critic=；GPU4 util 71% / free ~14GB。
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922，elapsed 4h39m，critic= v8_stage2_adapt_20260907/s_mprau_in/stage2_s_benchmark_full_epoch6.pt；GPU1 util 100% / free ~13.6GB。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480732，elapsed 24m，critic= v8_stage1_joint_prefinetune_20260904/s_mrl-polya/stage1_s_epoch2.pt；GPU4 util 71% / free ~14GB。
 - **日志**：两臂均 380B（模型加载横幅），臂A mtime 16:51 / 臂B 21:07；逐源 SOURCE 标记未见——stdout block 缓冲所致，GPU 满载确认在算（与前 2 期判定一致）。
 - **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（summary 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）。
 - **判定**：双臂同步推进，调度正常，无需处置。
