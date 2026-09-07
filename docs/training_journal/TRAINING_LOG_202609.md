@@ -995,3 +995,15 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（guided_run_summary.json 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）；GPU1/4 显存充足，无 GPU 全占。
 - **注**：status.log 未检索到 B2V8/B2V8JOINT 行（cron v6 monitor 尚未落地该标注，不影响本臂巡检判定）。
 - **判定**：双臂同步推进，调度正常，无需处置。
+
+---
+## 批次三十八（2026-09-07 23:35，Stage 3 B2 V8 巡检 6#：正常推进）
+
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922（alive），GPU1 util 100%（used 34640 MiB）；critic= v8_stage2_adapt_20260907/s_mprau_in/stage2_s_benchmark_full_epoch6.pt。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480732（alive），GPU4 util 48%（used 7264 MiB，采样瞬间处于批次间隙/IO）；critic= v8_stage1_joint_prefinetune_20260904/s_mrl-polya/stage1_s_epoch2.pt。
+- **日志**：两臂均仍 380B（仅 bert 加载横幅），逐源 SOURCE 标记未见——stdout block 缓冲所致，进程 alive + GPU 占用确认在算（与前 5 期判定一致）；full log 未见 Traceback/OOM/cuda error。
+- **A3 探针**：watcher alive（PID 1096623），23:00–23:30 持续 "no free full GPU (all busy / MIG-only)" 等待空闲满血卡；尚无 A3 JSON 终态、无 done 标记 → 保持等待态（当前无空闲满血卡）。
+- **基础设施**：manager UP（PID 2540034）；GPU8 卡 util 采样：GPU0 99%/GPU1 100%/GPU2 90%/GPU3 99%/GPU4 48%/GPU5 69% 占满，GPU6（free 38.7G）/GPU7（used 20.7G）util N/A → MIG-only 不可作满血卡；无 GPU 全占（B2 相关卡显存充足）。
+- **cron status.log**：已出现 B2V8/B2V8JOINT 行（21:11/22:00，alive=1 terminal=0）→ cron v6 monitor 标注已落地（相较批次三十七的缺失改善）。
+- **无终态**：双臂 guided_run_summary.json 均未生成，属预期（~2 天）。
+- **判定**：B2 双臂同步推进 + A3 watcher 等待空闲满血卡，调度正常，无需处置。
