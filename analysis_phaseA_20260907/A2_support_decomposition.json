@@ -1,0 +1,88 @@
+{
+  "schema_version": "route_a_v3_phaseA_a2_support_decomposition.v1",
+  "protected_reads": 0,
+  "budget": 32,
+  "unguided": {
+    "label": "unguided-32",
+    "overall_measured_in_pool_rate": 0.009820426487093154,
+    "overall_support_32": 0.24242424242424243,
+    "per_task": {
+      "MPRAU": {
+        "source_count": 108,
+        "measured_in_pool_rate": 0.001736111111111111,
+        "support_32": 0.05555555555555555
+      },
+      "MRL": {
+        "source_count": 652,
+        "measured_in_pool_rate": 0.012797162576687117,
+        "support_32": 0.3128834355828221
+      },
+      "HL": {
+        "source_count": 111,
+        "measured_in_pool_rate": 0.0019707207207207205,
+        "support_32": 0.05405405405405406
+      },
+      "polyA": {
+        "source_count": 20,
+        "measured_in_pool_rate": 0.0,
+        "support_32": 0.0
+      }
+    }
+  },
+  "guided": {
+    "label": "guided-32",
+    "overall_measured_in_pool_rate": 0.01034652076318743,
+    "overall_support_32": 0.24242424242424243,
+    "per_task": {
+      "MPRAU": {
+        "source_count": 108,
+        "measured_in_pool_rate": 0.002025462962962963,
+        "support_32": 0.06481481481481481
+      },
+      "MRL": {
+        "source_count": 652,
+        "measured_in_pool_rate": 0.013276457055214724,
+        "support_32": 0.30828220858895705
+      },
+      "HL": {
+        "source_count": 111,
+        "measured_in_pool_rate": 0.003096846846846847,
+        "support_32": 0.07207207207207207
+      },
+      "polyA": {
+        "source_count": 20,
+        "measured_in_pool_rate": 0.0,
+        "support_32": 0.0
+      }
+    }
+  },
+  "measured_candidate_count_distribution": [
+    {
+      "k": 2,
+      "n_sources": 317
+    },
+    {
+      "k": 3,
+      "n_sources": 481
+    },
+    {
+      "k": 4,
+      "n_sources": 93
+    }
+  ],
+  "meas_count_total_sources": 891,
+  "meas_count_total_candidates": 2449,
+  "treeg_note": "TreeG stored artifacts (treeg_sample_select_20260905) are SUMMARY-ONLY and operate as selection-only over the unguided 32-candidate pool (pool_candidate_count=28512 = 32/source), NOT a 256-candidate/source pool. select_k=1 (full891, 891 cand) and select_k=2 (k2, 1782 cand). Per-source selected candidate files are not persisted; re-deriving critic scores needs GPU (out of scope, CPU batch). So per-source measured-in-pool is not computable for TreeG from stored data; report it as N/A and use its macro recovery for reference.",
+  "treeg_reference_macro": {
+    "TreeG_k1": {
+      "select_k": 1,
+      "treeg_recovery": 0.002244668911335578,
+      "treeg_hit_at_1": 0.004489337822671156
+    },
+    "TreeG_k2": {
+      "select_k": 2,
+      "treeg_recovery": 0.005237560793116348,
+      "treeg_hit_at_1": 0.004489337822671156
+    }
+  }
+}

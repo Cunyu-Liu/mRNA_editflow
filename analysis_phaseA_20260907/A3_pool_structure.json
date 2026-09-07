@@ -1,0 +1,13 @@
+{
+  "schema_version": "route_a_v3_phaseA_a3_pool_structure.v1",
+  "protected_reads": 0,
+  "note": "Structural, model-independent cap on base-self ordering (no critic scores). true_best_added = source where the true-best measured candidate was NOT emitted by the base generator, so base-self can never rank it top-1. base_reachable% = % sources where true-best measured IS in the generated 32-pool (the ceiling for base-self conditional_rank_acc@1, even with perfect base ordering). Critic can score measured-added seqs, so only it can reach these sources.",
+  "true_best_reachability": {
+    "MRL": {"n": 652, "true_best_added": 571, "true_best_natural": 81, "base_reachable_pct": 12.4, "natural_hit32_pct": 31.3},
+    "MPRAU": {"n": 108, "true_best_added": 105, "true_best_natural": 3, "base_reachable_pct": 2.8, "natural_hit32_pct": 5.6},
+    "HL": {"n": 111, "true_best_added": 105, "true_best_natural": 6, "base_reachable_pct": 5.4, "natural_hit32_pct": 5.4},
+    "polyA": {"n": 20, "true_best_added": 20, "true_best_natural": 0, "base_reachable_pct": 0.0, "natural_hit32_pct": 0.0}
+  },
+  "mixed_pool_size": {"min": 4, "mean": 29.87, "max": 36},
+  "caveat": "critic conditional_rank_acc and measured_best_avg_rank still require the V5-critic BF16 GPU run (all GPUs busy; CPU fallback impossible - frozen critic is CUDA-only). See A3_critic_mixed_pool_probe.py (dry-stub validated) + A3_critic_mixed_pool_probe.md."
+}

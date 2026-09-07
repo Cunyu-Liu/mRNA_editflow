@@ -109,3 +109,6 @@ data/b0_splits/split_3utr_source_disjoint.jsonl
 data/d1_canonical_records.jsonl
 data/data_exposure_ledger.jsonl
 data/b0_04_eval_track_manifest.jsonl
+
+# Low-peak GPU watcher runtime log (monitor/)
+monitor/*.log
