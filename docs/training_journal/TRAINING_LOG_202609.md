@@ -887,3 +887,21 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **manager**（pid 2169241/2540034）：存活。
 - 观测：GPU0 util 100%、GPU5 util 99%（APA/Stage 2 四臂满载）；GPU1 37.4GiB free、GPU4 30.5GiB free，余量充足；无 OOM、无 cpu_fallback_used=true。
 - 判定：无新终态；进程全部存活；needs_attention.txt 无告警。
+
+---
+## 批次二十九（2026-09-07 13:50，Stage 2 波次 1/2 终态收割 + 波次 3 确认发射）
+
+- **波次 1（CMS 域内适配）三臂终态（11:26），MPRAU 主判据全 FAIL**：
+  - h_cms_full（4008 步 full-FT）：MPRAU pair-mean 0.0327，vs V5 Δ-0.0698 CI [-0.133,-0.010] 全负
+  - s_cms_full（8016 步 full-FT）：0.0385，CI [-0.125,+0.003] 跨零
+  - h_cms_lora（8016 步 LoRA）：-0.0069，CI 全负
+  - 判读：CMS 同 assay 库适配仅弱正信号（+0.033~0.039 vs zero-shot ~0）；LoRA 容量不足；「同 assay 同管线外部先验」假说未获确认。
+- **波次 2（域内 ENCSR854RUF TRAIN 55,704 行，DRAFT 首要路径）四臂终态（~13:00）**：
+  - **s_mprau_in（5226 步，V8-S full-FT）：MPRAU 0.1527，CI [-0.0049,+0.1039]——首个超过 V5 0.1025 的 MPRAU 结果（点估计 +0.05），CI 仅差 0.005 未排除零**；epoch 5/6 均 >0.15（非随机峰）；代价：MRL 0.0001 / polyA -0.156 专才化牺牲
+  - h_mprau_in（2616 步，V8-H full-FT）：0.0755，CI 跨零
+  - h_mprau_lora（10446 步 MIG，LoRA）：0.1084，CI 跨零（点估计超 V5）
+  - h_bench9（8400 步，均衡多任务）：MRL 0.2879 ✓ / polyA 0.8067 ✓ / MPRAU 0.0556 ✗ / TE 0.0717 ✗ / macro 0.1516 —— 均衡适配保住 MRL/polyA，MPRAU 需专才化
+- **adjudicator 更新**：spec 澄清——专才臂（单 study 适配）只判 MPRAU 主判据（有意牺牲他任务），h_bench9 判全门（commit d4b57054）。
+- **波次 3（3-seed 确认）发射（13:41）**：s_mprau_in_s2（GPU1 b128）/ s_mprau_in_s3（GPU2 b64）/ h_mprau_in_s2（GPU3 b64）/ h_mprau_lora_s2（GPU5 OOM → GPU7 MIG b32）。ensemble 脚本 commit 862edddb。
+- **APA**：epoch 6 step ~488K/513.75K（~95%），ETA 数十分钟内。
+- 纪律：全部 FINAL-EPOCH-FIXED、CUDA BF16、cpu_fallback=false、smoke 未入判定；产物 /mnt、代码已 push。
