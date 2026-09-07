@@ -958,3 +958,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **日志**：仍 380B（16:51 变压器警告一行），mtime 16:51:47，逐源 SOURCE 标记未出现（grep=0）——与批次三十三判定一致：stdout block 缓冲所致，非训练停滞（CPU/GPU 均确认在算）。进度可见性缺口同前，本巡检不干预。
 - **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（summary 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）。
 - **判定**：正常推进，无需处置。
+
+---
+## 批次三十三（2026-09-07 19:10，并行任务执行 + LoRA 口径修正）
+
+- **h_mprau_lora 2-seed ensemble 修正（LoRA 解 wrap 后）**：seed1 0.1091（与 run_report 精确一致，修复验证通过）/ seed2 0.0816 → ensemble **0.0994 < V5 0.1025，CI 跨零 → LoRA 臂 FAIL（ensemble 口径）**。修正前脚本未解 LoRA wrap 导致 seed1 误算 0.0668；commit 9e24630b。**结论修正：full-FT 专才（s_mprau_in 0.1351）为唯一持续超 V5 的路线；LoRA 适配无法维持该优势。**
+- **并行任务盘点（B2 V8 训练期间）**：
+  - ✅ 已完成：LoRA ensemble 修正 + 重跑
+  - ⛔ 用户阻塞：UTR-STCNet 权重（Google Drive 链接，README 确认）与 HydraRNA 权重（gdown 被拦）——均需用户浏览器中转 → external_model_assets/{utr_stcnet,hydrarna}/weights/ → frozen-Δ 行（MRL / GSE217518）
+  - ⏸ 用户拍板推迟：LOSO-lite（SOTA 后）、SetFlow V6（Stage 3 后）
+  - 低价值跳过：CMS dbSNP 覆盖补全（CMS 臂已 FAIL，补全不改变结论）
