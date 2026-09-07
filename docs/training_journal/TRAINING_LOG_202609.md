@@ -976,3 +976,12 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **日志**：两臂均 380B（模型加载横幅），臂A mtime 16:51 / 臂B 21:07；逐源 SOURCE 标记未见——stdout block 缓冲所致，GPU 满载确认在算（与前 2 期判定一致）。
 - **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（summary 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）。
 - **判定**：双臂同步推进，调度正常，无需处置。
+
+---
+## 批次三十六（2026-09-07 22:35，Stage 3 B2 V8 巡检 4#：正常推进）
+
+- **臂A（V8-S 专才 s_mprau_in，GPU1）**：python PID 3289922，elapsed 5h40m，CPU 233%（state S 阻塞在 IO/GPU），GPU uuid a590f174（物理 idx1 匹配声明），critic= v8_stage2_adapt_20260907/s_mprau_in/stage2_s_benchmark_full_epoch6.pt；GPU1 util 100%。
+- **臂B（V8-S joint 对照，GPU4）**：python PID 480732，elapsed 1h25m，CPU 100%（state R），GPU uuid d7c96455，critic= v8_stage1_joint_prefinetune_20260904/s_mrl-polya/stage1_s_epoch2.pt；GPU4 util 91%。
+- **日志**：两臂均 380B（仅 bert 加载横幅，stderr 直出）；per-step stdout block 缓冲故未见逐源标记（与前 3 期判定一致）。臂A 目录含 16:46 smoke_guided_v8_8src 冒烟 → 已完成（GUIDED_XEDITSETFLOW_V5_B2_RUNNER_COMPLETE，cuda:1，cpu_fallback_used=false）确认 guided V8 框架 GPU 跑通；冒烟为 config 默认 critic 占位 checkpoint（非本臂 s_mprau_in），仅作框架验证、忽略。
+- **无异常**：无 Traceback/OOM/cuda error；无 cpu_fallback 证据；无终态（guided_run_summary.json 未生成，属预期 ~2 天）；manager 进程 UP（PID 2540034）；无 GPU 全占（B2 相关 GPU1/4 显存充足）。
+- **判定**：双臂同步推进，调度正常，无需处置。
