@@ -1007,3 +1007,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **cron status.log**：已出现 B2V8/B2V8JOINT 行（21:11/22:00，alive=1 terminal=0）→ cron v6 monitor 标注已落地（相较批次三十七的缺失改善）。
 - **无终态**：双臂 guided_run_summary.json 均未生成，属预期（~2 天）。
 - **判定**：B2 双臂同步推进 + A3 watcher 等待空闲满血卡，调度正常，无需处置。
+
+---
+## 批次三十四（2026-09-07 23:40，UTR-STCNet 泄漏排除 + HydraRNA 依赖阻塞）
+
+- **UTR-STCNet MRL frozen-delta 三臂全部判定 INVALID（R3 训练集泄漏）**：mpra_h 0.8135 / mpra_u 0.2667 / mpra_v 0.2120。归属核查（NCBI GEO 官方页）：三个训练数据文件（GSM3130435 egfp_unmod_1 / GSM3130443 designed_library / GSM4084997 varying_length）全部 Series=GSE114002 = MRL benchmark 研究本身；mpra_h 直接训练于 designed_library（benchmark VALIDATION 源样本）→ 0.8135 为分布内记忆。三行全部排除入榜；frozen_delta_results.json 已写泄漏判定 + 归属证据（commit 08ff6c2f）。
+- **HydraRNA（GSE217518 稳定性行）依赖阻塞**：权重已就位（HydraRNA_model.pt/V2/SS，336MB×3）；归属审计干净（通用 RNA LM，预训练于 ncRNA+pcRNA 转录组，非 benchmark MPRA 库）。但模型架构需要 flash-attn + mamba-ssm（triton/CUDA 编译依赖）：服务器无 nvcc，pip 源码编译失败；GitHub 预编译 wheel 无 torch2.5.1+cu121+cp310 匹配版本。重型编译（flash-attn 2.6.1 + mamba-ssm 2.2.2 + causal-conv1d，1h+，需先装 conda cuda 工具链）换一个 ICC≈0 任务的 ≈0 行——工程上不划算，**暂缓**。该任务已有覆盖：Saluki frozen（0.0193/0.0985）+ RNA-FM/UTR-LM 冻结行（≈0）。若后续需要，路径已记录（install_hydrarna_env.sh 依赖清单）。
