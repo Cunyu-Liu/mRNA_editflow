@@ -938,3 +938,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **full 891 发射**（guided_b2_v8_20260907/b2_full_891，GPU1，PID 3253502，预计 ~2 天）；服务器 monitor v5 已跟踪（每 2h status.log）；TRAE 定时任务更新超时（环境问题）——以服务器侧为准。
 - **D5 amendment v1 提交（用户拍板）**：docs/paper/route2_v8_d5_mprau_target_amendment_v1.md（commit 346c4f19 push）：目标带重述为「>0.1351 且 paired bootstrap CI 不跨零」（近期验收）+ 原 40% 保留为远期延伸目标（留痕）；检验力条款（2,008 变体对 ~0.03 级 delta 分辨不足）入档。
 - 对位基准（Stage 3 终态判定用）：unguided 0.1205 / v5-guided 0.1263（Δ+0.0058 CI 跨零 FAIL）。
+
+---
+## 批次三十三（2026-09-07 18:06，TRAE 定时巡检 #1 · Stage 3 B2 V8）
+
+- **巡检对象**：guided_b2_v8_20260907/b2_full_891（V8-S critic，guided-only，891 源，预计 ~2 天）。
+- **进程**：存活且单实例（python PID **3289922**，启动 16:53:51，elapsed ~1h10m；journal 批次三十二所记 3253502 与实时进程不符——以实时 pgrep/ps 为准）。State=R、273 threads、VmRSS 6.3GB；CPU 10s 内 +29.6 CPU-s，确认为活跃计算非停滞。
+- **GPU**：物理 GPU1（cuda:1，A100-40G），util ~42%，free ~34GB，无显存瓶颈。
+- **日志**：b2_full_891.log 仅含 16:51 变压器警告一行（380B），逐源 SOURCE 标记未出现。判定：stdout 重定向至文件为 **block 缓冲**，smoke（8 源）亦为 run 结束一次性 dump JSON；grep SOURCE 当前=0 属缓冲现象**非训练停滞**（CPU/GPU 均确认在计算）。进度可见性缺口待目录侧输出文件/subprocess 日志佐证，本巡检不干预。
+- **无异常**：无 Traceback/OOM/cuda error；cpu_fallback_used=false；无终态（summary 未生成，属预期，~2 天）；manager 进程 UP（training_manager.log 含 15:31 polyA 提交告警，遗留项非本 run）。
+- **判定**：正常推进，无需处置。
