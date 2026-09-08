@@ -1177,3 +1177,13 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 - 已修复 + 验证 + 探针数值入档（base_fix worktree commit 00c6fbc9 / 57827f5c / 探针产物）；臂 A 杀停留证。
 - **待决策（DP2 级）**：修复后 Stage 3 B2 双臂重跑（~/批 1–2 天）以取得真实 V8 guided recovery 判定；或先以探针数值直接裁决 V8 判别力不足 → 缩短 Stage 3 至单臂验证。SPECS_SETFLOW_V5/V6 更新 + 双臂重跑调度待用户拍板。
+---
+## 批次四十五（2026-09-08 ~10:05，用户拍板修复版重跑双臂）
+
+- **决策**（批次四十四确认 tokenizer bug 后，用户选"重跑双臂"）：
+  - 臂 A（V8-S 专才 s_mprau_in）→ **GPU4**（36.9G free/42%），PID **190239**，输出 `guided_b2_v8_20260908/b2_full_891`，日志 `.../guided_b2_v8_20260908/b2_full_891.log`
+  - 臂 B（V8-S joint s_mrl-polya）→ **GPU2**（35.2G free/86%），PID **190240**，输出 `guided_b2_v8joint_20260908/b2_full_891`，日志 `.../guided_b2_v8joint_20260908/b2_full_891.log`
+  - 参数：同原（b_fix2 pass-2 / seed 20260915 / budget / screen gate 20260915 / --arms guided --critic-kind v8）；修复 commit 57827f5c 已含于 base_fix worktree HEAD。
+- **启动验证**：4min 后 CPU 335%/307%（多核正常），GPU4 6.2G/73%、GPU2 17.6G/88%；日志 380B（启动横幅，缓冲模式正常）；无 Traceback/OOM/cuda error。
+- **监控 pattern 变更**（后续巡检）：臂 A `pgrep -f "guided_xeditsetflow.*v8_20260908.*b2_full_891"`；臂 B `pgrep -f "guided_xeditsetflow.*v8joint.*b2_full_891"`（改写 20260908 日期目录）。
+- **预期**：对照修复前 B2-B wall 5.9h + 探针判别力 V8≤V5 → 预计 ~6–12h 内终态（专才判据 MRL 判别力低可能更快收敛）。
