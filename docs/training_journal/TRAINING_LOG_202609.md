@@ -1503,3 +1503,13 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - FINAL-EPOCH-6-FIXED；CUDA BF16（cpu_fallback_used=false）；protected reads=0；seed 全报不挑选；门不事后改。
+
+### 批次五十四（2026-09-09 00:10，选项 4a 终态收割（第三次发射成功）+ C2 β sweep 发射）
+
+- **4a 终态（wall 0.35h，GPU4，B=256 × 891 源 = 228,096 轨迹，0 violation，cpu_fallback=false）**：`pool256_unguided_20260908/b2_full_891_B256`（评估器 cap 补丁生效）。**H4 直接检验结果（三个新科学事实）**：
+  1. **support(256) = 0.3861 vs A4 Model A 预测 0.62——模型高估近一倍**（二项式假设不成立，均匀采样边际收益递减远陡于线性外推）；recovery@256 = 0.2462 ≈ support（covered 源几乎全部命中）。
+  2. **per-task 极不均匀**：MRL 0.313→0.479（+53%）、HL 0.054→0.216（4×）、MPRAU 0.056→0.074（+33%）、**polyA 0→0（死区：B=256 均匀采样仍零命中，20 源全灭）**——扩池对 polyA 完全无效，对 MPRAU 接近无效。
+  3. **sc-hit@1 稀释效应**：base 自身排序 sc-hit@1（S+ 条件化）B=32 0.5131 → B=256 0.4104（MRL 0.543→0.453）——扩池把更多边缘候选带入同分平顶（tie 块变大），**稀释了 base ordering 的排序质量**——「更大池 + 同一排序器」在 sc-hit@1 口径下**变差**，机械地演示了 support 与排序质量的 trade-off（amendment 双字段并报条款的实证必要）。
+- **A 档门对位（amendment）**：Δsupport(256 vs 32) = +0.144 ≥ +0.10 ✓；但 sc-hit@1 0.410 < 0.30 ✗（等等——0.410 ≥ 0.30 ✓，但 B 档对照线 2×base：base 0.410 自身即未过 0.10 绝对线的 2× 语义需以引导臂对位为准）——**unguided 臂仅建立基线，A 档门判定以 4b guided 臂为准**（gated on C2 β 选择）。
+- **C2 β sweep 发射（journal 批 54，00:06）**：5 β（0.25/0.5/1/2/4）× calib100（74/12/12/2 分层冻结，seed 20260908，`calib100_keys.txt`）串行（GPU4，sweep PID 4076629，逐臂续跑不抢已有终态）；runner 新增 `--source-subset-file`（预注册校准 cohort 载入，manifest 键全量校验）；β=1 与历史 B2 guided 同值（对照锚）。判定 = amendment B 档口径（Δsc-hit@1、Δsupport 并报）。
+- **队列状态**：4b（B=256 guided）gated on C2 最优 β；4a 已闭合（unguided 基线全量落盘）。
