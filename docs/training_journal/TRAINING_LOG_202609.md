@@ -1513,3 +1513,50 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 - **A 档门对位（amendment）**：Δsupport(256 vs 32) = +0.144 ≥ +0.10 ✓；但 sc-hit@1 0.410 < 0.30 ✗（等等——0.410 ≥ 0.30 ✓，但 B 档对照线 2×base：base 0.410 自身即未过 0.10 绝对线的 2× 语义需以引导臂对位为准）——**unguided 臂仅建立基线，A 档门判定以 4b guided 臂为准**（gated on C2 β 选择）。
 - **C2 β sweep 发射（journal 批 54，00:06）**：5 β（0.25/0.5/1/2/4）× calib100（74/12/12/2 分层冻结，seed 20260908，`calib100_keys.txt`）串行（GPU4，sweep PID 4076629，逐臂续跑不抢已有终态）；runner 新增 `--source-subset-file`（预注册校准 cohort 载入，manifest 键全量校验）；β=1 与历史 B2 guided 同值（对照锚）。判定 = amendment B 档口径（Δsc-hit@1、Δsupport 并报）。
 - **队列状态**：4b（B=256 guided）gated on C2 最优 β；4a 已闭合（unguided 基线全量落盘）。
+
+---
+## 批次五十八（2026-09-09 00:50，V9-1a 门①探针双 seed 终态——on-manifold 双 SOTA 不迁移，离流形崩塌在 V9 重现）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 12/13 门①（混合池探针硬门，预注册参照行 mixed_pool_probe_reference_v1.json）。代码：`route2_v9_frozen_guidance_v1.py`（新，FrozenV9Critic 与 V8 guidance 同 API + 链路断言）+ 探针评估器 v9 分支（动态加载；跨 worktree core 解析修复——sys.path[0] 强制 + core 缓存清空）。产物 `analysis_v9_stage0_20260908/a3_probe_v9_seed{20260907,20260915}.json`。
+
+### 门①探针终态（双 seed 一致）
+
+| 指标 | seed 07 | seed 15 | V5 参照 | base-self | 门①判定 |
+|---|---|---|---|---|---|
+| overall probe | **0.0337** | **0.0362** | 0.0614 | 0.0367 | **FAIL**（双 seed < V5，≈base 水平） |
+| measured_best_rank | 10.46 | 10.75 | 8.83 | 23.36 | 劣于 V5 |
+| natural-hit | — | 0.0521 | 0.076 | **0.151** | 仍低于 base 残差记忆 |
+| MRL per-task | 0.0268 | 0.0357 | 0.0422 | 0.0502 | FAIL |
+| MPRAU | 0.0880 | 0.0741 | 0.1111 | 0.0000 | FAIL（>base 但<V5） |
+| polyA (n=20) | 0.0500 | 0.0500 | 0.1750 | 0.0000 | FAIL |
+| HL | 0.0180 | 0.0000 | 0.1280 | 0.0000 | FAIL |
+
+### 核心科学定论（双 seed 一致 + seed 11 待补全）
+
+1. **参数隔离修复跷跷板被验证**（on-manifold：MRL 0.322 + polyA 0.863 双历史最强）——但 **on-manifold 改善零迁移到搜索分布**：探针 0.034-0.036 vs V5 0.0614（甚至低于 V5 而非持平）。
+2. **离流形崩塌在 V9 重现且加剧**——与 V8 H-V8e 同构（V8 0.032-0.046 < V5 0.0614）。分布断点（V5 尸检组件⑥）**不是架构问题**：参数隔离（V9）、先验注入（V8）、loss 机制（V6/V7）逐层修复后离流形约束依然 binding——"判别力层是最深病因"的归因链获得第三层架构对照实证。
+3. **HL 探针 0.000-0.018（V5 0.128）**：V9 的 HL 适配器在混合池上判别力最弱——HL 是 on-manifold 也弱（−0.017~0.015）的任务，双弱一致。
+4. 混合池上 MPRAU/polyA > base（0.074/0.050 vs 0.000）= V9 的域内打分在这些任务上有相对信号，但整体排序能力不足以把 measured-best 推到 top-1。
+
+### V9-1a 判定状态（2/3 seeds 终态；seed 11 watcher 值守 GPU3）
+
+- 门①（探针硬门）：**FAIL**（预注册不改）。
+- 门②（on-manifold）：MRL ✓ / polyA ✓ / macro ✓（均值）/ MPRAU ✗ / TE ✗ —— 部分过。
+- **V9-1a 综合：不 PASS**（门①为主判据之一）。
+- 回退梯条款张力（如实登记，待 amendment）：预注册梯第 1 级 = CPI 移植（针对门①②FAIL）——但探针 FAIL 根因诊断指向离流形（非参数/架构），移植对探针门的预期收益存疑；spec 固定条款"离流形探索臂触发 = 过门①②但 V9-2 FAIL"的字面前提未满足。**两个条款都不精确匹配当前状态——按纪律不擅改，登记为 amendment 议题**（候选方向：a) 根因豁免条款——探针 FAIL 且根因=离流形时直接评估离流形探索臂；b) 字面执行移植级）。
+
+### 工程记录
+
+- FrozenV9Critic 跨 worktree 加载排障（3 轮）：namespace package 解析错位（探针评估器继承 setflow REPO_ROOT）→ 动态加载 + sys.path[0] 强制 + core 缓存清空；V9 guidance 模块与 V8 guidance 副本同置 v8 worktree。
+- 探针运行 wall ~4 min/seed（GPU5）。
+
+### 下一班
+
+1. seed 20260911 终态（watcher）→ 3-seed 全量判定 + MPRAU ensemble bootstrap
+2. **amendment 议题呈报**（回退梯 vs 离流形探索臂的条款匹配）+ V9-1b（S1/M6 数据臂）预注册——注意 V9-1b 的判定门含门①探针（新数据是否改善离流形 = 数据侧 vs 架构侧的鉴别诊断）
+3. MRL 3-seed ensemble vs Route A/Optimus paired bootstrap（on-manifold 显著性）
+4. V9-2（guided 891）是否发射 = amendment 裁决事项（门① FAIL 下 V9-2 预期 FAIL——B3 支持度分解显示任何 critic 都改不了池覆盖，但 sc-hit@1 口径下或许有信息——按 Phase C amendment 的判据评估）
+
+### 纪律
+
+- 门不事后改；探针口径 = 预注册参照行；FINAL-EPOCH-FIXED；CUDA BF16；protected reads=0；seed 全报。
