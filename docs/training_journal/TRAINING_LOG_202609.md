@@ -1277,3 +1277,8 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 3. C3 q 模型预注册（泄漏审计：TRAIN only + component flagged=0 硬门 + 验证源 measured 零接触）→ 1 卡 ~4h 训练 → AUC 门裁决（选项 2）
 4. C1 效率修复（批量化 + 心跳；100 源 wall ≤ 55 min 验收）→ C2 β sweep（选项 3，~47 GPU·h）
 5. Phase C 总预算（新范围）≈ 70–90 GPU·h。
+
+### 批次四十九附（2026-09-08 17:47，选项 1 闭合：A3.3-h_bench9 探针终态）
+
+- h_bench9（stage2_h_benchmark_full_epoch6.pt，cuda:4，BF16，protected_reads=0，wall ~55min）：overall acc@1 **0.0461**（仍 < V5 0.0614）为三 V8 checkpoint 最强，**唯一 MRL 微超 V5**（0.0458 vs 0.0422，仍 < base_reachable 12.4%）；MPRAU 0.0741 / HL 0.0203 / polyA 0.0500 / natural-hit 0.0741。
+- **3/3 checkpoint 闭合 → V8 裁决完备：V8 整体 ≤ V5 维持**（H-V8e 负向维持）。多任务适配优于专才/joint 的 MRL 信号登记为 D1/D3 参考，不改变总结论。选项 1 完成，入档 spec §R.6 + tasks/checklist。
