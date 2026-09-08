@@ -441,7 +441,13 @@ def evaluate_arm(
     *,
     measured_top_k: int,
     compute: Mapping[str, Any],
+    candidate_cap: int = 32,
 ) -> dict[str, Any]:
+    if candidate_cap != 32:
+        manifest = {
+            key: dict(spec, candidate_budget=int(candidate_cap))
+            for key, spec in manifest.items()
+        }
     generation = evaluate_generation(manifest, list(candidates))
     measured = measured_neighborhood_metrics(
         manifest,
@@ -458,7 +464,8 @@ def evaluate_arm(
         "source_count": len(manifest),
         "trajectory_count": len(candidates),
         "candidate_count": len(candidates),
-        "candidate_cap_per_source": 32,
+        "candidate_cap_per_source": candidate_cap,
+        "manifest_candidate_cap_per_source": 32,
         "hard_legality_rate": generation["hard_legality_rate"],
         "edit_budget_violation_count": generation["edit_budget_violation_count"],
         "candidate_budget_violation_count": generation[
@@ -738,6 +745,7 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
             manifest,
             measured_rows,
             measured_top_k=measured_top_k,
+            candidate_cap=candidate_cap,
             compute={
                 "trunk_forwards": trunk_forwards,
                 "mode_head_forwards": trunk_forwards * int(model.mode_count),
