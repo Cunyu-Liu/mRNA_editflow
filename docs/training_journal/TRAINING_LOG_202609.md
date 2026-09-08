@@ -1236,4 +1236,15 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 ### 使命完成建议
 
-- 双臂已终态、对位与 V6 立项裁决均已入档 → **本监控任务（mRNA EditFlow 训练监控，b2f628e0，30min）使命完成，建议停用**。若后续仍有巡检需求（如补 random/F2 对照臂、DP2 拍板后的 Phase C 发射），再另行挂起。
+- 双臂已终态、对位与 V6 立项裁决均已入档 → **本监控任务（mRNA EditFlow 训练监控，b2f628e0，30min）使命完成，建议停用**。若后续仍有巡检需求（如补 random/F2 对照臂、DP2 拍板后的 Phase C 发射），再另行挂起。### 批次四十八（2026-09-08 16:10，Phase B 收口复核 + 补全：B1.1/B1.2/B3 + 独立复算确认）
+
+- **触发**：用户指示「A3 数值 + Stage 3 终态齐备后开 DP2」→ 会话检查发现两项均已终态（A3 03:10 数值 + 09:12 V8 探针；Stage 3 修复版双臂 13:57/14:23 终态 + 批 47 journal 裁决）。本批做机械复核 + 补齐 Phase B 缺件（0908 双臂 adjudication 当时未落产物）。
+- **B1.1 身份核实（闭合）**：批 45 journal 原文（w0_diagnosis worktree L1184-1185）+ runner 代码分支（`--critic-kind v8` → `FrozenV8Critic(--v8-critic-checkpoint)`，summary 的 `critic_checkpoint_path` 为通用参数遗留字段，v8 分支不加载该文件）+ GPU/wall 交叉验证（臂 A cuda:4 / wall 16441s≈4.6h；臂 B cuda:2 / wall 17994s≈5.0h，UUID 匹配）。**臂 A = V8-S 专才 s_mprau_in（stage2_s_benchmark_full_epoch6.pt），臂 B = V8-S joint s_mrl-polya（stage1_s_epoch2.pt）**（同 A3.3 探针所用 checkpoint）。
+- **B1.2 官方 adjudication 补产物（独立复算）**：用预注册 `adjudicate_route2_guided_setflow_v5_b2_v1.py`（与 0903 B2 冻结判定同款同种子）对两臂补跑：
+  - 臂 A：guided 0.124953，Δrecovery **+0.004489** CI [−0.0011, +0.0103] 跨零；Δhit@1 −0.00031 CI [−0.0020, +0.0011]；gate B2/B3 = false
+  - 臂 B：guided 0.123363，Δrecovery **+0.002899** CI [−0.0048, +0.0105] 跨零；Δhit@1 −0.00240 CI [−0.0070, +0.0010]；gate B2/B3 = false
+  - 产物：`guided_b2_v8_20260908/b2_full_891_adjudication.json` / `guided_b2_v8joint_20260908/b2_full_891_adjudication.json` + `_per_task.json`（`analyze_route2_guided_b2_per_task_v1.py`）——**逐位复现批 47 journal 数字**，判定与批 47 一致：双臂 B2/B3 全 FAIL。
+- **B3 支持度分解（V8 臂，A2 同款口径）**：产物 `guided_b2_v8_20260908/b3_support_decomposition_v8_arms.json`：unguided support 0.2424 / V8-A 0.2435 / V8-B 0.2469；MRL 0.3129/0.3129/0.3144；MPRAU 0.0556/0.0556/0.0648；HL 0.0541/0.0631/0.0721；polyA 0×3。**修复版真实 V8 势能对池覆盖仍≈零贡献**（+0.001~+0.004 support），与 A2（V5 引导）结论完全一致：**引导（V5 与 V8）改转移速率不改池覆盖**——B2 主判据（recovery@budget = 池覆盖）对 critic 质量结构性不敏感，是双臂跨零的机制性解释。
+- **B2 预判对照（spec §2 逐条，如实入档）**：P-主（B2 FAIL 高概率，Δ<+0.05 或 CI 跨零）**证实**（双臂 Δ +0.0045/+0.0029，CI 全跨零）；P-1（MPRAU 源增益较 V5-critic 扩大）**证伪**（A −0.0046 / B +0.0000 vs V5-guided，未扩大）；P-2（MRL 杠杆，不押注）**明确答案：不迁移**（A +0.0013 / B −0.0024 vs V5-guided；探针 MRL 0.0084/0.0360 < base_reachable 12.4%）；P-4（V8 探针 > V5）**证伪**（0.0320/0.0359 < 0.0614，H-V8e 负向）。P-3 polyA 无判据地位（维持）。**P-主依据修订条款（R.5）触发**：判据-机制错配（recovery@budget 与 critic 排序无关）意味着 Stage 3 双臂 FAIL 同时包含「V8 判别力不足」与「任何 critic 都改不了池覆盖」两个成分，二者不可分——但 A3.3 探针已独立裁决前者（V8 ≤ V5），故双 FAIL 结论稳健。
+- **本批变更**：base_fix worktree 新增（a）0908 双臂 adjudication + per_task 产物（/mnt），（b）B3 支持度分解 JSON（/mnt），（c）watcher.sh PY 路径修复（python3 → conda editflow env，运行期实况如实提交），（d）A3 full/V8 探针产物与 done 标记（前批遗留未提交）。Stage 3 双臂 runner 产物本身未重算（只读冻结产物复算）。
+- **状态**：**Phase A + Phase B 全部闭合（A3 数值终态 + Stage 3 修复版双臂终态 + 预判对照 + B3 分解齐备）→ DP2 拍板会输入完备，已通知用户**。Phase C 维持零启动。
