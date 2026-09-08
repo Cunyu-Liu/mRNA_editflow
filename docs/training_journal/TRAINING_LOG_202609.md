@@ -1187,3 +1187,25 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **启动验证**：4min 后 CPU 335%/307%（多核正常），GPU4 6.2G/73%、GPU2 17.6G/88%；日志 380B（启动横幅，缓冲模式正常）；无 Traceback/OOM/cuda error。
 - **监控 pattern 变更**（后续巡检）：臂 A `pgrep -f "guided_xeditsetflow.*v8_20260908.*b2_full_891"`；臂 B `pgrep -f "guided_xeditsetflow.*v8joint.*b2_full_891"`（改写 20260908 日期目录）。
 - **预期**：对照修复前 B2-B wall 5.9h + 探针判别力 V8≤V5 → 预计 ~6–12h 内终态（专才判据 MRL 判别力低可能更快收敛）。
+---
+## 批次四十六（2026-09-08 12:15，定时巡检 1#（修复版）：双臂推进正常 + 服务器 monitor 脚本路径修复）
+
+### 双臂（修复版 20260908）
+
+- 臂 A（V8-S 专才 s_mprau_in，GPU4，PID 190239）：CPU 时间 10h17m（wall ~2h15m，多核满载），日志零错误；无终态（guided_run_summary.json 不存在，预期 wall ~5-6h+）。
+- 臂 B（V8-S joint，GPU2，PID 190240）：CPU 时间 9h04m，零错误；无终态。
+- GPU4 采样瞬间 util 0%（与 CPU 侧推进不矛盾，generation 间歇期）；GPU2 82%。
+
+### 服务器 monitor 脚本修复（交叉验证脱节）
+
+- 发现 cron `mrna_editflow_monitor.sh` B2V8/B2V8JOINT 段仍指向旧 20260907 作废目录 → status.log 显示旧 path 假象（B2V8JOINT terminal=1 / B2V8 alive=空）。
+- 已更新为 20260908 新路径（物理卡 GPU4/GPU2 对位），bash -n OK，实测运行：`B2V8 alive=1 terminal=0` / `B2V8JOINT alive=1 terminal=0` ✓ 交叉验证恢复。monitor/ 非 git 仓（就地修改，本 journal 记录）。
+
+### 基础设施
+
+- manager UP（2540034）；GPU0-5 全忙、GPU6/7 MIG-only → 无空闲满血卡（当前无等待 GPU 任务，A3/A3.3 已终态）。
+- A3/A3.3 不再巡检（已入档）；watcher 无残留。
+
+### 判定
+
+- 修复版双臂健康推进，无异常；server monitor 已对齐新臂。待续：双臂终态 → 真实 Δrecovery 对位 → V6 立项裁决。
