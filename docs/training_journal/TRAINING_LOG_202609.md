@@ -1646,3 +1646,35 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - protected reads=0；matched-FT 协议与 from-scratch 对照逐字段对齐（预注册锚定）；产物 /mnt、代码 worktree + push。
+
+---
+## 批次六十一（2026-09-09 04:10，P1-3 Saluki-FT on HALF_LIFE 终态——"物理不可学"第二实证闭环）
+
+> 依据：SPECS_BASELINE_LEADERBOARD「2026-09-08 增补」§V.4 P1-3（绑定 H3 加固；空闲插入 ≤1 卡·天）。代码：`run_route2_saluki_ft_halflife_v1.py`（官方 fold-0 checkpoint init + buffer→parameter 置换，BN running stats 保持 buffer——batch_norm 对 running_mean/var 不可微的工程坑修复入档）。协议：GSE217518 TRAIN 绝对端点 z-scored 回归（Saluki 原生任务口径）、Adam 1e-4、batch 8（12288 六通道显存约束）、30 epochs、10% monitor best-state、seed 20260903。产物 `analysis_saluki_ft_halflife_20260909/`（wall ~40min，GPU5 与在途线共享）。
+
+### P1-3 终态（VALIDATION，frozen-delta 口径，K=10）
+
+| 行 | 5'UTR Spearman | 3'UTR Spearman | 判读 |
+|---|---|---|---|
+| Saluki frozen（既有行） | 0.0193 | 0.0985 | ≈0（弱对照） |
+| **Saluki matched-FT（本轮）** | **0.0489** | **−0.0160** | **≈0——监督微调后仍无信号** |
+| 标签天花板 ICC | 0.001–0.013 | 0.013 | 物理不可学 |
+
+### 核心结论：HALF_LIFE "物理不可学"主张的第二实证腿闭合
+
+1. **第一腿（frozen 闭环，批次 6.3.4b）**：UTR-LM/RNA-FM 四行 ≈0——冻结通用 LM 无信号。
+2. **第二腿（matched-FT 闭环，本批）**：官方降解域专才（Saluki——endogenous half-life 监督训练的同域模型）在同任务数据上微调后 **依然 ≈0**——变体级 Δ 在 ICC≈0.001–0.013 的标签噪声下对任何监督范式都不可学。
+3. **H3（可学性地图）加固**：HALF_LIFE 格子现在的证据链 = 标签 ICC 实测 + frozen 四行 + **matched-FT 一行**（内外模型、frozen/FT 双模式、通用/专才双架构六路证据全部 ≈0）——"受限于测量可重复性"归因声明达到可写的最强形式。
+4. monitor mse 0.0165 收敛正常（绝对端点回归本身可学——**绝对值可学性 ≠ 变体差分可学性**的又一实例，与 H2 主张（绝对精度 ≠ 编辑排序）同构呼应）。
+
+### 排行榜更新素材（HALF_LIFE 行）
+
+frozen：Saluki 0.0193/0.0985 + UTR-LM −0.0199/−0.0986 + RNA-FM 0.0271/0.0500；**matched-FT：Saluki 0.0489/−0.0160（新增行）**；内靶 ≈0；天花板 ICC≈0——全模式一致。
+
+### 在途（监控 cron 4cb0833e 值守）
+
+- V9-1a seed 20260911（GPU3，epoch 4+）+ bench-v9b（GPU2，epoch 2+）。
+
+### 纪律
+
+- protected reads=0；matched-FT 协议预注册于脚本 docstring（对齐 MRL matched-FT 惯例）；FINAL best-monitor 选择与 from-scratch/MRL-matched-FT 对照同款；产物 /mnt、代码 worktree + push。
