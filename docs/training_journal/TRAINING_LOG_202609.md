@@ -1282,3 +1282,9 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 - h_bench9（stage2_h_benchmark_full_epoch6.pt，cuda:4，BF16，protected_reads=0，wall ~55min）：overall acc@1 **0.0461**（仍 < V5 0.0614）为三 V8 checkpoint 最强，**唯一 MRL 微超 V5**（0.0458 vs 0.0422，仍 < base_reachable 12.4%）；MPRAU 0.0741 / HL 0.0203 / polyA 0.0500 / natural-hit 0.0741。
 - **3/3 checkpoint 闭合 → V8 裁决完备：V8 整体 ≤ V5 维持**（H-V8e 负向维持）。多任务适配优于专才/joint 的 MRL 信号登记为 D1/D3 参考，不改变总结论。选项 1 完成，入档 spec §R.6 + tasks/checklist。
+
+### 批次五十（2026-09-08 18:05，选项 0：D4 amendment 起草完成，待用户确认生效）
+
+- **D4 amendment v1 草案**：`docs/paper/route2_setflow_b3_amendment_sc_hit1_v1.md`（v8_stage1_prep worktree，D5 先例同目录）。核心内容：(1) 主判据换 **support-conditional hit@1**（sc-hit@1，tie-aware 口径同现 hit@1，S+ = 池内含 ≥1 measured 的源；防退化条款 = 与 support@B 强制并报）；(2) B3 新门槛分档：**B 档（B=32）sc-hit@1 ≥ 0.10 + ≥2× base 自身排序（natural-hit base acc 0.1514 对照线）**；**A 档（B=256）sc-hit@1 ≥ 0.30 + Δsupport ≥ +0.10**；(3) B2 门改 Δsc-hit@1 ≥ +0.03（B 档）/ +0.10（A 档）CI 不跨零；(4) recovery@budget 永久降级为覆盖诊断字段；(5) independent evaluator 双口径强制（frozen Optimus—MRL / APARENT—polyA，覆盖 672/891 源，MPRAU/HL 如实标注无独立评估器）；(6) 诚实性条款：A 档通过不回溯适用 B 档、分档报告禁止跨档叙事、负结果条款（0+2+3+4 全 FAIL → 诊断完备负结果收口）；(7) **0.35 与旧 B2/B3 判据留痕不删**（E7：V4 记忆化时代标定考核去记忆化架构 = 范畴错误）。
+- 证据链 E1–E7 全部为 Phase A/B 机械实测（A1 口径 / A2+B3 覆盖零贡献 / A4 不可达定量 / A3 天花板与 V8 3/3 裁决）。
+- **状态：草稿待用户确认**（确认后 journal 正式批次 + spec §R.11 + C2/扩池臂判定门指向本文件）。未确认前不阻塞发射——选项 4a（B=256 unguided 扩池）判定字段为 support/recovery（覆盖侧，不依赖新门），可先发射。
