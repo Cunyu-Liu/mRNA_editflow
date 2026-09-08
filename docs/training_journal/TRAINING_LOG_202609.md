@@ -1706,3 +1706,40 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ### 纪律
 
 - 与原始行同协议同预算同 HPO（脚本 sed 仅改 SEED 与输出目录，其余逐字节一致）；FINAL-PASS-8-FIXED 口径继承；protected reads=0；产物 /mnt。
+
+---
+## 批次六十三（2026-09-09 06:30，V9-1a 3-seed 全量终态判定——门②部分过 / 门① FAIL 稳健；MRL 3-seed ensemble 0.3217）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 12 预注册三门 + 预注册 §4 3-seed 消费条款。seed 20260911（GPU3 watcher 自动重发后终态：FINAL-EPOCH-6-FIXED，4,200 步）。探针产物 `a3_probe_v9_seed20260911.json`；MRL ensemble `mrl_3seed_ensemble.json`。
+
+### V9-1a 3-seed 全量表（VALIDATION，FINAL-EPOCH-FIXED）
+
+| 任务 | seed 07 | seed 11 | seed 15 | 3-seed mean | 门② | 判定 |
+|---|---|---|---|---|---|---|
+| MRL | 0.3055 | **0.3225** | 0.3223 | 0.3168 | ≥0.28 | **✓✓✓**（3/3 过；ensemble **0.3217** > Route A 0.3158 > Optimus 0.3132） |
+| polyA | 0.8049 | **0.8529** | 0.8633 | 0.8404 | ≥0.80 | **✓✓✓**（3/3 过；均值 = 天花板 93%；单 seed 最高 96%） |
+| MPRAU | 0.0477 | 0.0509 | 0.0573 | 0.0520 | >0.1351 CI 不跨零 | ✗✗✗（未过——V9-1b 数据臂方向） |
+| TE(200304) | 0.0356 | 0.0701 | −0.0041 | 0.034 | ≥0.1317 | ✗✗✗ |
+| macro | 0.1602 | **0.2164** | 0.1983 | 0.1916 | ≥0.167 | **✓ 2/3 + 均值过**（0.192 > 0.167 = 超 V5 历史宏观） |
+| 探针（门①） | 0.0337 | **0.0267** | 0.0362 | 0.0322 | per-task ≥ 最强−0.005 | **✗✗✗ FAIL**（全部 < V5 0.0614，seed11 最弱；natural-hit 0.049 < base 0.151） |
+
+### 综合判定（预注册口径，如实）
+
+- **V9-1a = 不 PASS**（门①三 seed 全 FAIL 为主判据否决；门②部分过：MRL/polyA/macro 三项 3/3 或均值过、MPRAU/TE 未过）。
+- **科学定论双面收口（论文叙事）**：
+  1. **正面（架构层修复实证）**：跷跷板打破——MRL（0.322/ensemble 0.3217 匹配专才 Route A）与 polyA（0.853-0.863 = 天花板 93-96%）三 seed 稳定双 SOTA 并存；macro 0.192 超 V5 0.167——任务专属容量 + per-task 头 + polyA CNN stem 的 V9 架构主张完全兑现。
+  2. **反面（分布层约束实证）**：离流形崩塌在 V9 重现且三 seed 一致（探针 0.027-0.036 vs V5 0.0614）——与 V6（loss 层）/V8（先验层）共同构成**三层架构修复均不解离流形约束**的完整证据链，"分布断点是最深病因"（V5 尸检组件⑥）定论。
+- seed 波动如实：MRL/polyA 三 seed 紧簇（spread 0.017/0.058）；探针同样紧簇（0.027-0.036）——两侧行为都非 seed 噪声。
+- **下一动作（按 spec 回退梯 + amendment 议题）**：门① FAIL 根因 = 离流形 ≠ 梯第 1 级（CPI 移植）的适用条件——amendment 呈报的核心理由（条款张力批次五十八登记）；V9-1b bench 臂（在途）的 D2 探针观测将提供数据侧 vs 分布侧的最后一块鉴别证据。
+
+### 附：P1-5 MPRAU matched-FT 3-seed（批次六十二，R7 闭合）
+
+- RNA-FM −0.0747×3（逐位一致）/ UTR-LM −0.078~−0.107——负带跨 seed 稳定；四模式闭环的 matched-FT 腿达 ≥3 seeds 协议。
+
+### 在途
+
+- bench-v9b 主臂（GPU2，epoch 3+，监控 cron 值守）——终态后 D1/D2/D3 联合判定 = V9 线收官。
+
+### 纪律
+
+- 三 seed 全报不挑选；门不事后改；FINAL-EPOCH-FIXED；protected reads=0；探针口径 = 预注册参照行。
