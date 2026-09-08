@@ -1,0 +1,88 @@
+{
+  "critic_checkpoint": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/v8_stage2_adapt_20260907/s_mprau_in/stage2_s_benchmark_full_epoch6.pt",
+  "device": "cuda:4",
+  "natural_hit_32_sources": {
+    "base_conditional_rank_acc@1": 0.1513888888888889,
+    "base_measured_best_avg_rank": 2.1527777777777777,
+    "count": 216,
+    "critic_conditional_rank_acc@1": 0.04398148148148148,
+    "critic_measured_best_avg_rank": 6.949074074074074,
+    "fraction_of_measured_sources": 0.24242424242424243
+  },
+  "notes": [
+    "mixed pool = unguided 32 generated (dedup,max genscore) UNION all measured; ",
+    "measured added seqs receive base floor score (min-1) for the base-self baseline ",
+    "(the base generator never proposed them); pools identical for critic and base.",
+    "conditional_rank_acc@1 == tie-aware hit@1 at k=1 (top-1 tie block admission ",
+    "probability of the true-best measured).",
+    "measured_best_avg_rank == mean block-start rank (1-based) of the highest-ranked measured.",
+    "on-manifold rho reference (A2/V5): polyA 0.8219 / MRL 0.1354 / MPRAU 0.1025 / HL ~0.",
+    "n_measured distribution on VALIDATION: {2:317,3:481,4:93} (mean 2.75/source)."
+  ],
+  "overall": {
+    "base_conditional_rank_acc@1": 0.036700336700336705,
+    "base_measured_best_avg_rank": 23.36026936026936,
+    "critic_conditional_rank_acc@1": 0.03198653198653199,
+    "critic_measured_best_avg_rank": 9.492704826038159
+  },
+  "per_task": {
+    "HL": {
+      "base_cond_acc_on_natural_hit": 0.0,
+      "base_conditional_rank_acc@1": 0.0,
+      "base_measured_best_avg_rank": 27.36036036036036,
+      "critic_cond_acc_on_natural_hit": 0.16666666666666666,
+      "critic_conditional_rank_acc@1": 0.030030030030030026,
+      "critic_measured_best_avg_rank": 10.288288288288289,
+      "natural_hit_32_count": 6,
+      "natural_hit_32_frac": 0.05405405405405406,
+      "pool_sources_with_measured": 111,
+      "source_count": 111
+    },
+    "MPRAU": {
+      "base_cond_acc_on_natural_hit": 0.0,
+      "base_conditional_rank_acc@1": 0.0,
+      "base_measured_best_avg_rank": 23.63888888888889,
+      "critic_cond_acc_on_natural_hit": 0.5,
+      "critic_conditional_rank_acc@1": 0.14969135802469136,
+      "critic_measured_best_avg_rank": 7.722222222222222,
+      "natural_hit_32_count": 6,
+      "natural_hit_32_frac": 0.05555555555555555,
+      "pool_sources_with_measured": 108,
+      "source_count": 108
+    },
+    "MRL": {
+      "base_cond_acc_on_natural_hit": 0.16029411764705884,
+      "base_conditional_rank_acc@1": 0.050153374233128836,
+      "base_measured_best_avg_rank": 22.37269938650307,
+      "critic_cond_acc_on_natural_hit": 0.02696078431372549,
+      "critic_conditional_rank_acc@1": 0.00843558282208589,
+      "critic_measured_best_avg_rank": 9.875766871165645,
+      "natural_hit_32_count": 204,
+      "natural_hit_32_frac": 0.3128834355828221,
+      "pool_sources_with_measured": 652,
+      "source_count": 652
+    },
+    "polyA": {
+      "base_cond_acc_on_natural_hit": NaN,
+      "base_conditional_rank_acc@1": 0.0,
+      "base_measured_best_avg_rank": 31.85,
+      "critic_cond_acc_on_natural_hit": NaN,
+      "critic_conditional_rank_acc@1": 0.175,
+      "critic_measured_best_avg_rank": 2.15,
+      "natural_hit_32_count": 0,
+      "natural_hit_32_frac": 0.0,
+      "pool_sources_with_measured": 20,
+      "source_count": 20
+    }
+  },
+  "pool_sources_with_measured": 891,
+  "precision": "BF16",
+  "protected_reads": 0,
+  "schema_version": "route_a_v3_phaseA_a3_critic_mixed_pool_probe.v1",
+  "scorer": {
+    "kind": "frozen_xeditcritic_v8",
+    "source_scoring_calls": 891
+  },
+  "source_count": 891,
+  "status": "TERMINAL"
+}
