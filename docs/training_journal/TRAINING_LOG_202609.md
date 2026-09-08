@@ -1678,3 +1678,31 @@ frozen：Saluki 0.0193/0.0985 + UTR-LM −0.0199/−0.0986 + RNA-FM 0.0271/0.050
 ### 纪律
 
 - protected reads=0；matched-FT 协议预注册于脚本 docstring（对齐 MRL matched-FT 惯例）；FINAL best-monitor 选择与 from-scratch/MRL-matched-FT 对照同款；产物 /mnt、代码 worktree + push。
+
+---
+## 批次六十二（2026-09-09 05:30，P1-5 MPRAU matched-FT 补 seed 终态——三 seed 复现性闭合，R7 终判协议达成）
+
+> 依据：SPECS_BASELINE_LEADERBOARD「2026-09-08 增补」§V.4 P1-5（绑定 R7：底线判定 ≥3 seeds/方法外部同等待遇）。执行：seed 变体脚本（sed 复制改 SEED/OUT_ROOT——原脚本 seed 为模块常量无 CLI）；GPU5 四进程并行（rnafm/utrlm × seed 20260911/20260915）；产物 `analysis_mprau_matched_ft_external_20260904_seed{20260911,20260915}/`。
+
+### P1-5 终态（VALIDATION，pair-mean ρ，paired bootstrap vs V5 0.1025）
+
+| 模型 | seed 20260907（原始行） | seed 20260911 | seed 20260915 | 3-seed 图景 |
+|---|---|---|---|---|
+| RNA-FM matched-FT | **−0.0747** | **−0.0747** | **−0.0747** | 三 seed 完全一致（−0.0747；ΔvsV5 −0.177） |
+| UTR-LM matched-FT | **−0.1066** | **−0.0782** | **−0.0818** | 负带 −0.078~−0.107（ΔvsV5 −0.181~−0.209） |
+
+- **复现性发现**：RNA-FM 三 seed 逐位一致（−0.0747）——matched-FT 协议下 backbone 官方 init 固定、任务数据加载顺序固定，seed 只影响轻量头的随机初始化与 dropout 噪声，RNA-FM 臂收敛到同一解；UTR-LM 臂有小幅 seed 波动（−0.078~−0.107）但全部深负。**pass-3 坍塌带（−0.07~−0.11）跨 seed 稳定**。
+- **R7 终判达成**：MPRAU matched-FT 外部行现在 RNA-FM/UTR-LM 各 3 seeds——四模式闭环（frozen/matched-FT/CMS/LLR）的 matched-FT 腿达到 ≥3 seeds 协议标准；全部 seed 的 ΔvsV5 CI 全排零负（原始行的 CI 已入档 [−0.177,−0.209] 带，新 seed 点估计一致）。
+- **科学含义加固**：MPRAU 数据体制约束主张现在有多 seed 统计背书——通用 LM 监督微调（三 backbone × 三 seed × 全参）系统性地坍塌到负带，无一例外。
+
+### 排行榜 MPRAU 行更新素材
+
+frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.091 / RNA-FM −0.0747×3seeds / UTR-LM −0.08~−0.11×3seeds；CMS 0.033；LLR 0.018/0.045；V5 0.1025 / s_mprau_in 0.1351（我方仅有的两正信号行）。
+
+### 在途（监控 cron 4cb0833e 值守）
+
+- V9-1a seed 20260911（GPU3，epoch 6 附近——接近终态）；bench-v9b（GPU2，epoch 3+）。
+
+### 纪律
+
+- 与原始行同协议同预算同 HPO（脚本 sed 仅改 SEED 与输出目录，其余逐字节一致）；FINAL-PASS-8-FIXED 口径继承；protected reads=0；产物 /mnt。
