@@ -1749,3 +1749,42 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **三拦（β=0.25 臂，calib100）**：`measured row has unknown source`——measured_rows 过滤仅 gated on source_limit，未覆盖 --source-subset-file 路径（全量 891 measured 撞 100 源 manifest）。修复：过滤条件改 `source_limit > 0 OR source_subset_file is not None`（commit 见下）。β=0.5 同缺陷被我终止（rc=143，2h 白跑如实入档——补丁打在 0.5 中途，其产物已清理）。
 - **并发误操作修正**：误启第二个 sweep loop → 已杀（新 loop + 其 β=0.25 重复进程），保留原 loop（PID 4076629）串行推进：β=1 在跑（02:11 起，用已修复 runner）→ 2 → 4 → 第二轮自愈补跑 0.25/0.5（loop 对已终态跳过、对缺失重跑）。
 - **自动收割 watcher 部署**（setsid nohup，PID 387265，`beta_sweep_20260908/watcher.log`，poll 1800s）：检测 5/5 β 臂终态 → 自动执行 `phase_c_c3_20260908/harvest_beta_sweep.py`（per-β support/recovery/sc-hit@1/ΔCI vs calib100 unguided B=32 重算基线，amendment B 档口径）→ 写本 journal 自动批次 → 双 worktree commit+push → done 标记退出。**TRAE 侧 30min 定时监控任务三次创建确认超时未成（用户离开），由本服务器端 watcher 承担监控职责**；用户回来后可再挂 TRAE 侧任务作前端。
+
+---
+## 批次六十四（2026-09-09 08:30，V9-1b bench-v9b 终态 + 门 D1/D2/D3 联合判定——V9 线收官）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 15.5 + V9-1b 预注册三门。bench-v9b 主臂（GPU2，11 域 4,450 步 FINAL-EPOCH-6-FIXED 终态）；探针经几何自适应修复（checkpoint 驱动 n_domains/n_cells 重建——V9-1b 11/8 vs V9-1a 9/6 的加载坑）后出数。
+
+### V9-1b bench-v9b 终态（VALIDATION）
+
+| 判定 | 指标 | 结果 | 参照 | 判定 |
+|---|---|---|---|---|
+| 门 D1 非破坏 | MRL 0.2984 / polyA **0.8597** | ≥0.28 / ≥0.80 | **✓✓ 过**（polyA 仍 96% 天花板） |
+| 门 D1 弱域带涨 | MPRAU **0.0158**（V9-1a 0.048-0.057）/ TE 0.0710（~0.03）| vs V9-1a 基线 | **✗ MPRAU 反降**（新数据稀释——11 域均衡下 MPRAU 份额被 S1/M6 分摊）；TE 微升但远低于内靶 |
+| 门 D3 新域 holdout | s1_SH −0.099 / s1_HEK −0.008 / M6 0.033 | pure 臂 −0.043/−0.006/0.056 | **✗ 全 FAIL**（联合训练不救新域 holdout——与 pure 臂一致） |
+| 门 D2 探针（观测） | **overall 0.0443** / **MPRAU per-task 0.1296** / HL 0.045 | V9-1a 0.027-0.036 / V5 0.0614 / base 0.0367 | **> V9-1a 且 > base；MPRAU 0.1296 接近 V5 0.1111 的 1.2 倍** |
+
+### 鉴别诊断收口（H-d vs H-a，预注册 §1 的科学问题）
+
+- **双假设部分分离**：数据增补 (a) **未修复**弱域 on-manifold（MPRAU 反降——数据量假说 H-d 在 on-manifold 侧被否定）；(b) **部分改善**离流形（探针 0.0443 > V9-1a 0.032 均值 > base 0.0367；MPRAU per-task 0.1296 > V5 0.1111）——新数据带来的额外监督信号在搜索分布上产生小幅真实增益。
+- **归因链最终形态**：MPRAU on-manifold 瓶颈 = 域内数据体制（s_mprau_in 专才 0.1351 是唯一正路径——联合/均衡/外部先验/新数据全部失败）；离流形约束 = 可被数据部分缓解但当前幅度不足（0.0443 vs 需要的 ~0.12+ 量级）——**不是纯架构问题也不是纯数据问题，是"数据分布 × 判别力"联合约束**（比批次五十八"三层修复不解"的表述更精确）。
+- **S1/M6 新域结论**：双臂 holdout ≈0（pure 与 bench 一致）——新数据自身在当前底座/架构下不可泛化学（候选根因：Stage 1 先验域不匹配 [MRL+polyA vs 稳定性/NDD 翻译]；数据侧验证：探针 MPRAU 改善来自既有 benchmark 任务的额外训练轮次而非新域）。
+
+### V9 全线终局图景（V9-1a + V9-1b 收官）
+
+| 线 | 终态 | 论文素材 |
+|---|---|---|
+| V9-1a 3-seed | 门②部分过（MRL ens 0.3217 / polyA 93-96% / macro 0.192）门① FAIL 3/3 | 跷跷板打破（架构修复实证）+ 离流形三层不解 |
+| V9-1b pure | 门 D3 全 FAIL | 新数据域自身不可学（负结果） |
+| V9-1b bench | 门 D1 部分过（非破坏✓/MPRAU✗）+ D3 ✗ + D2 观测 0.0443/MPRAU 0.1296 | 鉴别诊断收口（联合约束定论） |
+| **综合** | **V9 线不 PASS；统一模型可达边界已测绘** | "骨干靠先验、任务靠隔离、判别力靠数据分布"三位一体归因链完整闭环（论文核心叙事） |
+
+### 后续（amendment 呈报要点，待用户拍板）
+
+1. **回退梯 vs 离流形探索臂的条款张力**（批次五十八登记）：V9-1a 门① FAIL 根因=离流形；梯第 1 级（CPI 移植）针对的是门①②FAIL 的参数假设——不匹配。bench-v9b D2 显示数据部分缓解 → 建议直接评估离流形探索臂（token-dropout/edit-smoothness/效应量课程，各 ≤1 卡·天）而非移植。
+2. V9-2（guided 891）：门① FAIL 下 B2 预期 FAIL（Phase C sc-hit@1 口径下或有小信息——按 amendment 后判据）。
+3. 下一大步 = amendment 呈报 + 用户拍板（探索臂 vs V9-2 vs 收官转论文）。
+
+### 纪律
+
+- 三门判定全部预注册口径；D2 明确为观测非门；FINAL-EPOCH-FIXED；protected reads=0；探针几何自适应修复入档（工程）。
