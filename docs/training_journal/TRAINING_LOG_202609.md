@@ -1743,3 +1743,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ### 纪律
 
 - 三 seed 全报不挑选；门不事后改；FINAL-EPOCH-FIXED；protected reads=0；探针口径 = 预注册参照行。
+
+### 批次五十五（2026-09-09 02:15，C2 sweep 第三次拦截修复 + 自动收割 watcher 部署）
+
+- **三拦（β=0.25 臂，calib100）**：`measured row has unknown source`——measured_rows 过滤仅 gated on source_limit，未覆盖 --source-subset-file 路径（全量 891 measured 撞 100 源 manifest）。修复：过滤条件改 `source_limit > 0 OR source_subset_file is not None`（commit 见下）。β=0.5 同缺陷被我终止（rc=143，2h 白跑如实入档——补丁打在 0.5 中途，其产物已清理）。
+- **并发误操作修正**：误启第二个 sweep loop → 已杀（新 loop + 其 β=0.25 重复进程），保留原 loop（PID 4076629）串行推进：β=1 在跑（02:11 起，用已修复 runner）→ 2 → 4 → 第二轮自愈补跑 0.25/0.5（loop 对已终态跳过、对缺失重跑）。
+- **自动收割 watcher 部署**（setsid nohup，PID 387265，`beta_sweep_20260908/watcher.log`，poll 1800s）：检测 5/5 β 臂终态 → 自动执行 `phase_c_c3_20260908/harvest_beta_sweep.py`（per-β support/recovery/sc-hit@1/ΔCI vs calib100 unguided B=32 重算基线，amendment B 档口径）→ 写本 journal 自动批次 → 双 worktree commit+push → done 标记退出。**TRAE 侧 30min 定时监控任务三次创建确认超时未成（用户离开），由本服务器端 watcher 承担监控职责**；用户回来后可再挂 TRAE 侧任务作前端。
