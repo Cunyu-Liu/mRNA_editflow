@@ -1303,3 +1303,44 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **科学发现（负结果带信息量，如实入档）**：AUC 0.5528 的 CI 下界 0.5453 **显著高于随机 0.50**（38k holdout 对检验力充足）→「实验者测量偏好」存在**弱但可跨源泛化的信号**（+0.053 AUC）——H5 口径偏好假设的直接测量首次落地：**信号存在、幅度不足以支撑 D1 集成门**。这同时意味着：测量偏好可建模但非强结构信号，recovery 家族口径对「偏好学习」的敏感度有限。
 - **下游影响**：(1) C4（q 集成臂）取消；(2) D2 检索条件化的 gate 条件翻转（spec §4-D2 原文：q 失败 → 检索升主选）——D2 仍维持缓议（用户 09-08 范围内未含），仅登记触发条件变化；(3) GPU5 释放。
 - **选项 4a 继续在途**（GPU4，运行 1h02m，CPU 1878% 正常，ETA ~3h）。
+
+---
+## 批次五十三（2026-09-08 20:30，V9 Stage 0 三件套终态 + baseline P0-3/P0-4 交付；CRITIC_V6 spec 2026-09-08 增补执行首班）
+
+> 依据：SPECS_CRITIC_V6「【2026-09-08 增补】V5 架构尸检 + V9 执行案」（用户批准即立项，双轨完全并行）+ SPECS_BASELINE_LEADERBOARD「【2026-09-08 增补】Baseline 覆盖审计 v2」（P0 立即执行）。零训练窗口与 Phase C 并行（GPU2/GPU3，未触碰 GPU4 上的 pool256_unguided）。代码：v8_stage1_prep worktree `analyze_v9_stage0_v1.py` / `compile_baseline_table4_v1.py` / `analyze_baseline_k_sensitivity_v1.py`；产物 `/mnt/.../experiments/analysis_v9_stage0_20260908/` + `analysis_baseline_table4_20260908/` + `analysis_baseline_k_sensitivity_20260908/`。
+
+### V9-0a M2 参数干扰定位（CPU）——**任务向量正交 + 核心区近随机不相交**
+
+- 对象：H 家族同构对 τ(h_bench9, 9 任务均衡 full-FT) vs τ(h_mprau_lora, MPRAU-only LoRA 并回权重)，base = Stage 1 H（同 init 实证：两 run report 均 stage1_h_epoch2.pt）。
+- **实现勘误（如实留痕）**：首版 flatten_taus 误拼权重本身而非任务向量（sd−base），范数 589≈权重范数暴露 bug（LoRA 臂非 LoRA 键应冻结 → τ2 范数 ≤29）；修复后 float64 重算（float32 在 113M 元素上累计误差曾产出非法余弦 1.0275）。
+- **终态**：‖τ1‖=13.84 / ‖τ2‖=5.68；**整体余弦 0.0034（正交）**；top-5/10/20% 核心区 Jaccard = 0.053/0.075/0.128（随机期望 0.026/0.053/0.111——仅 1.1-2.1× 随机）；head.weight 余弦 0.36；τ2 质量全部落在 48 个 LoRA 模块 + head（49 键）。
+- **判读**：按 CPI-FT"低重叠→可合并"预测条件满足 → 交 M1 裁决；同时跷跷板归因修正：h_bench9 的 MPRAU 弱不是"被覆盖"（区域不相交）而是"从未学到"（均衡采样稀释）。
+
+### V9-0a M1 合并诊断（GPU2，~1h）——**7/7 变体全 FAIL，合并路线关闭**
+
+- 管线交叉验证：single_h_bench9 经本管线逐位复现（MRL 0.28792/polyA 0.80673/MPRAU 0.05556/macro 0.15162 vs 预注册参照 0.2879/0.8067/0.0556/0.1516 ✓）；single_h_mprau_lora MPRAU 0.11005（入档参照 0.1084，BF16 跨卡 ±0.002 级）。
+- **知识保留门（per-task ≥ max(single) − 0.01）裁决**：arith_mean / TIES keep∈{20,80,90,95}% / DARE drop∈{90,95}% **全部 FAIL**——MPRAU 0.038–0.049（<< 0.098 门），polyA 0.68–0.78（< 0.797 门），MRL 全保留（0.287–0.298，keep80 甚至超单模型 0.2979）。
+- **S 家族 inter-seed soup（机制校验）**：5-seed 权重平均 MPRAU 0.1142（单 seed 0.108–0.153；预测 ensemble 0.1351）——**同任务合并有效 → 合并机器无误**；副发现：soup 恢复 MRL 0.2496（单 seed ≈0.0001）——权重平均抵消各 seed 的破坏性偏移、部分恢复 Stage 1 先验。
+- **科学结论（论文素材）**：参数空间的几何可分性（M2 正交+低重叠）≠ 功能可加性（M1 全灭）——TIES/DARE/task-arithmetic 的"低重叠→可合并"预测在 113M 编辑差分 critic + 该数据体制上系统性失败；专才知识对更新幅度呈非线性依赖（halving/trimming 即摧毁）。**V9-1 裁决：adapter-zoo（V9-a）路线确认，不设 merged-as-init 臂。**
+
+### V9-0b M2b 任务梯度余弦（GPU3，~15min）——**共享线性头是梯度冲突主战场（新机械发现）**
+
+- 底座：V8-S Stage 1（s_mrl-polya epoch2）扩展 9 域/6 细胞（= V9-1a init），eval 模式无 dropout，5 任务 × 100 batch × 32 pair，pair-delta MSE（z-scored target，同训练口径）。
+- **All-params 余弦：MRL(GSE114002) 与全部其他任务显著负相关**——MRL↔MPRAU **−0.922**、MRL↔HL **−0.959**、MRL↔TE200304 **−0.889**、MRL↔polyA **−0.542**；其余任务对全部正相关（MPRAU↔HL +0.943、MPRAU↔TE +0.888、TE↔HL +0.902、polyA↔{MPRAU,TE,HL} +0.54 左右）。
+- **Backbone-only 余弦大幅减弱**：MRL↔MPRAU −0.124、MRL↔HL −0.283、其余 |cos| ≤0.30——**冲突集中于非 backbone 参数（共享线性头 768×1 为主；domain/cell embedding 各行正交不贡献负余弦）**。
+- **判读**：(a) 跷跷板又一机械根源 = 单一共享输出头上的方向冲突（V5 尸检组件②补强——不仅是容量，还有头的方向冲突）；(b) V9-a 适配器天然自带 per-task 头 → 结构性解决，PCGrad 臂按条款可登记但优先级低于 adapter（冲突主体将被 adapter 结构消除）；(c) 3UTR 族（MPRAU/HL/TE/polyA）梯度高度协同 → V9-a 分组共享适配器消融臂有数据支持；(d) MRL 是"孤立任务"（5UTR 域）——独占适配器。
+
+### Baseline P0-3 Table 4 v1（CPU）+ P0-4 K 敏感性（CPU）
+
+- **Table 4 v1**（`analysis_baseline_table4_20260908/`，JSON+MD）：五行终态（unguided 0.12046 / V5-guided 0.12626 / V8 专才 0.12495 / V8 joint 0.12336 / TreeG 0.0045）× recovery@10 / top-K rec@10 / hit@1 / legality 1.0 / budget 0 + Gate B2/B3 FAIL 标注。**缺口登记 P0-3b**：closed NDCG@K/regret 需离线打分通道（generated_candidates.private.jsonl 已含 generation_score——可算，后续接线）；pool256 在途不入 v1。
+- **K 敏感性**（`analysis_baseline_k_sensitivity_20260908/`，29 行 = full-coverage 16 + Saluki 3 + V5 10）：**NDCG@K 在 K≥5 完全稳定**（全部行 K=5/10/20 逐位一致；K=3 仅多候选任务微降：polyA V5 0.8402→0.8703、MRL V5 0.8195→0.8350）；V5 各行 Spearman 与榜单参照精确一致（0.1953/0.0500/0.0579/0.0639/0.8219/0.1354 ✓ 分层 bug 修复后）→ **R4 闭合：榜单 NDCG 结论对 K 稳健**。缺口 P0-4b：Optimus/FramePool/APARENT/APARENT2 逐条预测未持久化（Stage 0a 只存聚合）→ GPU 重打分登记。
+
+### P0-1/P0-2 可得性探测（P0 剩余两项执行前置）
+
+- **连通性**：huggingface.co 不通；**hf-mirror.com 200** ✓；github 200 ✓；pypi 200 ✓。
+- **P0-2 RiboNN 可得性确认**：GitHub Sanofi-Public/RiboNN 公开（NBT 2025 44:783, s41587-025-02712-x）+ **Zenodo 官方人/鼠权重自动下载** → 可执行；输入适配条款待登记（UTR 片段作全长 mRNA 输入、无 CDS 通道——其论文 5UTR 每 nt 信息密度 ~67% 支撑 UTR-only 输入合理性，口径差异如实声明）。
+- **P0-1 LLR 模型下载已启动**（后台 PID 3315048）：Caduceus-ps_131k_d256 + NT-v2-500m-multi-species 经 hf-mirror → external_model_assets/{caduceus,nucleotide_transformer}/（日志 llr_model_download.log）；GPN 托管待查（备选 DNABERT-2）。LLR 打分脚本 = 下一班 P0-1 执行件。
+
+### 纪律
+
+- protected reads = 0（全部 VALIDATION）；零训练（无参数更新）；CUDA BF16（M1/M2b，cpu_fallback=false）；产物 /mnt、代码 v8_stage1_prep worktree（本批 commit）；未触碰 Phase C 在途产物（pool256/GPU4）；M1 合并网格超预注册集（增 TIES keep20% = 论文典型密度）如实入档。
