@@ -1248,3 +1248,32 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **B2 预判对照（spec §2 逐条，如实入档）**：P-主（B2 FAIL 高概率，Δ<+0.05 或 CI 跨零）**证实**（双臂 Δ +0.0045/+0.0029，CI 全跨零）；P-1（MPRAU 源增益较 V5-critic 扩大）**证伪**（A −0.0046 / B +0.0000 vs V5-guided，未扩大）；P-2（MRL 杠杆，不押注）**明确答案：不迁移**（A +0.0013 / B −0.0024 vs V5-guided；探针 MRL 0.0084/0.0360 < base_reachable 12.4%）；P-4（V8 探针 > V5）**证伪**（0.0320/0.0359 < 0.0614，H-V8e 负向）。P-3 polyA 无判据地位（维持）。**P-主依据修订条款（R.5）触发**：判据-机制错配（recovery@budget 与 critic 排序无关）意味着 Stage 3 双臂 FAIL 同时包含「V8 判别力不足」与「任何 critic 都改不了池覆盖」两个成分，二者不可分——但 A3.3 探针已独立裁决前者（V8 ≤ V5），故双 FAIL 结论稳健。
 - **本批变更**：base_fix worktree 新增（a）0908 双臂 adjudication + per_task 产物（/mnt），（b）B3 支持度分解 JSON（/mnt），（c）watcher.sh PY 路径修复（python3 → conda editflow env，运行期实况如实提交），（d）A3 full/V8 探针产物与 done 标记（前批遗留未提交）。Stage 3 双臂 runner 产物本身未重算（只读冻结产物复算）。
 - **状态**：**Phase A + Phase B 全部闭合（A3 数值终态 + Stage 3 修复版双臂终态 + 预判对照 + B3 分解齐备）→ DP2 拍板会输入完备，已通知用户**。Phase C 维持零启动。
+
+---
+## 批次四十九（2026-09-08 16:45，DP2/DP3 拍板落档：V6 以「生成器侧攻坚」立项 + 监控停用 + A3.3-h_bench9 补测发射）
+
+### DP2 拍板（用户，16:40 会话）
+
+- **V6 范围 = 0+1+2+3+4 全部**（「01234 都做」）：
+  - 0 = D4 amendment（B3 门槛重校准 + 判据修正 + 双口径，无 GPU）
+  - 1 = A3.3 补 h_bench9 探针（V8 裁决完备性：现只探了 s_mprau_in / s_mrl-polya，h_bench9 stage-2 多任务适配臂 MRL 0.2879 未探）
+  - 2 = D1 q 模型 cheap-kill（AUC ≥ 0.60 且 CI 下界 > 0.55，不过即杀，~1 天沉没上限）
+  - 3 = D3 β sweep（β∈{0.25,0.5,1,2,4} per-task z-归一 + 退火/rank/SMC 增量臂，判定门改新口径）
+  - 4 = 扩池 B=256 重跑（H4 直接检验，A4 预测 recovery ~0.62）
+- **立项逻辑（用户理由原文，如实入档）**：「即使我们现在可能认为是critic的性能比较差，导致整个的结果不好，但是我们依旧可以去提升 setflow 的效果来提升整个的性能」——与 Phase A/B 证据自洽：recovery 瓶颈 = 池覆盖（生成器属性）、hit@1 headroom = 0.037→0.242（生成器覆盖 + 排序联合属性），二者不因 critic 弱锁死。**09-05 gate 留痕不删**（批 47 的「V6 立项否决」依 09-05 规则字面维持有效；本批为 amendment 式重新立项，依据 = Phase A/B 诊断 + 用户 09-08 拍板）。
+- **DP3 拍板（用户）**：主判据换 **support-conditional hit@1 + independent evaluator 双口径**（frozen Optimus/MRL、APARENT/polyA 对生成候选 delta 分布）；**0.35 留痕不删**（V4 记忆化时代标定考核去记忆化架构属范畴错误；amendment 文档 = Task C6 交付物，数字预注册起草时冻结）。
+- **监控停用（用户拍板，批 47 建议照办）**：服务器 crontab `mrna_editflow_monitor.sh` 行已移除（2026-09-08 16:45，`crontab -l` 现为空）；needs_attention 标志清理。若 Phase C 发射后需巡检，再行挂起。
+- **D2（A2 臂）维持缓议**（不在 0–4 选项内；A5 证据 recovery 对快照不敏感、检索条件化 gated on q 验收）。**DP4（V6 protocol 冻结预注册）在 Phase C 首臂发射前执行**（独立 family、exact-HEAD 授权链、双 receipts）。
+
+### A3.3-h_bench9 探针发射（选项 1 立即执行）
+
+- GPU4（15.7G used/20% util，无本用户进程、无运行进程监控），PID 2723464，`a3_critic_mixed_pool_probe.py --critic-kind v8 --critic-checkpoint v8_stage2_adapt_20260907/h_bench9/stage2_h_benchmark_full_epoch6.pt`，输出 `analysis_phaseA_20260907/a3_critic_mixed_pool_probe_v8_hbench9.json`（BF16、cpu_fallback=false、protected_reads=0）。预期 ~30–60 min。
+- GPU 判据说明：GPU5 上仅他用户轻进程（1.5GB/13%）→ 按保守守卫跳过（不与共享卡）；GPU4 满足独立判据。
+
+### 状态与下一步（Phase C 序列）
+
+1. h_bench9 探针终态 → V8 裁决完备（选项 1 闭合）
+2. C6 amendment 起草（D4/DP3：新判据 + 0.35 留痕 + 双口径设计 + 新目标带预注册）→ 生效后 B=256 扩池臂才具备判定基础（选项 4 gated）
+3. C3 q 模型预注册（泄漏审计：TRAIN only + component flagged=0 硬门 + 验证源 measured 零接触）→ 1 卡 ~4h 训练 → AUC 门裁决（选项 2）
+4. C1 效率修复（批量化 + 心跳；100 源 wall ≤ 55 min 验收）→ C2 β sweep（选项 3，~47 GPU·h）
+5. Phase C 总预算（新范围）≈ 70–90 GPU·h。
