@@ -76,11 +76,27 @@ class FrozenV9Critic:
         self.round_chunk_size = int(round_chunk_size)
 
         v9 = _load_module("v9_runner_local", _V9_RUNNER)
-        model = v9.build_v9(Path(mrnabert_path), num_cells=_NUM_CELLS)
+        # geometry auto-detect from the checkpoint (V9-1a = 9 domains/6 cells;
+        # V9-1b = 11 domains/8 cells): rebuild embeddings+heads to match
+        raw_probe = torch.load(v9_checkpoint, map_location="cpu", weights_only=False)
+        state_probe = raw_probe["model_state_dict"]
+        n_heads = sum(1 for k in state_probe if k.startswith("heads.") and k.endswith(".weight"))
+        cell_shape = state_probe.get("cell_embeddings.weight")
+        n_cells = int(cell_shape.shape[0]) if cell_shape is not None else 0
+        import torch.nn as _nn
+        model = v9.build_v9(Path(mrnabert_path), num_cells=max(n_cells, 1))
+        model.domain_embeddings = _nn.Embedding(n_heads, model.base.config.hidden_size)
+        _nn.init.normal_(model.domain_embeddings.weight, mean=0.0, std=0.02)
+        if n_cells > 0:
+            model.cell_embeddings = _nn.Embedding(n_cells, model.base.config.hidden_size)
+            _nn.init.normal_(model.cell_embeddings.weight, mean=0.0, std=0.02)
+        model.heads = _nn.ModuleList(
+            [_nn.Linear(model.base.config.hidden_size, 1) for _ in range(n_heads)])
         v9.load_v9_init(model)
-        # freeze trunk BEFORE wrap (runner discipline)
+        # freeze trunk BEFORE wrap; patch module-global so LoRA task count matches
         for p in model.base.parameters():
             p.requires_grad_(False)
+        v9.NUM_DOMAINS = n_heads
         model.wrap_multitask_lora()
         raw = torch.load(v9_checkpoint, map_location="cpu", weights_only=False)
         state = raw["model_state_dict"]
