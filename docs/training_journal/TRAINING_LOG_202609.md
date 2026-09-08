@@ -1464,3 +1464,42 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - protected reads = 0（外部数据 + R3 审计基础设施只读受保护序列）；零训练；产物 /mnt、代码 worktree + push（本批 commit）。
+
+---
+## 批次五十七（2026-09-09 00:20，V9-1a 首 2 seeds 终态——跷跷板打破的直接证据 + polyA 冲击天花板）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 12（V9-1a adapter-zoo，预注册 route2_v9_adapter_zoo_prereg_v1.md）。seed 20260907（GPU2）/ 20260915（GPU5）FINAL-EPOCH-6-FIXED 终态；seed 20260911 watcher 仍在等 GPU3（外部占用）。产物 v9_adapter_zoo_20260908/seed*/。
+
+### 2-seed 终态（VALIDATION，FINAL-EPOCH-FIXED）
+
+| 任务 | seed 07 | seed 15 | 2-seed 均值 | 历史最强（参照） | 门② | 判读 |
+|---|---|---|---|---|---|---|
+| MRL | **0.3055** | **0.3223** | ~0.314 | Route A ensemble 0.3158 / h_bench9 0.2879 / V5 0.1354 | ≥0.28 | **双 seed 过门**；seed 15 单点超 Route A（0.3223 > 0.3158）= 首个超 MRL 外部平局线的任务训练模型 |
+| polyA | **0.8049** | **0.8633** | ~0.834 | V5 0.8219 / V6 0.8273 / h_bench9 0.8067 | ≥0.80 | **双 seed 过门**；seed 15 = **历史最强**（+0.041 vs V5）= 天花板 0.90 的 **95.9%**（V5 91% → V9 96%，逼近物理上限） |
+| MPRAU | 0.0477 | 0.0573 | ~0.053 | s_mprau_in 0.1351 / V5 0.1025 | >0.1351 CI 不跨零 | 未过（预期内：均衡池无域内专才数据——V9-1b 数据臂方向） |
+| TE(200304) | 0.0356 | −0.0041 | ~0.016 | V5 0.0579 / 内靶 0.1317 | ≥0.1317 | 未过（同 h_bench9 弱） |
+| macro | 0.1602 | 0.1983 | ~0.179 | V5 0.167 / h_bench9 0.1516 | ≥0.167 | seed 15 过；2-seed 均值过 |
+
+### 核心科学发现（论文级）
+
+1. **跷跷板被打破的直接证据**：MRL 与 polyA **同时达到历史最强**（V8 Stage 2 时双达标但都非最强：0.288/0.807；V9-1a：0.322/0.863）——任务专属 LoRA + per-task 头 + polyA CNN stem（M2b 共享头冲突 + M1 容量断点诊断的架构回应）在同 init 下让两个强任务并存且各自超越历史。V5 尸检组件②（容量断点）的修复实证。
+2. **polyA 96% 天花板完成度**：0.8633 / 0.90 = 95.9%——D2 天花板归一化叙事下 polyA 接近物理上限（标签 ICC 0.90），"已饱和"结论再加固（V5 91% → V9 96%）。
+3. **MRL 任务训练模型首次超外部平局线**：0.3223 > frozen-Optimus 0.3132 / Route A ensemble 0.3158（单 seed 点估计，显著性待 3-seed ensemble + paired bootstrap——按预注册 730-record 检验力条款预期 CI 跨零，如实报告）。
+4. seed 波动如实：polyA 0.805 vs 0.863（压线 vs 大幅过）——3-seed mean ± std 报告，不作 seed 挑选。
+
+### 判定状态（预注册门，等 seed 11 后全量判定）
+
+- 门②分项：MRL ✓✓ / polyA ✓✓ / macro ✓（均值）/ MPRAU ✗✗ / TE ✗✗ → **部分过门**（主判据 MPRAU 未过 = V9-1a 整体不判 PASS；按预注册门②须全过——如实记录，MPRAU/TE 缺口正是 V9-1b 数据增补臂 + 回退梯的设计对象）。
+- 门①（混合池探针）：待 3 seeds 齐 + V9 探针适配（V9 forward 接口与 V5/V8 探针脚本不同，适配为下一班工作）。
+- 门③（V9-2 guided）：等门①②全量判定。
+
+### 下一班
+
+1. seed 20260911 终态（watcher 值守）→ 3-seed 全量门判定 + MPRAU 3-seed ensemble paired bootstrap
+2. V9 探针适配（evaluate_route2_mixed_pool_probe_v1.py 加 V9 checkpoint 分支）→ 门①
+3. V9-1b 预注册（S1/M6 已获入训资格——批次五十六；MPRAU/TE 弱域适配器）
+4. MRL 3-seed ensemble vs Route A/Optimus paired bootstrap（显著性裁决）
+
+### 纪律
+
+- FINAL-EPOCH-6-FIXED；CUDA BF16（cpu_fallback_used=false）；protected reads=0；seed 全报不挑选；门不事后改。
