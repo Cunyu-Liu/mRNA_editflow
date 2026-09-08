@@ -1753,7 +1753,7 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ---
 ## 批次六十四（2026-09-09 08:30，V9-1b bench-v9b 终态 + 门 D1/D2/D3 联合判定——V9 线收官）
 
-> 依据：SPECS_CRITIC_V6 spec N.4 Task 15.5 + V9-1b 预注册三门。bench-v9b 主臂（GPU2，11 域 4,450 步 FINAL-EPOCH-6-FIXED 终态）；探针经几何自适应修复（checkpoint 驱动 n_domains/n_cells 重建——V9-1b 11/8 vs V9-1a 9/6 的加载坑）后出数。
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 15.5 + V9-1b 预注册三门。bench-v9b 主臂（GPU2，11 域 4,518 步 FINAL-EPOCH-6-FIXED 终态）；探针经几何自适应修复（checkpoint 驱动 n_domains/n_cells 重建——V9-1b 11/8 vs V9-1a 9/6 的加载坑）后出数。
 
 ### V9-1b bench-v9b 终态（VALIDATION）
 
@@ -1788,6 +1788,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ### 纪律
 
 - 三门判定全部预注册口径；D2 明确为观测非门；FINAL-EPOCH-FIXED；protected reads=0；探针几何自适应修复入档（工程）。
+**勘误（2026-09-09 终态核验巡检，本轮无新收割）**：header 步数 4,450 系笔误，已正为 run_report.json 权威值 **4,518**（planned=effective=steps_done=4,518）；批次六十三/六十四全部判定数值已逐项对 run_report/epoch_eval/探针产物核对一致（门判定零改动）。附时间线勘正：seed11 实际终态 01:39（watcher 00:20 重发后训练仅 ~79 min）、bench-v9b 终态 02:27（~112 min）——均远快于 ~8h ETA，此前批次「在途 epoch 3+/4+/6 附近」注记系按 ETA 外推的过时估计；收割与门判定均直接读产物，不受影响。双 worktree 已 push（5c406a6f / 701c19ce）。两线终态+收割完备 = V9 训练监控任务可停。
+
 
 ### 批次五十六（2026-09-09 03:15，C2 β=1 臂完整终态——measured-filter 修复实测生效）
 
