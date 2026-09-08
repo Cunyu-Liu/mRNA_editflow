@@ -1788,3 +1788,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ### 纪律
 
 - 三门判定全部预注册口径；D2 明确为观测非门；FINAL-EPOCH-FIXED；protected reads=0；探针几何自适应修复入档（工程）。
+
+### 批次五十六（2026-09-09 03:15，C2 β=1 臂完整终态——measured-filter 修复实测生效）
+
+- **β=1 臂 rc=0 终态**（02:11→02:57，wall 45.6min，100 源，0 violation，cpu_fallback=false）：**评估阶段通过 = measured-filter 修复对照成立**（0.25/0.5 死于同一断言，β=1 用修复版 runner 活过——fail-fast 纪律 + 修复链完整闭环）。先睹数字：recovery 0.0875 / topk10 0.0516 / unique 0.8581（与 891 全量 β=1 历史 B2 guided 特征一致，calib100 子集无异常）。
+- **心跳实测**：guided 逐源 0.042 源/s（~24s/源，与 0908 双臂 18.5s/源 + calib100 B1 断言开销一致），ETA 字段工作正常——C1 验收再印。
+- **watcher 计数正确**（03:10 poll 报 1/5 missing 0.25/0.5/2/4——与 master log 一致）；β=2 已自动接续（02:57 起）。剩余序列：β=2→4 → loop 第二轮自愈补 0.25/0.5 → watcher 5/5 检测 → 自动收割（harvest_beta_sweep.py：per-β support/sc_hit1/ΔCI vs calib100 unguided B=32 基线，amendment B 档口径）→ journal 自动批次 + commit。预计 ~06:00 前全闭合。
+- TRAE 侧 30min 定时监控第 4 次创建确认超时（用户离开）——监控职责由服务器 watcher 实质承担（1800s 轮询 + 自动收割 + 自动入档），如实入档；TRAE 前端任务待用户回来确认再挂。
