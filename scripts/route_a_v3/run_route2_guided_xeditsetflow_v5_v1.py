@@ -562,6 +562,23 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
         "guided B2 generation source cohort changed",
     )
     source_limit = int(arguments.source_limit)
+    if arguments.source_subset_file is not None:
+        subset_keys = [
+            line.strip()
+            for line in Path(arguments.source_subset_file).read_text(
+                encoding="utf-8"
+            ).splitlines()
+            if line.strip()
+        ]
+        key_set = set(subset_keys)
+        _require(
+            len(subset_keys) == len(key_set),
+            "source subset file contains duplicate keys",
+        )
+        by_key = {str(source["source_key"]): source for source in sources}
+        missing = [k for k in subset_keys if k not in by_key]
+        _require(not missing, f"source subset keys absent from manifest: {missing[:3]}")
+        sources = [by_key[k] for k in subset_keys]
     if source_limit > 0:
         sources = sources[:source_limit]
     candidate_cap = int(arguments.trajectory_count)
@@ -1019,6 +1036,12 @@ def main() -> int:
         type=int,
         default=0,
         help="restrict to the first N sources (smoke test); 0 = all 891",
+    )
+    parser.add_argument(
+        "--source-subset-file",
+        type=Path,
+        default=None,
+        help="newline-separated source_key list (preregistered calibration cohort)",
     )
     parser.add_argument(
         "--beta",
