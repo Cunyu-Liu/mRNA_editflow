@@ -1601,3 +1601,9 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - 留出集先冻后训（one-shot，M6 重冻留痕）；FINAL-EPOCH-FIXED；CUDA BF16；门不事后改；protected reads=0。
+
+### 批次五十九附（2026-09-09 02:10，MRL vs Route A ensemble 对位补全）
+
+- **V9-1a 2-seed ensemble 0.3172 vs Route A 3-seed ensemble 0.3158：Δ+0.0014 CI [−0.0558, +0.0579] 跨零 = 统计平局**（paired bootstrap 2000 iters；Route A per-record 预测三 seed 齐，字段 predicted_direction_normalized_delta 对齐）。
+- **MRL 行完整叙事闭环**：frozen-Optimus 0.3132 ≈ Route A 0.3158 ≈ V9-1a 0.3172（三者统计不可区分，730-record 检验力约束如实声明）；V9-1a vs V5 +0.182 CI 不跨零显著。**表述定稿：统一多任务模型（adapter-zoo）在 MRL 上匹配纯专才两阶段配方（平局），同时显著超越单模型多任务基线（V5）**——"统一模型不牺牲强任务"主张的完整证据链（预注册措辞纪律：不宣称超越 Route A）。
+- 产物 mrl_ensemble_vs_route_a.json；脚本 v9_mrl_vs_route_a.py（commit 随下一批）。
