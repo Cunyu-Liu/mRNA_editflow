@@ -1295,3 +1295,11 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 - **选项 4a（B=256 unguided 扩池）发射**：GPU4，PID 2957360，`pool256_unguided_20260908/b2_full_891_B256`（891 源 × 256 = 228,096 轨迹；unguided 为全批量采样（sample_many_setflow_v4）无逐源心跳，roots 心跳 0.4s 完成；CPU 1851% 正常）。ETA ~4h。**判据 = 覆盖侧 support@256 vs support@32（A4 Model A 检验，0.242→预测 ~0.62）+ recovery 上界带**；新 sc-hit@1 门按 amendment A 档（gate gated on amendment 状态）。
 - **选项 2（C3 q 模型）发射**：GPU5（与 honghuiyang 进程共卡但显存 1.9G 无冲突，2GB 轻推理），PID 2914339，`phase_c_c3_20260908/train_q_measurability_v1.py`。**泄漏审计前置通过**：TRAIN 14,634 源/5,758 components vs VALIDATION 3,439 components **交集 0（flagged=0 硬门 ✓）**；正例 89,580 measured 行（97% 单编辑）+ 负例均匀合法单编辑 1:5；component 90/10 切分 held-out AUC 门（≥0.60 且 CI 下界>0.55，cheap-kill）；frozen mRNABERT + 393k 参数头；BF16 CUDA。冒烟 21.7s 全链绿（含 transformers torch.load 闸门绕行 = 项目规范 load_mrnabert_base 镜像 + tuple 输出 [0] 索引）。dry-run AUC 0.504 无意义（1 epoch/2k pairs）。全量 ETA ~2h。
 - **amendment 状态说明**：v1 草案（批 50）——用户 DP3 已拍板判据方向（sc-hit@1 + 双口径 + 0.35 留痕）+「自己去执行」指令 → **本轮按 ACTIVE 执行**（分档数字 0.10/0.30 系 A4 推导的预注册值，provenance 如实入档；如用户复核有异议走 v2 amendment 留痕修订）。
+
+### 批次五十二（2026-09-08 21:05，选项 2 终态：q 模型 AUC 门 FAIL → D1 cheap-kill 终止（如实入档））
+
+- **终态数字**（GPU5，BF16，wall 3065s，protected_reads=0，产物 `q_model_20260908/full/q_train_result.json` + head checkpoint）：held-out component AUC **0.5528**，bootstrap 95% CI [**0.5453, 0.5604**]（38,406 holdout 对，361,812 训练对，3 epochs，393k 参数头）。
+- **门裁决：FAIL**（预注册门 AUC ≥ 0.60 且 CI 下界 > 0.55；实测 0.5528 < 0.60）→ **D1 按预注册 cheap-kill 条款终止：q 通道不进入集成（C4 取消）**。泄漏审计 TRAIN only + component flagged=0 全程有效。
+- **科学发现（负结果带信息量，如实入档）**：AUC 0.5528 的 CI 下界 0.5453 **显著高于随机 0.50**（38k holdout 对检验力充足）→「实验者测量偏好」存在**弱但可跨源泛化的信号**（+0.053 AUC）——H5 口径偏好假设的直接测量首次落地：**信号存在、幅度不足以支撑 D1 集成门**。这同时意味着：测量偏好可建模但非强结构信号，recovery 家族口径对「偏好学习」的敏感度有限。
+- **下游影响**：(1) C4（q 集成臂）取消；(2) D2 检索条件化的 gate 条件翻转（spec §4-D2 原文：q 失败 → 检索升主选）——D2 仍维持缓议（用户 09-08 范围内未含），仅登记触发条件变化；(3) GPU5 释放。
+- **选项 4a 继续在途**（GPU4，运行 1h02m，CPU 1878% 正常，ETA ~3h）。
