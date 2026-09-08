@@ -1151,3 +1151,29 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 
 - B2 臂 A 重启后正常推进；臂 B 与 A3 均已归档；无新异常，无需处置。
 - 待续：臂 A 终态 → 双臂对位闭合 → V6 立项裁决终态；A3.3（V8 探针）；DP2 拍板（输入已齐备，建议臂 A 终态后安排）。
+---
+## 批次四十四（2026-09-08 09:30，非定时巡检：用户指示用空闲卡执行 A3.3 → 发现并修复 FrozenV8Critic tokenizer 致命 bug（V8 引导断电）→ 臂 A/B2-B 作废）
+
+### 重大事件一：A3.3 V8 critic 同款探针——首个 flatness 异常 → 确诊 tokenizer bug → 修复
+
+- **触发**：GPU4 空闲 34.7GB / util 29%（臂 B 终态释放）、GPU2 可用 → 执行此前被阻塞的 A3.3（V8 critic 同款探针，pre-reg A3.3/SPECS_SETFLOW_V6）。
+- **实现**：a3_critic_mixed_pool_probe.py 加 --critic-kind {v5,v8}（default v5 行为不变，commit 00c6fbc9）；V8 分支复用 FrozenV8Critic（与 runner 同接口）。
+- **flatness 异常**：首次跑两个 V8-S checkpoint 探针结果逐位相同 + measured_best_avg_rank=1.00（全源 tie）——critic potential 全为 0。
+- **根因（确诊）**：FrozenV8Critic._score_candidate_group 直接 `tokenizer(str.upper().replace("U","T"))` 整串传入 BertTokenizer（vocab=74 单核苷酸/3mer 级）→ **整条序列被 UNK 成单个 token** → base 输出与输入无关（fp32/bf16 下逐位相等）→ potential 恒 0。V5 FrozenXEditCriticV5 及共享 encoder 使用 `" ".join(逐核苷酸)` 空格 join（format_utr_chunk）→ 正确。B2 双臂（09-07 18:30 起）一直在用**常数 potential 引导 = 无引导**。
+- **修复**：route2_v8_frozen_guidance_v1.py tokenize 改逐核苷酸空格 join（commit 57827f5c）；修复后 5 序列 delta 恢复 1e-2 量级、token 恢复真实单核苷酸 ID。
+- **修复后真实 A3.3 数值（891 源，CUDA BF16，cpu_fallback=false，TERMINAL）**：
+
+  | critic | overall acc@1 | MRL(652) | MPRAU(108) | HL(111) | polyA(20) | natural-hit(216) |
+  |---|---|---|---|---|---|---|
+  | V5 (ref) | 0.0614 | 0.0422 | 0.1111 | 0.1280 | 0.0500 | 0.0764 |
+  | V8-S 专才 s_mprau_in | 0.0320 | 0.0084 | 0.1497 | 0.0300 | 0.1750 | 0.0440 |
+  | V8-S joint s_mrl-polya | 0.0359 | 0.0360 | 0.0278 | 0.0450 | 0.0250 | 0.0579 |
+
+  - base overall 0.0367 / base_reachable 天花板 MRL 12.4% / MPRAU 2.8% / HL 5.4% / polyA 0%。
+  - **结论（科学）**：修复后 V8 critic 判别力在搜索分布 mixed 池上 ≤ V5（overall 0.032/0.036 < 0.061）；MRL 主杠杆皆低于 base 结构性天花板（专才 0.0084 接近零——stage2 仅适配 MPRAU 塔所致）；natural-hit 子集反劣（0.044/0.058 vs base 0.151）。**on-manifold 改善（MPRAU 0.1351 / MRL 0.3078）未能迁移到搜索分布，V8 迁移失败（H-V8e 负向）**。
+- **Stage 3 冲击**：常数引导下 B2-B（v8joint）已终态 recovery 0.1188 ≈ unguided 0.1205（无引导自洽）→ **判定无效，必须重跑**；臂 A（v8 专才）被杀停（本批 08:35，kill -9 2869260/2869261）——继续跑等于浪费 GPU 且产出无引导等价结果。留证 armA_invalidated_tokenizer_bug_20260908.txt + 探针产物 commit。
+
+### 处置
+
+- 已修复 + 验证 + 探针数值入档（base_fix worktree commit 00c6fbc9 / 57827f5c / 探针产物）；臂 A 杀停留证。
+- **待决策（DP2 级）**：修复后 Stage 3 B2 双臂重跑（~/批 1–2 天）以取得真实 V8 guided recovery 判定；或先以探针数值直接裁决 V8 判别力不足 → 缩短 Stage 3 至单臂验证。SPECS_SETFLOW_V5/V6 更新 + 双臂重跑调度待用户拍板。
