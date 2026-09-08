@@ -1607,3 +1607,8 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 - **V9-1a 2-seed ensemble 0.3172 vs Route A 3-seed ensemble 0.3158：Δ+0.0014 CI [−0.0558, +0.0579] 跨零 = 统计平局**（paired bootstrap 2000 iters；Route A per-record 预测三 seed 齐，字段 predicted_direction_normalized_delta 对齐）。
 - **MRL 行完整叙事闭环**：frozen-Optimus 0.3132 ≈ Route A 0.3158 ≈ V9-1a 0.3172（三者统计不可区分，730-record 检验力约束如实声明）；V9-1a vs V5 +0.182 CI 不跨零显著。**表述定稿：统一多任务模型（adapter-zoo）在 MRL 上匹配纯专才两阶段配方（平局），同时显著超越单模型多任务基线（V5）**——"统一模型不牺牲强任务"主张的完整证据链（预注册措辞纪律：不宣称超越 Route A）。
 - 产物 mrl_ensemble_vs_route_a.json；脚本 v9_mrl_vs_route_a.py（commit 随下一批）。
+
+### 批次五十九附二（2026-09-09 02:30，P0-3b closed NDCG 缺口关闭 + 定时监控部署）
+
+- **P0-3b closed NDCG@10（Table 4 缺口关闭）**：hit-set 口径（生成池中命中 measured 的候选按模型分排序 vs 真值排序；线性增益 log 折扣；零命中源计 0）——unguided **0.1180** / V5-guided **0.1240**（排序微升）/ V8 专才 **0.1187** / V8 joint **0.0273**（命中源最多 220 但排序最差——专才化伤害排序的生成线镜像）；**76% 源零命中主导 NDCG 上限 = 覆盖约束的第四个独立证据**（A2/A4/B3 分解 + 本指标）。产物 table4_closed_ndcg_v1.json + MD 追加；TreeG 无 generation_score 池排除（口径注）。
+- **定时监控部署**：TRAE 定时任务「V9-训练监控与终态收割」（ID 4cb0833e，每 30 分钟）——seed11 + bench-v9b 双线巡检、终态自动收割（门判定/journal/commit）、死亡诊断重发指引内置。
