@@ -28,7 +28,7 @@ set -u
 WORKTREE=/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_setflow_v5_base_fix_20260901
 ANALYSIS="$WORKTREE/analysis_phaseA_20260907"
 MONITOR="$WORKTREE/monitor"
-PY=python3
+PY=/home/cunyuliu/miniconda3/envs/editflow/bin/python
 
 FREE_MEM_GB=15
 FREE_MEM_MB=$((FREE_MEM_GB * 1024))

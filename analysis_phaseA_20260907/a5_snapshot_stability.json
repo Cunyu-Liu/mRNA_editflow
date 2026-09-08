@@ -1,0 +1,37 @@
+{
+  "aggregation_timestamp": "2026-09-08T03:10:53+0800",
+  "baseline_pass": 2,
+  "candidate_cap_per_source": 32,
+  "config_path": "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_setflow_v5_base_fix_20260901/configs/route_a_v3_route2_xeditsetflow_v5_screen_v1.json",
+  "cpu_fallback_used": false,
+  "drift_vs_pass2_baseline": {},
+  "passes": {
+    "6": {
+      "candidate_count": 28512,
+      "checkpoint_pass": 6,
+      "cpu_fallback_used": false,
+      "data_source": "existing_frozen_validation_data",
+      "g0_status": "FLOW_G0_READY",
+      "hit_at_1": 0.05611672278338945,
+      "legality": 1.0,
+      "nll": 5.7963699701009865,
+      "on_top_k_recovery_at_10": 0.09910480466036022,
+      "physical_gpu_index": 1,
+      "precision": "BF16",
+      "recovery": 0.11737747848858959,
+      "source_count": 891,
+      "status": "TERMINAL_XEDITSETFLOW_V5_CHECKPOINT_VALIDATION_COMPLETE",
+      "training_git_head": "a5cdeccfa981bcc07d930f3b0ea7236344bbb5d6",
+      "unique_candidate_rate": 0.3926416947250281,
+      "validation_git_head": "5c24161c114d0a96e5d4f6d223e4af7b85af9985"
+    }
+  },
+  "protected_reads": 0,
+  "run_id": "b_fix2",
+  "saved_checkpoint_passes": [
+    2,
+    4,
+    6
+  ],
+  "schema_version": "route_a_v3_phaseA_a5_snapshot_stability.v1"
+}
