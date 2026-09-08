@@ -1420,3 +1420,47 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - protected reads = 0；FINAL-EPOCH-6-FIXED；CUDA BF16（cpu_fallback_used=false）；产物 /mnt（v9_adapter_zoo_20260908/seed*/）、代码 worktree + push（本批 commit）；3 seeds 全报不作 seed 挑选；预注册门槛不事后改。
+
+---
+## 批次五十六（2026-09-08 23:40，轨道 B 数据审计 stage 1+2 终态：S1/M6 构建完成 + R3 五研究零泄漏 + 效应量分层审计）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 双轨执行案 Task 15（轨道 B 数据轨，与轨道 A 训练并行）。代码：v8_stage1_prep worktree `track_b_stage1_inventory.py` + `track_b_stage2_pairs.py`；产物 `/mnt/.../analysis_track_b_20260908/`（stage1_inventory.json + s1_stability_pairs.jsonl + m6_ndd_translation_pairs.jsonl + stage2_pairs_report.json + effect_strata_audit.json）。
+
+### 基础设施
+
+- **hg38/GRCh38 参考基因组就位**：UCSC 下载限速（0.24MB/s）→ 切 Ensembl GRCh38 primary assembly（curl 5MB/s，882MB gz → 3.15GB fa，external_model_assets/hg38/）；企业 MITM 证书坑（wget 证书验证失败，curl 绕行）入档。
+
+### Stage 1 清单（勘误入档）
+
+- **S1（Su 2025）规模勘误**：调研文档"6,555 对"实为论文宣称变体总数；补充表实际 **5,072 行**（SNV 4,540 + indel 532；indel 因 V9 动作空间为 SUB 而排除）。全基因组分布 + 正负链 50/50。
+- **M6（Plassmeyer 2025）规模勘误**：调研文档"15,070 对"错误（行数/2 未考虑 barcode 重复）；实际 **1,507 个变体**（每变体 ~11 barcode × REF/ALT = 32,990 行；HEK/vglut 两文件同变体集），SNV 子集 916。
+- **S6（GSE200304 IVT）勘误**：调研文档"RAW.tar 已在管线内"错误——raw_public 无 GSE200304；GEO portal reCAPTCHA WAF 拦截（与 ENCODE 同款）→ **BLOCKED_ON_USER_TRANSFER**（用户浏览器下载 GSM6721068-6721097 processed 文件后接入）。
+
+### Stage 2 构建终态（双双 100%）
+
+- **坐标语义破案（如实留痕，三轮收敛）**：首版 Start 列 + 正链直接匹配 = 64.8%（负链未处理）；二版 Mutant 列 strand + rc 匹配但 start 坐标 = 26.5%；**终版：变异位置 = STOP 坐标（1-based，BED 风格 start=stop−1）+ ref/alt 已是转录本方向（负链已补）——正链 2302/2302 与负链 2238/2238 双 100% 验证**。
+- **S1 库**：4,540 SNV 对 × 155nt 转录本方向窗（负链已 rc）；y_SH = WT−mt decay（SH-SY5Y，n=3,351 有效）/ y_HEK（n=3,295）；方向语义 = "变异使 UTR 更稳定为正"。
+- **M6 库**：916 SNV 对 × 100nt 窗；barcode 聚合 UMI 总计数 → y_v0 = log2((sum_ALT+1)/(sum_REF+1))（**口径 v0 声明**：总计数表达比；polysome 富集口径需 GEO 42 样本元数据，登记后续升级）；42 样本列名 SIC#### 语义待 GEO 元数据。
+- **R3 泄漏审计（五研究全 split 鸽笼 ≤2 mismatch）**：S1 **flagged=0** + M6 **flagged=0**——**双硬门通过**（对照 GSE114002/GSE269595/GSE217518/GSE186455/ENCSR854RUF 全部受保护序列）。
+
+### 效应量分层审计（Task 15.4 前半）
+
+- **S1**：|Δdecay| 中位数 23.6 分钟（SH）/ 23.2（HEK）；>99% 行 |Δ|>0.1——**富集效应分布**。
+- **M6**：|log2FC| 中位数 0.254；79.8% > 0.1、22.9% > 0.5——**富集效应分布**。
+- **判读（CMS 教训对照）**：两库效应分布与 benchmark GWAS 富集体制匹配（CMS 失败根因 = 小效应为主强化"≈0"先验）——**范式 + 泄漏 + 体制三审全过，具备入 V9-1b 弱域适配器训练资格**。
+- cryptic splicing QC（Task 15.4 后半）：GT-AG v0 proxy 指标已算（窗内含 GT..AG 对比例 ~30%）；**完整 Dao 2024 筛查登记待做**（需其伪影模型/规则集）。
+
+### V9-1a 训练监控（轨道 A）
+
+- seed 20260907（GPU2）/ 20260915（GPU5）训练中（epoch 3-4，step 2000-2150，loss 下降正常）；seed 20260911 watcher 值守 GPU3（外部任务仍占）。
+
+### 下一班
+
+1. V9-1a 三 seed 终态 → 门①（探针硬门）②（on-manifold）判定
+2. V9-1b 弱域适配器预注册（S1/M6 数据已获入训资格；效应体制条款写入）
+3. M6 polysome 口径升级（GEO 元数据）+ S6/RiboNN 权重用户中转跟踪
+4. cryptic splicing 完整筛查（Dao 2024 规则集调研）
+
+### 纪律
+
+- protected reads = 0（外部数据 + R3 审计基础设施只读受保护序列）；零训练；产物 /mnt、代码 worktree + push（本批 commit）。
