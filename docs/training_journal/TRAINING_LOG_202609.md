@@ -1797,3 +1797,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **心跳实测**：guided 逐源 0.042 源/s（~24s/源，与 0908 双臂 18.5s/源 + calib100 B1 断言开销一致），ETA 字段工作正常——C1 验收再印。
 - **watcher 计数正确**（03:10 poll 报 1/5 missing 0.25/0.5/2/4——与 master log 一致）；β=2 已自动接续（02:57 起）。剩余序列：β=2→4 → loop 第二轮自愈补 0.25/0.5 → watcher 5/5 检测 → 自动收割（harvest_beta_sweep.py：per-β support/sc_hit1/ΔCI vs calib100 unguided B=32 基线，amendment B 档口径）→ journal 自动批次 + commit。预计 ~06:00 前全闭合。
 - TRAE 侧 30min 定时监控第 4 次创建确认超时（用户离开）——监控职责由服务器 watcher 实质承担（1800s 轮询 + 自动收割 + 自动入档），如实入档；TRAE 前端任务待用户回来确认再挂。
+
+### 批次五十五（自动 watcher 收割：C2 β sweep 全 5 臂终态，`2026-09-09 06:10:44`）
+
+- watcher 检测 5/5 β 臂终态，自动执行 `harvest_beta_sweep.py`（rc=0）：产物 `beta_sweep_20260908/sweep_harvest.json`（per-β support / recovery / sc-hit@1 / ΔCI，amendment B 档口径，calib100 对位 unguided B=32 重算基线）。
+- 待会话复核：最优 β 判定 + 891 全量 top-2 确认发射 + 选项 4b（B=256 guided）gated 决策。
