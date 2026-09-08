@@ -1560,3 +1560,44 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - 门不事后改；探针口径 = 预注册参照行；FINAL-EPOCH-FIXED；CUDA BF16；protected reads=0；seed 全报。
+
+---
+## 批次五十九（2026-09-09 01:50，MRL 2-seed ensemble 显著超 V5 + V9-1b 预注册 FROZEN + pure-v9b 终态负结果 + bench-v9b 发射）
+
+> 依据：SPECS_CRITIC_V6 spec N.4 Task 12/15.5。代码：`v9_mrl_rescore_bootstrap.py` + `track_b_freeze_holdout.py` + `run_route2_v9b_data_arm_v1.py` + 预注册 `route2_v9b_data_arm_prereg_v1.md`（FROZEN）。产物：`analysis_v9_stage0_20260908/mrl_ensemble_bootstrap.json` + `analysis_track_b_20260908/{s1,m6}_holdout_manifest.json` + `v9b_data_arm_20260909/`。
+
+### MRL 2-seed ensemble（on-manifold 显著性裁决，批次五十七头条的统计收口）
+
+- per-seed 0.3055/0.3223（与 epoch_eval 精确一致 = 重打分管线交叉验证 ✓）
+- **z-mean ensemble 0.3172**：> Route A 3-seed 0.3158 > frozen-Optimus 0.3132——**统一多任务模型（9 任务 + adapter-zoo）在 MRL 上匹配/略超纯 MRL 专才（Route A 280K 两阶段）**
+- **vs V5 paired bootstrap：Δ+0.1818 CI [0.0944, 0.2691] 不跨零 = 显著**（source-group cluster 2000 iters）
+- 判读：MRL 行"统一模型不牺牲强任务"主张获得配对显著证据；vs Route A 为点估计领先（0.3172 vs 0.3158，CI 待 Route A per-record 预测对齐后补）。
+
+### V9-1b 预注册 FROZEN + 留出集冻结
+
+- 预注册 `docs/paper/route2_v9b_data_arm_prereg_v1.md`：双臂（pure-v9b 专才 / bench-v9b 11 域主臂）、几何 n_domains=11/num_cells=8、S1 双 assay cell 映射（SH=6/HEK=7）、M6 HEK≈HEK293FT 口径声明、三门（D1 弱域 on-manifold 非破坏+迁移 / D2 探针鉴别诊断观测 / D3 新域 holdout）、回退条款（采样权重单次重训）。
+- **留出集一次性冻结（先冻后训）**：S1 3,995 train / 454 val（utr_group × 显著性分层）；M6 824 train / 92 val（chromosome 分层——首版 family 分层全桶 <5 留出为 0，勘误重冻留痕，S1 manifest 未动）。
+
+### pure-v9b 终态（epoch 6 FINAL-EPOCH-FIXED，324 步，~40min）
+
+- **门 D3 全 FAIL**：holdout Spearman s1_SH **−0.043** / s1_HEK **−0.006** / M6 **0.056**——即使专才臂（只训这 3 域）新数据域自身 holdout 泛化 ≈0。
+- benchmark 迁移（观测，专才臂预期低）：macro −0.026 / MRL −0.298（灾难遗忘——专才臂破坏其他域，与 s_mprau_in 同构）/ MPRAU −0.023。
+- **判读（重要负结果）**：S1/M6 在 V9 架构 + Stage 1（MRL+polyA）先验底座下 holdout 不可学——数据三审（R3 零泄漏 + 富集效应 + 范式匹配）通过≠可学性成立；与 CMS 失败同构但更深刻（这次是专才化 + 域内 holdout）。候选根因（下班鉴别）：(a) 底座先验与新域（3'UTR 稳定性/NDD 翻译）不匹配——Stage 1 只注入了 MRL/polyA 先验；(b) holdout 评估的 z-score 口径/样本量（n=334-337 的检验力）；(c) 该两域 UTR-only 可预测性本身低（Su 2025/Plassmeyer 2025 原文效应量对照待查）。
+- **不影响 bench-v9b 判定**（主臂的价值在门 D1：11 域联合下 benchmark 弱域是否被带涨 + 非破坏；新域 holdout 在联合训练下可能不同）。
+
+### 在途
+
+- bench-v9b（GPU2，seed 20260907，11 域 4,200 步，ETA ~8h）。
+- V9-1a seed 20260911（GPU3 watcher 已自动重发 00:20，~8h）。
+- 工程留痕：runner per-record 预测持久化 hook 曾因本地补丁写坏文件上传覆盖——git checkout 恢复（seed 11 进程不受影响，nohup 已加载）；hook 改为独立重打分脚本方案（v9_mrl_rescore_bootstrap.py 已为 2 seeds 补齐 MRL 预测文件）。
+
+### 下一班
+
+1. bench-v9b 终态 → 门 D1/D3 联合判定 + 门 D2 探针（鉴别诊断 H-d/H-a）
+2. seed 11 终态 → V9-1a 3-seed 全量判定
+3. MRL ensemble vs Route A paired bootstrap（找 Route A per-record 预测产物）
+4. S1/M6 不可学根因鉴别（原文效应量对照 + Stage 1 底座先验域匹配假说）
+
+### 纪律
+
+- 留出集先冻后训（one-shot，M6 重冻留痕）；FINAL-EPOCH-FIXED；CUDA BF16；门不事后改；protected reads=0。
