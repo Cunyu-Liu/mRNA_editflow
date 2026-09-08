@@ -137,6 +137,23 @@ class CriticScorer:
                 potential_maximum=float(transform["maximum"]),
             )
             self.kind = "frozen_xeditcritic_v8"
+        elif kind == "v9":
+            import importlib.util as _ilu
+            _v9_path = Path(__file__).resolve().parent / "route2_v9_frozen_guidance_v1.py"
+            _spec = _ilu.spec_from_file_location("route2_v9_frozen_guidance_local", _v9_path)
+            _mod = _ilu.module_from_spec(_spec)
+            sys.modules["route2_v9_frozen_guidance_local"] = _mod
+            _spec.loader.exec_module(_mod)
+            FrozenV9Critic = _mod.FrozenV9Critic
+
+            self.critic = FrozenV9Critic(
+                checkpoint,
+                mrnabert,
+                torch.device(f"cuda:{gpu_index}"),
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+            )
+            self.kind = "frozen_xeditcritic_v9"
         elif kind == "v5":
             from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (
                 FrozenXEditCriticV5,
@@ -267,8 +284,8 @@ def main() -> int:
     ap.add_argument("--critic-checkpoint", type=Path, default=DEFAULT_CRITIC_CHECKPOINT)
     ap.add_argument("--mrnabert-model", type=Path, default=DEFAULT_MRNABERT_MODEL)
     ap.add_argument(
-        "--critic-kind", choices=("v5", "v8"), default="v5",
-        help="frozen critic family (v5 = XEditCritic V5; v8 = FrozenV8Critic)",
+        "--critic-kind", choices=("v5", "v8", "v9"), default="v5",
+        help="frozen critic family (v5 = XEditCritic V5; v8 = FrozenV8Critic; v9 = FrozenV9Critic)",
     )
     ap.add_argument("--dry-stub", action="store_true",
                     help="use deterministic hash stub (validates plumbing only; NON-scientific)")
