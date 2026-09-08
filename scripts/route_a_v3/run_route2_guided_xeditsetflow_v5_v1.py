@@ -692,7 +692,7 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
         str(source["source_key"]): full_manifest[str(source["source_key"])]
         for source in sources
     }
-    if source_limit > 0:
+    if source_limit > 0 or arguments.source_subset_file is not None:
         manifest_keys = set(manifest)
         measured_rows = [
             row
