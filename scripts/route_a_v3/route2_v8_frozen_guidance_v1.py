@@ -224,6 +224,19 @@ class FrozenV8Critic:
         self.model_batch_forward_count += 1
         self.candidate_forward_equivalent_count += len(candidates)
         source_value = float(values[0])
+        # Link-integrity assertion (N5 lesson, spec SPECS_CRITIC_V6 N.4.4):
+        # >=2 DISTINCT candidate sequences must never receive bit-identical
+        # scores -- that is the exact fingerprint of the whole-string-UNK
+        # tokenizer bug (constant potentials == no guidance). A real model
+        # cannot map different token sequences to the same scalar.
+        distinct = {seq for seq in candidates if seq != source}
+        if len(distinct) >= 2:
+            scored = [float(v) for v in values[1:]]
+            _require(
+                len(set(scored)) > 1,
+                "V8 critic link failure: distinct candidates received identical "
+                "potentials (tokenizer/encoding degenerate -- see spec N.4.4)",
+            )
         for candidate, value in zip(candidates, values[1:], strict=True):
             _require(math.isfinite(float(value)), "V8 critic mean is nonfinite")
             delta = float(value) - source_value
