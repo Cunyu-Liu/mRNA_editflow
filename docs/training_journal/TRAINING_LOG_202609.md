@@ -1209,3 +1209,31 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 ### 判定
 
 - 修复版双臂健康推进，无异常；server monitor 已对齐新臂。待续：双臂终态 → 真实 Δrecovery 对位 → V6 立项裁决。
+---
+## 批次四十七（2026-09-08 15:05，定时巡检：修复版双臂终态 → 真实 Δrecovery 对位 → V6 立项裁决）
+
+### 双臂终态（修复版 2026-09-08，均 CUDA A100、CPU fallback=false、method=frozen_v8_critic_guided_xeditsetflow_v5_b_fix2_pass2）
+
+- 臂 A（V8-S 专才 s_mprau_in，GPU4，run_id=b_fix2）：status = **GUIDED_XEDITSETFLOW_V5_B2_RUNNER_COMPLETE**，wall 16441s(~4.6h)，cpu_fallback_used=false，cuda:4；guided recovery = **0.124953**。日志 13:57 收尾，正常终态非死亡。
+- 臂 B（V8-S joint 对照 s_mrl-polya，GPU2，run_id=b_fix2）：status = **GUIDED_XEDITSETFLOW_V5_B2_RUNNER_COMPLETE**，wall 17994s(~5.0h)，cpu_fallback_used=false，cuda:2；guided recovery = **0.123363**。日志 14:23 收尾，正常终态。
+- 全程无 Traceback / OOM / cuda 报错；两臂经逐核苷酸空格 join 修复（57827f5c）后真实引导（V8 potential 非 0），非旧版常数引导。
+
+### 对位表（修复版真实 Δrecovery，同口径参照 guided_b2_20260903/b2_full_891_adjudication_per_task.json；unguided 基线 0.12046 / V5-guided 0.12626）
+
+| 口径 | n(源) | V8-A 专才 | V8-B joint | V5-guided(ref) | unguided(ref) | V8-A vs ung | V8-A vs v5 | V8-B vs ung | V8-B vs v5 |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| **overall** | 891 | **0.124953** | **0.123363** | 0.126262 | 0.120464 | **+0.004489** | **−0.001309** | **+0.002899** | **−0.002899** |
+| MRL(5UTR) | 652 | 0.160020 | 0.156314 | 0.158742 | 0.154652 | +0.005368 | +0.001278 | +0.001662 | −0.002428 |
+| MPRAU(3UTR) | 108 | 0.027778 | 0.032407 | 0.032407 | 0.027778 | +0.000000 | −0.004630 | +0.004630 | +0.000000 |
+| polyA(3UTR) | 20 | 0.000000 | 0.000000 | 0.000000 | 0.000000 | +0.000000 | +0.000000 | +0.000000 | +0.000000 |
+| HL(5UTR) | 111 | 0.036036 | 0.040541 | 0.049550 | 0.031532 | +0.004505 | −0.013514 | +0.009009 | −0.009009 |
+
+### 判定：SetFlow V6 立项裁决 = **否决（critic 攻坚负结果闭合）**
+
+- **任一 V8 臂 Δ 显著正 → critic 非瓶颈？否**。臂 A +0.00449 / 臂 B +0.00290（vs unguided），均远低于 Gate B2 +0.05 门槛且 CI 必跨零，**且双双未超越 V5-critic guided 0.1263**（A −0.00131 / B −0.00290）。
+- **双臂跨零 → critic 攻坚负结果闭合**：V8-S 专才/ joint 修复版引导 recovery 均未超过 V5-critic 基线，与 A3.3 探针（V8 判别力迁移失败 H-V8e 负向）在 B2 尺度再印。per-task 亦无任一任务 V8 显著优于"unguided 之上且 ≥V5"：专才仅在 MRL 微占先（+0.0029/ref 内）、joint 在 MPRAU 追平 V5，HL 两臂均反劣（A −0.0135 / B −0.0090），polyA 无信号（base 探索不足共因，n=20）。
+- 依用户 09-05 拍板"仅在 Stage 3 结果证明 critic 非瓶颈后才立项 V6"——此条件**未满足** → **V6 立项否决**；Critic V5 维持最强，V8-S 专才不构成 V6 base 升级依据。SPECS_SETFLOW_V6 Phase B Task B1/B2（对位+预判对照）据此闭合，Phase C 维持"未拍板零启动"。
+
+### 使命完成建议
+
+- 双臂已终态、对位与 V6 立项裁决均已入档 → **本监控任务（mRNA EditFlow 训练监控，b2f628e0，30min）使命完成，建议停用**。若后续仍有巡检需求（如补 random/F2 对照臂、DP2 拍板后的 Phase C 发射），再另行挂起。
