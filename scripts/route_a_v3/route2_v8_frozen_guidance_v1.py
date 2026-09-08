@@ -204,8 +204,14 @@ class FrozenV8Critic:
         cell_id = CELL_IDS.get(context, 0)
         tokenizer = self.tokenizer
         all_seqs = [source, *candidates]
+        # IMPORTANT: mRNABERT vocab is nucleotide-scoped; the shared encoder
+        # (route2_mrnabert_online_encoder_v1.format_utr_chunk) space-joins each
+        # nucleotide before tokenizing. Without the join, BertTokenizer emits a
+        # single [UNK] for the whole sequence and every potential becomes 0
+        # (sequence-blind guidance) -- fixed 2026-09-08 after A3.3 probe flatness
+        # diagnosis (V8 potentials constant across all candidates).
         encoded = tokenizer(
-            [str(s).upper().replace("U", "T") for s in all_seqs],
+            [" ".join(str(s).upper().replace("U", "T")) for s in all_seqs],
             add_special_tokens=True, padding=True, truncation=True,
             max_length=512, return_tensors="pt",
         )
