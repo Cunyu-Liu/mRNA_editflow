@@ -113,27 +113,45 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
 class CriticScorer:
     """Real frozen XEditCritic V5 (CUDA BF16 only). Lazily imports deps."""
 
-    def __init__(self, checkpoint: Path, mrnabert: Path, gpu_index: int) -> None:
+    def __init__(
+        self, checkpoint: Path, mrnabert: Path, gpu_index: int, *, kind: str = "v5"
+    ) -> None:
         import torch
 
         if not torch.cuda.is_available():
             raise RuntimeError("critic requires CUDA; cannot CPU-fallback")
         if str(REPO_ROOT) not in sys.path:
             sys.path.insert(0, str(REPO_ROOT))
-        from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (
-            FrozenXEditCriticV5,
-        )
         from core.route2_legal_xeditflow import FlowState
 
         transform = json.loads(REWARD_POLICY.read_text())["potential_transform"]
         self._FlowState = FlowState
-        self.critic = FrozenXEditCriticV5(
-            checkpoint,
-            mrnabert,
-            torch.device(f"cuda:{gpu_index}"),
-            potential_minimum=float(transform["minimum"]),
-            potential_maximum=float(transform["maximum"]),
-        )
+        if kind == "v8":
+            from scripts.route_a_v3.route2_v8_frozen_guidance_v1 import FrozenV8Critic
+
+            self.critic = FrozenV8Critic(
+                checkpoint,
+                mrnabert,
+                torch.device(f"cuda:{gpu_index}"),
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+            )
+            self.kind = "frozen_xeditcritic_v8"
+        elif kind == "v5":
+            from scripts.route_a_v3.route2_xeditcritic_v5_frozen_guidance_v1 import (
+                FrozenXEditCriticV5,
+            )
+
+            self.critic = FrozenXEditCriticV5(
+                checkpoint,
+                mrnabert,
+                torch.device(f"cuda:{gpu_index}"),
+                potential_minimum=float(transform["minimum"]),
+                potential_maximum=float(transform["maximum"]),
+            )
+            self.kind = "frozen_xeditcritic_v5"
+        else:
+            raise RuntimeError(f"unknown critic kind: {kind!r}")
         self.count = 0
 
     def score(
@@ -248,6 +266,10 @@ def main() -> int:
     ap.add_argument("--physical-gpu-index", type=int, default=0)
     ap.add_argument("--critic-checkpoint", type=Path, default=DEFAULT_CRITIC_CHECKPOINT)
     ap.add_argument("--mrnabert-model", type=Path, default=DEFAULT_MRNABERT_MODEL)
+    ap.add_argument(
+        "--critic-kind", choices=("v5", "v8"), default="v5",
+        help="frozen critic family (v5 = XEditCritic V5; v8 = FrozenV8Critic)",
+    )
     ap.add_argument("--dry-stub", action="store_true",
                     help="use deterministic hash stub (validates plumbing only; NON-scientific)")
     ap.add_argument("--cohort", type=int, default=0,
@@ -297,7 +319,7 @@ def main() -> int:
         status = "DRY_SMOKE_STUB"
     else:
         scorer = CriticScorer(args.critic_checkpoint, args.mrnabert_model,
-                              args.physical_gpu_index)
+                              args.physical_gpu_index, kind=args.critic_kind)
         status = "TERMINAL" if args.cohort == 0 else "SMOKE_NON_TERMINAL"
 
     per_source: dict[str, Any] = {}
@@ -418,7 +440,7 @@ def main() -> int:
         },
         "per_task": task_table(measured_rows),
         "scorer": {
-            "kind": "stub_hash" if args.dry_stub else "frozen_xeditcritic_v5",
+            "kind": "stub_hash" if args.dry_stub else scorer.kind,
             "source_scoring_calls": scorer.count,
         },
         "notes": [
