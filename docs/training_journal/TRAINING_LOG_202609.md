@@ -1612,3 +1612,37 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 
 - **P0-3b closed NDCG@10（Table 4 缺口关闭）**：hit-set 口径（生成池中命中 measured 的候选按模型分排序 vs 真值排序；线性增益 log 折扣；零命中源计 0）——unguided **0.1180** / V5-guided **0.1240**（排序微升）/ V8 专才 **0.1187** / V8 joint **0.0273**（命中源最多 220 但排序最差——专才化伤害排序的生成线镜像）；**76% 源零命中主导 NDCG 上限 = 覆盖约束的第四个独立证据**（A2/A4/B3 分解 + 本指标）。产物 table4_closed_ndcg_v1.json + MD 追加；TreeG 无 generation_score 池排除（口径注）。
 - **定时监控部署**：TRAE 定时任务「V9-训练监控与终态收割」（ID 4cb0833e，每 30 分钟）——seed11 + bench-v9b 双线巡检、终态自动收割（门判定/journal/commit）、死亡诊断重发指引内置。
+
+---
+## 批次六十（2026-09-09 03:20，P1-1 MRL matched-FT 双臂终态——外部模型同样"薄数据微调退化"，R1 对称闭合）
+
+> 依据：SPECS_BASELINE_LEADERBOARD「2026-09-08 增补」§V.4 P1-1（绑定 R1 对称闭合）。代码：`run_route2_mrl_matched_ft_v1.py`（frozen 端口 buffer→parameter 原位置换 = 官方权重可训练 init）；协议 = from-scratch 对照（20260903）精确匹配：GSE114002 TRAIN 2,443 对绝对端点 z-scored 回归、Adam 1e-3 wd 1e-6、batch 128、300 epochs、10% monitor best-state 选择、seed 20260903。产物 `analysis_mrl_matched_ft_20260909/`。
+
+### P1-1 终态（VALIDATION，frozen-delta 口径，K=10）
+
+| 模型 | frozen zero-shot | **matched-FT** | Δ | trainable |
+|---|---|---|---|---|
+| Optimus5Prime | 0.3132 | **0.2977** | −0.0155 | 474,681 |
+| FramePool | 0.2956 | **0.2300** | −0.0656 | 282,629 |
+| （对照）我方 Route A Step-2 | — | 0.2159（< zero-shot 0.3158） | −0.10 | — |
+
+### 核心发现：薄任务数据微调退化的跨阵营对称（R1 闭合 + 论文素材）
+
+1. **两个外部模型在同数据同预算同 HPO 微调后双双低于各自 frozen zero-shot**——与我方 Route A Step-2 适配失败（0.2159 < 0.3158）完全同构。"2,443 行任务数据上微调损害强先验"不是我方架构缺陷，是**薄数据体制的普遍现象**（过拟合 + 分布偏移：绝对端点回归的 z-score 口径 vs 280K 库原始口径）。
+2. **R1 攻击面闭合**：MRL 行外部模型现在有 frozen + matched-FT 双模式完整数据——外部模型获得了与我方对等的微调机会且退化；我方 V9-1a ensemble 0.3172 > 两模式全部外部行（frozen 平局 + matched-FT 领先）。审稿人无法再主张"外部模型未充分调参"。
+3. 排行榜 MRL 行更新素材：frozen-Optimus 0.3132（主靶）/ Optimus matched-FT 0.2977 / frozen-FramePool 0.2956 / FramePool matched-FT 0.2300 / **V9-1a ensemble 0.3172**（两模式最优）。
+4. monitor 曲线：两模型 best-monitor 均在前 ~50 epoch 内达成（0.1279/0.1439 后不再改善）——与 from-scratch 对照的收敛模式一致，预算匹配验证。
+
+### 同班其他交付
+
+- **P0-3b closed NDCG@10（Table 4 缺口关闭，批次五十九附二）**：unguided 0.1180 / V5-guided 0.1240 / V8 专才 0.1187 / V8 joint 0.0273（hit-set 口径；76% 零命中源主导 = 覆盖约束第四独立证据；V8 joint 命中源最多 220 但排序最差 = 专才化伤害排序的生成线镜像）。
+- **定时监控部署**：TRAE 定时任务「V9-训练监控与终态收割」（ID 4cb0833e，每 30 分钟）——seed11 + bench-v9b 双线巡检 + 终态自动收割指引。
+
+### 在途
+
+- V9-1a seed 20260911（GPU3，epoch 3-4）+ bench-v9b（GPU2，epoch 1-2）——监控 cron 值守。
+- 下一班：双终态收割（3-seed 全量门判定 + D1/D2/D3）+ amendment 呈报。
+
+### 纪律
+
+- protected reads=0；matched-FT 协议与 from-scratch 对照逐字段对齐（预注册锚定）；产物 /mnt、代码 worktree + push。
