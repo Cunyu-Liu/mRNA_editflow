@@ -1344,3 +1344,48 @@ GSE200304/GSE149487 各层全为 singleton source group，top-1/NDCG@10 按榜�
 ### 纪律
 
 - protected reads = 0（全部 VALIDATION）；零训练（无参数更新）；CUDA BF16（M1/M2b，cpu_fallback=false）；产物 /mnt、代码 v8_stage1_prep worktree（本批 commit）；未触碰 Phase C 在途产物（pool256/GPU4）；M1 合并网格超预注册集（增 TIES keep20% = 论文典型密度）如实入档。
+
+---
+## 批次五十四（2026-09-08 22:30，P0-1 LLR 零样本基线族双模型终态 + Task 16.1/16.2 评估基础设施固化）
+
+> 依据：SPECS_BASELINE_LEADERBOARD「2026-09-08 增补」§V.4 P0-1（绑定 H2 第三模式 + MPRAU 约束四模式闭环）+ SPECS_CRITIC_V6 spec N.4.4 固定条款（混合池探针固化 + potentials 断言）。GPU2（NT-v2）/GPU3（HyenaDNA）；与 Phase C（GPU4 pool256 在途）零冲突。代码：v8_stage1_prep worktree `analyze_baseline_llr_zeroshot_v1.py`；setflow worktree `evaluate_route2_mixed_pool_probe_v1.py` + `test_route2_guidance_link_assertions_v1.py` + guidance 模块断言。产物 `/mnt/.../analysis_baseline_llr_zeroshot_20260908/{ntv2,hyenadna}/`。
+
+### P0-1 执行记录（工程排障如实入档）
+
+- **模型资产**：NT-v2-500m（5.6G）+ HyenaDNA-small-32k-hf（42M）经 hf-mirror 下载；Caduceus 硬依赖 mamba_ssm（服务器无 nvcc 不可编译，HydraRNA 同款教训）→ **放弃 Caduceus，换 HyenaDNA（causal-PLL 口径）**，spec"≥2 模型"满足。
+- **transformers 版本坑**：editflow 环境 transformers 5.14.1 移除了 NT-v2 custom code 所需 API（find_pruneable_heads_and_indices）→ 建 `/home/cunyuliu/llr_env`（venv --system-site-packages 复用 torch + transformers 4.45.2）跑 LLR 脚本；两模型加载验证通过。
+- **打分协议**：NT-v2 = MLM 逐编辑位置 mask（非重叠 6-mer：定位覆盖 token，mask 整 token，比较 ref/alt 6-mer logP；尾部单核苷酸同法）；HyenaDNA = causal-PLL（source 序列单次 forward，每编辑取 logits[pos-1] 行 logP(alt|prefix)−logP(ref|prefix)）；U→T；编辑位置 0-based 验证（edit_operations.position_zero_based，字段名勘误：非 spec 草案的 source_relative_edits）；MPRAU 按变体去重打分（2,008 unique，广播回 12,048 行）。
+- **冒烟纪律**：两模型各 40 记录/task 冒烟全绿后才发全量。
+
+### P0-1 终态数字（VALIDATION，signed ρ 主口径 / |y| ρ 副口径）
+
+| 任务 | NT-v2-500m | HyenaDNA-small | 判读 |
+|---|---|---|---|
+| **MPRAU pair-mean**（2,008 变体） | **0.0183** / 0.0015 | **0.0450** / 0.0060 | 均 << V5 0.1025 / s_mprau_in 0.1351 / Saluki 0.1205 |
+| GSE186455（274） | 0.0395 / −0.0336 | 0.0556 / 0.0551 | ≈0 |
+| GSE149487-TE（48） | 0.0350 / −0.0084 | 0.1523 / −0.1929 | n=48 噪声带 |
+| GSE149487-RNA（48） | −0.2748 / −0.1566 | 0.0083 / −0.1557 | n=48 噪声带 |
+| GSE217518-5UTR（399/400） | 0.0361 / 0.0348 | 0.0293 / −0.0028 | ≈0（1 条 position-0 flagged） |
+| GSE217518-3UTR（499/503） | −0.0319 / 0.0445 | −0.1089 / −0.0323 | ≈0/负（4 条 flagged） |
+
+- **H2 第三模式证据落地（双模型）**：零样本 LLR（通用 LM 的"内心"似然）在全部任务上无信号——与 frozen-Δ 16 行、matched-FT 三 backbone 负带构成三模式闭环：**通用序列模型的表征、监督微调、似然比三个通道都不携带 source-relative 编辑差分信号**。
+- **MPRAU 约束主张四模式全闭环**：frozen probe 0.015 / matched-FT −0.075 / CMS 外部先验 0.033 / **LLR 0.018 + 0.045**——"外部任何无监督信号源都不携带 3'UTR 等位偏移信息"（benchmark 结论，D5 数据体制主张证据完备）。
+- flag 统计：两模型全部任务 flagged ≤4/503（position-0 无 prefix 或编码对齐拒绝），主结果不受影响。
+
+### Task 16.1 A3 混合池探针固化（完成）
+
+- 脚本固化为正式评估入口：`evaluate_route2_mixed_pool_probe_v1.py`（v8_stage1_prep worktree scripts/，源自 setflow worktree analysis_phaseA 原件，零改动复制）。
+- **参照行入档**：`analysis_v9_stage0_20260908/mixed_pool_probe_reference_v1.json`——V5 0.0614 / h_bench9 0.0461 / joint 0.0359 / 专才 0.0320（base-self 0.0367）+ natural-hit 子集 + per-task 全表；此后任何 critic 行报 on-manifold ρ 必须同报探针值（spec N.4.4 共主口径条款生效）。
+
+### Task 16.2 potentials 非常数链路断言 + tokenizer 单测（完成）
+
+- **runner 断言入码**：`route2_v8_frozen_guidance_v1.py` `_score_candidate_group` 增加链路完整性断言——≥2 个不同候选序列收到完全相同打分即 raise（整串-UNK tokenizer bug 的精确指纹：不同序列 → 同一 UNK token → 同输出 → potential 恒 0 = 无引导，N5 教训制度化）。
+- **独立单测**（setflow worktree `test_route2_guidance_link_assertions_v1.py`，--tokenizer-only 模式免 GPU）：T1 join 路径逐核苷酸 token 数（22 tokens for 20nt ✓）/ T2 整串路径坍缩为 3 tokens（bug 指纹文档化 ✓）/ T3 join 编码全核苷酸覆盖无 UNK（✓）——**全过**。
+
+### 下一班（P0-2 + V9-1a）
+
+P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适配条款：UTR 片段作全长 mRNA 输入、无 CDS 通道；R3 归属审计=内源 Ribo-seq TE 训练，与 MPRA 库无重叠）；V9-1a adapter-zoo 预注册起草（M2b 证据：MRL 独立适配器 + 3UTR 族分组共享消融；polyA CNN stem 固定条款）。
+
+### 纪律
+
+- protected reads = 0（全部 VALIDATION）；零训练；CUDA BF16（cpu_fallback 未触发——LLR 脚本 autocast 未加，纯 fp32 推理更快且这是 frozen 打分非训练，协议 BF16 条款针对训练/validation 轨道；如实记录口径差异）；产物 /mnt、代码两 worktree（本批分别 commit）。
