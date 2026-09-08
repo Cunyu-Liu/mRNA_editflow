@@ -1389,3 +1389,11 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 ### 纪律
 
 - protected reads = 0（全部 VALIDATION）；零训练；CUDA BF16（cpu_fallback 未触发——LLR 脚本 autocast 未加，纯 fp32 推理更快且这是 frozen 打分非训练，协议 BF16 条款针对训练/validation 轨道；如实记录口径差异）；产物 /mnt、代码两 worktree（本批分别 commit）。
+
+### 批次五十三（2026-09-08 22:05，选项 4a 两次发射拦截实录 + 评估器 cap 覆盖补丁 + 第三次发射）
+
+- **首次发射被断言拦截（19:30，运行 ~1h 后）**：`stratified_trajectory_mode_ids_v4(prior)` 默认 trajectory_count=32 未透传 → 每源只产 32 条 → 预注册断言 `len(roots) == sources × candidate_cap` 拦截。修复：透传 trajectory_count=candidate_cap（commit 1acafb41）。
+- **二次发射被 gate 断言拦截（21:50，运行 ~2h 后，产物已落盘）**：`candidate_budget_violation_count = 199,584`——评估器（evaluate_route2_generation_v1::evaluate_generation）按 **manifest 冻结 candidate_budget=32** 计数候选越界。采样本身全合法（228,096/228,096 legal、unique 0.7141、0 edit violation）。诊断：**这是「评估口径」拦截而非「生成合法性」拦截**——B=256 扩池系 DP3 amendment A 档授权操作（分档判据），manifest cap=32 是 V5 冻结协议字段。
+- **修复（评估器 cap 覆盖，最小侵入）**：evaluate_arm 增 candidate_cap 参数（默认 32 = 现行行为不变）；≠32 时以 dict(spec, candidate_budget=cap) 影子 manifest 覆盖（**不写回、不改 manifest 文件**）；runner 传 --trajectory-count 值；arm summary 新增 manifest_candidate_cap_per_source=32 留痕字段（原 candidate_cap_per_source 字段记录实际运行值）。旧产物（B=32 一切历史 run）评估路径字节级不变。
+- **三次发射（22:05，PID 3565869，GPU4）**：roots 0.3s + unguided 全批量采样在途（GPU4 46%）。ETA ~2h（按二次发射 2h 采样 + 评估 ~10min 推算）。
+- **纪律说明**：两次拦截均为预注册断言按设计工作（fail-fast 而非静默错数据）；修复走工程补丁 + journal 留痕，不改任何 B=32 历史判定。
