@@ -1397,3 +1397,26 @@ P0-2 RiboNN frozen-Δ（clone Sanofi-Public/RiboNN + Zenodo 权重；输入适�
 - **修复（评估器 cap 覆盖，最小侵入）**：evaluate_arm 增 candidate_cap 参数（默认 32 = 现行行为不变）；≠32 时以 dict(spec, candidate_budget=cap) 影子 manifest 覆盖（**不写回、不改 manifest 文件**）；runner 传 --trajectory-count 值；arm summary 新增 manifest_candidate_cap_per_source=32 留痕字段（原 candidate_cap_per_source 字段记录实际运行值）。旧产物（B=32 一切历史 run）评估路径字节级不变。
 - **三次发射（22:05，PID 3565869，GPU4）**：roots 0.3s + unguided 全批量采样在途（GPU4 46%）。ETA ~2h（按二次发射 2h 采样 + 评估 ~10min 推算）。
 - **纪律说明**：两次拦截均为预注册断言按设计工作（fail-fast 而非静默错数据）；修复走工程补丁 + journal 留痕，不改任何 B=32 历史判定。
+
+---
+## 批次五十五（2026-09-08 22:15，P0-2 阻塞登记 + V9-1a adapter-zoo 预注册 FROZEN + 3-seed 发射）
+
+> 依据：SPECS_BASELINE_LEADERBOARD §V.4 P0-2 + SPECS_CRITIC_V6 N.4 双轨执行案 Task 12。代码：v8_stage1_prep worktree `run_route2_v9_adapter_zoo_v1.py` + `docs/paper/route2_v9_adapter_zoo_prereg_v1.md`（FROZEN）；watcher `~/monitor/v9_relaunch_watcher.sh`。
+
+### P0-2 RiboNN：BLOCKED_ON_USER_TRANSFER（如实登记，非 NOT_TESTABLE）
+
+- 代码可得性 ✓（GitHub Sanofi-Public/RiboNN 已 clone 至 external_model_assets/ribonn/，含 src/predict.py、data.py、config/conf.yml——78 人细胞系多任务 CNN+GRU，输入编码 = one-hot 4 通道 + codon 标注通道，pad_5_prime=False）。
+- **权重不可达**：Zenodo records/17258709（weights.zip，官方 Makefile 的 wget 源）服务器直连 Connection refused；hf-mirror 无 RiboNN 镜像（API 搜索空）。
+- 处置：登记 **BLOCKED_ON_USER_TRANSFER**（权重公开可得、仅网络中转问题——APARENT2/CMS 先例：用户 Mac 下载 → scp 至 `/mnt/.../external_model_assets/ribonn/tmp/weights.zip` → 解压 `models/human/{run_id}/state_dict.pth`）；到位后按 spec §V.4 P0-2 执行（frozen-Δ on GSE200304 + GSE149487-TE；输入适配条款：UTR 片段作全长 mRNA 输入、无 CDS 通道、codon 通道按序列隐式标注——RiboNN data.py 的 label_codons 按帧标注，UTR-only 输入的帧假设如实声明；native 三态 + 内源/报告基因口径差异声明 + R3 归属审计照走）。
+
+### V9-1a adapter-zoo：预注册 FROZEN + 发射
+
+- **预注册**（docs/paper/route2_v9_adapter_zoo_prereg_v1.md，v8 worktree）：冻结 V8-S Stage 1 trunk + 每任务 LoRA（r16 α32，全部 12 层 Wqkv/attn.dense/gated_layers/wo）+ 共享 LoRA（r32）+ **per-task 线性头**（M2b 证据：共享头 all-params 梯度余弦 −0.92~−0.96 vs backbone-only −0.12~−0.28）+ **polyA CNN stem**（从 Stage 1 H 拷贝 init、随适配器可训练；S trunk + H stem 嫁接失配风险登记，门② polyA ≥0.80 暴露即处置）+ task_id 确定性路由（domain_ids 直接索引，不学路由器）；训练 = V8 Stage 2 均衡适配同款（pair-delta MSE z-scored / DomainBalancedSampler / cell conditioning / AdamW 2e-5 cosine / 6 epochs / FINAL-EPOCH-6-FIXED / CUDA BF16）；判定门 = spec N.4.3 三门全量引用（①探针 per-task ≥ 历史最强 −0.005 ②on-manifold 9 任务表含 MPRAU >0.1351 CI 不跨零 ③V9-2 guided B2 原门）；A/B 共享方向消融（shared-A/shared-B）待主配置结果后另案（v1 只训 symmetric × 3 seeds，预注册留痕）。
+- **实现勘误（如实）**：冻结顺序 bug（先冻结 trunk 再 wrap，否则 LoRA 参数被 base.parameters() 冻结——trainable 白名单断言拦截）；stem state_dict 键前缀剥离；shared LoRA 独立 r32 参数组（首版误并入 task rank 桶）。
+- **冒烟**（30 步，GPU5）：init 136 keys（Stage 1 S）+ stem 8 keys（Stage 1 H）✓；可训练 33.0M（48 LoRA 模块 × [shared r32 + 9×task r16] + stem + embeddings + 9 heads）✓；训练 + 全 9 任务评估管线全绿；budget 700 steps/epoch × 6 = 4,200 步（~半日/seed）。
+- **发射**：seed 20260907（GPU2，PID 3617069）/ seed 20260915（GPU5，PID 3617696）训练中（step 150/200，loss 6.04/5.20 下降）；**seed 20260911 OOM 亡**（GPU3 被外部进程挤占：8.8G+2.45G 外部占用下我方 28.2G 时爆）→ **relaunch watcher 已部署**（`~/monitor/v9_relaunch_watcher.sh`：GPU3 ≥30G 空闲且无我方进程即自动重发；日志 v9_relaunch_watcher.log）——共享集群 OOM 教训（09-04 APA）复用方案。
+- 预计终态：seed 07/15 ~09-09 上午；seed 11 随 GPU3 释放。
+
+### 纪律
+
+- protected reads = 0；FINAL-EPOCH-6-FIXED；CUDA BF16（cpu_fallback_used=false）；产物 /mnt（v9_adapter_zoo_20260908/seed*/）、代码 worktree + push（本批 commit）；3 seeds 全报不作 seed 挑选；预注册门槛不事后改。
