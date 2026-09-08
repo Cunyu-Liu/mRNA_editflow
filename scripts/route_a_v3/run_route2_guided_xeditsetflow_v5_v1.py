@@ -557,14 +557,18 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
     source_limit = int(arguments.source_limit)
     if source_limit > 0:
         sources = sources[:source_limit]
+    candidate_cap = int(arguments.trajectory_count)
     _require(
         all(
             int(source["candidate_budget"])
             == int(validation_generation["candidate_cap_per_source"])
-            == 32
             for source in sources
         ),
-        "guided B2 candidate cap changed",
+        "guided B2 source candidate budget mismatch",
+    )
+    _require(
+        candidate_cap >= int(validation_generation["candidate_cap_per_source"]),
+        "trajectory count below frozen candidate cap",
     )
     validation_rows = load_projection_rows(
         [Path(config["validation_projection_path"])],
@@ -614,11 +618,36 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
     seeds: list[int] = []
     source_indices: list[int] = []
     decoder_seed_base = int(validation_generation["decoder_seed_base"])
+    started = time.time()
+    heartbeat_path = output_directory / "progress_heartbeat.jsonl"
+    heartbeat_modulus = max(1, len(sources) // 24)
+
+    def _heartbeat(label: str, done: int, total: int) -> None:
+        elapsed = time.time() - started
+        heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+        with heartbeat_path.open("a", encoding="utf-8") as hb:
+            hb.write(
+                json.dumps(
+                    {
+                        "arm": label,
+                        "done": done,
+                        "total": total,
+                        "elapsed_seconds": round(elapsed, 1),
+                        "rate_per_source": round(done / elapsed, 4) if elapsed > 0 else None,
+                        "eta_seconds": round((total - done) * elapsed / done, 1) if done else None,
+                    }
+                )
+                + "\n"
+            )
+            hb.flush()
+
     for source_index, (root, metadata, prior) in enumerate(
         zip(source_roots, source_metadata, tempered, strict=True)
     ):
         for trajectory_slot, mode_id in enumerate(
-            stratified_trajectory_mode_ids_v4(prior)
+            stratified_trajectory_mode_ids_v4(
+                prior, trajectory_count=candidate_cap
+            )
         ):
             roots.append(root)
             trajectory_metadata.append(metadata)
@@ -627,7 +656,9 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
                 decoder_seed_base + source_index * 1_000_003 + trajectory_slot
             )
             source_indices.append(source_index)
-    _require(len(roots) == len(sources) * 32, "guided B2 trajectory count changed")
+        if heartbeat_modulus > 0 and (source_index + 1) % heartbeat_modulus == 0:
+            _heartbeat("roots", source_index + 1, len(sources))
+    _require(len(roots) == len(sources) * candidate_cap, "guided B2 trajectory count changed")
     measured_rows = _read_jsonl(Path(config["measured_neighborhood_path"]))
     validate_measured_pool(measured_rows, "DEVELOPMENT", "CLOSED")
     full_manifest = load_source_manifest(
@@ -659,6 +690,7 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
             f"unguided_xeditsetflow_v5_{run_id}_pass{checkpoint_pass}"
             f"_seed{training_seed}"
         )
+        _heartbeat("unguided", 0, len(sources))
         if stop_rate_scale != 1.0:
             sampled = sample_many_setflow_v5(
                 model,
@@ -799,8 +831,11 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
         terminal_potentials: list[float] = []
         critic_forwards_by_source: dict[int, int] = {}
         critic_batches_by_source: dict[int, int] = {}
+        _heartbeat("guided", 0, len(sources))
         for source_index, source_row in enumerate(sources):
             critic.clear_source_caches()
+            if heartbeat_modulus > 0 and source_index % heartbeat_modulus == 0:
+                _heartbeat("guided", source_index, len(sources))
             batch_start = critic.model_batch_forward_count
             equivalent_start = critic.candidate_forward_equivalent_count
             first = source_index * 32
@@ -909,7 +944,7 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
         "arms_executed": arms,
         "source_count": len(sources),
         "source_limit": source_limit,
-        "trajectory_count_per_source": 32,
+        "trajectory_count_per_source": candidate_cap,
         "decoder_seed_base": decoder_seed_base,
         "mode_prior_temperature": mode_prior_temperature,
         "stop_rate_scale": stop_rate_scale,
@@ -964,6 +999,12 @@ def main() -> int:
         "--arms",
         default="unguided,guided",
         help="comma-separated nonempty subset of {unguided, guided}",
+    )
+    parser.add_argument(
+        "--trajectory-count",
+        type=int,
+        default=32,
+        help="trajectories (candidate budget) per source; must be >= frozen cap (32)",
     )
     parser.add_argument(
         "--source-limit",
