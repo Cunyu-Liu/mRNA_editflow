@@ -260,7 +260,11 @@ def main() -> int:
         ],
     }
     if args.allow_off_domain_collisions and not args.dry_stub:
-        scoring_calls = report.get("scorer", {}).get("source_scoring_calls", 0)
+        # real scoring-call count from the scorer object (the report dict in
+        # THIS script does not carry a "scorer" key -- the earlier revision
+        # read report["scorer"]["source_scoring_calls"] which defaulted to 0
+        # and made the fraction fallback 1.0 = false-positive rejection)
+        scoring_calls = int(getattr(scorer, "count", 0) or 0)
         # guard against the REAL whole-string-UNK fingerprint: near-constant
         # scores on EVERY group (including on-domain). Off-domain near-blind
         # ties for s_mprau_in collide on a minority of groups only.
@@ -271,6 +275,7 @@ def main() -> int:
         )
         report["collision_groups"] = collision_counter["collision_groups"]
         report["collision_group_fraction"] = frac
+        report["scoring_calls"] = scoring_calls
         if frac > 0.5:
             out_json.write_text(
                 json.dumps(
