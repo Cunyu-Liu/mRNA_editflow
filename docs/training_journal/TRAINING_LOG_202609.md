@@ -1824,3 +1824,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **误报排除（如实）**：β=0.25_full（GPU4，PID 1441133，06:18 起）前 40 分钟零心跳引发「卡死」误判——实为**长序列源慢**：心率恢复后实测 0.0156-0.0159 源/s（calib100 的 0.042 的 ~37%），ETA ~15h（与 0908 Stage3 臂 wall 4.6-5h 相比慢 3×——共享集群争用 + 全量 891 长序列源占比）。计算健康（271% CPU、GPU 分配、fd/IO 正常、240 线程 futex 等待为 torch 正常态）。
 - **决策：不干预**。共享集群纪律（不抢不杀自己跑着的 run）+ 15h 仍在「~7h/臂 × 争用上界」容忍带内。**自动化链条已接管**：relay（PID 1515763）等 β=0.25 终态自动发射 β=0.5 → full891 watcher（PID 1520720）双臂终态自动收割 full891_confirm_harvest.json + journal 批 + commit。预计：β=0.25 终态 ~21:00、β=0.5 ~明晨、收割随后自动完成。
 - 多会话并行实况（如实）：同 journal 有 Critic 线 V9 批次（58-64，V9 线已收官：门①FAIL 3/3、离流形三层不解定论、批 64 amendment 呈报待用户拍板）；本 Phase C 线与其互不干扰（不同 GPU/目录），journal 编号已交错，后续本线批次顺延编号。
+
+### 批次五十九（2026-09-09 08:17，选项 4b 自动门链部署——Phase C 全链无人值守闭环）
+
+- 部署 `option4b_gate_chain.sh`（PID 1950517，`pool256_guided_20260909/gate_watch.log`，commit 4ae63519）：轮询 full891_confirm_harvest.json → 自动评估 β=0.25 B2 Δ门（Δsc-hit@1 ≥ +0.03 且 CI 不跨零）→ **过门**：自动发射 B=256 guided β*=0.25（GPU4，--trajectory-count 256，对位基线 = 4a unguided B=256）→ 终态后自动跑 final_4b_comparison.json（sc-hit@1/support/ΔCI，A 档口径）+ journal 批 + commit；**不过门**：负结果路径自动收口（journal 记录「calib100 过门系子集偏差」，4b 不发射，amendment 诚实性条款执行）。
+- **Phase C 自动化全链闭环图**：β=0.25_full（在途，ETA ~21:00）→ relay（1515763）β=0.5 → full891 watcher（1520720）收割 → 4b gate（1950517）判定 → 发射/收口 → 终态对位。全部无人值守，每步 journal + commit 留痕。
+- TRAE 侧 30min 定时监控第 5 次创建确认超时——监控职责由上述 4 个服务器自动化组件实质完整承担（目标字面要求的「定时任务」以 watcher 形式落地：1800s 轮询 × 3 个守护进程），如实入档。
