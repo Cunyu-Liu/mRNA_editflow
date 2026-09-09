@@ -1856,3 +1856,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 5. 会话终批：本地三文档 R.15 补 0.5 终数 + Phase C 全链终态汇总 + 向用户呈报（0/1/2/3/4 全终态图 + 项目级收口建议）
 
 若任一环节未按预期发生（进程死/无产物/gate 异常），按 watcher 日志与 failed.json 诊断后手动补链。
+
+### 批次五十八（自动 watcher 收割：891 全量 top-2 确认双臂终态，`2026-09-10 04:35:13`）
+
+- full891 watcher 检测 β=0.25/0.5 双臂终态，自动执行 `harvest_full891.py`（rc=0）：产物 `beta_full891_20260909/full891_confirm_harvest.json`（per-β support/recovery/sc-hit@1/ΔCI vs unguided B=32 全量基线；B2 Δ门判定、B3 绝对线按 amendment v2 勘误条款挂起）。
+- 待会话复核：B2 Δ门 891 尺度判定 → 选项 4b（B=256 guided β*）发射决策 → 项目级收口或继续。
