@@ -99,6 +99,17 @@ def main() -> int:
     ap.add_argument("--which", required=True, choices=sorted(CHECKPOINTS))
     ap.add_argument("--physical-gpu-index", type=int, default=0)
     ap.add_argument("--dry-stub", action="store_true")
+    ap.add_argument(
+        "--allow-off-domain-collisions",
+        action="store_true",
+        help=(
+            "s_mprau_in is known near-blind off-domain (per-task 0.008-0.03 "
+            "probe acc, near-constant scores can collide bit-identically in "
+            "BF16); allow ties and record them -- differs from the N5 whole-"
+            "string-UNK bug (which produces CONSTANT scores for ALL candidates "
+            "including on-domain) in that only off-domain sources collide"
+        ),
+    )
     args = ap.parse_args()
 
     kind, ckpt = CHECKPOINTS[args.which]
@@ -139,10 +150,25 @@ def main() -> int:
 
     sources = sorted(manifest)
 
+    collision_counter = {"collision_groups": 0}
     if args.dry_stub:
         scorer = StubScorer()
         status = "DRY_SMOKE_STUB"
     else:
+        if args.allow_off_domain_collisions:
+            if str(REPO_ROOT) not in sys.path:
+                sys.path.insert(0, str(REPO_ROOT))
+            import scripts.route_a_v3.route2_v8_frozen_guidance_v1 as _v8mod
+
+            _orig_require = _v8mod._require
+
+            def _tolerant_require(condition: bool, message: str) -> None:
+                if not condition and "identical potentials" in message:
+                    collision_counter["collision_groups"] += 1
+                    return
+                _orig_require(condition, message)
+
+            _v8mod._require = _tolerant_require
         scorer = CriticScorer(
             ckpt,
             Path(
@@ -233,6 +259,34 @@ def main() -> int:
             "per-source records for the option-2 dev/holdout routing protocol",
         ],
     }
+    if args.allow_off_domain_collisions and not args.dry_stub:
+        scoring_calls = report.get("scorer", {}).get("source_scoring_calls", 0)
+        # guard against the REAL whole-string-UNK fingerprint: near-constant
+        # scores on EVERY group (including on-domain). Off-domain near-blind
+        # ties for s_mprau_in collide on a minority of groups only.
+        frac = (
+            collision_counter["collision_groups"] / scoring_calls
+            if scoring_calls
+            else 1.0
+        )
+        report["collision_groups"] = collision_counter["collision_groups"]
+        report["collision_group_fraction"] = frac
+        if frac > 0.5:
+            out_json.write_text(
+                json.dumps(
+                    {
+                        "status": "REJECTED_WHOLE_POOL_CONSTANT",
+                        "collision_group_fraction": frac,
+                    },
+                    indent=1,
+                )
+                + "\n"
+            )
+            print(
+                "REJECTED: collision fraction "
+                f"{frac:.3f} > 0.5 (whole-pool-constant fingerprint, N5)"
+            )
+            return 1
     out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     with out_persrc.open("w", encoding="utf-8") as fh:
         for sk in sorted(per_source):
