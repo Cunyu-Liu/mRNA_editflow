@@ -1861,3 +1861,7 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 
 - full891 watcher 检测 β=0.25/0.5 双臂终态，自动执行 `harvest_full891.py`（rc=0）：产物 `beta_full891_20260909/full891_confirm_harvest.json`（per-β support/recovery/sc-hit@1/ΔCI vs unguided B=32 全量基线；B2 Δ门判定、B3 绝对线按 amendment v2 勘误条款挂起）。
 - 待会话复核：B2 Δ门 891 尺度判定 → 选项 4b（B=256 guided β*）发射决策 → 项目级收口或继续。
+
+### 批次五十九（自动 4b 门裁决：β=0.25 891 尺度未过 B2 Δ门 → 4b 不发射，负结果路径收口）
+
+- full891 收割后自动门评估：β=0.25 Δsc-hit@1 未达 +0.03 且 CI 不跨零 → calib100 过门系子集偏差。选项 4b（B=256 guided）不发射（amendment 诚实性条款：不追加第六方向）。Phase C 全链终态 = 负结果收口（β 杠杆存在但 calib100 尺度不外推），详档 full891_confirm_harvest.json。
