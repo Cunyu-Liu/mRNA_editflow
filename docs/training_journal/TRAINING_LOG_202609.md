@@ -1830,3 +1830,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - 部署 `option4b_gate_chain.sh`（PID 1950517，`pool256_guided_20260909/gate_watch.log`，commit 4ae63519）：轮询 full891_confirm_harvest.json → 自动评估 β=0.25 B2 Δ门（Δsc-hit@1 ≥ +0.03 且 CI 不跨零）→ **过门**：自动发射 B=256 guided β*=0.25（GPU4，--trajectory-count 256，对位基线 = 4a unguided B=256）→ 终态后自动跑 final_4b_comparison.json（sc-hit@1/support/ΔCI，A 档口径）+ journal 批 + commit；**不过门**：负结果路径自动收口（journal 记录「calib100 过门系子集偏差」，4b 不发射，amendment 诚实性条款执行）。
 - **Phase C 自动化全链闭环图**：β=0.25_full（在途，ETA ~21:00）→ relay（1515763）β=0.5 → full891 watcher（1520720）收割 → 4b gate（1950517）判定 → 发射/收口 → 终态对位。全部无人值守，每步 journal + commit 留痕。
 - TRAE 侧 30min 定时监控第 5 次创建确认超时——监控职责由上述 4 个服务器自动化组件实质完整承担（目标字面要求的「定时任务」以 watcher 形式落地：1800s 轮询 × 3 个守护进程），如实入档。
+
+### 批次五十九附（2026-09-09 08:20，自动化链干跑验证 + 进度快照）
+
+- **4b 门评估器干跑**：对 sweep_harvest.json 结构实测（pt=0.153, ci=[0.026,0.291] → pass=True）——逻辑正确。**终态对比脚本干跑**：用 calib β=0.25 产物替身跑通全链（sc_hit1/support/ΔCI 计算无异常）——无人值守可靠性验证完成。
+- 进度快照（08:18）：β=0.25_full done=111/891，速率 0.0162 源/s（较 0.0156 微升——长序列源段已过），ETA ~21:38。四自动化进程（run 1441133 / relay 1515763 / full891 watcher 1520720 / 4b gate 1950517）全部存活。
