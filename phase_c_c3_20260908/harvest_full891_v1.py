@@ -95,11 +95,11 @@ def paired_bootstrap(deltas_support, deltas_hit, valid_pairs):
 def main() -> int:
     summary = json.loads((FULL / "guided_run_summary.json").read_text())
     guided_keys = set()
-    for line in (FULL / "generated_candidates.private.jsonl").open():
+    for line in (FULL / "guided" / "generated_candidates.private.jsonl").open():
         guided_keys.add(json.loads(line)["source_key"])
     meas = load_measured()
     ungu = load_pool(UNGU, keys=guided_keys)
-    guid = load_pool(FULL / "generated_candidates.private.jsonl")
+    guid = load_pool(FULL / "guided" / "generated_candidates.private.jsonl")
 
     mu = per_source_metrics(ungu, meas)
     mg = per_source_metrics(guid, meas)

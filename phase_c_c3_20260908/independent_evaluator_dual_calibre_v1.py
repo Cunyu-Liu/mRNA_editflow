@@ -32,7 +32,7 @@ HARNESS = V8 / "scripts/route_a_v3/run_route2_external_prediction_baselines_v1.p
 APARENT_SCRIPT = V8 / "scripts/route_a_v3/run_route2_aparent_baseline_v1.py"
 
 X = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v5")
-GUIDED = X / "beta_full891_20260909/beta_0.25_full/generated_candidates.private.jsonl"
+GUIDED = X / "beta_full891_20260909/beta_0.25_full/guided/generated_candidates.private.jsonl"
 UNGUIDED = X / "guided_b2_20260903/b2_full_891/unguided/generated_candidates.private.jsonl"
 MANIFEST = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/"
                 "development_validation_v1/source_eligibility.jsonl")
@@ -101,6 +101,10 @@ def main() -> int:
             fam["polya"].append(sk)
 
     # ---- Optimus (MRL) ----
+    # Optimus/APARENT one_hot expects DNA alphabet (A/C/G/T); pools are RNA (U)
+    def to_dna(s: str) -> str:
+        return s.replace("U", "T")
+
     opt = harness.Optimus5Prime(OPTIMUS_W).to(device).eval()
     mrl_rows = []
     with torch.no_grad():
@@ -108,9 +112,9 @@ def main() -> int:
             batch = fam["mrl"][start:start + 64]
             seqs = []
             for sk in batch:
-                seqs.append(src_seq[sk])
-                seqs.append(tie_aware_top1(guided[sk]) or src_seq[sk])
-                seqs.append(tie_aware_top1(unguided[sk]) or src_seq[sk])
+                seqs.append(to_dna(src_seq[sk]))
+                seqs.append(to_dna(tie_aware_top1(guided[sk]) or src_seq[sk]))
+                seqs.append(to_dna(tie_aware_top1(unguided[sk]) or src_seq[sk]))
             enc = harness.one_hot(seqs, device)
             vals = opt(enc).float().squeeze(-1).cpu().numpy()
             for i, sk in enumerate(batch):
@@ -132,9 +136,9 @@ def main() -> int:
 
     polya_rows = []
     for sk in fam["polya"]:
-        s = src_seq[sk]
-        g = tie_aware_top1(guided[sk]) or s
-        u = tie_aware_top1(unguided[sk]) or s
+        s = to_dna(src_seq[sk])
+        g = to_dna(tie_aware_top1(guided[sk]) or src_seq[sk])
+        u = to_dna(tie_aware_top1(unguided[sk]) or src_seq[sk])
         base = apa_delta(s)
         polya_rows.append({
             "source_key": sk,
