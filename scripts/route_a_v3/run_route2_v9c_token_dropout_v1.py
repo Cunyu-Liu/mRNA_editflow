@@ -96,37 +96,58 @@ def load_v9b_libraries() -> dict[str, tuple[list[dict], torch.Tensor, torch.Tens
 class TokenDropoutHook:
     """Zeroes encoder-output token vectors with prob p during training.
 
-    Applied as a forward hook on the frozen base encoder stack output; special
-    positions (CLS id 2 / SEP id 3 / PAD id 0 per tokenizer) are preserved.
+    Applied as a forward hook on the frozen base model output. The caller MUST
+    stash the input_ids before each model() call (HF BertModel is invoked with
+    kwargs only, so positional-hook args are empty -- the smoke run with
+    calls=0 caught this). Special positions (CLS 2 / SEP 3 / PAD 0) are
+    preserved. Eval is protected by both the enabled flag and grad-enabled
+    check.
+
+    Output handling: HF returns a ModelOutput; we replace its
+    last_hidden_state out-of-place (autograd-safe) and return the modified
+    object (a non-None hook return replaces the module output). Tuple outputs
+    (other call paths) are handled by rebuilding the tuple.
     """
 
     def __init__(self, p: float):
         self.p = float(p)
         self.enabled = False
         self.calls = 0
+        self.stashed_ids: torch.Tensor | None = None
 
-    def __call__(self, module, inputs, output):
+    def stash(self, input_ids: torch.Tensor) -> None:
+        self.stashed_ids = input_ids
+
+    def __call__(self, module, args, output):
         if not self.enabled or not torch.is_grad_enabled():
             return output
-        hidden = output[0] if isinstance(output, (tuple, list)) else output
-        if hidden is None:
+        if hasattr(output, "last_hidden_state") and output.last_hidden_state is not None:
+            hidden = output.last_hidden_state
+        elif isinstance(output, (tuple, list)) and torch.is_tensor(output[0]):
+            hidden = output[0]
+        else:
             return output
-        input_ids = None
-        for inp in inputs:
-            if torch.is_tensor(inp) and inp.dtype in (torch.long, torch.int64):
-                input_ids = inp
-                break
-        if input_ids is None or input_ids.shape != hidden.shape[:2]:
+        input_ids = self.stashed_ids
+        if (
+            input_ids is None
+            or not torch.is_tensor(input_ids)
+            or input_ids.shape != hidden.shape[:2]
+        ):
             return output
         special = (input_ids == 0) | (input_ids == 2) | (input_ids == 3)
         keep = (
             torch.rand_like(hidden, dtype=torch.float32) >= self.p
         ).to(hidden.dtype)
-        drop_mask = keep
-        drop_mask = drop_mask.masked_fill(special.unsqueeze(-1), 1.0)
-        hidden.mul_(drop_mask)
+        keep = keep.masked_fill(special.unsqueeze(-1).to(hidden.device), 1.0)
+        masked = hidden * keep
+        if hasattr(output, "last_hidden_state") and output.last_hidden_state is not None:
+            output.last_hidden_state = masked
+            self.calls += 1
+            return output
+        out_list = list(output)
+        out_list[0] = masked
         self.calls += 1
-        return output
+        return tuple(out_list) if isinstance(output, tuple) else out_list
 
 
 def train_batch(model, lib, idx, device, hook):
@@ -139,10 +160,13 @@ def train_batch(model, lib, idx, device, hook):
     cells = lib["cell_ids"][idx].to(device) if lib.get("cell_ids") is not None else None
     hook.enabled = True
     with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        hook.stash(src_ids.to(device))
         sp = model(src_ids.to(device), src_mask.to(device), dom, cells)
+        hook.stash(cnd_ids.to(device))
         cp = model(cnd_ids.to(device), cnd_mask.to(device), dom, cells)
         loss = torch.nn.functional.mse_loss((cp - sp).float(), targets)
     hook.enabled = False
+    hook.stashed_ids = None
     return loss
 
 
