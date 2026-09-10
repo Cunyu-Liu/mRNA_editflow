@@ -1939,3 +1939,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 
 - **发射**：B512@GPU5（PID 2980158，旧 watcher 遗留健康进程）+ B1024@GPU4（新 watcher 2987425）+ B256 seed16/17 副本排队 + v65_harvest.py 全门自动收割（B2 Δ 3-seed 稳健 + B512/1024 边际 + B3 0.55 绝对线）。工程注：watcher heredoc 引号 bug（修复 + 重启）导致 B512 短暂双发，重复进程因 output-dir 断言自杀（fail-fast 再工作），无污染。
 - **本批承接批 66 反思链**：V6.5 = 首个离线验证过 B2 门的方向（Δsc-hit@1 +0.034 CI[+0.021,+0.048]，oracle 等价）——在途验证 3-seed 稳健性与 B512/1024 覆盖边际曲线。
+
+### 批次六十七（自动 V6.5 收割：全臂终态，`2026-09-11 05:02:42`）
+
+- v65 watcher 全臂终态（B512/B1024/seed 副本×2）→ 自动执行 v65_harvest.py（rc=0）：产物 `v65_explore_select_20260910/v65_harvest.json`（amendment v2 全门：B2 Δ门 3-seed 稳健 + B512/1024 边际曲线 + B2-I 独立口径 + B3 绝对线）。
+- 待会话复核终判。
