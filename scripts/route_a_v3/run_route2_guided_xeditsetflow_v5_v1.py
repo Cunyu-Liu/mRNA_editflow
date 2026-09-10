@@ -814,6 +814,55 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
                 f"frozen_xeditcritic_v5_guided_xeditsetflow_v5_{run_id}"
                 f"_pass{checkpoint_pass}_seed{training_seed}"
             )
+        elif critic_kind == "retrieval":
+            import sys
+
+            sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+            from phase_c_d2_20260910.route2_d2_retrieval_critic_v1 import (
+                RetrievalCritic,
+                audit,
+                load_pool,
+            )
+
+            pool, comps, sids, _n = load_pool()
+            pool_report, pool = audit(pool, comps, sids)
+            _require(
+                bool(pool_report["gate1_pass"] and pool_report["gate3_pass"]),
+                "D2 retrieval pool decontamination hard gate failed",
+            )
+            audit_out = output_directory / "retrieval_pool_audit.json"
+            audit_out.parent.mkdir(parents=True, exist_ok=True)
+            audit_out.write_text(json.dumps(pool_report, indent=1))
+            critic = RetrievalCritic(pool, k=int(arguments.retrieval_k))
+            if arguments.combined_beta_v5 is not None and arguments.combined_beta_v5 > 0:
+                v5_checkpoint = Path(arguments.v5_critic_checkpoint)
+                _require(
+                    v5_checkpoint.is_file(),
+                    "combined mode requires the V5 critic checkpoint",
+                )
+                inner = FrozenXEditCriticV5(
+                    v5_checkpoint,
+                    Path(arguments.mrnabert_model),
+                    device,
+                    potential_minimum=float(transform["minimum"]),
+                    potential_maximum=float(transform["maximum"]),
+                )
+                base_potentials = critic.potentials
+                br = float(arguments.combined_beta_v5)
+
+                class _Combined(RetrievalCritic):
+                    def potentials(self, states, **kw):
+                        vals = base_potentials(states, **kw)
+                        v5_vals = inner.potentials(states, **kw)
+                        return [
+                            br * v + b for v, b in zip(vals, v5_vals, strict=True)
+                        ]
+
+                critic = _Combined(pool, k=int(arguments.retrieval_k))
+            method_id = (
+                f"retrieval_guided_xeditsetflow_v5_{run_id}"
+                f"_pass{checkpoint_pass}_seed{training_seed}"
+            )
         elif critic_kind == "v8":
             v8_checkpoint = Path(arguments.v8_critic_checkpoint)
             _require(
@@ -1052,7 +1101,7 @@ def main() -> int:
     parser.add_argument(
         "--critic-kind",
         default="v5",
-        choices=["v2", "v5", "v8"],
+        choices=["v2", "v5", "v8", "retrieval"],
         help=(
             "frozen guided-arm critic family; v5 is the pre-authorized "
             "substitution for the never-executed Critic V2 refit"
@@ -1067,6 +1116,19 @@ def main() -> int:
         "--v5-critic-checkpoint",
         type=Path,
         default=EXPECTED_XEDITCRITIC_V5_CHECKPOINT,
+    )
+    parser.add_argument(
+        "--retrieval-k",
+        type=int,
+        default=8,
+        help="D2 retrieval neighbours per source (prereg K)",
+    )
+    parser.add_argument(
+        "--combined-beta-v5",
+        type=float,
+        default=None,
+        help="D2 combined arm: weight of the V5 critic potential blended into "
+        "the retrieval potential (runner --beta acts on the blend)",
     )
     parser.add_argument(
         "--v8-critic-checkpoint",
