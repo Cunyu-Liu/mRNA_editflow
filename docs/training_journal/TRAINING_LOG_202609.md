@@ -1891,3 +1891,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **双口径正式判定（v1 §3.3 落地）**：基于 09-10 08:26 双口径产物（frozen Optimus MRL / APARENT polyA，891 全量，β=0.25 vs unguided）：**MRL Δ+0.0357 CI [+0.0024,+0.0662] 排零正（B2-I 独立口径门 PASS，门 = ≥+0.02 CI 排零）**；polyA n=20 不设门仅报告（跨零）。新增 **B2-I 门**与 verdict 语义。
 - **β=0.25 双口径终判（calibre-divergent）**：recovery 家族 B2 Δ门 FAIL（批 60）+ 独立口径 MRL PASS → 主判据 FAIL 维持、独立正增益并行入档；解释候选预登记（真功能增益 vs 判据盲区，待 D2 鉴别）。
 - **约束**：D2 检索条件化从发射起用 v2 口径；4b 负收口不受影响（B2 Δ门口径未变）；Phase C 已终态臂不重判。
+
+### 批次六十三（2026-09-10 09:25，D2 检索条件化预注册落盘——用户拍板「执行 D2 检索条件化」）
+
+- 触发：spec §4-D2 条款（q FAIL → 检索升主选）+ 用户拍板 + amendment v2 口径。预注册文档 `route2_setflow_d2_retrieval_conditioning_prereg_v1.md`（v8_stage1_prep worktree）。
+- 设计要点：V_retrieval = K 近邻（K=8，源 Hamming）measured 编辑的加权方向势能；**去污染硬门三条**（TRAIN only + component 0 交集已审计 + 序列级剔除验证源 measured）；臂设计 A 纯检索（β_r sweep）/ B 组合（β_r 最优 + β_c ∈ {0.25,1}）/ C 对照（V5 β=0.25 引用批 60）；**判定 = v2 双门**（B2 Δ + B2-I Optimus MRL 独立门）；两级 cohort（calib100 → 891）；终止条件（一级双 FAIL → 负收口不追加）。
+- 解释框架预冻结：检索信号与 critic 正交性检验（互补 vs 冲突）；若纯检索过 recovery 门 → 与 A2 冲突需重查（张力预登记）。
+- 下一步：RetrievalCritic 实现（同 runner critic 接口）→ 去污染审计落盘 → 8 源冒烟 → calib100 臂发射。
