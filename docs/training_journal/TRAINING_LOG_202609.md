@@ -1905,3 +1905,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **结构性发现（D2 假设前提否证级，如实入档）**：**全四任务域的「最近 TRAIN 源 Hamming 距离」= 42-62% 序列长度**（MPRAU 42-44% / MRL 44-54% / HL 57-61% / polyA 58-62%；随机基线 ~75%）——**TRAIN 与 VALIDATION 源近似独立随机，「相似源」在整个数据体制下不存在**。检索条件化的近邻相似性前提结构性不成立；与 q 模型 AUC 0.5528 构成同一数据体制约束的两种独立表现（学习的 measured 信号 vs 直接检索的 measured 信号都不足以跨越源间独立性）。
 - **执行决策**：按预注册协议走完第一级（冒烟 + calib100 A 臂 β sweep {0.25,0.5,1,2}）作协议完备性证据，预期负收口（解释框架第 3 条：measured 邻域信息双通道否证）；GPU 全忙（GPU4 被 V9c token-dropout 臂 + honghuiyang 进程占用）→ **低峰 watcher（PID 1782838）**守空闲卡自动执行，不抢在途。
 - amendment v2 状态同批：已生效（0a74a2ce）——B3 绝对线重定（B 档 0.55 / A 档 0.46）、B2-I 独立口径门（MRL Δ≥+0.02 CI 排零）、β=0.25 calibre-divergent 终判（recovery FAIL + Optimus MRL PASS +0.036 排零）。D2 判定从发射起即用 v2 口径。
+
+### 批次六十五（自动 D2 收割：calib100 A 臂 4β 终态，`2026-09-10 21:10:12`）
+
+- d2 watcher 全 4 β 臂终态 → 自动执行 d2_harvest.py（rc=1）：产物 `d2_retrieval_20260910/d2_calib_harvest.json`（per-β support / sc-hit@1 / ΔCI vs calib100 unguided B=32 基线，amendment v2 B2 Δ门判定）。
+- 第一级判定：****——若 ALLFAIL：按预注册终止条件负收口（measured 邻域双通道 [q 学习 + 检索] 否证闭合，H-D2 否证）；若任一 PASS：晋级 891 确认（B2 + B2-I 双门）。
+- 待会话复核与终批。
