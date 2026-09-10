@@ -103,5 +103,5 @@ out = {
     "gate": "amendment v2 B2 delta gate (calib tier); B2-I independent gate deferred to 891 tier",
     "rows": rows,
 }
-(D + "/d2_calib_harvest.json").write_text(json.dumps(out, indent=1))
+from pathlib import Path as _P; _P(D + "/d2_calib_harvest.json").write_text(json.dumps(out, indent=1))
 print(json.dumps(out, indent=1))
