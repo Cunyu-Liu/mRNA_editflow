@@ -1934,3 +1934,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **触发**：用户「负结果不代表放弃，从问题中反思」。结构反思结论：(1) 引导作用于转移速率 → 对池覆盖零贡献（机制盲区）；(2) 扩池提升覆盖但稀释排序（两目标冲突）；(3) **提交集 ≠ 生成集**——B2 只看提交 32 个。
 - **方案**（V6.5 explore-then-select，预注册 `route2_setflow_v65_explore_select_prereg_v1.md`）：B-shot 采样 → generation_score 排序 → top-32 提交。**离线核算（891 全量，B=256 已有产物，配对 bootstrap）**：Δsc-hit@1 **+0.034 CI [+0.021,+0.048]（B2 门过）**、Δsupport +0.049 [+0.034,+0.066]、Δrecovery +0.043 [+0.033,+0.054] 全排零；**= oracle 上界**（genscore 选回即最优）。B3 绝对线 0.543 vs 0.55 未过（−0.007，如实登记）。
 - **执行**：B=512/1024 扩展臂 + B=256 seed 副本 ×2（3-seed 稳健条款，防假阳性重演）+ B2-I Optimus 独立口径核算。GPU 低峰 watcher 自动调度。
+
+### 批次六十八（2026-09-11 00:05，V6.5 链条发射：B512/B1024 并行 + seed 副本 + 自动收割 watcher）
+
+- **发射**：B512@GPU5（PID 2980158，旧 watcher 遗留健康进程）+ B1024@GPU4（新 watcher 2987425）+ B256 seed16/17 副本排队 + v65_harvest.py 全门自动收割（B2 Δ 3-seed 稳健 + B512/1024 边际 + B3 0.55 绝对线）。工程注：watcher heredoc 引号 bug（修复 + 重启）导致 B512 短暂双发，重复进程因 output-dir 断言自杀（fail-fast 再工作），无污染。
+- **本批承接批 66 反思链**：V6.5 = 首个离线验证过 B2 门的方向（Δsc-hit@1 +0.034 CI[+0.021,+0.048]，oracle 等价）——在途验证 3-seed 稳健性与 B512/1024 覆盖边际曲线。
