@@ -54,6 +54,22 @@ END2TASK = _mod.END2TASK
 SCHEMA = "route_a_v3_route2_option2_committee_probe_persource.v1"
 
 CHECKPOINTS = {
+    "v9b_bench_control": (
+        "v9",
+        Path(
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/"
+            "xeditcritic_route_a/v9b_data_arm_20260909/"
+            "bench-v9b_seed20260907/v9b_epoch6.pt"
+        ),
+    ),
+    "v9c_drop0.1": (
+        "v9",
+        Path(
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/"
+            "xeditcritic_route_a/v9c_tokendrop_20260910/"
+            "bench-v9c_drop0.1_seed20260907/v9c_epoch6.pt"
+        ),
+    ),
     "full": (
         "v5",
         Path(
