@@ -1898,3 +1898,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - 设计要点：V_retrieval = K 近邻（K=8，源 Hamming）measured 编辑的加权方向势能；**去污染硬门三条**（TRAIN only + component 0 交集已审计 + 序列级剔除验证源 measured）；臂设计 A 纯检索（β_r sweep）/ B 组合（β_r 最优 + β_c ∈ {0.25,1}）/ C 对照（V5 β=0.25 引用批 60）；**判定 = v2 双门**（B2 Δ + B2-I Optimus MRL 独立门）；两级 cohort（calib100 → 891）；终止条件（一级双 FAIL → 负收口不追加）。
 - 解释框架预冻结：检索信号与 critic 正交性检验（互补 vs 冲突）；若纯检索过 recovery 门 → 与 A2 冲突需重查（张力预登记）。
 - 下一步：RetrievalCritic 实现（同 runner critic 接口）→ 去污染审计落盘 → 8 源冒烟 → calib100 臂发射。
+
+### 批次六十四（2026-09-10 19:00，D2 检索条件化实现 + 结构性发现 + 低峰 watcher 发射）
+
+- **实现链完成（commit 25b1ca9b）**：RetrievalCritic（K=8 近邻，长度归一化 Hamming 相似度，V = Σ sim·w·direction）+ runner `--critic-kind retrieval` 分支（含组合模式 --combined-beta-v5：β_r·V_retr + β_c·V_V5 混合势能）+ **去污染审计三硬门全过**（TRAIN 89,580 行：component 交集 0 / 验证源 measured 序列级剔除 0 个 / source 交集 0——审计产物 retrieval_pool_audit.json 随 run 落盘）。首次冒烟发现势能平坦（1/(1+d) 距离衰减压扁至 1e-4）→ 归一化修复（1−d/L）。
+- **结构性发现（D2 假设前提否证级，如实入档）**：**全四任务域的「最近 TRAIN 源 Hamming 距离」= 42-62% 序列长度**（MPRAU 42-44% / MRL 44-54% / HL 57-61% / polyA 58-62%；随机基线 ~75%）——**TRAIN 与 VALIDATION 源近似独立随机，「相似源」在整个数据体制下不存在**。检索条件化的近邻相似性前提结构性不成立；与 q 模型 AUC 0.5528 构成同一数据体制约束的两种独立表现（学习的 measured 信号 vs 直接检索的 measured 信号都不足以跨越源间独立性）。
+- **执行决策**：按预注册协议走完第一级（冒烟 + calib100 A 臂 β sweep {0.25,0.5,1,2}）作协议完备性证据，预期负收口（解释框架第 3 条：measured 邻域信息双通道否证）；GPU 全忙（GPU4 被 V9c token-dropout 臂 + honghuiyang 进程占用）→ **低峰 watcher（PID 1782838）**守空闲卡自动执行，不抢在途。
+- amendment v2 状态同批：已生效（0a74a2ce）——B3 绝对线重定（B 档 0.55 / A 档 0.46）、B2-I 独立口径门（MRL Δ≥+0.02 CI 排零）、β=0.25 calibre-divergent 终判（recovery FAIL + Optimus MRL PASS +0.036 排零）。D2 判定从发射起即用 v2 口径。
