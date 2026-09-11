@@ -1962,3 +1962,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **B2-I 独立口径（frozen Optimus MRL 652 源，top-1 delta 配对）——FAIL 全臂**：Δ = −0.016~+0.003 CI 全跨零。**诚实解读**：V6.5 的增益是 recovery 家族口径内的（探索宽度→覆盖→tie 块内 measured 命中率），**不转化为 Optimus 功能分数增益**——与 β=0.25 calibre-divergent（recovery FAIL + Optimus PASS）呈**镜像分歧**：两个正信号各自只在一个口径成立。B3 绝对线 0.55 未过（最高 0.545，差 0.005）。
 - **V6.5 终态定位**：B2 Δ门过（预注册主判据）+ 3-seed 稳健 ✓ + 边际曲线完整 + B2-I FAIL + B3 未过——**「口径内有效、跨口径不迁移」的诚实结论**；论文叙事 = 采样结构修正（探索-利用分离）作为唯一在 891 全量 3-seed 过 B2 门的方案，其增益属于覆盖-排序联合口径。产物：v65_harvest.json（修正版）+ v65_b2i_independent.json。
 - 定时监控任务（f2447169）已覆盖本链——本批为终态复核，可暂停该任务。
+
+### 批次七十（2026-09-11 13:40，用户拍板：论文正结果主线 + 组合实验预注册）
+
+- **叙事拍板入档**：论文 = **正结果主线**（V6.5 B2 过门成果为核心贡献 + 双口径镜像分歧现象学为机制章节 + 完整负结果链 [q/β/检索/D2/扩池] 作方法论支撑层）。
+- **组合实验预注册**（`route2_setflow_comb_mechanism_prereg_v1.md`）：2×2 机制矩阵（A 基线 / B 纯引导 / C 纯探索 / **D 组合=B256×β0.25×genscore选回**——唯一新采样格）；三口径全测（recovery 家族 / sc-hit@1 / Optimus 独立）；假设 H-add/H-int/H-ind 判定规则发射前冻结；两级设计（calib100 → 891+3seed）。
+- 机制背景：口径镜像分歧（V6.5 recovery PASS+Optimus FAIL vs β=0.25 recovery FAIL+Optimus PASS）——叠加性是机制正交性的直接检验，也是正结果主线「机制章节」的核心实验。
