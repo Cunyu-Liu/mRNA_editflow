@@ -189,3 +189,12 @@
 - MRL 秩亏重新发现：Pearson 0.60 vs Spearman 0.31（optimus/framepool）；E3 互证：MRL 桶 0.07→0.81、polyA 0.03→0.55、MPRAU-rnafm −0.02→0.11（M3 跨三域复现）
 - E5-b：280K↔MRL JS 0.053/长度比 1.00 与 APA↔polyA JS 0.035 是两处强对齐；record 级 TV-dist vs |z-resid| ρ=0.048（记录级不成立，任务级现象）
 - 待执行：E2（表征敏感度）/E4（编辑扫描曲面，MRL 重尾为最高优先）/E5-c
+
+<!-- 2026-09-12 p-axis-wave2 -->
+## 2026-09-12 P 轴 Wave 2（E2/E4 推理级 GPU，零训练）
+
+- 产物：experiments/analysis_delta_failure_mechanism_e2_e4/（e2_e4_results.json + SUMMARY + 脚本）
+- E4 MRL 编辑曲面：FramePool 粗糙度比 72.5（M4 极端案例）/ Optimus 1.39（幅度正常、方向噪声）；邻位自相关均 0.19（不平滑）；top5% 编辑仅 5-12% 能量（无功能位点集中）
+- E2 RNA-FM polyA：PAS hotspot 富集 Fisher p=1.0（26 source，hot fraction 0.058 ≈ 机会）→ M2 成立（敏感度热点不在功能 motif）；corr 部分结构不适配如实入档
+- 四假设 M1/M2/M3/M4 全部获直接或交叉证据（不互斥，分域主导）；方差归因表数据齐 → Table 6 机理列 + Discussion 素材就绪
+- 下轮：E5-c 扩展 + 论文灌入
