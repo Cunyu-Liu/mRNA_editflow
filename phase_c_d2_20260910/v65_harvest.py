@@ -102,7 +102,7 @@ for tag, path in ARMS.items():
         "d_sc_hit1_point": pt,
         "d_sc_hit1_ci95": ci,
         "b2_gate_pass": bool(pt >= 0.03 and ci[0] > 0),
-        "b3_absolute_055": bool((sum(vs) / len(vs)) if vs else 0 >= 0.55),
+        "b3_absolute_055": bool(vs and (sum(vs) / len(vs)) >= 0.55),
         "d_support_point": sum(d_sup) / len(d_sup),
         "d_support_ci95": bci(d_sup),
         "d_recovery_point": sum(d_rec) / len(d_rec),
