@@ -204,7 +204,7 @@ def sample_one_source_setflow_v5_guided(
         "guided SetFlow V5 beta must be finite and nonnegative",
     )
     _require(
-        len(seeds) == 32 and len(mode_ids) == 32,
+        len(seeds) == len(mode_ids) == int(arguments.trajectory_count),
         "guided source trajectory budget differs",
     )
     endpoint_id = str(source_row["endpoint_id"])
@@ -912,13 +912,13 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
                 _heartbeat("guided", source_index, len(sources))
             batch_start = critic.model_batch_forward_count
             equivalent_start = critic.candidate_forward_equivalent_count
-            first = source_index * 32
+            first = source_index * candidate_cap
             terminals, potentials = sample_one_source_setflow_v5_guided(
                 model,
                 source_roots[source_index],
                 source_metadata[source_index],
-                mode_ids[first : first + 32],
-                seeds[first : first + 32],
+                mode_ids[first : first + candidate_cap],
+                seeds[first : first + candidate_cap],
                 source_row=source_row,
                 critic=critic,
                 beta=beta,
