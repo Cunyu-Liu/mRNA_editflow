@@ -179,3 +179,13 @@
   }
  }
 }
+<!-- 2026-09-12 p-axis-wave1 -->
+## 2026-09-12 P 轴首轮执行（E0/E1/E3/B2/E5-a/E5-b，零训练）
+
+- 产物：experiments/analysis_delta_failure_mechanism_e0_e1_e3_b2/（mechanism_results{,_v2,_v3,_v4}.json + SUMMARY + 脚本）
+- 交叉验证：MPRAU pair-mean 0.0180/0.0147/0.1205、MRL 0.3132/0.2956 与榜单逐位一致；23 组合 join 记录数吻合
+- E0-1：窗口外编辑 = 0/23（协议干净）；runner docstring "max 164nt" 措辞勘误（GSE149487 实际 46-837nt，chunk 阈值未触发，无数值影响）
+- E1 三重分解：21/23 噪声可解释（M1 主因）；GSE149487 两行 = LOSO probe 幅度失控（var 比 57-226，读出头外推失败而非表征缺陷）；TE200304__utrlm 唯一超噪声界（贴界登记）
+- MRL 秩亏重新发现：Pearson 0.60 vs Spearman 0.31（optimus/framepool）；E3 互证：MRL 桶 0.07→0.81、polyA 0.03→0.55、MPRAU-rnafm −0.02→0.11（M3 跨三域复现）
+- E5-b：280K↔MRL JS 0.053/长度比 1.00 与 APA↔polyA JS 0.035 是两处强对齐；record 级 TV-dist vs |z-resid| ρ=0.048（记录级不成立，任务级现象）
+- 待执行：E2（表征敏感度）/E4（编辑扫描曲面，MRL 重尾为最高优先）/E5-c
