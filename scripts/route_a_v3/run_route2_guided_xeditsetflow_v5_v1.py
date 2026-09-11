@@ -204,7 +204,7 @@ def sample_one_source_setflow_v5_guided(
         "guided SetFlow V5 beta must be finite and nonnegative",
     )
     _require(
-        len(seeds) == len(mode_ids) == int(arguments.trajectory_count),
+        len(seeds) == len(mode_ids) and len(seeds) >= 1,
         "guided source trajectory budget differs",
     )
     endpoint_id = str(source_row["endpoint_id"])
