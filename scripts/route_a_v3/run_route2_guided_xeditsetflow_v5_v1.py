@@ -957,6 +957,7 @@ def execute(arguments: argparse.Namespace) -> dict[str, Any]:
             manifest,
             measured_rows,
             measured_top_k=measured_top_k,
+            candidate_cap=candidate_cap,
             compute={
                 "trunk_forwards": trunk_forwards,
                 "mode_head_forwards": trunk_forwards * int(model.mode_count),
