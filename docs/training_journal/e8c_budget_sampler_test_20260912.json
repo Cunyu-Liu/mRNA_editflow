@@ -1,0 +1,56 @@
+{
+ "schema": "e8c_budget_sampler_simulation.v1",
+ "date": "2026-09-12",
+ "protocol": "zero-training simulation, 50 trials, 32 samples/src, 81 polyA sources",
+ "context": "polyA measured = local dense rewrites (median 7 edits, span median 8nt); local window sampling exploits this structure",
+ "results": {
+  "5__uniform": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "5__local_W16": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "5__local_W20": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "7__uniform": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "7__local_W16": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "7__local_W20": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "8__uniform": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "8__local_W16": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "8__local_W20": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "10__uniform": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "10__local_W16": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  },
+  "10__local_W20": {
+   "support_mean": 0.0,
+   "support_std": 0.0
+  }
+ }
+}
