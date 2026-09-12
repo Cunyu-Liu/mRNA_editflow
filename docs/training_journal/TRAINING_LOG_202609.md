@@ -2081,3 +2081,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - seed16/17 首心跳预期 ~08:00（main 同期 27.3Ks/37 源节奏；当前已 3.6h 计算）。
 - **交接终版快照落档**：CURRENT_HANDOVER_STATUS_20260913.md §6（在途唯一项 + 四项就绪链 + 发射命令 + 终态后顺序 + 本会话产出/救场/commit 清单）——接班人一键入口。
 - 监控闭环：定时任务每 12h + 双 watcher + journal 批次连续记录（78-90）。
+
+### 批次九十一（2026-09-13 05:20，seed 臂 GPU 共享态观测 + 健康证据链第三次复核）
+
+- **GPU 上下文变化**：GPU4 新增外部用户进程（honghuiyang 2309686，DMCL benchmark）与 seed17 共享；GPU3 外部 1805731 与 seed16 共享；GPU5 main 独占。seed 臂 SM 5-68% 波动（活跃），CPU jiffies 12s 采样 3036-3561（推进）——**首心跳延迟系共享卡吞吐减半 + 37 源批次写入设计叠加，非卡死**（判据与批次十二/八十五一致）。
+- main 心跳 148/891（0.0022/s，ETA 3.9 天）维持；seed16/17 首心跳预计 ~08:00-10:00（共享态下可能顺延至午后）。
+- 监控无 NEEDS_ATTENTION；双 watcher 健康（harvest 3.4h / polya 41m）。
