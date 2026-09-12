@@ -2006,3 +2006,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **发现并修复潜伏 bug**：tier-1 收割的 `optimus_status: OPTIMUS_FAILED NoneType` 根因 = harness 动态加载缺 `sys.modules["harness"] = harness` 注册（tier-1 事后用独立 comb_optimus.py 绕过）——tier-2 脚本原样复刻了同一缺陷。修复补上注册行（setflow worktree commit 1e81f823）+ Optimus forward 冒烟验证（cuda:0 加载+推理 OK）。
 - **意义**：tier-2 终态收割时三口径（recovery 家族 + sc-hit@1 + Optimus 独立口径）将在同一次运行内完整产出，无需事后补跑。
 - dry-run 验证脚本：/tmp/validate_comb_tier2_harvest_dryrun.py（只读，不写 /mnt）。
+
+### 批次八十一（2026-09-13 01:55，D16-C 步骤 4 冒烟全链 PASS：runner 就绪，等 D891 终态发射）
+
+- **runner**（`run_route2_d16c_probe_v1.py`，amendment §6 步骤 4-5 的执行载体）：V5 终态 checkpoint 续训（170,481,957 参数与官方一致）+ within-source 合成增强（H1 硬条款：合成行从 Huber 与 ranking pairs 双通道排除）+ V5 pass3-8 形态 within-source 软排序（w=0.5）+ FINAL-EPOCH-FIXED + CUDA BF16 硬门（不可用即退出）。
+- **前向复用官方 V5 frozen-guidance 机制**（records_from_projection_rows → Dataset/Collator → XEditCriticV4）：tokenization/edit bundle/vocabs/study calibration 与官方 V5 打分 bit 一致，唯一新元素 = 梯度流（bottom-six 仍走 frozen cache 路径）。
+- **冒烟迭代三连**（如实）：① smoke_v2 在 GPU6 4.75GB MIG 上 batch 32 OOM（符合 MIG 6/7 纪律认知）；② smoke_v4 暴露 eval 混源 batch 违反 potentials 合同（source+context 必须一致）→ 修复分组键（source_seq, assay, context）三元组；③ smoke_v7 全链 PASS（5 步训练 + MRL eval 0.091（200 行子集合理值）+ polyA eval 逻辑过）。GPU7 也已被外部重配置为 4.75GB 小切片（3g.20gb 不复存在）→ 正式探针臂需整卡（batch 16 约需 12-16GB）。
+- **发射条件**：D891 tier-2 三臂终态（amendment §6 步骤 1 串行条款，ETA 09-18）+ 整卡显存（GPU3/4/5 任一释放后）。冒烟产物 smoke_v1-v7 留 /mnt 证据。
