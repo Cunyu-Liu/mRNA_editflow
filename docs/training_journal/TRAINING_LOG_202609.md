@@ -2107,3 +2107,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **early-launch watcher（PID 2834472）**：D891_main 终态检测（guided_run_summary.json）→ GPU5 实际空闲确认（used ≤2GB）→ 自动发射 D16-C 探针臂（GPU5，epochs 6 / batch 16，标准参数）→ PID 落盘 probe_pid.txt。main 进程无终态消失时 ALERT（不自动动作）。
 - **三 watcher 值守体系成型**：harvest（三臂终态→终判收割）+ polya（终判后→polyA D 行）+ early-launch（main 终态→D16-C 提前发射）——全周 GPU 零空转 + 全部终态动作自动化。
 - 时序：main ~09-15/16 终态 → D16-C 探针（~6 GPU·h）立发 → seed 臂 ~09-17/18 终态 → tier-2 终判 → D16-C backtest + G 门收割 → 周报回填。
+
+### 批次九十五（2026-09-13 07:30，容灾补强 + 交接 goal 条款逐条自检通过）
+
+- **服务器 crontab 恢复**（每 2h status.log 快照：时间 + GPU 表 + 三臂进程表）——三 watcher + TRAE 定时任务之外的第四层观测（watcher 全灭时仍有线索；此前 crontab 已空、status.log 停在 09-08，本次补齐）。
+- **watcher 竞态复核**：early-launch（GPU5 分配）与 harvest（无 GPU 分配）无竞态；polya D 行用 GPU6（APARENT 推理 <4.75GB，批次八十七已验证）✓。
+- **goal 条款八条逐条自检通过**（spec 更新 / 多 GPU 并行 / CUDA 硬门 / 四层监控 / 冻结验收门 / 31 commit push / 产物分离 / journal+周报记录）。
