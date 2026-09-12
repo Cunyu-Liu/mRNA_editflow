@@ -1989,3 +1989,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **工程修复三连（如实入档）**：① 首发因 runner 无 --decoder-seed-base CLI 参数失败（rc=2 unrecognized argument）→ 复刻 V6.5 seed 副本模式：override config 文件注入 decoder_seed_base（2026091601/2026091701，config_comb_seed16/17.json 落盘 /mnt 产物目录）；② 覆盖 config 与第一次失败进程日志混淆确认（FileNotFoundError 系首发失败残留 append 日志，非当前进程）；③ nohup cd 作用域问题修正（(cd $W && nohup ...) 子 shell 隔离）。
 - **确认**：三进程存活且心跳推进（roots 888/891 完成、guided arm 0/891 起步）、GPU3/4 各占 ~17GB、%CPU 230-256（与 main 臂相当）；cpu_fallback_used=false 待终态 run_summary 确认（历史模式一致）。
 - **journal 补充**：串行 watcher 的 run_arm 逻辑本身无错误，问题在「排队而非并行」设计——18 天 vs 6 天的差距。
+
+### 批次七十九（2026-09-13 01:25，D16-C 执行清单步骤 2-3 完成：数据管线 + 单测 7/7 绿）
+
+- **数据管线**（`scripts/route_a_v3/build_route2_within_source_augmentation_v1.py`，amendment §6 步骤 2）：MRL P0 臂构建完成——498 源 × 32 cand/源（实测 2,443 + 合成 13,493，amendment 预估 ~13,500 吻合）；结构键按 D15-2 协议（n_edits × window-block 8）从各源实测邻域采样，窗内位置/替换碱基随机；seed 20260913 固定 + synthetic_trace.jsonl 逐源落盘。
+- **H1 硬条款结构验证**（步骤 3）：合成行无任何回归标签字段（direction_normalized_delta/delta/label/y/target/measured_value/outcome 全缺省，h1_label=null + loss_weight=0.0 显式携带）——防循环污染设计成立。
+- **泄漏审计**：合成候选 vs VALIDATION 受保护实测（MRL 全 split）exact-match flagged=0（PASS）；单测重算复核一致。
+- **单测 7/7**（`tests/route_a_v3/test_route2_d16c_within_source_augmentation_v1.py`）：H1 无标签 / 候选≠源 / 泄漏重算 0 / trace 完整性 / 确定性 / 密度目标 32 / protected_reads=0。
+- **如实入档（结构键覆盖）**：源级结构键 ≥5 的源 103/498（20.7%）——合成按实测画像采样（零自由裁量），键多样性受数据本体约束；amendment §7「结构键过窄」风险条款继续适用（G 门判定不受影响，单列备注）。
+- **产物**：/mnt/.../experiments/xeditcritic_d16c/{within_source_augmentation_mrl_v1.jsonl, synthetic_trace_mrl_v1.jsonl, leak_audit_mrl_v1.json}。
+- **发射门**：步骤 5（探针臂 6 GPU·h）严格等 D891 tier-2 终态收割后（amendment §6 步骤 1 串行条款）——预计 09-18。
