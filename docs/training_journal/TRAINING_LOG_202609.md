@@ -2020,3 +2020,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **修复**：eval_task 入口清空 memo（`critic._potential_memo.clear()`）。
 - **验证（判决性）**：权重扰动测试——对模型首个参数加 N(0,0.02) 噪声后重跑 eval，输出立即变化（0.408→0.251 等，EVAL_REFLECTS_CURRENT_WEIGHTS=True）→ eval 路径确认反映当前权重。此前 smoke_v8/v9 两 epoch 数值相同系 max-steps 语义下 epoch 2 零训练步（权重未变），非 bug 表现。
 - commit 已 push；D16-C 探针臂发射条件不变（D891 终态 + 整卡）。
+
+### 批次八十三（2026-09-13 02:25，RiboNN 下载校验根因修复：EOCD 假校验 → md5 权威校验）
+
+- **发现**：本地续传循环（retry2.sh）到达全量 207,395,960 字节后校验失败并从零重启——其 EOCD 尾部签名检查（`tail -c4 == 06054b50`）是**错误假设**：Zenodo 该 zip 的 EOCD 记录不在文件末尾（服务端文件末尾带额外字节，range 请求实证 EOCD 在 offset 207395904-918 处、后跟 4 字节 `5b0c0000`）。旧循环会无限重启、永远无法完成。
+- **修复**：权威校验改用 Zenodo API 的 md5 checksum（`dd088ee2feffcda6ce26124a471a140f`，records/17258709 files 元数据）——新循环 ribonn_md5_loop.sh（同续传逻辑 + size+md5 双校验 + scp + 解压到 weights_extracted/）；旧 EOCD 循环已停。
+- **A100 残件复核**：服务器上现存 weights.zip（92,567,440 字节，md5 37516b31...）确证为 09-09 截断残件，完整版到位后将被覆盖。
+- RiboNN 为 TE 域外部行（baseline spec 6.5.2），不阻塞本周主线（COMB tier-2 / D16-C）。
+- 工程教训入档：二进制完整性校验用发布方权威 checksum（md5/sha256），不要假设文件格式布局。
