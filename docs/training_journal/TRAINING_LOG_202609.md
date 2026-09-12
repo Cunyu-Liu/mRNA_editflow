@@ -2051,3 +2051,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **科学读数（对比同层参照行）**：与 RNA-FM gse200304_te 0.0009 / UTR-LM 0.0113 同量级（±0.01 带内）——**全转录本 TE 模型在 3'UTR 片段差分任务上同样无信号**，H2「绝对值 SOTA 模型在 source-relative delta 上失效」的 TE 族证据链补上第四个模型家族（CNN 端到端 vs 表征探针两种范式都失效）。上下文失配口径（endogenous full-transcript vs MPRA fragment）已在 caliber_declarations 声明。
 - **产物**：/mnt/.../experiments/analysis_ribonn_frozen_te_20260913/（frozen_delta_results.json + 4 任务 predictions.jsonl）。
 - RiboNN 线收口：下载（批次八十三/八十四）→ frozen-Δ（本批）→ spec 6.5.2 H3 地图 TE 域补格完成。
+
+### 批次八十七（2026-09-13 04:05，COMB tier-2 polyA 第三口径补齐：A/B/C 行出数 + D 行自动化挂接）
+
+- **预注册 §3 第三口径**（polyA APARENT n=20 仅报告）此前在 comb_tier2_harvest.py 中缺失——补 `phase_c_d2_20260910/comb_tier2_polya_aparent.py`（frozen APARENT tie-aware top-1，cut 80-105，与 dual_calibre.beta025 同款 calibre）。
+- **A/B 行逐位对账 PASS**：A=0.16150 / B=0.23280 与 beta_full891 independent_evaluator_dual_calibre.beta025.json 完全一致（脚本正确性判决性验证）。
+- **C 行首览**：+0.0596（报告行，无门）——探索臂在 polyA 独立口径上低于 A/B（B 的 β 引导在 polyA 独立口径的 +0.23280 仍是四臂最高，与 B2-I 的 MRL 侧现象构成 polyA 镜像）。
+- **D 行自动化**：polya watcher（PID 1804802）三臂终态 + comb_tier2_harvest.json 出现后自动补 D 三行（GPU6，报告行）。
+- commit（setflow）已 push；watcher 脚本 /tmp/comb_polya_watcher.sh。
