@@ -30,7 +30,7 @@ Protocol reuse (no new caliber):
 Input adaptation (unchanged from the te-family pipeline, declared per model in
 frozen_delta_results.json): RNA-FM T->U tokenizer, fp32 mean-pool over
 non-special tokens, >1000 nt chunking policy (not triggered here: P1 task max
-sequence length is 164 nt - far under the 1024-token limit, so no truncation),
+sequence length across P0+P1 tasks reaches 837 nt (GSE149487) - under the 1000-nt chunk threshold, so no truncation),
 length-sorted batches <=32 sequences / <=8192 tokens; UTR-LM BOS token layer-6
 representation (rotary positions, no hard length limit), batches <=128
 sequences / <=16384 tokens.
@@ -432,7 +432,7 @@ def main() -> int:
                 ),
                 "batching": "length-sorted, <=32 sequences, <=8192 tokens",
                 "p1_length_note": (
-                    "P1 task max sequence length 164 nt - chunking/truncation never triggered"
+                    "P1 generalist tasks reach 837 nt (GSE149487); P0 te-family tasks 164 nt - chunking/truncation never triggered"
                 ),
             }
             if model_key == "rnafm"
@@ -445,7 +445,7 @@ def main() -> int:
                     "length-sorted, <=128 sequences, <=16384 tokens "
                     "(memory adaptation; results identical to count batching)"
                 ),
-                "p1_length_note": "P1 task max sequence length 164 nt - no length constraint reached",
+                "p1_length_note": "P1 generalist tasks reach 837 nt (GSE149487) - under 1000-nt chunk threshold, no length constraint reached",
             }
         )
         model_stats[model_key] = stats
