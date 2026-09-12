@@ -1,0 +1,50 @@
+{
+  "schema_version": "p_axis_wave4_shared_bias.v1",
+  "date": "2026-09-12",
+  "zero_training": true,
+  "protected_reads": 0,
+  "artifacts": {
+    "mrl_partial_corr_probe": "/mnt/.../analysis_delta_failure_mechanism_wave3/mrl_partial_corr_probe.json",
+    "mrl_shallow_control_probe": "/mnt/.../analysis_delta_failure_mechanism_wave3/mrl_shallow_control_probe.json",
+    "mrl_fp_op_magnitude_sign": "/mnt/.../analysis_delta_failure_mechanism_wave3/mrl_fp_op_magnitude_sign.json",
+    "mrl_shared_bias_probe_v2": "/mnt/.../analysis_delta_failure_mechanism_wave3/mrl_shared_bias_probe_v2.json",
+    "e5d_attribution_heatmap": "/mnt/.../analysis_delta_failure_mechanism_e0_e1_e3_b2/e5d_attribution_heatmap.json"
+  },
+  "findings": {
+    "partial_corr_given_dy": {
+      "framepool_vs_optimus": 0.840,
+      "framepool_vs_rnafm": 0.075,
+      "optimus_vs_rnafm": 0.093,
+      "verdict": "TRUE shared bias only between the two 280K-trained CNNs; raw resid corr of rnafm pairs (0.76-0.81) is dy-dominance artifact; Wave3 residual matrix correction required"
+    },
+    "shallow_control": {
+      "fp_vs_op_partial_given_dy_plus_shallow": 0.836,
+      "verdict": "shared bias is NOT a shallow-statistic proxy (survives shallow-feature control)"
+    },
+    "half_split_stability": {"mean": 0.847, "std": 0.022, "n_splits": 5},
+    "magnitude_sign": {
+      "magnitude_corr": 0.642,
+      "sign_agreement_top10pct": 0.959,
+      "magnitude_corr_top10pct": 0.927,
+      "verdict": "shared bias is magnitude-dominated, near-perfect sign agreement on large effects"
+    },
+    "shared_bias_shallow_learnability": {
+      "shared_cnn_bias_ridge_rho": -0.053,
+      "verdict": "shared component is medium-depth (not linearly available from shallow features) - consistent with shared trained prior"
+    },
+    "e5d_large_effect_buckets": {
+      "MRL_optimus": [0.071, 0.814],
+      "MRL_framepool": [0.008, 0.788],
+      "polyA_rnafm": [-0.036, 0.615],
+      "polyA_utrlm": [0.024, 0.546],
+      "verdict": "large-|dy| bucket rho jump is universal; signal concentrated in large-effect decile (M3)"
+    },
+    "literature_support": [
+      "Sample 2019 (NBT, GSE114002): Optimus trained on 280K random 5'UTR MRL library",
+      "Karollus 2021 (PCB): FramePool trained on same GSE114002 280K data",
+      "Gontijo-Lopes 2022 (ICLR): training methodology divergence -> uncorrelated errors; shared data/objective -> correlated errors",
+      "Ensemble theory: error correlation rho limits ensemble gain; MRL consensus gain -0.027 = correlated bias"
+    ]
+  },
+  "v5_reinterpretation": "V5 best = fewest categorical errors + NO shared-bias pathology: V5 (mRNABERT multi-task, Ensembl pretrain) shares neither 280K MRL corpus with external CNNs; its 0.1354 MRL is weaker than Optimus 0.3132 but INDEPENDENT errors - consistent with V5-family outperforming external baselines on multi-task macro"
+}
