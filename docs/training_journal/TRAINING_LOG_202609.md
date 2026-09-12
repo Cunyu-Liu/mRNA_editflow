@@ -2067,3 +2067,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **回归验证三连**：tier-1 D calib100（+0.048 [+0.010,+0.093]）修复后仍过门 ✓；跨零 CI 样例（[−0.05,+0.01]）修复后正确 FAIL ✓；B 臂 Optimus 门（+0.0357 [+0.002,+0.066]）过 ✓。
 - **救场链回顾（本会话三次预验证各抓一个致命 bug）**：① Optimus calibre sys.modules 注册（批次八十）→ ② D16-C eval memo 陈旧分数（批次八十二）→ ③ CI 语义反转（本批）。全部在产物终态前修复，零返工。
 - commit（setflow）已 push。
+
+### 批次八十九（2026-09-13 04:15，D16-C G 门收割脚本预写 + tier-2 聚合语义审计通过）
+
+- **审计点收尾（tier-2 脚本）**：① H_add 聚合 = 三臂全过双门（严格 all 语义 ✓）；② Optimus calibre 失败时 g_op=False → 失败方向安全（不产假阳性）+ optimus_status 顶层显式标注 ✓；③ comb_optimus.py B2-I 门语义一致 ✓。
+- **G 门收割脚本预写**（`adjudicate_route2_d16c_v1.py`，amendment §6 步骤 6 执行载体）：G1（gap ≤0.30 且 VAL ≥0.135；gap 需探针终态后用 run_v5_train_backtest 模式对 final ckpt 专项跑）/ G2（polyA ≥0.80，直接读 FINAL-EPOCH 行）/ G3 反假说登记 / G4 结构池探针（读 D15-2 式 JSON 或 PENDING）。硬拒：FINAL-EPOCH 标记数 ≠1（禁 peak-picking）、cpu_fallback、cuda 未验。smoke_v7 dry-run PASS（G4 PENDING 正常）。
+- D16-C 全链（数据 → runner → 判定）现已三件套齐备，等 D891 终态发射后即可一键收割。
+- commit 已 push。
