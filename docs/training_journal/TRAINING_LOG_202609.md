@@ -1981,3 +1981,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 
 - **判定：阳性（D 在全部三口径均为四臂最高 + 近可加模式 = H-add 指纹）→ 按预注册晋级 tier-2**：D891_main（GPU5 发射 09:34）+ seed16/17 副本（tier-2 watcher PID 166389，修复版 runner）；监控定时任务已更新至 tier-2 收割指令（含 2×2 矩阵 891 终表与 H-add/H-int 终判逻辑）。
 - 机制叙事预热（论文机制章节素材）：若 891 复现双门过（Δsc ≥ +0.03 排零 + ΔOptimus ≥ +0.02 排零）= 探索（池构成）与引导（转移偏置）两机制正交叠加的正结果主线核心实验。
+
+### 批次七十八（2026-09-13 01:10，COMB tier-2 串行改并行：三臂同跑，预计 18 天 → ~6 天）
+
+- **决策**：接管会话发现 tier-2 watcher（/tmp/comb_tier2.sh）为串行队列（main → seed16 → seed17 依次等待空闲卡），单臂 ETA ~6 天、串行总计 ~18 天，无法满足用户「本周内出训练结果」要求。按用户指示（多 GPU 并行、有显存即用、禁止显存 gate），**终止串行 watcher（PID 166389），seed16/seed17 两臂立即改并行发射**。
+- **发射详情**：GPU3 = D891_seed16（PID 285147，config_comb_seed16.json，decoder_seed_base 2026091601）；GPU4 = D891_seed17（PID 285149，config_comb_seed17.json，decoder_seed_base 2026091701）；GPU5 = D891_main（PID 166606，原进程不动，已 37+/891 源）。三臂配置除 seed 外与预注册完全一致（--arms guided --beta 0.25 --critic-kind v5 --trajectory-count 256，b_fix2 pass-2 checkpoint）。
+- **工程修复三连（如实入档）**：① 首发因 runner 无 --decoder-seed-base CLI 参数失败（rc=2 unrecognized argument）→ 复刻 V6.5 seed 副本模式：override config 文件注入 decoder_seed_base（2026091601/2026091701，config_comb_seed16/17.json 落盘 /mnt 产物目录）；② 覆盖 config 与第一次失败进程日志混淆确认（FileNotFoundError 系首发失败残留 append 日志，非当前进程）；③ nohup cd 作用域问题修正（(cd $W && nohup ...) 子 shell 隔离）。
+- **确认**：三进程存活且心跳推进（roots 888/891 完成、guided arm 0/891 起步）、GPU3/4 各占 ~17GB、%CPU 230-256（与 main 臂相当）；cpu_fallback_used=false 待终态 run_summary 确认（历史模式一致）。
+- **journal 补充**：串行 watcher 的 run_arm 逻辑本身无错误，问题在「排队而非并行」设计——18 天 vs 6 天的差距。
