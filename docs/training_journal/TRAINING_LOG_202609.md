@@ -2059,3 +2059,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **C 行首览**：+0.0596（报告行，无门）——探索臂在 polyA 独立口径上低于 A/B（B 的 β 引导在 polyA 独立口径的 +0.23280 仍是四臂最高，与 B2-I 的 MRL 侧现象构成 polyA 镜像）。
 - **D 行自动化**：polya watcher（PID 1804802）三臂终态 + comb_tier2_harvest.json 出现后自动补 D 三行（GPU6，报告行）。
 - commit（setflow）已 push；watcher 脚本 /tmp/comb_polya_watcher.sh。
+
+### 批次八十八（2026-09-13 04:10，tier-2 收割判定门 CI 语义反转 bug 修复——预一致性终检第三次救场）
+
+- **发现**（对照 v65_harvest 的 b2_gate_pass 逐字比对）：comb_tier2_harvest 的 sc/optimus 门写成 `ci[1] > 0`（CI 上界为正即过门）——**CI = [−0.05, +0.01] 跨零也会 PASS**，与预注册「CI 不跨零」语义相反。若 09-18 收割时某臂 CI 跨零会被误判过门 → 假阳性终判。
+- **修复**：两处门改 `ci[0] > 0`（下界为正）。H-int 条件核对无误（D<C 显著 = 上界为负，原语义正确，未动）。
+- **回归验证三连**：tier-1 D calib100（+0.048 [+0.010,+0.093]）修复后仍过门 ✓；跨零 CI 样例（[−0.05,+0.01]）修复后正确 FAIL ✓；B 臂 Optimus 门（+0.0357 [+0.002,+0.066]）过 ✓。
+- **救场链回顾（本会话三次预验证各抓一个致命 bug）**：① Optimus calibre sys.modules 注册（批次八十）→ ② D16-C eval memo 陈旧分数（批次八十二）→ ③ CI 语义反转（本批）。全部在产物终态前修复，零返工。
+- commit（setflow）已 push。
