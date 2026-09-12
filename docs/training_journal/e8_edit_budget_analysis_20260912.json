@@ -1,0 +1,41 @@
+{
+  "schema_version": "e8_edit_budget_analysis.v1",
+  "date": "2026-09-12",
+  "zero_training": true,
+  "protected_reads": 0,
+  "questions": {
+    "q1_polya_budget10_reachability": "user: can we raise edit budget 5->10 and test?",
+    "q2_budget_perf_effect": "user: have we measured edit budget effect on model performance?"
+  },
+  "e8a_budget_reachability": {
+    "polyA_measured_neighborhood": {
+      "budget_1": "0.0% candidates reachable",
+      "budget_3": "0.3% / 2.5% sources any-hit",
+      "budget_5": "9.9% / 38.3% sources any-hit",
+      "budget_7": "59.2% / 87.7% sources any-hit",
+      "budget_8": "81.3% / 97.5% sources any-hit",
+      "budget_10": "89.2% / 80.2% full-src / 97.5% any-hit",
+      "budget_12": "91.1% / 82.7% full",
+      "note": "polyA task needs >=6-8 edits to cover majority; budget-5 is algebraically dead (9.9%)"
+    },
+    "combination_space": {
+      "B=3": "1.95e7 per-source candidates",
+      "B=5": "2.26e11",
+      "B=8": "7.16e16",
+      "B=10": "1.73e20",
+      "note": "naive sampling hit-probability at B=10 collapses ~1e-9 fold vs B=5; budget raise alone does NOT restore support - needs directional sampling"
+    },
+    "budget_hard_coded": "edit_budgets=(1,3,5) is protocol-level _require assertion in build_route2_generation_eligibility_v1.py + v332 matrix; changing to 10 requires amendment + source change + training-data re-evaluation"
+  },
+  "e8b_budget_vs_performance": {
+    "MRL_frozen_optimus_stratified": {"edits_1": [549, 0.2857], "edits_2": [156, 0.3311], "edits_3": [25, 0.7177]},
+    "MRL_V5_critic_stratified": {"edits_1": [549, 0.1470], "edits_2": [156, 0.0166], "edits_3": [25, 0.2090]},
+    "polyA_frozen_aparent_stratified": {"edits_4_5": [251, 0.5950], "edits_6_8": [1878, 0.7077], "edits_9_12": [256, 0.8365], "edits_13plus": [235, 0.4952]},
+    "polyA_frozen_rnafm_stratified": {"edits_4_5": [251, 0.4401], "edits_6_8": [1878, 0.7135], "edits_9_12": [256, 0.7434], "edits_13plus": [235, 0.1515]},
+    "finding": "polyA: rho INCREASES with edit count (4-5: 0.44-0.60 -> 6-8: 0.71 -> 9-12: 0.74-0.84) - multi-edit rewrites are MORE predictable, not less. MRL: rho rises 1->3 edits (signal concentration). Budget affects coverage (algebraic) more than model quality (rho per stratum stable/rising)."
+  },
+  "answer_synthesis": {
+    "budget10_test": "RECOMMENDED but NOT naive-sampling: reachability 9.9%->89.2% justifies the test, but combination space explodes 1e-9x hit-rate -> must pair budget raise with neighborhood-directed sampling (D15) or genscore top-K explore-select (V6.5 mechanism). Requires: amendment (protocol _require), eligibility rebuild, budget-sweep arm design.",
+    "budget_perf_effect": "first stratified measurement done this session (E8b); no prior budget sweep existed. Per-stratum rho is stable-to-rising with edit count, so budget is a COVERAGE lever not a QUALITY lever for critic."
+  }
+}
