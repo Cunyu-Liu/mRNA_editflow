@@ -2101,3 +2101,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - main 心跳 185→222/891，rate 0.0026→**0.0029 源/s**（GPU5 独占红利持续），ETA 2.7 天 → **~09-15/16 终态**（比 seed 臂早约 1.5 天——收割会等三臂齐，main 到位后 GPU5 可提前释放给 D16-C 探针臂，时序自然衔接）。
 - seed16/17 心跳 37/891（下一心跳预计 ~08:30）；速率维持 0.0021。
 - 收割时序预案优化：main 终态（~09-15/16）→ GPU5 释放 → D16-C 探针可提前发射（不等三臂全终态——amendment §6 步骤 1 的串行条款针对的是 tier-2 判定与 D16-C 发射的顺序；tier-2 收割需要三臂，但 D16-C 探针臂的 GPU 资源只依赖任一整卡释放）→ 三臂全终态（~09-17/18）→ tier-2 终判。**整周无 GPU 空转窗口**。
+
+### 批次九十四（2026-09-13 07:22，D16-C 提前发射 watcher 部署：整周 GPU 零空转闭环）
+
+- **early-launch watcher（PID 2834472）**：D891_main 终态检测（guided_run_summary.json）→ GPU5 实际空闲确认（used ≤2GB）→ 自动发射 D16-C 探针臂（GPU5，epochs 6 / batch 16，标准参数）→ PID 落盘 probe_pid.txt。main 进程无终态消失时 ALERT（不自动动作）。
+- **三 watcher 值守体系成型**：harvest（三臂终态→终判收割）+ polya（终判后→polyA D 行）+ early-launch（main 终态→D16-C 提前发射）——全周 GPU 零空转 + 全部终态动作自动化。
+- 时序：main ~09-15/16 终态 → D16-C 探针（~6 GPU·h）立发 → seed 臂 ~09-17/18 终态 → tier-2 终判 → D16-C backtest + G 门收割 → 周报回填。
