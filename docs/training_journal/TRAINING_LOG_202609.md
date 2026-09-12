@@ -2013,3 +2013,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **前向复用官方 V5 frozen-guidance 机制**（records_from_projection_rows → Dataset/Collator → XEditCriticV4）：tokenization/edit bundle/vocabs/study calibration 与官方 V5 打分 bit 一致，唯一新元素 = 梯度流（bottom-six 仍走 frozen cache 路径）。
 - **冒烟迭代三连**（如实）：① smoke_v2 在 GPU6 4.75GB MIG 上 batch 32 OOM（符合 MIG 6/7 纪律认知）；② smoke_v4 暴露 eval 混源 batch 违反 potentials 合同（source+context 必须一致）→ 修复分组键（source_seq, assay, context）三元组；③ smoke_v7 全链 PASS（5 步训练 + MRL eval 0.091（200 行子集合理值）+ polyA eval 逻辑过）。GPU7 也已被外部重配置为 4.75GB 小切片（3g.20gb 不复存在）→ 正式探针臂需整卡（batch 16 约需 12-16GB）。
 - **发射条件**：D891 tier-2 三臂终态（amendment §6 步骤 1 串行条款，ETA 09-18）+ 整卡显存（GPU3/4/5 任一释放后）。冒烟产物 smoke_v1-v7 留 /mnt 证据。
+
+### 批次八十二（2026-09-13 02:05，D16-C runner memo 缓存陈旧分数 bug 修复 + 权重扰动验证）
+
+- **bug 发现（复查主动捕获）**：probe runner 的 eval 走 `critic.potentials`，内部 `_potential_memo` 以候选序列为键缓存分数——同一验证序列在 epoch 2 起会返回 epoch 1 权重下的陈旧值（per-epoch 诊断曲线失效 + FINAL-EPOCH 判定可能失真）。
+- **修复**：eval_task 入口清空 memo（`critic._potential_memo.clear()`）。
+- **验证（判决性）**：权重扰动测试——对模型首个参数加 N(0,0.02) 噪声后重跑 eval，输出立即变化（0.408→0.251 等，EVAL_REFLECTS_CURRENT_WEIGHTS=True）→ eval 路径确认反映当前权重。此前 smoke_v8/v9 两 epoch 数值相同系 max-steps 语义下 epoch 2 零训练步（权重未变），非 bug 表现。
+- commit 已 push；D16-C 探针臂发射条件不变（D891 终态 + 整卡）。
