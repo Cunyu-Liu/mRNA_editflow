@@ -1,0 +1,57 @@
+{
+ "schema": "erk_e7_probes.v2",
+ "date": "2026-09-12",
+ "probes": {
+  "MRL__E7a": {
+   "rho_first_order": 0.15937634046081148,
+   "rho_background_only": NaN,
+   "alpha": 30.0,
+   "gate": 0.0677,
+   "passed": true
+  },
+  "MRL__E7b": {
+   "rho_second_order": 0.16374651813289393,
+   "delta_vs_first": 0.004370177672082448,
+   "passed": false
+  },
+  "polyA__E7a": {
+   "rho_first_order": 0.4881753638533178,
+   "rho_background_only": NaN,
+   "alpha": 30.0,
+   "gate": 0.41095,
+   "passed": true
+  },
+  "polyA__E7b": {
+   "rho_second_order": 0.5129430837716706,
+   "delta_vs_first": 0.02476771991835286,
+   "passed": true
+  },
+  "MPRAU__E7a": {
+   "rho_first_order": 0.0411548317965142,
+   "rho_background_only": NaN,
+   "alpha": 10.0,
+   "gate": 0.05125,
+   "passed": false
+  },
+  "MPRAU__E7b": {
+   "rho_second_order": 0.0411548317965142,
+   "delta_vs_first": 0.0,
+   "passed": false
+  },
+  "E7c_mixed_pool_MRL": {
+   "cond_acc1": 0.00909090909090909,
+   "n_eval": 220,
+   "v5_ref": 0.0614,
+   "gate": 0.1,
+   "passed": false
+  },
+  "E7c_v2_clean_pool_MRL": {
+   "cond_acc1": 0.02666666666666667,
+   "n_eval": 300,
+   "v5_ref": 0.0614,
+   "gate": 0.1,
+   "passed": false,
+   "note": "clean per-source pool: 32 generated + all measured for that source"
+  }
+ }
+}
