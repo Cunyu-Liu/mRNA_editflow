@@ -1,0 +1,40 @@
+{
+  "schema_version": "p_axis_e5c_journal.v1",
+  "date": "2026-09-12",
+  "zero_training": true,
+  "protected_reads": 0,
+  "budget": "<=1 GPU-h (RNA-FM embedding 2460 variants) + CPU (Saluki/UTR-LM/RNA-FM proxy)",
+  "artifacts": {
+    "e5c_results_json": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_delta_failure_mechanism_e5c/e5c_results.json",
+    "script": "run_p_axis_e5c.py"
+  },
+  "findings": {
+    "rnafm_embedding_m4_polya": {
+      "roughness_ratio": 0.00918,
+      "neighbor_autocorr": 0.292,
+      "top5pct_energy_share": 0.097,
+      "note": "embedding M4 (not prediction M4); not directly comparable to Optimus/FramePool prediction roughness"
+    },
+    "saluki_m4_proxy": {
+      "MPRAU_var_ratio": 4.17e-6,
+      "HL5_var_ratio": 9.9e-13,
+      "HL3_var_ratio": 1.3e-8,
+      "verdict": "per-source surface flat (consistent with Wave 3 per-variant std=0)"
+    },
+    "utrlm_m4_proxy": {
+      "polyA_var_ratio": 0.123,
+      "other_tasks": "flat (<3e-4)",
+      "verdict": "only polyA has surface amplitude (matches rho=0.749)"
+    },
+    "rnafm_prediction_proxy": {
+      "polyA_var_ratio": 0.119,
+      "other_tasks": "flat (<2e-4)",
+      "verdict": "matches UTR-LM pattern; polyA models have real surface amplitude"
+    }
+  },
+  "reflection_corrections": [
+    "6b MRL consensus mirage is 2-model (framepool<->optimus 0.821), not 3-model; rnafm_hpo agreement 0.14-0.16. Retitle as dual-CNN shared bias (suspected training data homology)",
+    "6c mixes prediction M4 / embedding M4 / variance proxy - must label as non-comparable",
+    "Saluki MRL flatness not directly verified (no MRL predictions); only MPRAU/HL verified flat"
+  ]
+}
