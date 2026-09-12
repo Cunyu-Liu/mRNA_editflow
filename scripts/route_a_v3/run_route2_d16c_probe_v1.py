@@ -201,6 +201,7 @@ def main() -> int:
         from scipy.stats import spearmanr
         if args.eval_limit is not None:
             rows = rows[: args.eval_limit]
+        critic._potential_memo.clear()
         model.eval()
         by_source: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
         for r in rows:
