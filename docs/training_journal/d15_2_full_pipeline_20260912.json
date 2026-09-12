@@ -1,0 +1,24 @@
+{
+ "schema": "d15_2_full_pipeline.v1",
+ "date": "2026-09-12",
+ "protocol": "V5-critic ranking of structure-directed samples; graded support metric",
+ "arm1_oracle_structured": {
+  "arm": "oracle_structured",
+  "n_sources": 81,
+  "graded_support": 81,
+  "graded_support_rate": 1.0,
+  "exact_match_support": 0,
+  "graded_sc_hit1": 0.0,
+  "n_eval_hit1": 81
+ },
+ "arm2_local8_W16": {
+  "arm": "local8_W16",
+  "n_sources": 81,
+  "graded_support": 21,
+  "graded_support_rate": 0.25925925925925924,
+  "exact_match_support": 0,
+  "graded_sc_hit1": 0.0,
+  "n_eval_hit1": 21
+ },
+ "reference_exact_match_E8c": 0.0
+}

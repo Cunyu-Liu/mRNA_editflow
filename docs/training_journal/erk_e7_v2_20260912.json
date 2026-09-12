@@ -1,0 +1,31 @@
+{
+ "schema": "erk_e7_v2_context_probes.v1",
+ "date": "2026-09-12",
+ "probes": {
+  "MRL__E7a_v2": {
+   "rho_context": 0.2068697091218118,
+   "alpha": 30.0,
+   "gate": 0.0677,
+   "passed": true
+  },
+  "polyA__E7a_v2": {
+   "rho_context": 0.5040033548864044,
+   "alpha": 100.0,
+   "gate": 0.41095,
+   "passed": true
+  },
+  "MPRAU__E7a_v2": {
+   "rho_context": 0.06305671386603513,
+   "alpha": 0.3,
+   "gate": 0.05125,
+   "passed": true
+  },
+  "E7c_v2_context_MRL": {
+   "cond_acc1": 0.04,
+   "n_eval": 300,
+   "v5_ref": 0.0614,
+   "gate": 0.1,
+   "passed": false
+  }
+ }
+}
