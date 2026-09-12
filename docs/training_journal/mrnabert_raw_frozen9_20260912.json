@@ -1,0 +1,16 @@
+{
+  "schema_version": "mrnabert_raw_frozen9.v1",
+  "date": "2026-09-12",
+  "question": "user Q4: what does PURE mRNABERT (raw pretrained weights) achieve per task?",
+  "protocol": "frozen backbone (113M), per-task ridge readout on TRAIN pool, frozen-delta f(cand)-f(src); TE149487/RNA149487 = 5-fold source-group cross-fit (no TRAIN pool)",
+  "results": {
+    "MRL": 0.0892, "MPRAU": 0.0611, "MPRAU_pair_mean": 0.0889,
+    "polyA": 0.7341, "REFALT": -0.0309, "HL5": 0.0099, "HL3": -0.0518,
+    "TE200304": 0.0679, "TE149487": -0.1536, "RNA149487": -0.2537
+  },
+  "comparison": {
+    "vs_V5_critic": {"MRL": "0.0892 vs 0.1354 (V5 +52%)", "MPRAU_pm": "0.0889 vs 0.1025 (V5 +15%)", "polyA": "0.7341 vs 0.8219 (V5 +12%)", "HL": "both ~0 (ceiling)"},
+    "key_finding": "polyA 0.7341 ~= APARENT 0.7343 (domain-supervised SOTA) with ZERO task training - mRNABERT raw representations already carry PAS-grammar signal rivaling APARENT; V5's polyA 0.8219 gain over raw = task adaptation on 768-d pooled features"
+  },
+  "artifact": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_mrnabert_raw_frozen9/mrnabert_raw_frozen9_results.json"
+}
