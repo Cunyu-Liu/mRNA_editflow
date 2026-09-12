@@ -198,3 +198,13 @@
 - E2 RNA-FM polyA：PAS hotspot 富集 Fisher p=1.0（26 source，hot fraction 0.058 ≈ 机会）→ M2 成立（敏感度热点不在功能 motif）；corr 部分结构不适配如实入档
 - 四假设 M1/M2/M3/M4 全部获直接或交叉证据（不互斥，分域主导）；方差归因表数据齐 → Table 6 机理列 + Discussion 素材就绪
 - 下轮：E5-c 扩展 + 论文灌入
+
+<!-- 2026-09-12 p-axis-wave3 -->
+## 2026-09-12 P 轴 Wave 3：跨模型共性机制（用户 Q1 深化）
+
+- 产物：experiments/analysis_delta_failure_mechanism_wave3/（wave3_results.json + W3_SUMMARY + 脚本）
+- **共识海市蜃楼（核心发现）**：MRL framepool↔optimus 彼此一致 0.821 vs 各自与真值 0.30/0.31；均值集成增益 −0.027（共享分量 = 偏差非信号）；polyA 反例：一致 0.82 + 集成增益 +0.058（共享 = 真信号，PAS motif）
+- 层 2 共性：幅度共享（|Δ| 秩相关 0.20-0.54）、方向不共享（sign ≈ 0.50 机会）——统一解释 rank-deficit 与海市蜃楼
+- HL 残差相关 1.0 判定为平凡退化（Saluki 逐变体预测恒定，实测 std=0）——不构成共享系统分量证据，如实入档
+- W3-6 残差浅层可学性：polyA 0.55（还有简单信号）/ MRL 0.10 / HL 0.03（纯标签噪声）
+- 附：E0-1 docstring 勘误已 commit（22ec340d）
