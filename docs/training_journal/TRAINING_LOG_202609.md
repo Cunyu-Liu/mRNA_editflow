@@ -1999,3 +1999,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **如实入档（结构键覆盖）**：源级结构键 ≥5 的源 103/498（20.7%）——合成按实测画像采样（零自由裁量），键多样性受数据本体约束；amendment §7「结构键过窄」风险条款继续适用（G 门判定不受影响，单列备注）。
 - **产物**：/mnt/.../experiments/xeditcritic_d16c/{within_source_augmentation_mrl_v1.jsonl, synthetic_trace_mrl_v1.jsonl, leak_audit_mrl_v1.json}。
 - **发射门**：步骤 5（探针臂 6 GPU·h）严格等 D891 tier-2 终态收割后（amendment §6 步骤 1 串行条款）——预计 09-18。
+
+### 批次八十（2026-09-13 01:35，tier-2 收割脚本预验证：24/24 位对位 MATCH + Optimus calibre 根因修复）
+
+- **预防性 dry-run**（会话主动执行，防 09-18 收割时才发现 bug 返工）：复刻 tier-2 收割逻辑（load→select32→per_source→paired bootstrap）对 calib100 四 pool（A/B/C/D 冻结产物）复算，与 comb_tier1_harvest.json 逐位对账——**24/24 全 MATCH**（sc_hit1/support/recovery/sc_n/d_sc_hit1/d_sc_hit1_ci95 全部逐位一致）。
+- **发现并修复潜伏 bug**：tier-1 收割的 `optimus_status: OPTIMUS_FAILED NoneType` 根因 = harness 动态加载缺 `sys.modules["harness"] = harness` 注册（tier-1 事后用独立 comb_optimus.py 绕过）——tier-2 脚本原样复刻了同一缺陷。修复补上注册行（setflow worktree commit 1e81f823）+ Optimus forward 冒烟验证（cuda:0 加载+推理 OK）。
+- **意义**：tier-2 终态收割时三口径（recovery 家族 + sc-hit@1 + Optimus 独立口径）将在同一次运行内完整产出，无需事后补跑。
+- dry-run 验证脚本：/tmp/validate_comb_tier2_harvest_dryrun.py（只读，不写 /mnt）。
