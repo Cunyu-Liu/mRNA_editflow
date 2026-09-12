@@ -211,8 +211,8 @@ def arm_gates(tag):
     ci_sc = r.get("d_sc_hit1_ci95")
     d_op = r.get("d_optimus")
     ci_op = r.get("d_optimus_ci95")
-    g_sc = d_sc is not None and ci_sc is not None and d_sc >= 0.03 and ci_sc[1] > 0
-    g_op = d_op is not None and ci_op is not None and d_op >= 0.02 and ci_op[1] > 0
+    g_sc = d_sc is not None and ci_sc is not None and d_sc >= 0.03 and ci_sc[0] > 0
+    g_op = d_op is not None and ci_op is not None and d_op >= 0.02 and ci_op[0] > 0
     return {"d_sc_hit1": d_sc, "ci_sc": ci_sc, "sc_gate": g_sc, "d_optimus": d_op, "ci_op": ci_op, "optimus_gate": g_op}
 
 
@@ -250,7 +250,7 @@ if d_tags:
     h_add = sc_pass == len(d_tags) and op_pass == len(d_tags)
     h_int = False
     if "dd_sc_D_vs_C_ci95" in verdict:
-        h_int = verdict["dd_sc_D_vs_C_ci95"][1] < 0
+        h_int = verdict["dd_sc_D_vs_C_ci95"][1] < 0  # D significantly BELOW C: upper bound negative
     verdict["hypothesis_verdict"] = "H_ADD" if h_add else ("H_INT" if h_int else "H_IND_or_NEGATIVE")
 
 out = {
