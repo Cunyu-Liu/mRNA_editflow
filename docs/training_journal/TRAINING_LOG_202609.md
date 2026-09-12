@@ -2074,3 +2074,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **G 门收割脚本预写**（`adjudicate_route2_d16c_v1.py`，amendment §6 步骤 6 执行载体）：G1（gap ≤0.30 且 VAL ≥0.135；gap 需探针终态后用 run_v5_train_backtest 模式对 final ckpt 专项跑）/ G2（polyA ≥0.80，直接读 FINAL-EPOCH 行）/ G3 反假说登记 / G4 结构池探针（读 D15-2 式 JSON 或 PENDING）。硬拒：FINAL-EPOCH 标记数 ≠1（禁 peak-picking）、cpu_fallback、cuda 未验。smoke_v7 dry-run PASS（G4 PENDING 正常）。
 - D16-C 全链（数据 → runner → 判定）现已三件套齐备，等 D891 终态发射后即可一键收割。
 - commit 已 push。
+
+### 批次九十（2026-09-13 04:35，D891_main 二次提速观测 + 交接终版快照落档）
+
+- **D891_main 心跳**：111→148/891，rate 0.0018→**0.0022 源/s**（GPU5 外部争用进一步缓解），ETA 5.1→**3.9 天**（预计 09-16/17 终态——本周内富余）。三臂 CPU 230-239% 持续健康。
+- seed16/17 首心跳预期 ~08:00（main 同期 27.3Ks/37 源节奏；当前已 3.6h 计算）。
+- **交接终版快照落档**：CURRENT_HANDOVER_STATUS_20260913.md §6（在途唯一项 + 四项就绪链 + 发射命令 + 终态后顺序 + 本会话产出/救场/commit 清单）——接班人一键入口。
+- 监控闭环：定时任务每 12h + 双 watcher + journal 批次连续记录（78-90）。
