@@ -2043,3 +2043,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **rchar 冻结 + syscw=0 复核确认**（与批次十二设计特性一致：终态一次性落盘 + 全内存缓存）——非卡死判据再次入档。
 - **周报 A/B/C 参照行精确化**（从冻结产物读取替换估算值）：A = 0.5131（sc_n 216，full891_confirm_harvest baseline）；B β0.25 = 0.4999 / Δsc −0.0166 [−0.047,+0.012] 跨零 / ΔOptimus +0.0357 [+0.002,+0.066] 排零（INDEPENDENT_CONFIRMED）；C B256 = 0.5429 / Δsc +0.0341 排零（v65_harvest）。
 - **tier-2 终判预案入档**（周报 §六，预登记解读框架）：tier-1 近可加指纹外推的最可能落点 = H-ind（B+C 线性和）；H-add 需 D 出现正交叠加；任何结果都是有效交付。判定只按冻结门，不事后调整。
+
+### 批次八十六（2026-09-13 03:40，RiboNN frozen-Δ 四行出数：TE 族 H3 地图最后一格补齐）
+
+- **执行**（`run_route2_ribonn_frozen_te_v1.py`）：官方发布权重 top-5 run（val_r2 排序）均值预测（predict.py 政策）；正式权重加载链修复四连——① extract_config(run_df, run_id) 从 runs.csv 提取（conf.yml 仅是训练模板）；② 通道数 = 4+label_codons（TECNN 5 通道输入）；③ pad_5_prime=True 几何（max_utr5_len 1381 + max_cds_utr3_len 11937 拼接长度，片段置于 3UTR 偏移、UTR5/CDS 空——上下文失配行声明）；④ len_after_conv checkpoint 反推 = 9（公式值 10 差一次 resize_factor 减半；head 576=64×9 硬校验）。
+- **结果（VALIDATION，Spearman，CUDA GPU6）**：gse200304_te **−0.0106**（n=1614）/ gse149487_te −0.029（n=48）/ gse149487_rna +0.0778（n=48）/ gse186455 −0.045（n=274）。
+- **科学读数（对比同层参照行）**：与 RNA-FM gse200304_te 0.0009 / UTR-LM 0.0113 同量级（±0.01 带内）——**全转录本 TE 模型在 3'UTR 片段差分任务上同样无信号**，H2「绝对值 SOTA 模型在 source-relative delta 上失效」的 TE 族证据链补上第四个模型家族（CNN 端到端 vs 表征探针两种范式都失效）。上下文失配口径（endogenous full-transcript vs MPRA fragment）已在 caliber_declarations 声明。
+- **产物**：/mnt/.../experiments/analysis_ribonn_frozen_te_20260913/（frozen_delta_results.json + 4 任务 predictions.jsonl）。
+- RiboNN 线收口：下载（批次八十三/八十四）→ frozen-Δ（本批）→ spec 6.5.2 H3 地图 TE 域补格完成。
