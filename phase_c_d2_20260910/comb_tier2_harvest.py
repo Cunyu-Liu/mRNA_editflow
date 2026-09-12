@@ -147,6 +147,7 @@ try:
     OPT_W = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/optimus5prime/main_MRL_model.hdf5")
     spec2 = importlib.util.spec_from_file_location("harness", str(HARNESS))
     harness = importlib.util.module_from_spec(spec2)
+    sys.modules["harness"] = harness
     spec2.loader.exec_module(harness)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
