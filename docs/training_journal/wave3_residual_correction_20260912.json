@@ -1,0 +1,19 @@
+{
+  "schema_version": "wave3_residual_matrix_correction.v1",
+  "date": "2026-09-12",
+  "finding": "Wave 3 raw residual correlations were dy-dominance artifacts. Partial correlation given dy reveals TRUE shared bias structure:",
+  "true_shared_bias": {
+    "MRL framepool|optimus": 0.840,
+    "polyA rnafm|utrlm": 0.579,
+    "polyA aparent|utrlm": 0.265,
+    "HL5 rnafm|utrlm": 0.302
+  },
+  "dy_artifacts": {
+    "HL3 all pairs": "raw 1.000 -> partial 0.02-0.08",
+    "HL5 saluki pairs": "raw 1.000 -> partial 0.07-0.13",
+    "MPRAU all pairs": "raw 0.82-0.91 -> partial 0.01-0.08",
+    "MRL rnafm pairs": "raw 0.76-0.81 -> partial 0.08-0.09"
+  },
+  "interpretation": "Shared bias clusters by PRETRAINING CORPUS: (1) 280K MPRA grammar for the two CNNs; (2) natural-transcript grammar for the two pretrained LMs (RNA-FM/UTR-LM both Ensembl-like); (3) polyA aparent|utrlm moderate. Task-specific supervised pairs (saluki) show no true shared bias.",
+  "artifact": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_delta_failure_mechanism_wave3/wave3_residual_correction.json"
+}
