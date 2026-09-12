@@ -1,0 +1,11 @@
+{
+ "schema": "d15_2_structured_sampling_sim.v1",
+ "date": "2026-09-12",
+ "sampler": "structure-directed: sample (n_edits, window) from measured structure profile, random bases within window",
+ "result": {
+  "graded_hit_sources": 81,
+  "total_sources": 81,
+  "exact_match_support_reference": 0.0,
+  "note": "graded metric (same n_edits + same 8nt window) instead of exact match; structure-directed sampling reaches structurally-matching candidates where uniform sampling cannot"
+ }
+}
