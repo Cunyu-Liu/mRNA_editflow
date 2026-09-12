@@ -2028,3 +2028,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **A100 残件复核**：服务器上现存 weights.zip（92,567,440 字节，md5 37516b31...）确证为 09-09 截断残件，完整版到位后将被覆盖。
 - RiboNN 为 TE 域外部行（baseline spec 6.5.2），不阻塞本周主线（COMB tier-2 / D16-C）。
 - 工程教训入档：二进制完整性校验用发布方权威 checksum（md5/sha256），不要假设文件格式布局。
+
+### 批次八十四（2026-09-13 03:00，RiboNN 权重完整到位：md5 权威校验通过 + A100 解压成功）
+
+- **根因链完整闭环**（承接批次八十三）：Zenodo 服务端该 zip 本体规范（首 1MB 与 range 请求逐位一致）；续传损坏源于 curl `-C -` 重试拼接错位（本地文件 = 开头 102400 字节 + 中段错位拼接，unzip 报 "102400 extra bytes at beginning"）——续传跨服务端重置连接时不可靠。
+- **修复执行**：停用续传循环 → 一次性完整重下（207,395,960 字节）→ **md5 = dd088ee2feffcda6ce26124a471a140f 与 Zenodo API checksum 逐字一致** → unzip -t 零错误 → scp A100 → 解压 weights_extracted/{human,mouse}/（human 目录含 364 个 run 子目录）。
+- **A100 残件处置**：92MB 截断件已被完整版覆盖（同一路径写入）。
+- **RiboNN 状态 = 权重就绪**，frozen-Δ 双行（TE 域 H3 地图补格，baseline spec 6.5.2 承接）可执行；不阻塞本周主线。
+- 工程教训（补充批次八十三）：断点续传在跨连接重置场景会产生静默拼接损坏——**大文件完整性以发布方 checksum 为唯一权威**，续传完成后必须校验 md5/sha256 才能入库。
