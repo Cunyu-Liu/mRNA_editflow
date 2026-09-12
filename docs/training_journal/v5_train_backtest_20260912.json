@@ -1,0 +1,51 @@
+{
+ "schema": "v5_train_backtest.v2",
+ "date": "2026-09-12",
+ "tasks": {
+  "MRL": {
+   "n_train": 2003,
+   "n_val": 730,
+   "rho_train": 0.9284479751558045,
+   "rho_val": 0.13414406765642517,
+   "gap": 0.7943039074993793,
+   "n_src_fail_train": 0,
+   "n_src_fail_val": 0
+  },
+  "polyA": {
+   "n_train": 352,
+   "n_val": 2054,
+   "rho_train": 0.8570069264812953,
+   "rho_val": 0.8247189070197507,
+   "gap": 0.03228801946154458,
+   "n_src_fail_train": 0,
+   "n_src_fail_val": 0
+  },
+  "MPRAU": {
+   "n_train": 2004,
+   "n_val": 12048,
+   "rho_train": 0.6773454237411001,
+   "rho_val": 0.07045315310337484,
+   "gap": 0.6068922706377252,
+   "n_src_fail_train": 0,
+   "n_src_fail_val": 0
+  },
+  "HL5": {
+   "n_train": 893,
+   "n_val": 400,
+   "rho_train": 0.6501648637306127,
+   "rho_val": 0.05993841572722594,
+   "gap": 0.5902264480033867,
+   "n_src_fail_train": 0,
+   "n_src_fail_val": 0
+  },
+  "HL3": {
+   "n_train": 1308,
+   "n_val": 503,
+   "rho_train": 0.7623350707297163,
+   "rho_val": 0.039503540264250514,
+   "gap": 0.7228315304654658,
+   "n_src_fail_train": 0,
+   "n_src_fail_val": 0
+  }
+ }
+}
