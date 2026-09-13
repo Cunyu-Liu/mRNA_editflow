@@ -2113,3 +2113,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **服务器 crontab 恢复**（每 2h status.log 快照：时间 + GPU 表 + 三臂进程表）——三 watcher + TRAE 定时任务之外的第四层观测（watcher 全灭时仍有线索；此前 crontab 已空、status.log 停在 09-08，本次补齐）。
 - **watcher 竞态复核**：early-launch（GPU5 分配）与 harvest（无 GPU 分配）无竞态；polya D 行用 GPU6（APARENT 推理 <4.75GB，批次八十七已验证）✓。
 - **goal 条款八条逐条自检通过**（spec 更新 / 多 GPU 并行 / CUDA 硬门 / 四层监控 / 冻结验收门 / 31 commit push / 产物分离 / journal+周报记录）。
+
+### 批次九十六（2026-09-13 08:26，D891_main 第五次提速：0.0032/s，ETA 2.3 天 → ~09-15 终态）
+
+- main 心跳 222→259/891，rate 0.0029→**0.0032 源/s**（GPU5 独占持续兑现），ETA 2.3 天 → **~09-15 终态**（比 seed 臂早 ~2 天）。
+- seed16/17 心跳 37/891（下一心跳预计 ~08:30-09:30，共享卡节奏）；速率维持 0.0021。
+- crontab 2h 快照首次写盘验证 ✓（第四层观测生效）。
+- early-launch watcher（1h 值守中）将在 main 终态后自动衔接 D16-C 探针。
