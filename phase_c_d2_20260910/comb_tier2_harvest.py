@@ -231,12 +231,13 @@ if d_tags:
     verdict["mean_d_optimus"] = m_op
     # H-int: D significantly BELOW corresponding single arm (paired delta-delta CI excludes zero on negative side)
     if "C_explore" in rows:
+        # aggregate paired D-vs-C deltas across ALL three D arms (not last-arm-only)
         dd_sc = []
         for t in d_tags:
             mD = mains[t]
             mC = mains["C_explore"]
             ks = [k for k in mD if k in mC]
-            dd_sc = [(mD[k]["h1"] or 0.0) - (mC[k]["h1"] or 0.0) for k in ks]
+            dd_sc.extend([(mD[k]["h1"] or 0.0) - (mC[k]["h1"] or 0.0) for k in ks])
         if dd_sc:
             verdict["dd_sc_D_vs_C_mean"] = sum(dd_sc) / len(dd_sc)
             verdict["dd_sc_D_vs_C_ci95"] = bci(dd_sc)
