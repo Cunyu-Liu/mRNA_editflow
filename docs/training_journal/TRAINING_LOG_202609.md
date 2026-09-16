@@ -2148,3 +2148,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **工程修复三连（如实入档）**：① frozen-guidance schema gate 拒绝 probe ckpt（构造器要求官方 SCREEN schema v2）→ 官方 final_pass_8 ckpt 构造 + model_state_dict 覆盖（strict=False，503 keys，epoch=6 确认）；② f-string 嵌套引号语法错误 → 修复；③ MIG 1g.5gb 切片被外部 CarsiDock 进程共享挤爆（OOM 330MiB 分配失败）→ 换 GPU7 3g.20gb MIG 实例（MIG-6e59f9af-2716-5bf2-ac6e-fb05ef744585，75s 全量出数）。
 - **纪律**：CUDA 硬门（cuda_device 名 + MIG UUID 落盘，cpu_fallback_used=false）；inference-only 零训练；VALIDATION-only；protected reads = 0；产物 /mnt、代码 W0 worktree。
 - **三臂顺查**（同一观测窗口）：main 851/891（心跳 14:34，ETA~4.7h）/ seed16 851/891（16:19，ETA~4.1h）/ seed17 777/891（11:14，ETA~12h）；三进程全活、CPU 时间持续增长（20s 采样 +37s/+75s/+20s）；无 summary 产物；异构心跳节奏在批次九十二确认的历史范围内（main 740→777 曾 13.4h）。
+
+### 批次一百（2026-09-17 00:05，ERK v2 训练臂 amendment v1 起草完成——D16-C 判定链的既定下一步）
+
+- **触发**：D16-C 四门闭合（G3 反假说「数据侧独立无效，ERK 参数侧唯一路径」+ 定时任务预写条款「建议立即起草 ERK 参数侧 amendment 立项」）→ 起草 `docs/paper/route2_critic_erk_v2_amendment_v1.md`（W0 worktree）。
+- **内容骨架**：① 前置依据三连（D16-C 四门 / E7 v2 探针 / 判定链唯一路径）；② H-ERK-v2 假说（显式一阶上下文能量表 1-3M 替换 170M 自由头；与 D16-C 同一靶标 G1/G4，主臂用原始数据不用合成增强）；③ 架构范围（Energy 一阶 + Residual 轻头；Kernel 交互核预注册不启用——E7-b 仅 polyA 显著）；④ 判定门 ERK-G1~G4（继承 D16-C G1/G2/G4 口径连锁，G3 兜底）；⑤ 诚实条款五条（E7-c FAIL → off-manifold 不作预注册主张 / 探针数字≠训练结果 / D16-C 双 FAIL 继承 / polyA 主行不动 / protected reads=0）；⑥ 执行清单七步（前置 COMB 终态 → 实现+单测 → 冒烟 → 主臂 ≤8 GPU·h → 收割 → 3-seed 或 G3 分叉 → 纪律自查）；⑦ 拍板记录位。
+- **未启动训练**：amendment 状态 = 草案待用户拍板（§7 拍板前任何门不生效）；COMB tier-2 优先级的 GPU 时序条款已写入 §6。
+- 三臂同窗口顺查：main 851 / seed16 851 / seed17 777（心跳节奏未变，进程全活）——终态窗口 09-17/18 维持。
