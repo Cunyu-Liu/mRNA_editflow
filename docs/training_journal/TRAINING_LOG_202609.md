@@ -2138,3 +2138,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **科学结论（预注册反假说分支）**：within-source 密度 4.9→32 合成增强未把 170M 端到端模型从记忆路线逼到结构路线——train rho 反升（0.928→0.956）说明合成行被用作额外记忆容量。amendment §1 反假说原文生效：「容量性记忆偏好」成立，**ERK 参数侧（显式结构先验）成为唯一路径，数据侧宣告独立无效**。
 - **判读注意（诚实边界）**：探针合成行的 per-step 采样（(hash+step) % len）使 6 epoch 内每源见到 ~6 倍不同合成候选；gap 上升部分可能来自合成分布的扩展记忆。G4 结构池探针（graded sc-hit@1 > 0）尚未跑——它才是「表征是否开始学结构」的直接判据；建议 G4 一并收割后再写论文版结论。density-regime 相关性（批次九十七 r=0.94）解读需相应收敛：观测性相关成立，但「提密度即可修复」的干预分支被证伪（单任务单臂探针级证据）。
 - 纪律：protected reads = 0；零判定门修改；产物 /mnt，代码 push。
+
+### 批次九十九（2026-09-16 23:45，D16-C G4 结构池探针终判：FAIL——数据侧路线完整证伪闭合）
+
+- **执行**：`run_d16c_g4_structure_probe_v1.py`——镜像 D15-2 calibre（同 81 个 polyA 源、同 rng seed 20260912、同 oracle-structured / local8_W16 采样器、32 cand/源），唯一替换 = critic ckpt 用 probe_epoch_6.pt（D16-C FINAL-EPOCH 权重）。
+- **数字**：arm1_oracle_structured graded_sc_hit1 = **0.0**（n_eval 81/81，graded support 100%）；arm2_local8_W16 = 0.0（n_eval 21/21）——与官方 V5 ckpt 基线（D15-2 产物 0.0）逐位一致。
+- **判定**：G4 冻结门 graded sc-hit@1 > 0 判定 **FAIL**；adjudication_d16c.json 已更新（G4 PENDING → FAIL）。D16-C 四门全判闭合：**G1 FAIL（gap 0.8235）/ G2 PASS（polyA 0.8134）/ G3 registered / G4 FAIL**。
+- **科学结论（预注册反假说分支全部走完）**：within-source 密度增强（4.9→32）既未改善泛化（G1）、也未干扰 polyA（G2 保住）、**且表征仍完全看不到结构池信号（G4 0.0）**——amendment §1 反假说「容量性记忆偏好」三证据链闭合（gap 反升 0.794→0.824 + train rho 反升 0.928→0.956 + 结构池零信号）。**数据侧（D16-C）宣告独立无效，ERK 参数侧（显式结构先验）成为唯一路径**，与批次九十八衔接。
+- **工程修复三连（如实入档）**：① frozen-guidance schema gate 拒绝 probe ckpt（构造器要求官方 SCREEN schema v2）→ 官方 final_pass_8 ckpt 构造 + model_state_dict 覆盖（strict=False，503 keys，epoch=6 确认）；② f-string 嵌套引号语法错误 → 修复；③ MIG 1g.5gb 切片被外部 CarsiDock 进程共享挤爆（OOM 330MiB 分配失败）→ 换 GPU7 3g.20gb MIG 实例（MIG-6e59f9af-2716-5bf2-ac6e-fb05ef744585，75s 全量出数）。
+- **纪律**：CUDA 硬门（cuda_device 名 + MIG UUID 落盘，cpu_fallback_used=false）；inference-only 零训练；VALIDATION-only；protected reads = 0；产物 /mnt、代码 W0 worktree。
+- **三臂顺查**（同一观测窗口）：main 851/891（心跳 14:34，ETA~4.7h）/ seed16 851/891（16:19，ETA~4.1h）/ seed17 777/891（11:14，ETA~12h）；三进程全活、CPU 时间持续增长（20s 采样 +37s/+75s/+20s）；无 summary 产物；异构心跳节奏在批次九十二确认的历史范围内（main 740→777 曾 13.4h）。
