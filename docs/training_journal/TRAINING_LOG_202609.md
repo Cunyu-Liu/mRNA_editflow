@@ -2166,3 +2166,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   - **三臂齐 + 自动收割 verdict 最可能窗口 = 09-18 中午~下午（本周五内）**
 - **不干预决策依据（如实留档）**：GPU4 共享进程 191146（toktokenbench，cunyuliu）/ 3305635（deltaflow 8410MB，cunyuliu 另一课题 ReactFlow delta——TRAE 定时任务「DeltaFlow DFLOW3 seed1 监督」为独立活跃项目）；GPU5 有 honghuiyang_af3 外部 13.3GB。合同 §七.1「不抢占、不终止其他用户任务」+ 另一课题独立执行权 → COMB 三臂按自然节奏推进，不迁移不终止。
 - 剩余动作清单（全自动/单步）：三臂 summary 齐 → watcher 收割（3-5 分钟内出 verdict）→ polya watcher 补 D 行 → 后续会话回填。
+
+### 批次一百零二（2026-09-17 00:10，收割判定器独立审计：H-int 聚合 bug 修复——预终态救场链第四次）
+
+- **审计动作**：对 comb_tier2_harvest.py（setflow 分支）265 行逐行独立复核（非重复批次八十预验证，而是判定分支的新审计）。
+- **发现 bug**：H-int 分支的 `for t in d_tags:` 循环内 `dd_sc = [...]` 复赋值（非 extend）——**循环后 dd_sc 只含最后一个 D 臂（seed17）的 D-vs-C paired deltas**，H-int 判定（ci95 上界为负）实际只由单臂决定，违背 3-seed 聚合语义。
+- **修复**（commit 384d77a1，setflow）：`extend()` 跨三臂聚合（3×891 对）再算 mean + CI；预注册语义不变（H-int = D 聚合显著低于 C，CI 上界为负）。
+- **回归**：py_compile PASS + 合成回归（3 臂 × 20 源 = 60 对聚合，mean/CI 出数正确）。
+- **救场链回顾（预终态四次 bug 修复，全部在产物终态前）**：① Optimus calibre sys.modules（批次八十）→ ② D16-C eval memo（批次八十二）→ ③ CI 门语义反转（批次八十八）→ ④ H-int 聚合覆盖（本批）。**若本 bug 未修：H_ADD 不成立且 seed17 恰显著低于 C 时会产生假 H_INT，或三臂全局低于 C 而 seed17 不低时漏判**——两种错误方向都已消除。
+- 其余分支复核通过：H-add all 语义（三臂全过双门）✓；Optimus 失败方向安全（g_op=False + optimus_status 顶层标注）✓；A/B/C 参照 paired_delta 语义 ✓；top1_delta_scores 配对（source, top1）✓。
+- 三臂同窗口顺查：main 851 / seed16 851 / seed17 777（进程全活）——终态窗口维持 09-17/18。
