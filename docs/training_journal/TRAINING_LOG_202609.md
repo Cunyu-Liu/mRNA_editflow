@@ -2155,3 +2155,14 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **内容骨架**：① 前置依据三连（D16-C 四门 / E7 v2 探针 / 判定链唯一路径）；② H-ERK-v2 假说（显式一阶上下文能量表 1-3M 替换 170M 自由头；与 D16-C 同一靶标 G1/G4，主臂用原始数据不用合成增强）；③ 架构范围（Energy 一阶 + Residual 轻头；Kernel 交互核预注册不启用——E7-b 仅 polyA 显著）；④ 判定门 ERK-G1~G4（继承 D16-C G1/G2/G4 口径连锁，G3 兜底）；⑤ 诚实条款五条（E7-c FAIL → off-manifold 不作预注册主张 / 探针数字≠训练结果 / D16-C 双 FAIL 继承 / polyA 主行不动 / protected reads=0）；⑥ 执行清单七步（前置 COMB 终态 → 实现+单测 → 冒烟 → 主臂 ≤8 GPU·h → 收割 → 3-seed 或 G3 分叉 → 纪律自查）；⑦ 拍板记录位。
 - **未启动训练**：amendment 状态 = 草案待用户拍板（§7 拍板前任何门不生效）；COMB tier-2 优先级的 GPU 时序条款已写入 §6。
 - 三臂同窗口顺查：main 851 / seed16 851 / seed17 777（心跳节奏未变，进程全活）——终态窗口 09-17/18 维持。
+
+### 批次一百零一（2026-09-17 00:05，收割前置文件终验 + 三臂终态时间精修预测）
+
+- **收割前置终验（全部就绪，零缺口）**：A/B/C 参照池三文件在位（A 19.3MB / B 21.1MB / C 154.3MB）；measured_neighborhood.private.jsonl（1.23MB）+ source_eligibility.jsonl（661KB）在位；comb_tier2_harvest.py 的 D_POOLS 输入 = 各臂 guided/generated_candidates.private.jsonl **终态一次性落盘**（当前 D 臂目录仅 heartbeat，符合历史 runner 设计）——watcher 的 done_file（guided_run_summary.json）与产物落盘顺序一致，无竞态。
+- **三臂批次节奏精修预测**（基于每臂最近 2-3 个 37 源批次的实测 elapsed）：
+  - main：851（14:34）+ 15.7-25h/批 → 888 预计 09-17 06:00-16:00，终态+summary 09-17 白天~晚
+  - seed16：851（16:19）+ 5.2-10.3h/批 → 888 约 09-17 02:00，终态 09-17 早~午
+  - seed17：777（11:14）+ 5.6-15h/批（批间隔最近拉长，GPU4 上本用户 deltaflow/toktokenbench 进程 13GB 共享）→ 814/851/888 依次 09-16 晚~09-17 夜，**终态+summary 09-18 早~午**
+  - **三臂齐 + 自动收割 verdict 最可能窗口 = 09-18 中午~下午（本周五内）**
+- **不干预决策依据（如实留档）**：GPU4 共享进程 191146（toktokenbench，cunyuliu）/ 3305635（deltaflow 8410MB，cunyuliu 另一课题 ReactFlow delta——TRAE 定时任务「DeltaFlow DFLOW3 seed1 监督」为独立活跃项目）；GPU5 有 honghuiyang_af3 外部 13.3GB。合同 §七.1「不抢占、不终止其他用户任务」+ 另一课题独立执行权 → COMB 三臂按自然节奏推进，不迁移不终止。
+- 剩余动作清单（全自动/单步）：三臂 summary 齐 → watcher 收割（3-5 分钟内出 verdict）→ polya watcher 补 D 行 → 后续会话回填。
