@@ -2129,3 +2129,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **意外发现**：Saluki（变异效应域监督模型）MPRAU 仅 0.1205、RiboNN（TE 专才）TE −0.011——**域监督先验不匹配 regime 时同样失效**，与蛋白质侧「唯一例外都有域内监督」形成对照：先验只在 regime 匹配时兑现。
 - **口径纪律**：每 (task, model) 单行防重复；Saluki 行用 pair-mean 口径显式标注；APARENT 2019 行取自 aparent2 产物 references 字段（同口径复用，未重跑）。protected reads = 0。
 - **D16-C 探针状态顺检**（早发射观察）：GPU5 六 epoch 已跑完（final_mrl_val_spearman=0.1350 ≥ 0.135 基线），G1 门后半（train-backtest gap）与 G4 结构探针待专项跑——批次八十九预写的收割脚本就绪。
+
+### 批次九十八（2026-09-16 01:20，D16-C G1 门终判：gap backtest 出数——G1_FAIL，预注册反假说分支生效）
+
+- **执行**：run_d16c_gap_backtest（镜像官方 run_v5_train_backtest 协议：subsample seed 20260912 / per-source batch 32 / memo 每源清空 / GPU6 推理）对 probe_epoch_6 final ckpt 打分。首次运行 KeyError source_row 修复（probe eval 同款 source_key 注入）后复跑成功；产物 gap_backtest_d16c.json。
+- **数字**：rho_train 0.9558（> 官方 V5 0.9284）/ rho_val 0.1324（probe summary 0.1350 为 epoch 内诊断口径，backtest 为 FINAL-EPOCH 专项口径）/ **gap 0.8235 vs V5 0.7943（略升）**。
+- **判定**：G1 门双条件 FAIL（gap 0.82 > 0.30；val 0.1324 < 0.135 边际差 0.003）。按 amendment §4.2 冻结门如实判定，零事后调整。
+- **科学结论（预注册反假说分支）**：within-source 密度 4.9→32 合成增强未把 170M 端到端模型从记忆路线逼到结构路线——train rho 反升（0.928→0.956）说明合成行被用作额外记忆容量。amendment §1 反假说原文生效：「容量性记忆偏好」成立，**ERK 参数侧（显式结构先验）成为唯一路径，数据侧宣告独立无效**。
+- **判读注意（诚实边界）**：探针合成行的 per-step 采样（(hash+step) % len）使 6 epoch 内每源见到 ~6 倍不同合成候选；gap 上升部分可能来自合成分布的扩展记忆。G4 结构池探针（graded sc-hit@1 > 0）尚未跑——它才是「表征是否开始学结构」的直接判据；建议 G4 一并收割后再写论文版结论。density-regime 相关性（批次九十七 r=0.94）解读需相应收敛：观测性相关成立，但「提密度即可修复」的干预分支被证伪（单任务单臂探针级证据）。
+- 纪律：protected reads = 0；零判定门修改；产物 /mnt，代码 push。
