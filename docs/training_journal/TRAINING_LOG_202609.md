@@ -2120,3 +2120,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - seed16/17 心跳 37/891（下一心跳预计 ~08:30-09:30，共享卡节奏）；速率维持 0.0021。
 - crontab 2h 快照首次写盘验证 ✓（第四层观测生效）。
 - early-launch watcher（1h 值守中）将在 main 终态后自动衔接 D16-C 探针。
+
+### 批次九十七（2026-09-15 16:10，delta-vs-density regime 分析出数：论文新图 + 蛋白质侧文献定位）
+
+- **触发**：用户提供 Hou, Liu, Zafar & Shen, Nat Comput Sci 2026（Understanding language model scaling for protein fitness prediction, bioRxiv 2025.04.25.650688）——蛋白质侧同型问题（通用 LM 在差分型任务上失效 + regime 决定性能）。拍板三项：引用定位 / regime 散点分析 / Methods 理论段。
+- **analysis_delta_vs_density_v1**（零训练，纯冻结产物聚合）：25 外部 frozen-Δ 行 × 7 任务 × 9 模型族，横轴 = amendment §2 冻结 TRAIN 密度（cand/源）。**统计**：Pearson(log10 density, ρ) r=0.9388 p=3.9e-12；Spearman ρ=0.699 p=1.0e-4；Kendall τ=0.517 p=5.5e-4。产物：analysis_delta_vs_density_20260915/（png + pdf + data json，位于 /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/ 下）。commit 6dbc570c 已 push。
+- **核心叙事升级**：H3 可学性地图从「任务级枚举」升级为「机制级规律」——外部模型 Δ 性能与 log 密度近完美线性（r=0.94），失效带（密度 1-6.1）外部 ρ 全落 −0.12~+0.31；polyA（126.7）0.68-0.75 且我方 V5 0.822 领先。面板 b：V5 train-backtest gap 与密度反向（记忆化同为 regime 决定）。
+- **意外发现**：Saluki（变异效应域监督模型）MPRAU 仅 0.1205、RiboNN（TE 专才）TE −0.011——**域监督先验不匹配 regime 时同样失效**，与蛋白质侧「唯一例外都有域内监督」形成对照：先验只在 regime 匹配时兑现。
+- **口径纪律**：每 (task, model) 单行防重复；Saluki 行用 pair-mean 口径显式标注；APARENT 2019 行取自 aparent2 产物 references 字段（同口径复用，未重跑）。protected reads = 0。
+- **D16-C 探针状态顺检**（早发射观察）：GPU5 六 epoch 已跑完（final_mrl_val_spearman=0.1350 ≥ 0.135 基线），G1 门后半（train-backtest gap）与 G4 结构探针待专项跑——批次八十九预写的收割脚本就绪。
