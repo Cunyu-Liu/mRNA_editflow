@@ -2176,3 +2176,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **救场链回顾（预终态四次 bug 修复，全部在产物终态前）**：① Optimus calibre sys.modules（批次八十）→ ② D16-C eval memo（批次八十二）→ ③ CI 门语义反转（批次八十八）→ ④ H-int 聚合覆盖（本批）。**若本 bug 未修：H_ADD 不成立且 seed17 恰显著低于 C 时会产生假 H_INT，或三臂全局低于 C 而 seed17 不低时漏判**——两种错误方向都已消除。
 - 其余分支复核通过：H-add all 语义（三臂全过双门）✓；Optimus 失败方向安全（g_op=False + optimus_status 顶层标注）✓；A/B/C 参照 paired_delta 语义 ✓；top1_delta_scores 配对（source, top1）✓。
 - 三臂同窗口顺查：main 851 / seed16 851 / seed17 777（进程全活）——终态窗口维持 09-17/18。
+
+### 批次一百零三（2026-09-18 00:50，COMB tier-2 两臂终态确认——seed17 末段在途，verdict 窗口锁定）
+
+- **D891_main 终态**（09-17 07:00）：status=GUIDED_XEDITSETFLOW_V5_B2_RUNNER_COMPLETE；cpu_fallback_used=False；CUDA 证据链（device_index/name/uuid/free_memory 字段齐）；guided_run_summary.json 1.78MB。last heartbeat 888/891（elapsed 418,084s）→ 终态一次性落盘。
+- **D891_seed16 终态**（09-17 05:08）：同 schema 全字段健康；summary 1.78MB。
+- **D891_seed17 在途**：851/891（elapsed 395,947s，rate 0.0021，ETA 18,611s ≈ **5.2h**）——40 源剩 + 终态落盘，预计 **09-18 06:00 左右终态**。
+- 进程状态：仅 285149（seed17）存活；166606/285147 已随终态退出（正常）。
+- **收割链就绪态复核（最终版确认）**：harvest watcher（PID 430791）检测三臂 summary 齐 → 自动跑 comb_tier2_harvest.py（修复版 384d77a1）→ comb_tier2_harvest.json verdict → polya watcher（PID 1804802）自动补 D 行。**预估 verdict 落地 = 09-18 06:00-06:15**——本周五上午，满足「本周内交付」。
+- 下一步（全部自动化）：verdict 出数后执行 CURRENT_HANDOVER_STATUS_20260916.md §6 回填手册七步。
