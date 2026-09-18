@@ -244,7 +244,7 @@ if d_tags:
     # H-add fingerprint: B+C~D (point estimates)
     if "B_guide" in rows and "C_explore" in rows:
         verdict["additivity_fingerprint"] = {
-            "B_plus_C_d_sc": rows["B_guide"].get("d_sc_hit1"), "D_mean_d_sc": m_sc,
+            "B_plus_C_d_sc": (rows["B_guide"].get("d_sc_hit1", 0.0) or 0.0) + (rows["C_explore"].get("d_sc_hit1", 0.0) or 0.0), "D_mean_d_sc": m_sc,
             "B_plus_C_d_optimus": (rows["B_guide"].get("d_optimus", 0.0) or 0.0) + (rows["C_explore"].get("d_optimus", 0.0) or 0.0),
             "D_mean_d_optimus": m_op,
         }
