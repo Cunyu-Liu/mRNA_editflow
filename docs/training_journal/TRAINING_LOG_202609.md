@@ -2209,3 +2209,14 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **终态窗口修订**：乐观 09-18 晚；保守 09-19 凌晨~上午（851→888 按 25-30h + 888→891/summary 2-3h）。**若过 09-19 中午仍未终态 → 升级诊断（stack snapshot）**。
 - **不干预决策**：无断点机制（runner 无 resume），任何重启=丢失 851 源进度+从头 ~5 天重跑，代价远大于等待；GPU4 外部进程为小額共享，非垄断。
 - 交付链不变：三臂齐 → watcher 自动收割 → verdict（修复版判定器）；两臂终态产物与 CUDA 证据已锁。
+
+### 批次一百零五（2026-09-19 00:30，COMB tier-2 终判收割完成——verdict = H_IND_or_NEGATIVE，全链数字落地）
+
+- **三臂齐终态**：main 09-17 07:00 / seed16 09-17 05:08 / **seed17 09-18 23:57**（批次一百零四诊断的慢批次收口：888/891 心跳 09-18 18:13 前后，最终 851→891 慢段 = 25h+，恰在 main 臂历史极值带内）；三臂 summary 均 COMPLETE、cpu_fallback=False。
+- **verdict（comb_tier2_harvest.json，修复版判定器）**：`hypothesis_verdict = H_IND_or_NEGATIVE`——H-add 未达成（sc 门 1/3：seed16 +0.0332 排零过；main +0.0268 / seed17 +0.0292 差门 0.0008~0.0032；optimus 门 0/3 全跨零），H-int 不成立（D vs C −0.0043 CI [−0.0102,+0.0013] 跨零）。
+- **核心数字（891 全量 × 3 seed）**：D mean d_sc_hit1 **+0.02972**（vs A 0.5131 / C +0.0341）；mean d_optimus +0.0086（全跨零）；mean d_support +0.0569（vs C +0.0494）；mean recovery 0.1651（vs A 0.1205 / C 0.1636）。
+- **可加性指纹（fingerprint 字段修复后重跑）**：sc 口径 **B+C = +0.02974 vs D = +0.02972——近完美可加（差 0.00002）**；optimus 口径 B+C = +0.00975 vs D +0.00859。→ 探索×引导两机制在 sc 排序口径上独立叠加、**无正交超加**；与 tier-1 calib100（D 四臂最高 + 近可加指纹）方向一致，但 891 全量把 tier-1 的 Optimus 信号判定为跨零。
+- **polyA 第三口径 D 行（polya watcher 自动补，n=20 report-only）**：D_main +0.3527 / D_seed16 +0.4210 / D_seed17 +0.4844 （B +0.2328 / C +0.0596 参照）——polyA 口径 D 高于两单臂（报告口径，不作终判）。
+- **科学结论（预注册判读框架，批次八十五预案落点验证）**：`H-ind`——两单臂增益各自复制但无超加。「探索增益在 sc 口径复制（D≈C≈+0.03±0.001）」+「引导增益在 optimus 口径无 891 级兑现（全跨零）」= 机制矩阵完整现象学：**B 与 C 的作用正交可加、D 无超加收益**；口径镜像分歧（recovery/sc 正 vs Optimus 跨零）在 891 三层 seed 下稳定复现。
+- **交付判定（合同口径）**：891 全量 + 3 seed 聚合 + CI 排零冻结门全部执行，零事后调整；H_ADD 未达成如实落档——COMB 矩阵作为生成线机制章节的完整现象学素材（非失败废料：sc 口径近完美可加性是「探索×引导正交」的正面证据）。
+- **工程收尾**：fingerprint B_plus_C_d_sc 修复（漏加 C 项，setflow commit 待 push）；重跑 harvest 全字段逐位一致（verdict 不变）。
