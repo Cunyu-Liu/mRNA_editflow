@@ -1,0 +1,212 @@
+{
+ "GSM7867911": {
+  "title": "HEK, Replicate 1, DNA",
+  "srr": "SRR26544320",
+  "column": "SIC0029_HVF3VDSXY_AGGGGAACGA-ACACCTACTG_L003"
+ },
+ "GSM7867912": {
+  "title": "HEK, Replicate 2, DNA",
+  "srr": "SRR26544319",
+  "column": "SIC0030_HVF3VDSXY_GAGCTGTTTA-ACACCTACTG_L003"
+ },
+ "GSM7867913": {
+  "title": "HEK, Replicate 3, DNA",
+  "srr": "SRR26544318",
+  "column": "SIC0031_HVF3VDSXY_ATGCAGATAA-ACACCTACTG_L003"
+ },
+ "GSM7867914": {
+  "title": "HEK, Replicate 4, DNA",
+  "srr": "SRR26544317",
+  "column": "SIC0032_HVF3VDSXY_CGCACAAAGA-ACACCTACTG_L003"
+ },
+ "GSM7867915": {
+  "title": "HEK, Replicate 5, DNA",
+  "srr": "SRR26544316",
+  "column": "SIC0033_HVF3VDSXY_GATCCGCGAA-ACACCTACTG_L003"
+ },
+ "GSM7867916": {
+  "title": "HEK, Replicate 6, DNA",
+  "srr": "SRR26544315",
+  "column": "SIC0034_HVF3VDSXY_ACATGAAACA-ACACCTACTG_L003"
+ },
+ "GSM7867917": {
+  "title": "HEK, Replicate 1, TotalRNA",
+  "srr": "SRR26544314",
+  "column": "SIC0035_HVF3VDSXY_TAGGTGACTA-ACACCTACTG_L003"
+ },
+ "GSM7867918": {
+  "title": "HEK, Replicate 2, TotalRNA",
+  "srr": "SRR26544313",
+  "column": "SIC0036_HVF3VDSXY_AGGCTACATA-ACACCTACTG_L003"
+ },
+ "GSM7867919": {
+  "title": "HEK, Replicate 3, TotalRNA",
+  "srr": "SRR26544312",
+  "column": "SIC0193_HVF3VDSXY_CTTACACTCA-ACACCTACTG_L003"
+ },
+ "GSM7867920": {
+  "title": "HEK, Replicate 4, TotalRNA",
+  "srr": "SRR26544311",
+  "column": "SIC0194_HVF3VDSXY_CAGTCACACA-ACACCTACTG_L003"
+ },
+ "GSM7867921": {
+  "title": "HEK, Replicate 5, TotalRNA",
+  "srr": "SRR26544310",
+  "column": "SIC0195_HVF3VDSXY_ACTCACAACA-ACACCTACTG_L003"
+ },
+ "GSM7867922": {
+  "title": "HEK, Replicate 6, TotalRNA",
+  "srr": "SRR26544309",
+  "column": "SIC0214_HVF3VDSXY_GAGCCGCTGA-ACACCTACTG_L003"
+ },
+ "GSM7867923": {
+  "title": "HEK, Replicate 1, 80S_RNA",
+  "srr": "SRR26544308",
+  "column": "SIC0196_HVF3VDSXY_CTTAACACCA-ACACCTACTG_L003"
+ },
+ "GSM7867924": {
+  "title": "HEK, Replicate 2, 80S_RNA",
+  "srr": "SRR26544307",
+  "column": "SIC0197_HVF3VDSXY_CTTGGGCGAA-ACACCTACTG_L003"
+ },
+ "GSM7867925": {
+  "title": "HEK, Replicate 3, 80S_RNA",
+  "srr": "SRR26544306",
+  "column": "SIC0198_HVF3VDSXY_CCTGCTACTA-ACACCTACTG_L003"
+ },
+ "GSM7867926": {
+  "title": "HEK, Replicate 4, 80S_RNA",
+  "srr": "SRR26544305",
+  "column": "SIC0199_HVF3VDSXY_ATCGAAGCTA-ACACCTACTG_L003"
+ },
+ "GSM7867927": {
+  "title": "HEK, Replicate 5, 80S_RNA",
+  "srr": "SRR26544272",
+  "column": "SIC0200_HVF3VDSXY_CATGGACCTA-ACACCTACTG_L003"
+ },
+ "GSM7867928": {
+  "title": "HEK, Replicate 6, 80S_RNA",
+  "srr": "SRR26544271",
+  "column": "SIC0201_HVF3VDSXY_CCGATTTGGA-ACACCTACTG_L003"
+ },
+ "GSM7867929": {
+  "title": "HEK, Replicate 1, 40S_RNA",
+  "srr": "SRR26544270",
+  "column": "SIC0202_HVF3VDSXY_GATTGCTTCA-ACACCTACTG_L003"
+ },
+ "GSM7867930": {
+  "title": "HEK, Replicate 2, 40S_RNA",
+  "srr": "SRR26544269",
+  "column": "SIC0203_HVF3VDSXY_CGGGTTAGGA-ACACCTACTG_L003"
+ },
+ "GSM7867931": {
+  "title": "HEK, Replicate 3, 40S_RNA",
+  "srr": "SRR26544268",
+  "column": "SIC0204_HVF3VDSXY_TTATCCTTCA-ACACCTACTG_L003"
+ },
+ "GSM7867932": {
+  "title": "HEK, Replicate 4, 40S_RNA",
+  "srr": "SRR26544267",
+  "column": "SIC0205_HVF3VDSXY_ATGTGTTTCA-ACACCTACTG_L003"
+ },
+ "GSM7867933": {
+  "title": "HEK, Replicate 5, 40S_RNA",
+  "srr": "SRR26544266",
+  "column": "SIC0206_HVF3VDSXY_TGATTCGTGA-ACACCTACTG_L003"
+ },
+ "GSM7867934": {
+  "title": "HEK, Replicate 6, 40S_RNA",
+  "srr": "SRR26544265",
+  "column": "SIC0207_HVF3VDSXY_CGGCACGCTA-ACACCTACTG_L003"
+ },
+ "GSM7867935": {
+  "title": "HEK, Replicate 1, Polysome_RNA",
+  "srr": "SRR26544390",
+  "column": "SIC0215_HVF3VDSXY_GGCGTCTCTA-ACACCTACTG_L003"
+ },
+ "GSM7867936": {
+  "title": "HEK, Replicate 2, Polysome_RNA",
+  "srr": "SRR26544389",
+  "column": "SIC0216_HVF3VDSXY_CCATCTGGAA-ACACCTACTG_L003"
+ },
+ "GSM7867937": {
+  "title": "HEK, Replicate 3, Polysome_RNA",
+  "srr": "SRR26544388",
+  "column": "SIC0217_HVF3VDSXY_TTCCAAGGCA-ACACCTACTG_L003"
+ },
+ "GSM7867938": {
+  "title": "HEK, Replicate 4, Polysome_RNA",
+  "srr": "SRR26544387",
+  "column": "SIC0218_HVF3VDSXY_GCCAGAAGCA-ACACCTACTG_L003"
+ },
+ "GSM7867939": {
+  "title": "HEK, Replicate 5, Polysome_RNA",
+  "srr": "SRR26544386",
+  "column": "SIC0219_HVF3VDSXY_AAGCACTAGA-ACACCTACTG_L003"
+ },
+ "GSM7867940": {
+  "title": "HEK, Replicate 6, Polysome_RNA",
+  "srr": "SRR26544385",
+  "column": "SIC0220_HVF3VDSXY_ACTGGGCAAA-ACACCTACTG_L003"
+ },
+ "GSM7867941": {
+  "title": "HEK, Replicate 1, TRAP_RNA",
+  "srr": "SRR26544384",
+  "column": "SIC0221_HVF3VDSXY_ACCTAACTTA-ACACCTACTG_L003"
+ },
+ "GSM7867942": {
+  "title": "HEK, Replicate 2, TRAP_RNA",
+  "srr": "SRR26544383",
+  "column": "SIC0222_HVF3VDSXY_AATATAACCA-ACACCTACTG_L003"
+ },
+ "GSM7867943": {
+  "title": "HEK, Replicate 3, TRAP_RNA",
+  "srr": "SRR26544264",
+  "column": "SIC0223_HVF3VDSXY_CAGCATGGTA-ACACCTACTG_L003"
+ },
+ "GSM7867944": {
+  "title": "HEK, Replicate 4, TRAP_RNA",
+  "srr": "SRR26544263",
+  "column": "SIC0224_HVF3VDSXY_ATATGAAGGA-ACACCTACTG_L003"
+ },
+ "GSM7867945": {
+  "title": "HEK, Replicate 5, TRAP_RNA",
+  "srr": "SRR26544262",
+  "column": "SIC0225_HVF3VDSXY_GTGGGTACAA-ACACCTACTG_L003"
+ },
+ "GSM7867946": {
+  "title": "HEK, Replicate 6, TRAP_RNA",
+  "srr": "SRR26544261",
+  "column": "SIC0226_HVF3VDSXY_TGCGGTTGAA-ACACCTACTG_L003"
+ },
+ "GSM7867947": {
+  "title": "HEK, Replicate 1, Plasmid_Library",
+  "srr": "SRR26544260",
+  "column": "SIC0227_HVF3VDSXY_ATATAGGCAA-ACACCTACTG_L003"
+ },
+ "GSM7867948": {
+  "title": "HEK, Replicate 2, Plasmid_Library",
+  "srr": "SRR26544259",
+  "column": "SIC0228_HVF3VDSXY_TTAATTCCCA-ACACCTACTG_L003"
+ },
+ "GSM7867949": {
+  "title": "HEK, Replicate 3, Plasmid_Library",
+  "srr": "SRR26544258",
+  "column": "SIC0229_HVF3VDSXY_GGAATCCCGA-ACACCTACTG_L003"
+ },
+ "GSM7867950": {
+  "title": "HEK, Replicate 4, Plasmid_Library",
+  "srr": "SRR26544257",
+  "column": "SIC0737_HVF3VDSXY_GCGAACCACA-ACACCTACTG_L003"
+ },
+ "GSM7867951": {
+  "title": "HEK, Replicate 5, Plasmid_Library",
+  "srr": "SRR26544382",
+  "column": "SIC0738_HVF3VDSXY_GCTAGACTCA-ACACCTACTG_L003"
+ },
+ "GSM7867952": {
+  "title": "HEK, Replicate 6, Plasmid_Library",
+  "srr": "SRR26544381",
+  "column": "SIC0739_HVF3VDSXY_ACAGTACTGA-ACACCTACTG_L003"
+ }
+}
