@@ -2260,3 +2260,14 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **Task 1.3 + 1.0.3 写作底稿**：mechanism_chain_a_draft.md（197 行 11 节，观测/合成证伪/参数证伪/真实侧有效三角结构）+ section_draft_why_abs_not_delta.md（199 行 10 节，五误差源实证 + oracle 结论 + 5 有效条件/5 失效形态/3 操作判据边界列表）；16+16 处数字与源 JSON 核对全一致；措辞冻结条款自查打勾（禁写「提密度即可修复」「所有 baseline 都失效」「embedding 差分等价性质差」全部合规）。
 - **Phase 1 闭合状态**：1.0/1.1/1.2/1.3 全绿；两份预注册文档先于计算落盘（纪律执行）；全部产物只增不改；protected reads = 0 保持。
 - **下一步**：Phase 2 Task 2.1 移植清单终审（PI 三问答复仍待用户转达——按 spec Phase 2 冻结条款，移植「执行」暂缓、清单「终审」为文档工作先行）。
+
+## 批次一百零九（2026-09-20 · Phase 2 闸门 + Phase 3 三评测行构建）
+
+- **Task 2.1 移植清单终审（commit a14fb447）**：benchmark_v2_port_ledger_v1.md + benchmark_v2_matrix_row_prereg_v1.md（评测执行闸门）落盘。终审 = 候选池逐项探测：**PORT_READY 5 个**（LAMAR-UTR5TEPred MIT 无条件 / HydraRNA fairseq-MIT 无条件 / GEMORNA、UTR-STCNet、UTR-Insight 附 license 确认条件）；Cao NOT_FOUND（权重从未发布）、Riley-SANDSTORM 与 UTailoR RIGHTS_BLOCKED（学术定制协议/无 license 文件）、Stroup&Ji 与 FunUV PARADIGM_MISMATCH。**矩阵推演：5+9=14 族 ∈ D2 区间下限达标**；最坏情况（3 附条件全拒）11<14 有 5 候补缓冲（LAMAR-3Deg/SANDSTORM/UTailoR/STCNet-U/V）。GEMORNA 权重已实测下载+torch.load 结构解析（可用性探测最小充分动作，未跑评测）。**Task 2.2 评测执行仍按 spec Phase 0 条款冻结（PI 三问答复未到）**。
+- **Task 3.1/3.2/3.3 三评测行构建完成（commit 3887bb71，seed 20260920 冻结）**：产物 /mnt/.../route2/benchmark_v2/ 三子目录（projection_rows.jsonl + row_definition.md + row_manifest.json）+ 构建脚本五件（scripts/route_a_v3/benchmark_v2_rows/）。
+  - **M1 MRL 行（2,805 行/2,801 源，HEPG2 800/PRIMARY_T_CELL 1600/HEK293T 405）**：Δy=rl 差值镜像 GSE114002 cand−src 口径；配对 = 15nt 前缀家族 + Hamming-1 兜底；**密度 1.0014（如实记录：评测行构建口径下的配对密度，非训练配对密度；delta-density 图上此行按其自身口径定位，解读时须区分）**；4 条 TRAIN 重叠实测 keep=0 天然出局。
+  - **M6 NDD 5'UTR 行（800 行/509 Family 源）**：Δy=log2((POLY_alt+1)/(MONO_alt+1))−同式 REF（SIC→fraction 映射破解固化 hek_sic_map.json；跨 10 barcode 聚合）；封存-解封史如实入 provenance（contract §2 historical_exposed_retrospective_external_stress_test 定位，标签仅用于 frozen-Δ 评测）；重叠复审 0 hits；hg38 soft-mask 与流式提取两 bug 修复（.upper() / 活跃窗口 buffer）。
+  - **S1 稳定性行（5,572 sub-row：SH 2,792/HEK 2,780；1,519 源，密度 3.67）**：受保护排除 1,330 行（序列级 4 + 变异 ID 级 1,328）→ eligible 3,742 + 表型缺测如实不插补；Dao cryptic QC = **flag 但保留 + 标注**（834/1,871 3'UTR 行 flagged：U>=7/10 滑窗 AND GT..AG<=40nt）——决策理由：S1 系内源基因组变异对非合成 3'UTR MPRA 插入，硬排除引入组成偏置，flag 供评测后敏感性分析；Δy=t05 差值（极端值原样保留，提示稳健统计）。
+  - **通用修正**：indel 行 zip 逐位 diff 级联伪差异 → GSE186455 canonical 风格 LENGTH_CHANGE 尾段操作（M6 59 + S1 751 行），终验 0 mismatch；统一 14 字段 schema 三行 100% 齐全；eval_split_status=NEW_EVAL_ROW 全行（不进既有 manifest，只增行）。
+- **纪律终验**：protected reads = 0；源数据与审计产物 mtime 均早于构建（只读证明）；无训练无 GPU 前向；产物只增。
+- **当前状态**：Phase 0（PI 三问送达待用户）/ Phase 1 全闭合 / Phase 2 = 2.1 done + 2.2-2.4 冻结待 PI 答复 / Phase 3 = 3.1-3.3 done + 3.4 干预臂待 PI 后执行 + 3.5 待 Phase 2 执行 / Phase 4 待前置。
