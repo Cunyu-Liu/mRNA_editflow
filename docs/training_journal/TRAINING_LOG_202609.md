@@ -2242,3 +2242,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   3. **结论：H-add 严格形式不成立（D ≠ B + C > C），弱形式成立（D = C + 引导中性）**——「探索宽度是唯一样本侧有效杠杆；引导在当前 β/critic 下可安全叠加但零增量」。
 - **论文机制章节素材（正结果主线）**：2×2 矩阵完整终表 + 3-seed 稳健 + 机制边界刻画（探索唯一有效 / 引导中性可叠加 / Optimus 口径增益不迁移）；V6.5 仍是唯一 3-seed 过 B2 字面门的方案（C 臂），组合臂是「无代价叠加」的边界数据点。
 - 收尾：tier-2 watcher 完成（done_tier2 落盘）；监控定时任务待暂停；产物 comb_tier2_optimus.json + 各臂 guided 产物。
+
+## 批次一百零七（2026-09-19 · DeltaBench 转向执行首日，spec pivot-delta-benchmark-mechanism v4 已批准）
+
+- **转向背景**：用户批准 spec v4（change-id pivot-delta-benchmark-mechanism；D1 机理主导 / D2 标准扩容 / D3 评测+干预双用 / D4 终稿前解封；D5-D8 默认值见 spec §8b）。核心 claim = 系统性失效归因框架：SOTA mRNA 模型在编辑前后性质差 Δ 预测上系统性受限，失效可归因（差分有效性边界 R0 + 数据几何因果律 R2/R3 + 失效分类 R4）。
+- **Phase 0 三文档落盘 + push（commit 682b8c80）**：①utr_editflow_goal_v2_amendment_pivot_v1.md（主合同 §0.1 条款 decision log，B' 定位；附则：PI 三问答复前 amendment 不生效）②pi_alignment_three_questions_20260919.md（中心问题归属 / benchmark 论文接受度 / venue 时间表；送达待用户转达）③delta_density_prereg_framework_v1.md（held-out 检验容差带 |Δρ|≤0.10、PASS 门 ≥70% 落带、降级与禁挑行条款）。
+- **Task 0.3 S1 序列级审计关闭（PENDING→PASS）**：hg38 窗口提取 5,072 对（双口径 canonical_115/任务_155；QC：ref 等位 5,029/5,029、0 截断、0 含 N）；跨研究受保护重叠 0；同库 GSE217518 重叠 2,778 行（序列级验证 2,733/2,733 逐碱基一致）→ verdict：S1 增量行使用时须排除同库受保护 1,328 行（约束已入审计 JSON）。产物：route2/audits/candidate_datasets_v1/S1_SU_2025_STABILITY.pigeonhole_audit.v2.json + s1_variant_sequence_pairs.v1.jsonl。
+- **Task 1.0.1 五误差源定量完成（analysis_delta_validity_v1/，零新前向）**：①误差相关三元组 37 行——**关键发现：同源误差强正相关（ρ_ε）是 delta 坍缩机制**：Optimus MRL (ρ_abs 0.873 / ρ_delta 0.313 / ρ_ε 0.720) 教科书式证据；polyA 高分行（UTR-LM 0.749 / RNA-FM 0.711 overall）组内仅 0.19/0.23 → 高 ρ_delta 由跨源信号支撑，与 G4 三代结构盲互证；有效 Δ 预测需 ρ_ε→0，冻结外部模型普遍不具备。②probe 几何（MRL 两 probe 权重已存档）：|w| 与主方差轴 cos 0.79/0.81、PR 51/259 → "宽而浅"读出；16 probe 行 PROBE_WEIGHTS_NOT_ARCHIVED 如实降级。③上下文失配：RiboNN 四行 −0.0106/−0.029/+0.0778/−0.045 全近零。④非可加性：一阶闭式 0.2069 vs ERK 0.2015，二阶 +0.0044 → 非可加性非主导、组内结构盲才是约束。⑤标签噪声：GSE149487-te ICC −0.274（标签近不可复现）。ρ_delta 复核 30/30 浮点级一致。
+- **纪律执行**：protected TEST reads = 0（全程只读 VALIDATION/canonical/存档产物）；既有文件零修改（mtime 清洁检查）；产物只落 /mnt 新目录；无训练任务（Phase 0/1 全为文档与分析）。
+- **下一步**：Task 1.0.2 oracle Δh-probe 对照臂（预注册规则先行）+ Task 1.1 一阶分解扩展（polyA/MPRAU/TE）+ 1.2/1.3 写作线。
