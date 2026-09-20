@@ -2361,3 +2361,48 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - 预注册先行：polyA 3-seed mini prereg 发射前冻结（commit 73d47cdf 含 prereg + runner + watcher + determinism 两脚本）。
 - **不 add** 旧未跟踪 py（run_mrnabert_raw_frozen9.py / run_p_axis_e5c.py / benchmark_v2_family_adapters_v1.py / run_benchmark_v2_matrix_family_v1.py / run_route2_benchmark_v2_matrix_v1.py——留待各自任务归属批次处理）。
 - **下一步**：①P0-0/P1 系列（label ICC 复算块、密度双口径敏感性、一阶 TRAIN-only α、新行 per-cell CI——CPU 批，独立会话）；②M1/polyA 训练终态后收割会话（G1-G4 四门 + 3-seed 终判 + 榜新行）；③STCNet 榜单注记落到 skeleton v2 §9（一行声明，骨架数字不回改）。
+
+---
+
+## 批次一百一十六（2026-09-20 · 严谨性补跑 CPU 批四件套：P0-2 ICC 复算块 + P1-1 密度双口径敏感性 + P1-2 一阶 TRAIN-only α + P1-3 新行 per-cell CI/MDE）
+
+> 依据：deltabench_rigor_audit_v1.md 补跑清单 P0-2 + P1-1/P1-2/P1-3（全部纯 CPU 零 GPU，用户批准即执行）。代码：W0 worktree  /  /  / ；两个 mini prereg 先行冻结（ + ）。产物四个新目录（/mnt experiments/ 下，只增不改）。
+
+### P0-2：label ICC 9 任务复算块（审计 A1 附属 + A10 扩展）——7/9 闭合，2 项 PROVENANCE_UNRESOLVED
+
+- **产物**：（icc_block.json + icc_block.md 表）。9 任务逐项（任务/值/方法/n/公式/源 locator/计算日期）：
+  - **polyA 0.90 → 复算命中**：GSE269595 VALIDATION 2,628 行按 (source_id, candidate_id) 配对、扰动上下文为重复——321 对 k≥2（k 均值 8.07），非均衡单向随机效应 ICC = **0.9042**（split-half Pearson 0.9637 seed 20260920）；0.90 的值、方法、n 全部落盘。**A1 补跑 2 目标达成（polyA 上界 91.3% 分母从「有值无 n」升格为「有完整复算块」**）。
+  - **MPRAU 0.683 → 复算包络**：VALIDATION 2,008 变体 × 6 细胞全 20 个 3+3 划分枚举：mean 0.7273 [0.6943, 0.7661]；变体均值 Spearman 单划分 0.6734。历史 0.683（journal 20260827 行 1202「3+3 split-half [0.671,0.710]」）在复算包络下沿附近、量级确认，但**精确复现该数的划分/度量未入档**——按包络读数如实登记。
+  - **TE149487 −0.274 / RNA149487 0.364**：48 记录 k=3 复重 delta——split-half Pearson **0.1698/0.6661 与 ceiling_icc_20260907 档值逐位一致**（复算链闭合）；naive ICC(1,1) 0.0206/0.7045 与档值不同（档协议为另一种双因素形式）——两口径并存登记。
+  - **TE200304 0.586 → 精确复现**：VALIDATION 1,614 记录 meta-analytic ICC = var(y)/(var+mean SE²) = **0.5856618**，与档值浮点级一致（0.5856617608641458）。
+  - **HL5 0.0014 / HL3 0.013 → 近零确认**：HEK293T vs SH_SY5Y 双上下文 466/794 对——Pearson −0.0022/+0.0358、ICC(2,1) −0.0008/+0.0019，量级与档值同阶（近纯噪声结论对公式选择稳健）。
+  - **MRL 0.83 → PROVENANCE_UNRESOLVED**：链路实查（ceiling_icc_20260907 无 MRL 条目；analysis_p_axis_v2.py LABEL_ICC 硬编码无 n/k/方法；canonical GSE114002 3,899 对全单测量、SE by-design 缺失；docs grep 无计算记录）。可信重构路径已写明：GSE114002 原始 barcode 级重复表（egfp_unmod_1/2 GSM3130435/36）join 到 730 VALIDATION 对——join 脚本不存在于档，属新采集/处理（超出本 CPU 批范围）。
+  - **REFALT 0.21 → PROVENANCE_UNRESOLVED**：N2A vs VGLUT 双上下文 281 对复算 ICC(2,1)=0.0793 / Pearson 0.0866 **不复现 0.21**；canonical 无 SE 字段（LMM meta-analytic 口径不可 CPU 复算）。写作期 §10.7 需把 MRL/REFALT 两上界标注「历史引用值，计算过程未入档」。
+
+### P1-1：M1/M6/S1 密度双口径敏感性（审计 A4）——in-band 33/65 → 39/65，FAIL 判定维持
+
+- **mini prereg 先冻结**（判定以原口径为准不动、本分析只作敏感性报告、结果无论方向如实报告）→ 执行。
+- **替换口径（计算前冻结）**：M1 训练侧全池配对密度 = 全量 kept 1,128,562 行 prefix-15 组 + 全局 Hamming-1 兜底：**9,578 候选 / 9,538 源 = 1.0042**（vs 评测行口径 1.0014，Δdensity 微小）；M6 全量 1,507 variant-key / 763 Family = **1.9751**（vs 抽样 1.5717）；S1 eligible 3,742 行变异 ID 级 gene×arm 组 = **2.4470**（vs sub-row 级 3.6682）。
+- **结果**：in-band 率 **50.77% → 60.00%**（+9.23pp，翻转 6 格全部为 S1 侧 OUT→IN——S1 密度下调后预测 ρ 从 0.121 降至 0.057，与 S1 观测近零带更贴合）；**仍 < 70% 门 → FAIL 维持，降级条款继续生效**。预注册解读档位 = (b) 量级敏感（变化 ≥5pp 但不过门）。
+- **结论**：held-out FAIL 判定对密度口径切换**不翻转**但**量级敏感**（主要敏感面在 S1 行——行级 vs 变异 ID 级口径差 1.22）；M1 口径差（1.0014 vs 1.0042）对判定面零影响（5 格翻转 0）。产物 （results.json + comparison_table.md）。
+
+### P1-2：一阶分解 TRAIN-only α 敏感性（审计 A5）——三任务 Δρ₁ 全部 <0.005，一阶主张稳健
+
+- **mini prereg 先冻结**（敏感性定位声明：原 VALIDATION-α 读数为主读数不动；零公式改动；预期带 |Δ|<0.02）→ 执行。α 选择改 TRAIN 内 5-fold GroupKFold CV（group=source_id，fold 内源编码重估，CV seed 20260920），评测面不变。
+- **读数**：polyA **0.4555 → 0.4555**（α=100 与原版相同，Δ=+0.0000）；MPRAU **0.0825 → 0.0823**（α 10→1，Δ=−0.0003）；TE **0.0458 → 0.0414**（α 10→30，Δ=−0.0044）。**三任务全部落在 prereg 预期带内**——§8.3「一阶解释 55.4%」主张对 α 选择口径（VALIDATION vs TRAIN-only）**稳健**，无乐观偏置抬升证据；反而 TRAIN-only 读数略低（TE −0.004），方向与「VALIDATION 选择偏乐观」假说一致但幅度可忽略。产物 。
+
+### P1-3：新行 per-cell bootstrap CI + MDE（审计 A9）——15 网格位（20 (cell,family) 格）CI/MDE 全落盘
+
+- **协议**：5 新族 × M1/M6/S1（S1 拆 3UTR/5UTR 两臂）= 15 网格位 = 20 (cell, family) 格；source-group 聚类 bootstrap 2,000 iters seed 20260920（聚类 = predictions.jsonl source_id：M1 prefix/Hamming 组、M6 Family、S1 gene×arm）；MDE = Fisher z tanh(1.96/√(n−3)) α=0.05 双侧。零新前向（只读 137,350 行存档），点估计与 matrix_v2_results.json 入档值浮点级一致（max |Δ|=7e−18）。
+- **读数**：CI 宽度 **0.072-0.147**（M1/S1 两臂 ~0.072-0.085 紧、M6 n=800 ~0.135-0.147 宽）；MDE：M1/S1 ≈0.037-0.038、M6 ≈0.069。**4 格 CI 排零且显著为正**（M1-GEMORNA +0.0889 CI[0.0515,0.1275] / M1-STCNet +0.0672 CI[0.0295,0.1065] / M1-Insight +0.0575 CI[0.0186,0.0949] / S1-3UTR-Insight +0.0450 CI[0.0024,0.0868]）——即 M1 行「集体 <0.09」中 3 格为**真实小幅正信号**（MRL 域内族托底，与 §5.3 双因子解读一致），非噪声；其余 16 格跨零且 |ρ|<MDE 或近零（power-limited 一致性带）。max|ρ|=0.0889。
+- **解读边界声明段已入档**（power.json interpretation_boundary_statement）：|ρ| 小 ≠ 0——跨零格为 consistent-with-zero 非 proven-zero；集体 <0.09 模式本身是族间一致性证据；M6/S1 臂 CI 宽格按 power-limited 读；M1 紧 CI 格的近零带非 power 伪影。产物 。
+
+### M1 干预臂状态复查（一行）
+
+- heartbeat（2026-09-20T14:20:08Z）：**status = WAITING**（GPU 0-5 无空闲整卡，watcher 每 600s 轮询，seed 20260920 未发射）——本 CPU 批与其零冲突。
+
+### 纪律终验
+
+- protected TEST reads = 0（全部只读既有 canonical/projection/predictions/存档 JSON）；零 GPU 零训练零新前向；只读既有产物（源数据零写入，产物只落 4 个新目录）；不改 verdict 与已冻结判定（P1-1 敏感性按 prereg 只报告不改判；P1-3 为 power 声明层）；两个 mini prereg 计算前冻结。
+- commit 范围：4 个补跑脚本 + 2 个 mini prereg md + 本 journal 批次；不 add 旧未跟踪 py（run_mrnabert_raw_frozen9.py / run_p_axis_e5c.py / benchmark_v2_family_adapters_v1.py / run_benchmark_v2_matrix_family_v1.py / run_route2_benchmark_v2_matrix_v1.py——留待各自任务归属批次）。
+- 下一步建议（不在本批执行）：审计表状态回填（P0-2 → A1/A10 半闭合、P1-1/P1-2/P1-3 → A4/A5/A9 GAP→SEALED/带声明）；MRL/REFALT 上界的 §10.7 方法句（PROVENANCE_UNRESOLVED 标注）。
