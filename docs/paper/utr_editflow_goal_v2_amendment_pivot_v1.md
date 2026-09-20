@@ -44,3 +44,9 @@ evidence:
 - 生成线（mRNA-EditFlow）：论文内定位为机理规律的应用案例；机制结论（B+C 可加、双口径分歧、探索 +0.03 排零）证据链保留，可走独立发表路径（polyA 独立小论文 / 委员会路由工具）。
 - 相关预注册框架：delta-density 规律的 held-out 检验见
   [delta_density_prereg_framework_v1.md](delta_density_prereg_framework_v1.md)（禁止挑行，降级条款预先固定）。
+
+---
+
+## 生效记录（2026-09-20）
+
+PI 三问答复到位（见 pi_alignment_three_questions_20260919.md 答复记录）：① benchmark 为主 ② 机理归因型最终交付可接受。**本 amendment 正式生效**。定位细化：主论文以 Source-Relative Edit Effect Benchmark v2 为第一主体，delta 可学性机理归因为分析核心（"系统性失效归因"框架维持，章节权重 benchmark 前置）。polyA 独立小论文（D5）从"暂不拆分"进入叙事讨论阶段。

@@ -2278,3 +2278,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **license 豁免拍板已入 ledger 追记（commit 5a8e30eb）**：GEMORNA/UTR-STCNet/UTR-Insight 按 PORT_READY 无条件执行；矩阵规模锁定 14 族。
 - **Task 2.2 矩阵评测双路发射**：路线 A = LAMAR-UTR5TEPred + HydraRNA（transformer 系）；路线 B = GEMORNA + UTR-Insight + UTR-STCNet（轻量/自定义架构系，含 paddle 风险登记条款）。评测面 = 9 canonical VALIDATION 任务 + M1/M6/S1 三新行；frozen-Δ 零调参 + benchmark_v2_matrix_row_prereg_v1.md 闸门合规；CUDA MIG 留证。
 - **polyA 小论文叙事（D5）进入讨论**：发起人提案 = "任务闭合解剖学"框架（closure 而非 leaderboard 增量主张；详见讨论记录，验证三件套 = LOSO-lite / APARENT-Perturb native 对位 / 残差-天花板噪声分析）。
+
+## 批次一百一十（2026-09-20 · PI 三问答复 + Phase 2 解冻）
+
+- **PI 三问答复（用户转达）**：① 中心问题 = benchmark 为主（主论文定位微调：benchmark 第一主体、机理归因为分析核心，D1 细化）② 机理归因型论文可接受为最终交付 → **amendment 正式生效**（答复记录已回填 pi_alignment_three_questions_20260919.md）③ polyA 小论文叙事讨论启动（D5 倾向翻转，待用户确认叙事框架后定稿）。
+- **license 豁免拍板已入 ledger**（commit 5a8e30eb）：GEMORNA/UTR-STCNet/UTR-Insight 三附条件行全部无条件 PORT_READY。
+- **Phase 2 解冻**：Task 2.2（5 族移植 + 单测 + frozen-Δ 评测）+ Task 3.5（新行补格）启动执行；矩阵 = 5 新族 + 9 既有族 = 14 族；执行依据 = benchmark_v2_matrix_row_prereg_v1.md + benchmark_v2_port_ledger_v1.md（两文档均已冻结 commit）。
+- 纪律不变：protected reads = 0；VALIDATION only；只增行。
