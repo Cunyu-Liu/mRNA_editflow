@@ -2271,3 +2271,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   - **通用修正**：indel 行 zip 逐位 diff 级联伪差异 → GSE186455 canonical 风格 LENGTH_CHANGE 尾段操作（M6 59 + S1 751 行），终验 0 mismatch；统一 14 字段 schema 三行 100% 齐全；eval_split_status=NEW_EVAL_ROW 全行（不进既有 manifest，只增行）。
 - **纪律终验**：protected reads = 0；源数据与审计产物 mtime 均早于构建（只读证明）；无训练无 GPU 前向；产物只增。
 - **当前状态**：Phase 0（PI 三问送达待用户）/ Phase 1 全闭合 / Phase 2 = 2.1 done + 2.2-2.4 冻结待 PI 答复 / Phase 3 = 3.1-3.3 done + 3.4 干预臂待 PI 后执行 + 3.5 待 Phase 2 执行 / Phase 4 待前置。
+
+## 批次一百一十（2026-09-20 · PI 三问用户直答闭合 + Phase 2 解冻 + 双路移植评测发射）
+
+- **PI 三问答复（用户直答，见 pi_alignment_three_questions_20260919.md 答复记录节）**：①benchmark 为主 ②机理归因型论文接受为最终交付（amendment v1 生效）③polyA 小论文叙事讨论开启、主论文绿色通道。**Phase 2 解冻**。
+- **license 豁免拍板已入 ledger 追记（commit 5a8e30eb）**：GEMORNA/UTR-STCNet/UTR-Insight 按 PORT_READY 无条件执行；矩阵规模锁定 14 族。
+- **Task 2.2 矩阵评测双路发射**：路线 A = LAMAR-UTR5TEPred + HydraRNA（transformer 系）；路线 B = GEMORNA + UTR-Insight + UTR-STCNet（轻量/自定义架构系，含 paddle 风险登记条款）。评测面 = 9 canonical VALIDATION 任务 + M1/M6/S1 三新行；frozen-Δ 零调参 + benchmark_v2_matrix_row_prereg_v1.md 闸门合规；CUDA MIG 留证。
+- **polyA 小论文叙事（D5）进入讨论**：发起人提案 = "任务闭合解剖学"框架（closure 而非 leaderboard 增量主张；详见讨论记录，验证三件套 = LOSO-lite / APARENT-Perturb native 对位 / 残差-天花板噪声分析）。
