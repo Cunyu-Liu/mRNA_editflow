@@ -2334,3 +2334,30 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **纪律**：protected TEST reads = 0；本批零训练零 GPU 前向（审计为只读实查）；既有文件零修改（v1 保留、产物只读）；M1 干预臂不受影响（queue watcher pid 3494364 在途，seed 20260920，**M1 臂排队状态 = WAITING**——本批不占整卡、不与 M1 抢资源）。
 - **commit 范围**：skeleton_v2 + rigor_audit_v1 + 本 journal 批次；**不 add** 旧未跟踪 py（run_mrnabert_raw_frozen9.py / run_p_axis_e5c.py / scripts/route_a_v3/benchmark_v2_family_adapters_v1.py / run_benchmark_v2_matrix_family_v1.py / run_route2_benchmark_v2_matrix_v1.py——留待各自任务归属批次处理）。
 - **下一步**：①P0-1/P0-2 补跑（可立即排，MIG/CPU 不等 M1）②全文撰写（§8 素材已全量就位，可并行）③补跑结果回填审计表状态（GAP→SEALED/limitation），骨架数字不回改。
+
+## 批次一百一十五（2026-09-20 · P0-1 V5 polyA 3-seed 补跑发射 + P2-1 五族前向确定性检查完成）
+
+- **依据**：`docs/paper/deltabench_rigor_audit_v1.md` 补跑清单 P0-1（A1 最大攻击面：polyA 主行 0.8219 单 seed）与 P2-1（A2+A3：新族单 seed 单次前向可复现性）。commit 73d47cdf。
+
+### P0-1：V5 polyA 3-seed 补跑（发射与排队机制；收割归后续会话）
+
+- **原 seed 实查**：20260907（`experiments/xeditcritic_v5/v5_screen_seed_20260907_runner_1113cd2c…/v5_full/training_attempt.json` `parameter_initialization_seed`，SHARED_V4_CONSTRUCTOR 口径）。polyA 主行 0.8219 = 0.8218686245779881（n=2,628 VALIDATION overall Spearman，`adjudicate_route2_apa_route_a_v1.py` critic_v5 行，本批复核一致）。V5 训练实测 55,636.7s ≈ 15.5h/seed（8 pass / 22,416 updates / peak 8.3GB / BF16 / A100-40G）→ 2 新 seed 串行 ≈ 31h 训练 + 排队，**未触发降级预案**。
+- **mini prereg 冻结**（`docs/paper/polya_3seed_mini_prereg_v1.md`，发射前落盘，发射后零修改）：配置 = 冻结的 `authorizations/xeditcritic_v5/.../screen_config.json` 逐项克隆（同超参/同 9 任务 canonical TRAIN 107,873 行/同 SQRT source-group 均衡采样/同三组 lr + cosine/同损失权重表/同 FINAL-PASS-8-FIXED）；唯一改动面 = seed（新增 20260921/20260922，3-seed = 20260907 + 2 新，与既有 seed 族无重叠如实登记）。判定 = 3-seed 均值 ± range + source-group paired bootstrap CI（2,000 iters，seed 20260920）；**主行 0.8219 不替换**（只增行 polyA-V5-3seed-mean + 主行脚注）；Holm 家族以 3-seed 均值重算显著性方向（报告项）；polyA 评测 frozen-Δ 口径 VALIDATION 2,628 + top-1/NDCG 双口径在终态后收割。
+- **bespoke runner**（`run_route2_xeditcritic_v5_polya_3seed_v1.py`）：官方 `train_route2_xeditcritic_v4.py` SCREEN 通道硬门锁 seed==20260907 + 旧 HEAD 授权 + clean worktree（新 seed 无法走历史授权）→ 以库方式 import 官方共享核心（模型构建/优化器参数组/有效批目标/sampler/评测/checkpoint schema/实验 ledger 逐字复用，零模型/损失/优化器代码改动），**仅绕过 SCREEN 通道四门**（旧 HEAD 授权、seed 白名单、preflight 绑定、clean worktree），其余纪律全保留（CUDA A100 硬门、BF16 硬门、ledger RUNNING/COMPLETED/FAILED 上报、TEST/Eval reads=0、append-only、failure.json 终态）。路径先例 = M1 干预臂 bespoke runner（批次 112）。容量断言 170,481,957 trainable 复核内置。
+- **序列化 watcher 发射**（`launch_v5_polya_3seed_watcher.sh`，模式抄 M1 watcher）：Phase A = 轮询 M1 心跳（`xeditcritic_m1_intervention/seed_20260920/heartbeat.json`），**M1 进入 TRAINING 系列状态前不触碰 GPU 0-5**；Phase B = M1 在跑后每 600s 查 GPU 0-5 空闲整卡（<2GB + 0 进程）+ 120s grace 二次确认；Phase C = seed 20260921 训练到达终态（heartbeat DONE/FAILED 或 pid 消失）后才排队 seed 20260922，严格串行。**发射状态：watcher PID 4100904 存活，phase=PHASE_M1_GATE WAITING**（M1 watcher PID 3494364 仍 WAITING 排队，GPU 0-5 全占——两 watcher 均零 GPU 占用，零竞争）。心跳 `experiments/xeditcritic_v5_polya_3seed/watcher_heartbeat.json`；产物根 `experiments/xeditcritic_v5_polya_3seed/seed_{20260921,20260922}/`（heartbeat/training_attempt/run_summary/final_pass_8_checkpoint/final_validation_predictions）；预计时长 ~15.5h/seed + 排队墙钟。
+- **角色边界**：本批只负责预注册 + 发射 + 排队机制 + 如实报告发射状态；**3-seed 终判收割（均值/CI/Holm 方向/polyA 双口径评测 + 榜新行落位）由后续会话在训练终态后执行**。
+
+### P2-1：五族前向确定性检查（GPU 6/7 MIG 推理，已完成）
+
+- **执行**（`run_forward_determinism_check_v1.py` → `experiments/analysis_forward_determinism_v1/determinism.json`）：五族各取 100 条矩阵 cell 输入序列（GSE114002 VALIDATION 50 source + 50 candidate，恰为榜单 cell 实际评分序列；GEMORNA 3' 头另加 GSE269595 polyA 25+25），同一权重同一输入同进程两次前向，比对逐条 max|Δ| 与秩 Spearman。HydraRNA 按历史修复用 `CUDA_VISIBLE_DEVICES=<MIG uuid>` 单设备子进程（Triton/MIG autotuner 多设备 bug，零数值改动）。
+- **判定表**：LAMAR-UTR5TEPred **DETERMINISTIC**（bitwise，max|Δ|=0.0）；GEMORNA **DETERMINISTIC**（5' 头与 3' 头均 bitwise 0.0）；UTR-Insight **DETERMINISTIC**（bitwise 0.0）；HydraRNA **DETERMINISTIC**（bitwise 0.0，fairseq+Triton 单设备修复口径下）；UTR-STCNet **NONDETERMINISTIC（官方设计性）**——`UTRFormer_layers.cluster_dpc_knn` 对 token density 加 `torch.rand*1e-6` 平局噪声（官方推理随机性，非移植 bug）：未钉 seed max|Δ|=0.033 / 秩 0.9992；钉 seed 20260816（旧 runner 口径）max|Δ|=0.0049 / 秩 0.9999。
+- **对榜单影响定量**（companion `run_stcnet_cell_impact_v1.py` → `stcnet_cell_impact.json`）：用**榜单实际 emit 路径**（`benchmark_v2_matrix/family_adapters_v1.py`，未钉 seed）对 STCNet MRL cell（GSE114002 VALIDATION 730 行）完整重打 3 次：cell Spearman 0.8142-0.8150，run-to-run spread **8.4e-04**（第 4 位小数 ±1 ulp 量级）；存档值 0.8144 落在 3 次重跑区间内。**声明动作 = REQUIRES_LEADERBOARD_NOTE**（榜单 STCNet 行须注记"单次冻结前向，官方随机 DPC 聚类，重跑 spread 8.4e-04 实测于 MRL cell"）；无 cell 判定符号翻转（无 cell 距决策边界 <1e-03）。
+- **数字抽查**：主行 0.8219/2,628/seed 20260907/55,636s、STCNet cell 0.8144（重算一致）、determinism 五族 max|Δ| 全部来自本批产物原文。
+
+### 纪律与边界
+
+- protected TEST reads = 0（两任务全程；P0-1 TEST 18,292 行不可触碰断言内置，P2-1 只读 VALIDATION 序列）。
+- 不与 M1 watcher 抢同卡：序列化保证（Phase A 门 + M1 占卡期间 GPU 0-5 无空闲整卡，polyA watcher 挂 WAITING）；P2-1 只用 GPU 6/7 MIG 推理切片。
+- 预注册先行：polyA 3-seed mini prereg 发射前冻结（commit 73d47cdf 含 prereg + runner + watcher + determinism 两脚本）。
+- **不 add** 旧未跟踪 py（run_mrnabert_raw_frozen9.py / run_p_axis_e5c.py / benchmark_v2_family_adapters_v1.py / run_benchmark_v2_matrix_family_v1.py / run_route2_benchmark_v2_matrix_v1.py——留待各自任务归属批次处理）。
+- **下一步**：①P0-0/P1 系列（label ICC 复算块、密度双口径敏感性、一阶 TRAIN-only α、新行 per-cell CI——CPU 批，独立会话）；②M1/polyA 训练终态后收割会话（G1-G4 四门 + 3-seed 终判 + 榜新行）；③STCNet 榜单注记落到 skeleton v2 §9（一行声明，骨架数字不回改）。
