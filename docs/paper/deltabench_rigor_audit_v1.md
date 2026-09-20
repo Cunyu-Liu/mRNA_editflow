@@ -156,3 +156,18 @@
 - 汇报纪律：每项产物落 /mnt 新目录 + 逐格对照本审计表更新状态（GAP→SEALED/limitation），骨架 v2 不回改数字（补跑结果为敏感性/稳健性层，进 §9.3 与全文撰写期）。
 
 （审计 v1 完——对象骨架 v2；下一动作 = P0-1/P0-2 补跑或全文撰写，二者可并行）
+
+---
+
+## 补跑执行状态回填（2026-09-21 · commit 60ff6999 / 9b0e61ff / 73d47cdf）
+
+| 审计项 | 原状态 | 现状态 | 回填证据 |
+|---|---|---|---|
+| A1 polyA 单 seed（P0-1） | GAP-可补跑 | **RUNNING**（3-seed 发射，序列化排队：M1 门 → 2 seed 串行，watcher PID 4100904；原 seed 20260907 + 新 20260921/20260922；prereg 冻结 73d47cdf；~15.5h/seed 训练量级） | xeditcritic_v5_polya_3seed/ 心跳 + polya_3seed_mini_prereg_v1.md |
+| A1 附属 ICC 无 n（P0-2） | GAP-可补跑 | **部分闭合**：7/9 任务复算闭合（polyA 0.9041≈0.90 复算一致 / TE200304 浮点级一致 / MPRAU 括定 0.7273 [0.694,0.766] 括住 0.683 量级 / HL5/HL3 近零确认）；**MRL 与 REFALT 两项 PROVENANCE_UNRESOLVED 如实登记**（原始计算方法/n 未存档，硬编码 dict 链；作为 limitation 而非补跑项处理） | analysis_label_icc_block_v1/ |
+| A4 密度双口径（P1-1） | GAP-可补跑 | **CLOSED（敏感性）**：训练口径密度重算 in-band 50.77%→60.0%（+9.2pp，6 格翻转均在新行），**FAIL verdict 对口径选择稳健**；mini prereg 先行（原口径判定为准的敏感性定位） | sensitivity_density_caliber/ |
+| A5 一阶 α 乐观（P1-2） | GAP-可补跑 | **CLOSED（敏感性）**：TRAIN-only α（5-fold GroupKFold CV）重算：polyA Δ=0.0（α 同为 100，读数不变）/ MPRAU −0.0003 / TE −0.0044——一阶分解读数对 α 选择完全稳健，乐观偏差声明可撤 | sensitivity_train_alpha/ |
+| A9 新行 power（P1-3） | GAP-可补跑 | **CLOSED**：20 cells CI（中位宽 0.077，MDE 中位 ~0.037）+ 一个诚实细化：GEMORNA（ρ=0.0889 CI[0.052,0.127]）与 UTR-Insight 在 M1 行有小而显著正信号——"新行集体近零"表述细化为"多数近零；M1 行上两个 5'UTR 模型族有 ρ≈0.09 的小信号（写在 §9 局限与 §3 读数注记）" | analysis_cell_power_v1/ |
+| A2+A3 推理确定性（P2-1） | GAP-可补跑 | **CLOSED**：4/5 族逐位确定；STCNet 官方设计性非确定（DPC 聚类加平局噪声，cell spread 8.4e-04，入档 0.8144 在重跑区间内）——榜单加一行注记即闭合，无判定符号受影响 | analysis_forward_determinism_v1/ |
+
+**审计状态汇总更新：SEALED 4 → 8（A4/A5/A9/A2+3 关闭）；GAP-可补跑 6 → 1（A1 polyA 3-seed 在途）；GAP-不可补维持 1（A7 COMB polyA n=20 = 全量上限，limitation 声明）；新增 2 项 PROVENANCE_UNRESOLVED（MRL/REFALT ICC，作 limitation 处理非补跑）。**
