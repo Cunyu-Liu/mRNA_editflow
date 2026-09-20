@@ -2307,3 +2307,14 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **预计时长**：对齐 V2 单 seed 量级（V2 6ep/677K 行数小时级），本臂 977,608 行/ep ≈ 6.5-8 小时（发射后由 run_summary.efficiency 实测回填）。
 - **纪律终验**：protected TEST reads = 0（训练/评测仅 VALIDATION 730 面）；M1 行只进 TRAIN 侧、评测行 4,848 序列排除（冻结不动）；预注册门发射后零修改（amendment commit b2e141cd 先于 watcher 发射）；CUDA 硬门（无卡不发射，排队中）；模型/损失/超参零改动。
 - **角色边界（如实说明）**：本批只负责发射与预注册；**终判收割（G1-G4 四门判定 + 3-seed 扩展决策）由后续会话在训练终态后执行**。
+
+## 批次一百一十三（2026-09-20 · Task 4.1+4.2 骨架 v1 落盘：DeltaBench 主论文骨架 + R1-R13 攻击面自查）
+
+- **交付物**: `docs/paper/deltabench_main_paper_skeleton_v1.md`（483 行；章节级大纲 + 每节素材映射 + claim-证据表，非全文撰写）。定位按 PI 答复定稿：benchmark 第一主体（BENCHMARK_PAPER 主线），delta 可学性系统性失效归因为分析核心。
+- **结构**: Title/Abstract 位（3 候选标题：T1 benchmark 直陈 / T2 矩阵+归因并列（建议）/ T3 归因副标题；5 句式 Abstract 骨架）+ §1 Introduction（贡献 4 项）+ §2 The Benchmark（canonical record/13 任务表/四轴差异/评测协议）+ §3 矩阵（65 格主表 + 65/65 复核声明 + 域内强跨库弱/新行集体近零两关键读数）+ §4 R0 差分有效性（五误差源 + oracle 臂 + 协议发现披露）+ §5 两因子规律（v1 观测 r=0.9388 + held-out FAIL 降级如实写 + 双因子分组 EXPLORATORY + 干预三角 D16-C/ERK/W 阶梯 + G4 三代零 + **M1 干预臂空槽**待终态回填不写数字）+ §6 一阶分解（任务异质性主结论）+ §7 失效分类（20 行四类+对照）+ §8 polyA 收缩版（91% 完成度 + COMB 可加性一节 + 两级纪律案例 + 小论文留位）+ §9 Discussion（分类表指南 + rights/单 seed/FAIL 诚实局限）+ §10 Methods（管线/评估器/预注册清单/R2 内靶行/LOSO 引用）+ 附 A R1-R13 攻击面自查 + 附 B 措辞冻结自查 12 条 + 附 C 统计。
+- **claim-证据表覆盖**: 76 行骨架级 claim（§1:3 / §2:6 / §3:8 / §4:10 / §5:14 / §6:7 / §7:7 / §8:10 / §9:5 / §10:6），逐行带产物 locator；素材 1-9 全部映射（素材 7 拆入 §2/§8/§10，榜单 v1 §9 全表引用不改）。
+- **R1-R13 状态**: CLOSED 11（R7 带矩阵单 seed 残余声明）/ OPEN 2——R12 评测协议公平性（新增：frozen-Δ 零调参靠 R1/R5 间接闭合，新族 matched-FT 对位未执行如实登记；密度口径逐行声明；域映射非循环）、R13 rights 与 payload 边界（新增：豁免≠发布授权，availability statement 待 study-specific rights review，M6 禁 sealed/untouched 措辞）。
+- **措辞自查（附 B 12/12 通过）**: B1 禁「所有 baseline 失效」（用监督体制对照行措辞）；B2 密度单因子降级如实 + 双因子 EXPLORATORY；B3 MRL 平局禁 no difference；B4 生成线三口径分列；B5 HL 附不可学归因；B6 禁「提密度即可修复」；B7 polyA 秩口径显著胜+决策口径混合；B8 M1 空槽不写数字；B9 数字-locator 一一对应；B10 实证范围声明；B11 S1/M6/M1 泄漏权利措辞；B12 STCNet 域内属性披露而非隐藏。
+- **数字抽查核对（执行代理，SSH 只读逐项）**: 关键读数与源 JSON 逐字符比对——heldout verdict FAIL 33/65=50.77%、fit 斜率 0.3663/decade 截距 −0.0857、below-band 21 格 0 域内 / above-band 11 格 6 域内、域内 3/9 vs 域外 30/56、Optimus 三元组 0.8733/0.3132/0.7196、oracle 四行（MRL NO_SIGNAL 0.0869/0.0700 + polyA HEAD/EQUIVALENT +0.0070/−0.0054）、D16-C gap 0.8235、ERK gap 0.3815/val 0.2015、W 阶梯（280k_prefinetune metrics.task_macro 0.2470 + reference 块 w0 0.1987/optimus 0.3132）、一阶分解 0.4555/0.0825/0.0458（55.4%/80.5%/79.1%）、矩阵 STCNet 0.8144/M1 0.0672/Insight 0.2739——全部一致。
+- **纪律**: protected TEST reads = 0；只读既有素材（骨架为新增文档，未修改任何既有产物）；无训练无 GPU 前向；骨架不确定处（LOSO A/B 裁决、预注册 commit 全列表）如实标注留全文撰写期。
+- **下一步**: 标题终选（PI）→ 各章全文撰写 → R12/R13 残余处理 → §5.6 M1 空槽回填（干预臂终态后）→ 图表清单。
