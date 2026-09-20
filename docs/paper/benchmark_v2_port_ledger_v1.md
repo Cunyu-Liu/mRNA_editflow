@@ -228,3 +228,7 @@
 - 本 ledger v1 自 commit 起冻结；判定口径（四档 + ALREADY_ON_LEADERBOARD）与全表判定自冻结日起生效。
 - 后续变更仅允许通过 v2 变更单（按主合同变更流程），且旧判定下已产生的评测结果保持有效。
 - 附条件 PORT_READY 的 license 确认结果（无论正负）须回写至 v1 的勘误行或 v2，**不得静默改判**。
+
+## 追记（2026-09-20 · license 拍板）
+
+用户拍板：**license 免确认，直接使用**——GEMORNA / UTR-STCNet / UTR-Insight 三个附条件 PORT_READY 行的 license 确认步骤取消，全部按 PORT_READY 执行（用户口径：均为官方公开渠道发布的权重，学术评测用途风险自担）。附条件标记移除，预注册闸门（benchmark_v2_matrix_row_prereg_v1.md §3）中 license 确认条款由用户拍板豁免——该项拍板记录于本 ledger 与 journal 批次一百一十。Task 2.2 评测执行的前置条件相应收敛为：PI 三问答复（Phase 0 冻结条款，仍有效）。
