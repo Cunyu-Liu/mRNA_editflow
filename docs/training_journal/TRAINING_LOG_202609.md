@@ -2412,3 +2412,8 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **PPT 交付**：mRNA_editflow-DeltaBench转向-20260921.pptx（12 页，本地 mRNAflow/ppt/，与 0915 版同视觉系：YaHei / #1F497D / 橙 accent / #1F4E78 表头）——结构：封面→Why 转向（4 KPI）→决策全记录（D1-D8 清零）→基准定义（四轴+三新行）→矩阵结果（STCNet 域内强跨库弱头条）→归因三环（差分有效性/双因子/分解分类）→polyA 正结果章（含工作量定位六层压缩版）→严谨性（8 SEALED/1 在途/2 limitation）→进度总览→三讨论点（venue/held-out 呈现/rights）。全部数字来自冻结产物（PPT 内标注 |Δ|≤1e-6 复核声明）；结构检查 PASS（12 slides/zip 完整/零占位）。
 - **补跑批收编完成（commit 60ff6999）**：CPU 四件套 + journal 批次号冲突修复（两个子代理同写 115，第二个改 116）；P2-1 确定性（9b0e61ff）与 P0-1 polyA 3-seed 发射（73d47cdf）先前已 push；审计状态回填（4d934ded）：SEALED 4→8。
 - **当前在途**：M1 干预臂 watcher（PID 3494364，WAITING）+ polyA 3-seed watcher（PID 4100904，M1 门后串行）。终态后收割 = 下一会话工作（M1 四门 + §5.6 回填 / polyA 3-seed 新行 / Gate P 前置核验）。
+
+## 批次一百一十八（2026-09-21 · 密度因子证据计算 + PPT v3 修订）
+
+- **密度因子证据显式化（analysis_density_factor_evidence_v1/，纯 CPU 只读）**：(A) 组内 vs 全局 ρ：polyA 域内模型全局 0.71-0.75 的一半来自跨源信号（组内 0.23-0.43）；MRL 全局≈组内但水平抬不起（除 STCNet 语料重叠 +0.92）。(B) 任务内剂量响应（evaluator 组键分箱）：域内监督族组内 ρ 随每源候选数翻倍（APARENT +0.405→+0.697 / UTR-LM +0.251→+0.584 / RNA-FM +0.237→+0.526）；无域内监督的 5 新族不兑现（2-5 箱 ≈0）。**总判定：密度方向性证据成立但以监督体制为前提——支持「密度 × 监督交互」表述（与 delta_vs_density_v2 held-out FAIL 判读一致，PPT S11 与论文 §5 措辞同步）**。source 组键口径分箱不单调（双口径并报声明）。全局 ρ 复算 17/17 组合与入档一致。
+- **PPT v3（覆盖本地）**：S3 补文献出处（Sample 2019 / Cao 2021 / Lim 2021，"此前无人量化"改为"缺乏系统量化"）；S11 发现二补密度剂量响应表（3 行分箱矩阵）+ 结论改双因子交互表述 + held-out 交叉验证压缩为尾注；新增 S5 价值定位页（四层交付：工具/规律/指南/方法学）；后续页码顺延。用户自行修改部分未触碰。
