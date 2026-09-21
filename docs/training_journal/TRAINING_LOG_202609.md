@@ -2406,3 +2406,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - protected TEST reads = 0（全部只读既有 canonical/projection/predictions/存档 JSON）；零 GPU 零训练零新前向；只读既有产物（源数据零写入，产物只落 4 个新目录）；不改 verdict 与已冻结判定（P1-1 敏感性按 prereg 只报告不改判；P1-3 为 power 声明层）；两个 mini prereg 计算前冻结。
 - commit 范围：4 个补跑脚本 + 2 个 mini prereg md + 本 journal 批次；不 add 旧未跟踪 py（run_mrnabert_raw_frozen9.py / run_p_axis_e5c.py / benchmark_v2_family_adapters_v1.py / run_benchmark_v2_matrix_family_v1.py / run_route2_benchmark_v2_matrix_v1.py——留待各自任务归属批次）。
 - 下一步建议（不在本批执行）：审计表状态回填（P0-2 → A1/A10 半闭合、P1-1/P1-2/P1-3 → A4/A5/A9 GAP→SEALED/带声明）；MRL/REFALT 上界的 §10.7 方法句（PROVENANCE_UNRESOLVED 标注）。
+
+## 批次一百一十七（2026-09-21 · 汇报 PPT 交付 + 补跑批收编）
+
+- **PPT 交付**：mRNA_editflow-DeltaBench转向-20260921.pptx（12 页，本地 mRNAflow/ppt/，与 0915 版同视觉系：YaHei / #1F497D / 橙 accent / #1F4E78 表头）——结构：封面→Why 转向（4 KPI）→决策全记录（D1-D8 清零）→基准定义（四轴+三新行）→矩阵结果（STCNet 域内强跨库弱头条）→归因三环（差分有效性/双因子/分解分类）→polyA 正结果章（含工作量定位六层压缩版）→严谨性（8 SEALED/1 在途/2 limitation）→进度总览→三讨论点（venue/held-out 呈现/rights）。全部数字来自冻结产物（PPT 内标注 |Δ|≤1e-6 复核声明）；结构检查 PASS（12 slides/zip 完整/零占位）。
+- **补跑批收编完成（commit 60ff6999）**：CPU 四件套 + journal 批次号冲突修复（两个子代理同写 115，第二个改 116）；P2-1 确定性（9b0e61ff）与 P0-1 polyA 3-seed 发射（73d47cdf）先前已 push；审计状态回填（4d934ded）：SEALED 4→8。
+- **当前在途**：M1 干预臂 watcher（PID 3494364，WAITING）+ polyA 3-seed watcher（PID 4100904，M1 门后串行）。终态后收割 = 下一会话工作（M1 四门 + §5.6 回填 / polyA 3-seed 新行 / Gate P 前置核验）。
