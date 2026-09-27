@@ -115,7 +115,7 @@ New rows are append-only (they do not enter any existing manifest), with constru
 
 ### 3.1 The 14 × 13 matrix
 
-The matrix comprises five newly ported families measured across 13 cells plus 9 existing reference families taken as archived `ALREADY_DONE` rows. Table 4 collects the key newly computed readouts with exact values.
+The matrix comprises five newly ported families measured across 13 cells plus 9 existing reference families taken as archived `ALREADY_DONE` rows. **Figure 1** renders the complete 65-cell frozen-Δ block (the five new families × all 13 task cells; every cell is the archived `task_macro_spearman`, no recomputation). Table 4 collects the key newly computed readouts with exact values.
 
 **Table 4. Key frozen-Δ matrix readouts (VALIDATION).**
 
@@ -417,7 +417,7 @@ Between-source composition inflates overall scores (polyA overall 0.71–0.75 vs
 
 ### 9.4 Relation to existing benchmarks and models
 
-The four-axis differentiation (Table 2) positions DeltaBench against conventional absolute-endpoint benchmarks along source-relative formalization, dual-task reporting, ceiling normalization, and two-tier adjudication. A detailed literature comparison is deferred to the full-writing stage (external reference numbers are not cited here).
+The four-axis differentiation (Table 2) positions DeltaBench against conventional absolute-endpoint benchmarks along source-relative formalization, dual-task reporting, ceiling normalization, and two-tier adjudication. Concretely, the underlying assays of several benchmark studies publish rich measured libraries without a source-relative formalization — the 280K random 5′UTR library (Sample et al. 2019), the PLUMAGE screens (Lim et al. 2021), the prostate 3′UTR reporter library (Schuster et al. 2023), the HGMD/ClinVar UTR stability panel (Su et al. 2025) and the MPRAu allelic panel (Xue et al.) are re-used here as canonical records with Δ labels rather than as absolute endpoints. Published UTR predictors are scored on identical VALIDATION records in one frozen-Δ caliber (UTR-LM; RNA-FM; APARENT; APARENT2; Saluki; Optimus; FramePool; RiboNN), so the absolute-vs-delta decoupling of §4 is read on the same records instead of across incompatible reportings. Recently released UTR predictors are ported with fully declared input adaptations and unit-tested against official outputs (GEMORNA, Science 2025; LAMAR, bioRxiv 2024; UTR-STCNet, IEEE BIBM 2025; UTR-Insight; HydraRNA), and their matrix rows (Table 4) locate the in-domain / cross-library boundary quantitatively. Ceiling-normalized learnability accounting (Table 3) and the two-tier adjudication discipline (§2.4) are not standard in prior UTR model reporting, and the three append-only evaluation rows (Castillo-Hair 2024; Plassmeyer 2025; Su et al. 2025) provide fresh surfaces that were frozen before any model was scored on them. The full reference list (including the model papers for the ported baselines and the right/permission statements) is assembled at the submission stage; no external reference numbers are re-cited here, to keep every reported quantity traceable to this project's frozen artifacts.
 
 ---
 
@@ -437,11 +437,11 @@ The port ledger records 5 PORT_READY families plus the license disposition. Per-
 
 ### 10.4 Pre-registration document list
 
-All decision thresholds were frozen before computation: `delta_density_prereg_framework_v1`; `delta_validity_oracle_prereg_v1` (commit a2a2919a); `first_order_decomposition_prereg_v1` (8f80d7e6); `benchmark_v2_matrix_row_prereg_v1`; `m1_intervention_arm_amendment_v1` (b2e141cd). The full commit-hash list is completed at the writing stage. Scope boundary: the family range is maintained at 14 (5 new + 9 existing); M5 is not included (no pre-registered row / port evidence).
+All decision thresholds were frozen before computation. The full commit-hash list (commits that introduced each frozen document on the W0 branch `route-a-v3-w0-diagnosis-20260902`): `delta_density_prereg_framework_v1` (682b8c80); `delta_validity_oracle_prereg_v1` (a2a2919a); `first_order_decomposition_prereg_v1` (8f80d7e6); `benchmark_v2_matrix_row_prereg_v1` + `benchmark_v2_port_ledger_v1` (a14fb447); `m1_intervention_arm_amendment_v1` (b2e141cd); `polya_3seed_mini_prereg_v1` (73d47cdf); `density_sensitivity_mini_prereg_v1` + `first_order_train_alpha_sensitivity_prereg_v1` (60ff6999); `route2_critic_d16c_within_source_amendment_v1` (0809f5f6); `route2_critic_erk_v2_amendment_v1` (e343d4a3); `route2_w_ladder_amendment_v1` (7303417c); `utr_editflow_goal_v2_amendment_pivot_v1` (682b8c80); `route2_setflow_comb_mechanism_prereg_v1` (eb69e6bb, v8-stage1 worktree). Scope boundary: the family range is maintained at 14 (5 new + 9 existing); M5 is not included (no pre-registered row / port evidence).
 
 ### 10.5 Reproduction entry points
 
-Row-construction scripts (`build_{m1,m6,s1}_*_v1.py`, with construction seeds archived for re-runs); the matrix execution / aggregation / re-check scripts (eight files); the analysis scripts (e.g. `run_delta_vs_density_v2.py`). **R2 internal target rows** cover all nine tasks (global-scaled internal control, macro 0.1317). **LOSO reference** (LOSO-lite Table 5: A = true LOSO 7-fold retraining / B = in-domain header re-note) is pending adjudication and is cited unchanged.
+Row-construction scripts (`build_{m1,m6,s1}_*_v1.py`, with construction seeds archived for re-runs); the matrix execution / aggregation / re-check scripts (eight files); the analysis scripts (e.g. `run_delta_vs_density_v2.py`). **R2 internal target rows** cover all nine tasks (global-scaled internal control, macro 0.1317). **LOSO reference (Table 5 supplement, protocol B — frozen decision).** Two protocols were pre-registered: (A) true LOSO 7-fold retraining (42-job infrastructure archived) and (B) a LOSO-lite compiled table with an in-domain header; **protocol B was adopted** and its draft is the frozen LOSO Table 5. It lists, for all nine tasks: the multi-task in-domain critic V5 reading (explicitly not zero-shot), the external same-pool rows where such rows exist (MRL / polyA / MPRAU / HALF_LIFE only; TE / RNA / REF-ALT have no external same-pool rows and are declared as such), the internal target, and the ceiling. Worked rows: MRL 0.1354 vs frozen-Optimus 0.3132 / FramePool 0.2956 / UTR-LM 0.1107, internal 0.1192, ceiling 0.83; polyA 0.8219 vs APARENT 0.7343 / APARENT2 0.6810 / UTR-LM 0.7490, internal 0.7308, ceiling 0.90; MPRAU 0.0732 (cell caliber) vs Saluki 0.1205 weak-control, internal 0.0248, ceiling 0.683; HALF_LIFE 5′UTR 0.0607 and 3′UTR 0.0456 vs Saluki 3′UTR 0.0985, internal 0.0, ceiling ≈ 0.001–0.013 (physical unlearnability); GSE200304 TE 0.0579 vs internal −0.0266; PLUMAGE TE 0.1953 vs internal 0.1747; PLUMAGE RNA 0.0500 vs internal 0.2230 (the single registered loss, n = 48, power-limited); REF/ALT 0.0639 vs internal −0.0052.
 
 ### 10.6 Leakage and rights audit
 
@@ -469,10 +469,22 @@ DeltaBench reframes mRNA edit-effect prediction around the source-relative quant
 
 ---
 
+## Figures
+
+**Figure 1. DeltaBench frozen-Δ matrix: five newly ported families × 13 task cells** (task-macro Spearman, VALIDATION only; protected TEST reads = 0). Every cell is the archived value from `benchmark_v2/leaderboard_matrix_v2/matrix_v2_results.json`; the append-only rows (M1/M6/S1) were frozen before any model was scored on them; the dashed separator marks the new-row block. Rendered artifact: `experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_matrix_heatmap_v1.{png,pdf}` (producer `make_deltabench_figure1_matrix_v1.py`, 65/65 cells; manifest archived). Headline reading: strong in-domain (UTR-STCNet MRL 0.814) versus weak cross-library (same family on M1 0.067), and the new-row block collectively near zero.
+
+**Figure 2. Density–learnability observation and its held-out test** — 25 external frozen-Δ rows, r = 0.9388 (p = 3.9e-12), with the held-out cell-level test (33/65 = 50.77% in-band → FAIL, honest downgrade per the pre-registered clause). Archived artifacts: `experiments/analysis_delta_vs_density_20260915/delta_vs_density_scatter.{png,pdf}` and `experiments/analysis_delta_vs_density_v2/delta_vs_density_v2_scatter.{png,pdf}`.
+
+**Figure 3. First-order decomposition vs external rows vs ceiling, by task** — polyA (ρ₁ = 0.4555) shows the largest above-first-order structure headroom; MPRAU and TE are close to their first-order readings. Archived artifact: `experiments/analysis_first_order_decomposition_v1/first_order_vs_external_vs_ceiling.{png,pdf}`.
+
+- Submission-stage figure work: unified styling, vector-only panels, alt-text, and per-figure manifests (the existing products above already carry their producer scripts and data manifests).
+
+---
+
 ## Open items / placeholders
 
 - **§5.6** — M1 intervention arm four-gate results: `【PENDING — M1 intervention arm four gates (G1 direction vs 0.3158+0.01 / G2 polyA non-destruction / G3 efficiency / G4 conditional) — harvest in flight, backfill after terminal】`.
 - **§8.1** — polyA 3-seed robustness supplement: `【PENDING — P0-1 polyA 3-seed supplement (seeds 20260921/20260922) — harvest in flight; main row 0.8219 unchanged, new row polyA-V5-3seed-mean to be appended】`.
-- **§10.4 / §9.3** — full pre-registration commit-hash list and the final availability statement: 【TO FINALIZE】.
-- **§10.5** — LOSO-lite Table 5 A/B adjudication: 【TO FINALIZE】.
-- **§9.4** — external literature comparison: 【TO FINALIZE】 (full-writing stage).
+- **§9.3 / §10.6** — the final availability statement remains gated on study-specific rights review (14/14 studies have no named accountable reviewer yet; exemption decisions are not publication authorization). 【USER-SIDE, awaiting assignment】
+- **Reference list + figure set** — assembled at the submission stage; all reference *numbers* are already in-table and traceable to frozen artifacts. Figure inventory (mechanism png/pdf products) is listed in the project's `experiments/analysis_delta_vs_density_20260915/` and the matrix summary; final figure rendering is a submission-stage task.
+- **Resolved in draft v1.1 (this revision)**: full pre-registration commit-hash list (§10.4), LOSO-lite Table 5 protocol-B adjudication (§10.5), external model / benchmark relation paragraph (§9.4).
