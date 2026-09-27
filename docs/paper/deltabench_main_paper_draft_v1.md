@@ -479,6 +479,8 @@ DeltaBench reframes mRNA edit-effect prediction around the source-relative quant
 
 **Figure 3. First-order decomposition vs external rows vs ceiling, by task** — polyA (ρ₁ = 0.4555) shows the largest above-first-order structure headroom; MPRAU and TE are close to their first-order readings. Archived artifact: `experiments/analysis_first_order_decomposition_v1/first_order_vs_external_vs_ceiling.{png,pdf}`.
 
+**Figure 4. Ceiling-normalized learnability map (label-ceiling completion by task)** — best in-house row vs the label ICC ceiling (VALIDATION): polyA 91.3% (0.8219 / 0.90) is the only high-completion task; MRL 38.8% (0.3217 / 0.83); REF/ALT 30.4% (0.0639 / 0.21); MPRAU 19.8% (0.1351 / 0.683); PLUMAGE-RNA 13.7% (0.0500 / 0.364); TE 9.9% (0.0579 / 0.586); HALF_LIFE and PLUMAGE-TE carry **no normalization** (ICC ≈ 0 or negative). Archived artifact: `experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_ceiling_completion_v1.{png,pdf}` (producer `make_deltabench_figure4_ceiling_v1.py`, which asserts every plotted value against `bottomline_adjudication_v1.json` and the label-ICC table at render time).
+
 - Submission-stage figure work: unified styling, vector-only panels, alt-text, and per-figure manifests (the existing products above already carry their producer scripts and data manifests).
 
 ---

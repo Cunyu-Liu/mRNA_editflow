@@ -2480,4 +2480,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **新证据（瓶颈归因）**：/mnt 为 **NFS**（10.179.129.209, nfs v3）挂载——冻结 bottom-six cache 的 `torch.load` 与全程数据读都走 NFS；两 seed 同卡竞争 + 外部用户共用（GPU3 总用 37.5GB/40GB、GPU4 27.5GB）→ 首 pass 预计显著慢于主行（主行 55,636s/8 pass 为低争用基准）。**不干预**（纪律：不得杀训练）；以 pass 边界心跳为准跟踪，监控 cron 每 2h 自动巡检。
 - **M1 epoch 轨迹对照（仅诊断，不做决策）**：M1 epoch1 = **0.2162**；V2 同配方 epoch1 谱 = 0.2705（seed03）/0.2626（seed04）→ M1 早期读数低于 V2 早期带（+44% 数据、混标），V2 末值谱 0.2873-0.3198、G1 方向门 = 0.3258。**判定纪律**：终态（FINAL-EPOCH-6-FIXED）出数为准；方向负 = 有效机制交付（amendment v1 §3.1 已预登记）。
 - **本批次无代码/产物改动**；监控快照 S3 已同步本地 `mRNAflow/mrna_week_monitor_202609.md`。
-- **纪律**：protected TEST reads = 0；不杀训练、不改配置；全部观察基于只读实查（ps/io/nvidia-smi/heartbeat）。
+- **纪律**：protected TEST reads = 0；不杀训练、不改配置；全部观察基于只读实查（ps/io/nvidia-smi/heartbeat）。## 批次一百二十六（2026-09-28 · draft v1.3：Figure 4 天花板完成度图（数据断言式产出）+ 周交付素材收官）
+
+- **Figure 4 落盘（新）**：`analysis_benchmark_v2_matrix_figure_v1/deltabench_ceiling_completion_v1.{png,pdf}` + manifest——"学习性地图"图：逐任务 best in-house / label ICC 完成度（polyA 91.3% 唯一高完成；MRL 38.8% / REF/ALT 30.4% / MPRAU 19.8% / PLUMAGE-RNA 13.7% / TE 9.9%；HL 与 PLUMAGE-TE 无归一化 N/A）。**产出脚本内置数据断言**：每个绘制值在渲染时对 `bottomline_adjudication_v1.json` 逐行断言（5e-5 容差），首次运行即抓出两处标签映射错误（REF/ALT 与 PLUMAGE 行）并修复——零静默错误。目视核验通过（含 Tier-A 60% 参考线标签位置修正）。
+- **draft v1.3**：Figures 段补 Figure 4 全条目（数值 + locator + 断言说明）。
+- **素材收官态**：Figure 1（矩阵热图，65 格）Fig 2（密度 held-out）Fig 3（一阶分解）Fig 4（天花板完成度）四件齐 + 12 张表 + §1-§11 全文；**剩余仅两个训练依赖回填位（§5.6/§8.1）+ 用户侧 rights**。
+- **在途**：M1 epoch 2（约 step 11k/45,828）；polyA 两 seed 首 pass 训练中（GPU 12GB/进程，心跳设计已澄清）。
+- **纪律**：protected TEST reads = 0；图数据全部来自冻结产物且渲染时断言；脚本/文档 push。
