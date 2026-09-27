@@ -1,5 +1,5 @@
 #!/bin/bash
-# Task 3.4 M1 intervention arm: queue-then-launch watcher (W0 discipline: full idle card on GPU 0-5 only)
+# Task 3.4 M1 intervention arm: queue-then-launch watcher (user 2026-09-28 decision: shared-GPU launch - free VRAM >= 11GB suffices, no idle-process requirement)
 # Reads frozen prereg docs/paper/m1_intervention_arm_amendment_v1.md. No gate edits after launch.
 PY=/home/cunyuliu/miniconda3/envs/editflow/bin/python
 WT=/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_w0_diagnosis_20260902
@@ -12,7 +12,7 @@ emit_wait() {
 import json, sys, datetime
 status = sys.argv[1]
 msg = {
- "WAITING": "GPU queue: no idle full card on GPU 0-5; watcher polling every 600s",
+ "WAITING": "GPU queue: no card with >=11GB free on GPU 0-5; watcher polling every 600s (shared-GPU mode per user decision 2026-09-28)",
  "LAUNCHING": "idle full card detected; handing off to training runner"
 }[status]
 out = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_m1_intervention/seed_20260920/heartbeat.json"
@@ -35,7 +35,7 @@ while true; do
   for i in 0 1 2 3 4 5; do
     used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$i" | tr -d ' ')
     procs=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader -i "$i" | grep -c .)
-    if [ "${used:-40960}" -lt 2000 ] && [ "${procs:-1}" -eq 0 ]; then
+    if [ $(( ${total:-40960} - ${used:-40960} )) -ge 11000 ]; then
       picked=$i
       break
     fi
@@ -45,7 +45,8 @@ while true; do
     emit_wait LAUNCHING
     sleep 120
     used2=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$picked" | tr -d ' ')
-    if [ "${used2:-40960}" -ge 2000 ]; then
+    total2=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits -i "$picked" | tr -d ' ')
+    if [ $(( ${total2:-40960} - ${used2:-40960} )) -lt 11000 ]; then
       echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) GPU$picked re-occupied during grace window; returning to WAITING" | tee -a "$LOGDIR/launch_watcher.log"
       emit_wait WAITING
       continue

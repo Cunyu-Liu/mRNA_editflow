@@ -1,14 +1,13 @@
 #!/bin/bash
-# P0-1 V5 polyA 3-seed supplement: serialized queue-then-launch watcher.
-# Modeled on launch_m1_intervention_watcher.sh with the serialization rule:
+# P0-1 V5 polyA 3-seed supplement: parallel queue-then-launch watcher.
+# User decision 2026-09-28: shared-GPU mode (free VRAM >= 11GB suffices, no idle-process
+# requirement) and both seeds launch in PARALLEL on independently acquired cards.
 # Phase A - poll the M1 intervention heartbeat until M1 training has LAUNCHED
 #           (status in TRAINING/EPOCH_DONE/DONE, i.e. M1 watcher grabbed its
 #           card); until then we never compete for GPU 0-5.
 # Phase B - after M1 is running, poll GPU 0-5 for an idle full card every 600s
 #           (mem < 2000 MiB AND zero compute processes), 120s grace re-check.
-# Phase C - launch seed 20260921 training, wait for terminal state
-#           (heartbeat DONE/FAILED or pid gone), then Phase B again for seed
-#           20260922. Strictly serial: only one polyA seed training at a time.
+# Phase C - each seed has its own acquisition loop; two seeds run in parallel.
 # Prereg: docs/paper/polya_3seed_mini_prereg_v1.md (frozen before launch).
 PY=/home/cunyuliu/miniconda3/envs/editflow/bin/python
 WT=/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_w0_diagnosis_20260902
@@ -86,83 +85,77 @@ done
 log "M1 training launched (status=$(m1_status)); polyA queue logic now armed"
 emit WAITING PHASE_GPU_QUEUE "M1 running; polling GPU 0-5 for idle full card every 600s"
 
-# ---- Phase B/C: per-seed serial launch -------------------------------------
-for seed in "${SEEDS[@]}"; do
+# ---- Phase B/C: per-seed parallel launch (user decision 2026-09-28) ---------
+launch_one_seed() {
+  local seed=$1
   if seed_terminal "$seed"; then
     log "seed $seed already terminal; skipping"
-    continue
+    return 0
   fi
   if [ -d "$LOGDIR/seed_${seed}" ]; then
     log "seed $seed directory exists but not terminal - skipping (append-only; inspect manually)"
     emit WAITING "SEED_${seed}_SKIPPED" "existing non-terminal seed dir; refusing double launch"
-    continue
+    return 0
   fi
-  picked=-1
+  local picked=-1
   while [ "$picked" -lt 0 ]; do
-    if ! m1_launched; then
-      log "M1 left RUNNING state (status=$(m1_status)) before seed $seed launch; re-arming M1 gate"
-      until m1_launched; do sleep 600; done
-    fi
     for i in 0 1 2 3 4 5; do
       used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$i" | tr -d ' ')
-      procs=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader -i "$i" | grep -c .)
-      if [ "${used:-40960}" -lt 2000 ] && [ "${procs:-1}" -eq 0 ]; then
+      total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits -i "$i" | tr -d ' ')
+      if [ $(( ${total:-40960} - ${used:-40960} )) -ge 11000 ]; then
         picked=$i
         break
       fi
     done
     if [ "$picked" -lt 0 ]; then
-      sleep 600
-      emit WAITING PHASE_GPU_QUEUE "no idle full card on GPU 0-5; seed $seed pending; polling every 600s"
+      sleep 300
+      emit WAITING "SEED_${seed}_QUEUE" "no card with >=11GB free; seed $seed pending; polling 300s (parallel/shared mode)"
     fi
   done
-  log "idle full card: GPU$picked -> launching seed $seed (120s grace re-check)"
-  emit LAUNCHING "SEED_${seed}" "idle full card GPU$picked detected; grace window"
+  log "card with free VRAM: GPU$picked -> launching seed $seed (120s grace re-check)"
+  emit LAUNCHING "SEED_${seed}" "GPU$picked free-VRAM pass; grace window"
   sleep 120
   used2=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$picked" | tr -d ' ')
-  if [ "${used2:-40960}" -ge 2000 ]; then
-    log "GPU$picked re-occupied during grace window; returning to WAITING for seed $seed"
-    emit WAITING PHASE_GPU_QUEUE "GPU$picked re-occupied during grace; seed $seed back to queue"
+  total2=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits -i "$picked" | tr -d ' ')
+  if [ $(( ${total2:-40960} - ${used2:-40960} )) -lt 11000 ]; then
+    log "GPU$picked free VRAM dropped during grace; re-queueing seed $seed"
     picked=-1
     while [ "$picked" -lt 0 ]; do
-      sleep 600
+      sleep 300
       for i in 0 1 2 3 4 5; do
         used=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$i" | tr -d ' ')
-        procs=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader -i "$i" | grep -c .)
-        if [ "${used:-40960}" -lt 2000 ] && [ "${procs:-1}" -eq 0 ]; then
+        total=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits -i "$i" | tr -d ' ')
+        if [ $(( ${total:-40960} - ${used:-40960} )) -ge 11000 ]; then
           picked=$i
           break
         fi
       done
-      if [ "$picked" -lt 0 ]; then
-        emit WAITING PHASE_GPU_QUEUE "still no idle card; seed $seed pending"
-      fi
     done
     log "re-acquired GPU$picked after grace re-check for seed $seed"
   fi
   mkdir -p "$LOGDIR/seed_${seed}"
   cd "$WT"
-  log "LAUNCH gpu=$picked seed=$seed"
+  log "LAUNCH gpu=$picked seed=$seed (parallel/shared mode)"
   nohup "$PY" -u "$RUNNER" --seed "$seed" --physical-gpu-index "$picked" \
     > "$LOGDIR/polya_3seed_seed${seed}.log" 2>&1 &
   echo "$!" > "$LOGDIR/seed_${seed}/training_pid.txt"
   log "launched seed $seed pid=$(cat "$LOGDIR/seed_${seed}/training_pid.txt") on GPU$picked"
   emit RUNNING "SEED_${seed}" "training running on GPU$picked (pid $(cat "$LOGDIR/seed_${seed}/training_pid.txt"))"
+}
 
-  # ---- wait for terminal state of this seed before queuing the next ----
-  while ! seed_terminal "$seed"; do
-    sleep 600
-    hb="$LOGDIR/seed_${seed}/heartbeat.json"
-    st="?"
-    [ -f "$hb" ] && st=$(python3 -c "import json;print(json.load(open('$hb')).get('status','?'))" 2>/dev/null)
-    emit RUNNING "SEED_${seed}" "training heartbeat status=$st; waiting for terminal"
-  done
-  hb="$LOGDIR/seed_${seed}/heartbeat.json"
-  st="?"
-  [ -f "$hb" ] && st=$(python3 -c "import json;print(json.load(open('$hb')).get('status','?'))" 2>/dev/null)
-  log "seed $seed terminal (status=$st)"
-  emit WAITING "SEED_${seed}_TERMINAL" "seed $seed finished with status=$st; proceeding to next seed"
+log "watcher start (P0-1 V5 polyA 3-seed, seeds ${SEEDS[*]}, PARALLEL shared-GPU mode per user 2026-09-28)"
+
+# M1 gate softening: proceed when M1 is launched (RUNNING/DONE/FAILED) OR after 30min max wait
+m1_wait=0
+while ! m1_launched && [ $m1_wait -lt 1800 ]; do
+  sleep 60; m1_wait=$((m1_wait+60))
 done
+log "M1 gate: status=$(m1_status) after ${m1_wait}s (soft gate)"
 
-log "all seeds terminal; watcher exit"
-emit DONE ALL_SEEDS_TERMINAL "both polyA 3-seed supplement seeds reached terminal state"
+# Launch both seeds in parallel; each in its own subshell with independent card acquisition
+for seed in "${SEEDS[@]}"; do
+  ( launch_one_seed "$seed" ) &
+done
+wait
+log "all polyA seeds terminal"
+emit WAITING "ALL_SEEDS_TERMINAL" "both seeds finished"
