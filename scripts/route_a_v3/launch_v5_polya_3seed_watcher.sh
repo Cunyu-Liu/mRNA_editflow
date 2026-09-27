@@ -133,14 +133,14 @@ launch_one_seed() {
     done
     log "re-acquired GPU$picked after grace re-check for seed $seed"
   fi
-  mkdir -p "$LOGDIR/seed_${seed}"
   cd "$WT"
   log "LAUNCH gpu=$picked seed=$seed (parallel/shared mode)"
   nohup "$PY" -u "$RUNNER" --seed "$seed" --physical-gpu-index "$picked" \
     > "$LOGDIR/polya_3seed_seed${seed}.log" 2>&1 &
-  echo "$!" > "$LOGDIR/seed_${seed}/training_pid.txt"
-  log "launched seed $seed pid=$(cat "$LOGDIR/seed_${seed}/training_pid.txt") on GPU$picked"
-  emit RUNNING "SEED_${seed}" "training running on GPU$picked (pid $(cat "$LOGDIR/seed_${seed}/training_pid.txt"))"
+  LAUNCHPID=$!
+  echo "$LAUNCHPID" > "$LOGDIR/polya_3seed_seed${seed}_pid.txt"
+  log "launched seed $seed pid=$LAUNCHPID on GPU$picked"
+  emit RUNNING "SEED_${seed}" "training launched on GPU$picked (pid $LAUNCHPID)"
 }
 
 log "watcher start (P0-1 V5 polyA 3-seed, seeds ${SEEDS[*]}, PARALLEL shared-GPU mode per user 2026-09-28)"
