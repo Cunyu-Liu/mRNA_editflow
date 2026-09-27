@@ -2466,4 +2466,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **dry-run #2（升级后复核）**：G2 输出 `value=0.090315 | v2_baseline_context=0.090315`（替身臂=同 checkpoint → arm−baseline=0.0，逐位验证两条独立读数路径一致）；backfill 渲染器同步升级（上下文行进入 §5.6 回填块），py_compile + 功能测试 PASS。
 - **产物 locator**：`experiments/xeditcritic_m1_intervention/dryrun_v2_arm_v1/{dryrun.log,dryrun2.log,out/,out2/}`（append-only，与真实 M1 产物目录隔离）。
 - **在途臂**：M1 epoch 2 正常推进；polyA 两 seed 训练中。
-- **纪律**：protected TEST reads = 0；替身臂 dry-run 仅读 V2 存档产物、零写入原目录；G2 升级只增报告行、冻结门限零修改；代码 push 见 commit。
+- **纪律**：protected TEST reads = 0；替身臂 dry-run 仅读 V2 存档产物、零写入原目录；G2 升级只增报告行、冻结门限零修改；代码 push 见 commit。## 批次一百二十四（2026-09-28 · M1 3-seed 扩展收割器（替身复现 0.3158 逐位）+ amendment v2 草稿冻结就绪 + R12 公平性段）
+
+- **M1 3-seed 扩展收割器 `harvest_route2_m1_intervention_3seed_v1.py`（新，入 git）**：逐字复用冻结的 V2 ensemble 口径（PER_SEED_ZSCORE_MEAN + frozen evaluator K=10 + source-group paired bootstrap 2000/seed 20260816）；臂种子 = {20260920, 20260904, 20260905}（amendment v2 消解）；对照 = V2 3-seed ensemble 预测（重建，非标量）。
+  - **替身验证（3x 检查之核心）**：`--standin-v2`（以 V2 三 seed 目录当臂）→ **ensemble = 0.3158289984824722，与存档 `ensemble_3seed_vs_optimus.json` 逐位一致（Δ=0，CI [0,0]）**；脚本内置断言（不一致即 SystemExit），实机 PASS。
+  - **门行为验证**：默认模式在 M1 臂未终态时干净 exit 3 NOT_TERMINAL（实机验证）。
+- **`m1_intervention_arm_amendment_v2_seed_extension_DRAFT.md` 落盘（草稿、未激活）**：仅在 M1 G1 方向为正时冻结激活；**发射前**消解 v1 "复用两枚" 歧义（固定条款：20260904/20260905；理由：20260903 是 v1 明示单 seed 参照点，保持不克隆）；激活清单五步 + 禁改条款（v1 读数为准，3-seed 为追加行）。
+- **draft v1.2 + R12 公平性段**（批次 122 已记）与本次 3-seed 工具共同将"两种结局"的全部执行路径备妥：G1 正 → 立即冻结 v2 + 发射两臂 + 3-seed 显著性；G1 负 → v2 归档未用，§5.6 直接以单 seed 方向负 + G2/G3/G4 语义如实回填。
+- **在途臂（09-28 03:05 CST）**：M1 epoch 2（step 10,500/45,828，MSE 0.637 收敛中）；polyA 两 seed 训练中。
+- **纪律**：protected TEST reads = 0；替身验证不写任何真实臂目录（输出 /tmp）；amendments 草稿未激活不改动任何在途产物；代码全部 push（见 commit）。
