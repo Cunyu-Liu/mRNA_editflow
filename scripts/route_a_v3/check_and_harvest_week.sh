@@ -9,10 +9,14 @@
 PY=/home/cunyuliu/miniconda3/envs/editflow/bin/python
 WT=/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_w0_diagnosis_20260902
 MNT=/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2
-M1="$MNT/experiments/xeditcritic_m1_intervention/seed_20260920"
+M1BASE="$MNT/experiments/xeditcritic_m1_intervention"
+M1="$M1BASE/seed_20260920"
 POLYA="$MNT/experiments/xeditcritic_v5_polya_3seed"
 HARVEST_M1="$WT/scripts/route_a_v3/harvest_route2_m1_intervention_v1.py"
+HARVEST_M1X="$WT/scripts/route_a_v3/harvest_route2_m1_intervention_3seed_v1.py"
 HARVEST_P3="$WT/scripts/route_a_v3/harvest_route2_v5_polya_3seed_v1.py"
+LAUNCH_EXT="$WT/scripts/route_a_v3/launch_m1_intervention_extension_v2.sh"
+EXT_SEEDS="20260904 20260905"
 LOGDIR="$WT/docs/training_journal"
 
 DO_HARVEST=1
@@ -39,6 +43,22 @@ if [ -f "$M1/training_pid.txt" ]; then
 fi
 tail -2 "$M1/training_losses.jsonl" 2>/dev/null | sed 's/^/loss: /'
 [ -f "$M1/run_summary.json" ] && echo "run_summary: PRESENT (terminal)" || echo "run_summary: absent"
+
+echo "--- M1 extension arms (amendment v2, seeds $EXT_SEEDS) ---"
+for s in $EXT_SEEDS; do
+  d="$M1BASE/seed_$s"
+  if [ -d "$d" ]; then
+    pid=""
+    [ -f "$d/training_pid.txt" ] && pid=$(cat "$d/training_pid.txt")
+    [ -z "$pid" ] && pid="-"
+    alive="?"
+    [ "$pid" != "-" ] && { kill -0 "$pid" 2>/dev/null && alive=ALIVE || alive=NOT_ALIVE; }
+    term="absent"; [ -f "$d/run_summary.json" ] && term="PRESENT"
+    echo "seed_$s: status=$(hb "$d/heartbeat.json" status) epoch=$(hb "$d/heartbeat.json" epoch) step=$(hb "$d/heartbeat.json" step)/$(hb "$d/heartbeat.json" total_steps) pid=$pid($alive) run_summary=$term"
+  else
+    echo "seed_$s: not launched"
+  fi
+done
 
 echo "--- V5 polyA 3-seed ---"
 echo "watcher=$(hb "$POLYA/watcher_heartbeat.json" status) phase=$(hb "$POLYA/watcher_heartbeat.json" phase) note=$(hb "$POLYA/watcher_heartbeat.json" note)"
@@ -80,7 +100,17 @@ mig_uuid() { # first 3g.20gb MIG UUID on GPU 7 (fallback inference device)
 
 if [ "$DO_HARVEST" = "1" ]; then
   echo "--- auto-harvest ---"
-  OUT_M1="$MNT/experiments/xeditcritic_m1_intervention/adjudication_v1"
+
+  # 0) extension-arm launch pass: idempotent; uses any full card with enough free memory
+  #    (amendment v2 pre-committed training). Never blocks on the lock for long.
+  if [ -x "$LAUNCH_EXT" ]; then
+    EXT_OUT=$(MRNA_M1_EXT_LOCK_WAIT=30 bash "$LAUNCH_EXT" 2>&1)
+    echo "$EXT_OUT" | sed 's/^/[launch] /'
+  else
+    echo "[launch] extension launcher not found at $LAUNCH_EXT"
+  fi
+
+  OUT_M1="$M1BASE/adjudication_v1"
   if [ -f "$M1/run_summary.json" ] && [ ! -f "$OUT_M1/m1_adjudication_v1.json" ]; then
     GPU=$(pick_gpu)
     if [ "$GPU" != "-1" ]; then
@@ -105,6 +135,40 @@ if [ "$DO_HARVEST" = "1" ]; then
     [ -f "$OUT_M1/m1_adjudication_v1.json" ] && echo "[harvest] M1 already harvested"
   fi
 
+  # 2) M1 3-seed ensemble harvest (amendment v2): requires G1 direction POSITIVE *and* all three
+  #    arms terminal. If G1 is not positive the extension arms stay trained-not-analyzed.
+  OUT_M1X="$OUT_M1/m1_3seed_ensemble_v1.json"
+  if [ ! -f "$OUT_M1X" ]; then
+    if [ ! -f "$OUT_M1/m1_adjudication_v1.json" ]; then
+      echo "[harvest] M1 3-seed: deferred (single-arm adjudication absent)"
+    else
+      G1DIR=$($PY - "$OUT_M1/m1_adjudication_v1.json" <<'EOF'
+import json, sys
+try:
+    print(json.load(open(sys.argv[1])).get("G1", {}).get("direction_positive"))
+except Exception:
+    print("ABSENT")
+EOF
+)
+      ALLTERM=1
+      for s in $EXT_SEEDS; do
+        [ -f "$M1BASE/seed_$s/run_summary.json" ] || ALLTERM=0
+      done
+      if [ "$G1DIR" != "True" ]; then
+        echo "[harvest] M1 3-seed: SKIPPED (G1 direction_positive=$G1DIR; extension arms remain trained-not-analyzed per amendment v2)"
+      elif [ "$ALLTERM" != "1" ]; then
+        echo "[harvest] M1 3-seed: deferred (G1 positive but extension arms not all terminal)"
+      else
+        echo "[harvest] M1 3-seed ensemble harvest (CPU) ..."
+        $PY "$HARVEST_M1X" >> "$OUT_M1/harvest_3seed_run.log" 2>&1 \
+          && echo "[harvest] M1 3-seed OK -> $OUT_M1X" \
+          || echo "[harvest] M1 3-seed FAILED (see $OUT_M1/harvest_3seed_run.log)"
+      fi
+    fi
+  else
+    echo "[harvest] M1 3-seed already harvested"
+  fi
+
   OUT_P3="$POLYA/harvest_v1"
   if [ -f "$POLYA/seed_20260921/final_validation_predictions.jsonl" ] && \
      [ -f "$POLYA/seed_20260922/final_validation_predictions.jsonl" ] && \
@@ -115,7 +179,11 @@ if [ "$DO_HARVEST" = "1" ]; then
       && echo "[harvest] polyA 3-seed OK -> $OUT_P3/polya_3seed_harvest_v1.json" \
       || echo "[harvest] polyA 3-seed deferred/failed (see $OUT_P3/harvest_run.log)"
   else
-    [ -f "$OUT_P3/polya_3seed_harvest_v1.json" ] && echo "[harvest] polyA 3-seed already harvested"
+    if [ -f "$OUT_P3/polya_3seed_harvest_v1.json" ]; then
+      echo "[harvest] polyA 3-seed already harvested"
+    else
+      echo "[harvest] polyA 3-seed: deferred (final per-seed predictions absent)"
+    fi
   fi
 fi
 echo "===== end ====="

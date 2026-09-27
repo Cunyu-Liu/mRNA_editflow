@@ -2487,3 +2487,20 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **素材收官态**：Figure 1（矩阵热图，65 格）Fig 2（密度 held-out）Fig 3（一阶分解）Fig 4（天花板完成度）四件齐 + 12 张表 + §1-§11 全文；**剩余仅两个训练依赖回填位（§5.6/§8.1）+ 用户侧 rights**。
 - **在途**：M1 epoch 2（约 step 11k/45,828）；polyA 两 seed 首 pass 训练中（GPU 12GB/进程，心跳设计已澄清）。
 - **纪律**：protected TEST reads = 0；图数据全部来自冻结产物且渲染时断言；脚本/文档 push。
+## 批次一百二十七（2026-09-28 · M1 扩展臂算力预提交发射（amendment v2 ACTIVE）+ 监控/lock 加固）
+
+- **Amendment v2 冻结为 ACTIVE（发射前冻结，先于任何扩展臂心跳）**：`docs/paper/m1_intervention_arm_amendment_v2_seed_extension.md`（commit 11d7ebc7，随后 f9159172 做发射前事实修正：冻结时间戳改为真实 commit 时间 2026-09-27T19:06Z；DRAFT 文件加 SUPERSEDED 头保留存档）。
+  - **唯一实质修订（§4.1，发射前冻结）**：扩展臂训练 = **方向无关的算力预提交**——发射不等待 G1 读数。理由（固定条款）：(a) 臂配置与 G1 结果无关（同 runner/同数据，仅 seed 不同），不存在按结果定制训练；(b) G1 只能由 seed 20260920 终态给出，而 v1 明令 FINAL-EPOCH-6-FIXED、禁止中间读数，故"先读 G1 再发射"必以拖延算力为代价；(c) 用户 09-28 指令：GPU 有闲置显存即刻投用、禁用显存侧 gate。
+  - **分析激活仍唯一依赖 G1**（§4.2）：G1 方向为正 → 3-seed ensemble 收割（`m1_3seed_ensemble_v1.json`）作 §5.6 显著性追加行；G1 方向为负 → 扩展臂归档为 **trained-not-analyzed**（不进表、不进 draft、不改写 v1 单 seed 判定）；自动收割器须**双条件**（G1 正 且 三枚臂终态）才执行。
+- **两臂发射（实查证据）**：
+  - `seed_20260904`：GPU2，pid 746777，`--seed 20260904`，19:07:40Z INIT → 19:15:40Z step 500（TRAINING）。
+  - `seed_20260905`：GPU2，pid 778142，`--seed 20260905`，19:17:28Z INIT（数据加载中）。
+  - 两臂均**未传** `--m1-rows/--m1-seed` → 沿用默认 300,000 / 20260920，数据面与 v1 逐位一致；唯一改动面 = `--seed`（`torch.manual_seed` 于模型头初始化前 → 驱动初始化与 `torch.randperm` 批序）。
+  - GPU 证据：GPU2 由 11,913MiB → 21,938MiB（+两臂 ~9GB/臂），未触发 OOM。
+- **发射器 `scripts/route_a_v3/launch_m1_intervention_extension_v2.sh`（新，入 git）**：幂等（终态/RUNNING 跳过）+ 自动挑卡（0-5 中自由显存最大者，阈值 `MRNA_M1_EXT_MINFREE` 默认 14,000MiB ≈ 9.5GB 作业 + 余量）+ flock 序列化 + 同轮不重复落同卡。
+  - **事故修复（自侦察）**：v1 发射器的 flock FD 被 `nohup` 训练的 python 子进程继承 → 后续任何发射器调用阻塞至 900s 超时（实测 hang）。修复：新 lock 路径 `/tmp/mrna_m1_ext_launch_v2.lock` + 有界等待（默认 60s，cron 调用设 30s）+ 子进程显式 `9>&-` 关闭继承 FD。修复后 dry-run/real/recheck 三连调用全部即时返回（real 后 recheck 报 already RUNNING）。
+- **监控脚本升级**：`check_and_harvest_week.sh` 新增（1）扩展臂状态段；（2）每趟自动调用发射器（`[launch]` 行，lock 30s 有界）——实现"有闲置显存即自动投用"；（3）M1 3-seed 收割的**双条件门**（G1 `direction_positive == True` **且** 三枚 arm `run_summary.json` 齐）——不满足则打印 SKIPPED/deferred 原因，绝不越门；（4）polyA 3-seed 的 else 分支明确输出 deferred 原因（区分"已收割"与"未就绪"）；(5) M1BASE 变量化（`M1="$M1BASE/seed_20260920"`）。
+  - 3-seed 收割器元数据同步：`amendment` 字段指向 ACTIVE 文件（原指 DRAFT），docstring 更新为"训练预提交 / 分析按 G1 激活"。
+  - **实机验证**：`--no-harvest` 报告全段正常；FULL 趟输出 `[launch] seed … already RUNNING …` + `[harvest] M1 3-seed: deferred (single-arm adjudication absent)`；`bash -n` + `py_compile` 双通过。
+- **在途（09-28 03:20 CST / 19:20Z）**：M1 主臂 epoch 2（step 13,000/45,828，MSE 0.606）；polyA seed 20260921（GPU4）/ 20260922（GPU3）首 pass 训练中（心跳按设计停于 pass 边界）；**同批 cron `# RNAJEPA_MONITOR/*/10` + `# P1_GAPFILL_MONITOR/*/20` 解释 GPU1/GPU3/GPU5 的高占用**（非本项目，不改动、不争抢）。
+- **纪律**：protected TEST reads = 0；本批次零判定改动（v1 门限、FINAL-EPOCH-6-FIXED、G1/G2/G4 语义全部未动）；不改 polyA 在途配置、不杀训练；产物 /mnt、脚本/文档 /home + push。

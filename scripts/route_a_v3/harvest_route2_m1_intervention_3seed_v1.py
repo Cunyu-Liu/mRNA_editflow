@@ -8,7 +8,8 @@ Protocol (verbatim reuse of the frozen Route A V2 ensemble caliber,
   - paired source-group bootstrap vs the V2 3-seed ensemble predictions
     (2,000 iters, seed 20260816).
 
-Arm seeds per amendment v2 (DRAFT -> ACTIVE only if G1 direction positive):
+Arm seeds per amendment v2 (ACTIVE/FROZEN 2026-09-27T19:06Z; training pre-committed,
+analysis activated only when G1 direction is positive):
   {20260920, 20260904, 20260905}; V2 baseline seeds: {20260903, 20260904, 20260905}.
 
 Verification mode: `--standin-v2` uses the three V2 seed dirs as the "arm", which
@@ -146,7 +147,7 @@ def main() -> int:
         "schema_version": "route_a_v3_m1_intervention_3seed_ensemble.v1",
         "utc": utcnow(),
         "mode": "STANDIN_V2_VERIFICATION" if args.standin_v2 else "M1_ARM_3SEED",
-        "amendment": "docs/paper/m1_intervention_arm_amendment_v2_seed_extension_DRAFT.md",
+        "amendment": "docs/paper/m1_intervention_arm_amendment_v2_seed_extension.md",
         "arm_seeds": sorted(arm_dirs),
         "arm_dirs": {str(k): str(v) for k, v in arm_dirs.items()},
         "v2_seeds": sorted(V2_DIRS),
