@@ -97,6 +97,11 @@ launch_one_seed() {
     emit WAITING "SEED_${seed}_SKIPPED" "existing non-terminal seed dir; refusing double launch"
     return 0
   fi
+  # Serialize pick+grace+launch across seed subshells (flock) so two seeds can
+  # never race onto the same card (2026-09-28 attempt-1 OOM: both picked GPU4).
+  # Training itself stays parallel; only the launch critical section is locked.
+  exec 9>"$LOGDIR/.launch.lock"
+  flock 9
   local picked=-1
   while [ "$picked" -lt 0 ]; do
     for i in 0 1 2 3 4 5; do
@@ -141,6 +146,7 @@ launch_one_seed() {
   echo "$LAUNCHPID" > "$LOGDIR/polya_3seed_seed${seed}_pid.txt"
   log "launched seed $seed pid=$LAUNCHPID on GPU$picked"
   emit RUNNING "SEED_${seed}" "training launched on GPU$picked (pid $LAUNCHPID)"
+  flock -u 9
 }
 
 log "watcher start (P0-1 V5 polyA 3-seed, seeds ${SEEDS[*]}, PARALLEL shared-GPU mode per user 2026-09-28)"

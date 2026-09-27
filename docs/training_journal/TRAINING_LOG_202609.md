@@ -2417,3 +2417,16 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 
 - **密度因子证据显式化（analysis_density_factor_evidence_v1/，纯 CPU 只读）**：(A) 组内 vs 全局 ρ：polyA 域内模型全局 0.71-0.75 的一半来自跨源信号（组内 0.23-0.43）；MRL 全局≈组内但水平抬不起（除 STCNet 语料重叠 +0.92）。(B) 任务内剂量响应（evaluator 组键分箱）：域内监督族组内 ρ 随每源候选数翻倍（APARENT +0.405→+0.697 / UTR-LM +0.251→+0.584 / RNA-FM +0.237→+0.526）；无域内监督的 5 新族不兑现（2-5 箱 ≈0）。**总判定：密度方向性证据成立但以监督体制为前提——支持「密度 × 监督交互」表述（与 delta_vs_density_v2 held-out FAIL 判读一致，PPT S11 与论文 §5 措辞同步）**。source 组键口径分箱不单调（双口径并报声明）。全局 ρ 复算 17/17 组合与入档一致。
 - **PPT v3（覆盖本地）**：S3 补文献出处（Sample 2019 / Cao 2021 / Lim 2021，"此前无人量化"改为"缺乏系统量化"）；S11 发现二补密度剂量响应表（3 行分箱矩阵）+ 结论改双因子交互表述 + held-out 交叉验证压缩为尾注；新增 S5 价值定位页（四层交付：工具/规律/指南/方法学）；后续页码顺延。用户自行修改部分未触碰。
+
+## 批次一百一十九（2026-09-28 · 周交付接管会话一：在途三臂健康化 + 收割工具链三件套（三重复核）+ polyA seed20260922 OOM 重试）
+
+- **在途三臂**（全部 CUDA 硬门、BF16、append-only）：
+  - **M1 干预臂**：09-28 01:35 CST 于 GPU1 发射（`--physical-gpu-index 1`，seed 20260920，45,828 steps = 977,608 行 × 6 epochs）。接管核查时 epoch 1 / step 3,450 / recent MSE 0.70、heartbeat TRAINING，速度 ~2.9 step/s → ETA ≈ 5.7-6.5h（预计 09-28 07:30-08:30 CST 终态）。
+  - **polyA 3-seed**：watcher 于 01:46 CST 在 M1 软门（TRAINING）后并行发射两 seed。**事故与修复**：两 subshell 在 grace 窗口内竞争同一张卡（均选 GPU4）→ seed20260922 训练启动即 OOM（failure.json 落盘、日志留证），seed20260921 存活。01:59 CST 执行 OOM retry v1：failed attempt 目录归档为 `seed_20260922_failed_oom_attempt1_20260927T175906Z/`（证据保全），attempt2 于 **GPU3**（grace free 13,999MiB）01:01Z 发射 pid=455781。两 seed 现并行健康（seed20260921@GPU4 / seed20260922@GPU3），各 ~15.5h → ETA 09-28 傍晚（沪深时间）。
+  - **watcher 修复**：`launch_v5_polya_3seed_watcher.sh` 在 pick+grace+launch 临界区加 `flock`（训练并行、发射序列化），杜绝同卡竞争复现。
+- **收割工具链三件套（本次新建，全部三重复核）**：
+  1. `harvest_route2_m1_intervention_v1.py`（G1-G4 四门 + V2 baseline M1-row 对照）——**端到端验证**：以 V2 checkpoint 走完整打分路径，M1 row 读数 **0.091582**（n=2805）落盘 `adjudication_v1/m1_row_v2_baseline.json`（= G4 对照锚；高于矩阵全部 5 外部族：gemorna 0.0889 / stcnet 0.0672 / insight 0.0575 / lamar 0.0226 / hydrarna −0.0215）。G1 门行为验证：run_summary 缺失时干净报错（training not terminal）。
+  2. `harvest_route2_v5_polya_3seed_v1.py`（3-seed 均值/range + evaluator 4-tuple 聚类 bootstrap + Δ vs APARENT + Holm 方向 + 双口径）——**冻结协议复现验证**：主行重算逐位 = 0.8218686245779881；bootstrap 机制（三同源种子 + 冻结 seed 20260816）Δ = **+0.087554 CI [0.063028, 0.114056]** vs 冻结 Task-1.3 +0.0876 [0.0630,0.1141]（三位小数级一致）；门行为验证：种子未终态 → exit 3 NOT_TERMINAL。
+  3. `check_and_harvest_week.sh`（状态巡检 + 终态自动收割；GPU≥6GB 自由显存或 MIG 3g.20gb 回退）——状态报告验证通过（三臂 pid/心跳/GPU 快照齐全）。
+- **纪律**：protected TEST reads = 0；OOM 为技术性失败（非科学结果），retry 走「归档证据 + 同 seed/同配置/同 runner」路径（先例：v403_controls_oom_retry）；预注册门/配置零修改；代码 /home worktree、产物 /mnt。
+- **下一步**：M1 终态 → 四门收割（G1 方向 → G2 非破坏 → G4 条件触发）→ 骨架 §5.6 回填；polyA 双 seed 终态 → 3-seed 新行 + A1 SEALED；两者自动收割由定时任务与 `check_and_harvest_week.sh` 承接。
