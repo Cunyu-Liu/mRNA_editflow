@@ -57,12 +57,31 @@ launch() { # launch <seed>
     return 1
   fi
   if [ "$DRY" = "1" ]; then echo "seed $seed: DRY-RUN would launch on GPU$card (free ${free}MiB)"; HOSTED_CARDS="$HOSTED_CARDS,$card"; return 0; fi
-  M1_INTERVENTION_OUT_DIR="$out" nohup "$PY" -u "$RUNNER" --physical-gpu-index "$card" --seed "$seed" \
-    > "$out/train_console.log" 2>&1 9>&- &
+  # setsid: fully detach from this (possibly short-lived, ssh-owned) session so a client-side
+  # disconnect cannot take the training process down. Per-attempt console log + attempts.jsonl:
+  # the previous design reused one log file and overwrote the death evidence of earlier attempts.
+  stamp=$(date -u +%Y%m%dT%H%M%SZ)
+  setsid env M1_INTERVENTION_OUT_DIR="$out" nohup "$PY" -u "$RUNNER" --physical-gpu-index "$card" --seed "$seed" \
+    > "$out/train_console_${stamp}.log" 2>&1 9>&- < /dev/null &
   pid=$!
   echo "$pid" > "$out/training_pid.txt"
+  $PY - "$out/attempts.jsonl" "$stamp" "$seed" "$card" "$pid" "$free" <<'EOF'
+import json, sys
+path, stamp, seed, card, pid, free = sys.argv[1:7]
+with open(path, "a") as handle:
+    handle.write(json.dumps({"utc": stamp, "seed": int(seed), "physical_gpu_index": int(card),
+                             "pid": int(pid), "free_mib_at_launch": int(free),
+                             "log": f"train_console_{stamp}.log"}, sort_keys=True) + "\n")
+EOF
   HOSTED_CARDS="$HOSTED_CARDS,$card"
-  echo "seed $seed: LAUNCHED on GPU$card pid $pid (free was ${free}MiB, log $out/train_console.log)"
+  # post-launch assertion: $! must be the runner itself (setsid execs in place when the shell has no
+  # job control); a mismatch would silently break the pid-guard for later monitor passes.
+  sleep 2
+  if [ -r "/proc/$pid/cmdline" ] && tr '\0' ' ' < "/proc/$pid/cmdline" | grep -q run_route2_m1_intervention_fullft_v1; then
+    echo "seed $seed: LAUNCHED on GPU$card pid $pid (free was ${free}MiB, log $out/train_console_${stamp}.log)"
+  else
+    echo "seed $seed: WARNING pid $pid is not the runner (setsid forked?); inspect $out/train_console_${stamp}.log"
+  fi
   return 0
 }
 

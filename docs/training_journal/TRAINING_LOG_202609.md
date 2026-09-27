@@ -2504,3 +2504,18 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   - **实机验证**：`--no-harvest` 报告全段正常；FULL 趟输出 `[launch] seed … already RUNNING …` + `[harvest] M1 3-seed: deferred (single-arm adjudication absent)`；`bash -n` + `py_compile` 双通过。
 - **在途（09-28 03:20 CST / 19:20Z）**：M1 主臂 epoch 2（step 13,000/45,828，MSE 0.606）；polyA seed 20260921（GPU4）/ 20260922（GPU3）首 pass 训练中（心跳按设计停于 pass 边界）；**同批 cron `# RNAJEPA_MONITOR/*/10` + `# P1_GAPFILL_MONITOR/*/20` 解释 GPU1/GPU3/GPU5 的高占用**（非本项目，不改动、不争抢）。
 - **纪律**：protected TEST reads = 0；本批次零判定改动（v1 门限、FINAL-EPOCH-6-FIXED、G1/G2/G4 语义全部未动）；不改 polyA 在途配置、不杀训练；产物 /mnt、脚本/文档 /home + push。
+## 批次一百二十八（2026-09-28 · seed20260905 死亡事故取证 + setsid 加固 + 监控门 5 分支夹具测试 ALL_PASS）
+
+- **事故取证（seed_20260905 首发射 pid 778142 死亡，19:17Z→19:20Z）**：死亡证据链 = (1) `train_console.log` 停在 `train_pool_total=977608 …`，**无 traceback、无 CUDA OOM 字样**（静默截断 ⇒ 外部信号，非代码异常）；(2) 19:20Z `ps` 已无该 pid；(3) 该进程由**被我方 pkill/StopCommand 终止的那个 ssh 会话**发射——子进程未 `setsid`，随会话/进程组一同被带走。**排除**：GPU2 无 OOM 记录（同时段 20260904 正常推进）、非 NFS、非 runner bug。
+  - **修复（症状级根治）**：发射器改用 `setsid env … nohup … 9>&- < /dev/null &` —— 训练进程进入**独立会话**，与 ssh/cron 父会话完全脱钩；实测 `setsid` 在无 job-control 的脚本上下文**原地 exec**（`$!` = 真实 runner pid，SID = pid），并新增**发射后断言**（读 `/proc/$pid/cmdline` 必须含 runner 名，否则打 WARNING），避免 pid 守卫静默失效。
+  - **证据保全（防再犯）**：每次发射写独立 `train_console_<UTCstamp>.log` + 追加 `attempts.jsonl`（utc/seed/gpu/pid/free_mib/log）——旧设计复用单一 log 文件，导致**前一次尝试的死亡现场被覆盖**（本次只能靠残留文件与 ps 时间线还原）。
+- **重启（第三发射，pid 813901，19:27:32Z）**：GPU5（发射时自由 17,387MiB）；心跳 INIT（数据加载）→ 19:27:42Z；`library=677608 / m1_pool=323555 / m1_sampled=300000 / excluded_eval_row_seqs=4852 / train_pool_total=977608 / target_mean=5.4073 std=1.9019` 与 v1 主臂**逐位一致**（数据面不变的正面证据）。
+- **监控门夹具测试（新，`test_check_and_harvest_week_gates.sh`，入 git）**：以 `/tmp` 一次性 fixture + python stub 收割器（不触碰任何证据目录）跑 **5 个分支**，**ALL_PASS**：
+  1. 无终态/无裁决 → 3-seed `deferred (single-arm adjudication absent)` + polyA `deferred` + 发射器被调用 + **零stub 调用**；
+  2. 主臂终态 + G1=False → 单臂收割运行 + 3-seed **SKIPPED（方向负）** + **m1x 未调用**；
+  3. G1=True 但扩展臂未终态 → `deferred (G1 positive but … not all terminal)` + m1x 未调用；
+  4. G1=True + 三臂终态 → m1x **经门调用**并产出 + 复跑幂等；
+  5. polyA 终态件齐 → 聚合运行 + 复跑幂等。
+  - 监控脚本同时新增**路径覆盖开关**（`MRNA_MON_*`，默认全为生产路径，cron 行为零变化）以支持该测试；`bash -n` + 生产实跑双通过（生产实跑输出 `[launch] … already RUNNING … skip` ×2 + `M1 3-seed: deferred` + `polyA 3-seed: deferred`）。
+- **三臂健康快照（19:30Z）**：主臂 seed_20260920 step 14,500/45,828（epoch 2，MSE 0.614）；扩展臂 seed_20260904 step 2,000+（epoch 1，MSE 0.718）；扩展臂 seed_20260905 数据加载→入训；polyA 两 seed 首 pass 训练中（心跳按设计停 pass 边界）。
+- **纪律**：protected TEST reads = 0；门槛/权重零改动；不杀他方进程（GPU5 上 rnajepa/lucaone 属同账号他项目作业，只读观察不干预）；产物 /mnt、脚本/文档 /home + push。
