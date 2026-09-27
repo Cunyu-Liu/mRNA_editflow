@@ -2430,3 +2430,17 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   3. `check_and_harvest_week.sh`（状态巡检 + 终态自动收割；GPU≥6GB 自由显存或 MIG 3g.20gb 回退）——状态报告验证通过（三臂 pid/心跳/GPU 快照齐全）。
 - **纪律**：protected TEST reads = 0；OOM 为技术性失败（非科学结果），retry 走「归档证据 + 同 seed/同配置/同 runner」路径（先例：v403_controls_oom_retry）；预注册门/配置零修改；代码 /home worktree、产物 /mnt。
 - **下一步**：M1 终态 → 四门收割（G1 方向 → G2 非破坏 → G4 条件触发）→ 骨架 §5.6 回填；polyA 双 seed 终态 → 3-seed 新行 + A1 SEALED；两者自动收割由定时任务与 `check_and_harvest_week.sh` 承接。
+## 批次一百二十（2026-09-28 · 周交付接管会话二：四 SPECS 交接文档更新 + Gate P 前置核验 + 全文初稿生成 + 双层监控）
+
+- **四 SPECS 交接文档更新（09-19 → 09-28 状态，旧版全部归档）**：
+  - `SPECS_BASELINE_LEADERBOARD`：spec v7 + tasks v8 + checklist v7（DeltaBench 主线版：pivot 定位 / R12-R13 / M1 臂与对照锚 0.0916 / 新行矩阵与 held-out FAIL 如实版 / 审计 09-28 状态 / 措辞条款扩至 6 条 / 一周交付清单）；
+  - `SPECS_CRITIC_V6`：spec v3 + tasks v5 + checklist v4（DeltaBench 素材源版：新增 §4 七条证据线「oracle probe / 一阶分解 / 失败分类 / 机制链 A / held-out FAIL / 剂量响应 / ICC 复算」+ M1 门表）；
+  - `SPECS_SETFLOW_V5`：spec v3 + tasks v3 + checklist v2（应用案例版：DeltaBench 定位 + 命名澄清 + flock 条款）；
+  - `SPECS_SETFLOW_V6`：spec v3 + tasks v5 + checklist v4（素材资产版：§D 使用映射 + 论文引用核对清单）。
+  - 归档：各文件夹 archive/ 新增「*_至20260928.md」全量旧版。
+- **Gate P 前置核验 v1 落盘**（`docs/paper/gate_p_precheck_v1.md`）：可核验就绪表（protected_reads=0 PASS / 矩阵 65-65 PASS / 单测 5 族 PASS / 预注册 14+1 份 PASS / 统计完备三件 PASS / R12 写作期 / R13 用户侧未满足 / 在途臂未终态）+ 三项用户拍板项 + 建议顺序（收割→全文→R12/R13→拍板→一次性揭盲）。
+- **全文初稿（draft v1）生成启动**：骨架 v2（545 行）→ 全文 prose；§5.6（M1 四门）/§8.1（3-seed）留显式回填位；数字完整性自检（逐数字对 skeleton/material locator）随草稿产出。
+- **双层监控**：服务器 crontab 每 2h（`# MRNA_WEEK_MONITOR` → `check_and_harvest_week.sh`，含终态自动收割，日志 `/mnt/.../experiments/mrna_week_monitor.log`）+ 本地 `mRNAflow/mrna_week_monitor_202609.md`（人工汇总快照）。
+- **在途臂读数（09-28 02:30 CST）**：M1 epoch1 DONE（step 7,638/45,828，epoch-1 诊断 spearman **0.2162**，判定按 FINAL-EPOCH-6）；polyA 两 seed INIT 健康（pid 408624/455781）。
+- **纪律**：protected TEST reads = 0；无门槛/预注册/产物修改（append-only）；OOM 事故证据保全留档；代码/文档 push 见 commit 记录。
+- **下一步**：M1 终态自动四门收割（今日）→ §5.6 回填；polyA 双 seed 终态自动收割（今日傍晚）→ §8.1 脚注 + 榜新行；全文初稿审校 → 一周内可提交预印本初稿。
