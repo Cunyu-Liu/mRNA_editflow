@@ -1,7 +1,7 @@
 # M1 干预臂 3-seed 扩展 Amendment v2（**ACTIVE — 已冻结**）
 
 - **change-id**: m1-intervention-arm-seed-extension-v2-20260928
-- **状态**: **ACTIVE — FROZEN**（冻结时间 2026-09-28T19:15Z / 2026-09-28 03:15 CST；本文件冻结于任何扩展臂训练发射之前，且任何扩展臂数据/G1 读数均未被读取）
+- **状态**: **ACTIVE — FROZEN**（冻结时间 2026-09-27T19:06Z / 2026-09-28 03:06 CST；本文件冻结于任何扩展臂训练发射之前，且任何扩展臂数据/G1 读数均未被读取）
 - **上游**: `docs/paper/m1_intervention_arm_amendment_v1.md`（M1 四门 + 单 seed 方向判定，已冻结执行中）
 - **取代**: `docs/paper/m1_intervention_arm_amendment_v2_seed_extension_DRAFT.md`（DRAFT 版，保留为存档；其 §1 种子消解、§2 配置、§3 判定全部逐字继承，仅 §4 发射时机条款在本 ACTIVE 版中修订）
 
@@ -47,7 +47,7 @@
 
 ### 4.3 执行清单
 
-1. [x] 本文件冻结 ACTIVE + commit（2026-09-28T19:15Z，先于发射）。
+1. [x] 本文件冻结 ACTIVE + commit（2026-09-27T19:06Z，先于发射）。
 2. [x] 发射两臂（`--seed 20260904` / `--seed 20260905`，各自独立卡，发射记录见 journal 批次 127 与各 arm `training_pid.txt`）。
 3. [ ] 两臂终态 → 3-seed 收割脚本（`scripts/route_a_v3/harvest_route2_m1_intervention_3seed_v1.py`，z-mean ensemble + paired bootstrap，复用 V2 ensemble 口径）。
 4. [ ] 结果回填 §5.6（v1 单 seed 判定的**显著性追加行**）+ journal 批次。

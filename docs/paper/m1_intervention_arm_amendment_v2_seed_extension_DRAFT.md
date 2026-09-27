@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-09-27T19:06Z** — 本 DRAFT 已由 `docs/paper/m1_intervention_arm_amendment_v2_seed_extension.md`（ACTIVE）取代；保留为存档，不再修改。
+
 # M1 干预臂 3-seed 扩展 Amendment v2（DRAFT — 条件激活）
 
 - **change-id**: m1-intervention-arm-seed-extension-v2-20260928
