@@ -2519,3 +2519,4 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   - 监控脚本同时新增**路径覆盖开关**（`MRNA_MON_*`，默认全为生产路径，cron 行为零变化）以支持该测试；`bash -n` + 生产实跑双通过（生产实跑输出 `[launch] … already RUNNING … skip` ×2 + `M1 3-seed: deferred` + `polyA 3-seed: deferred`）。
 - **三臂健康快照（19:30Z）**：主臂 seed_20260920 step 14,500/45,828（epoch 2，MSE 0.614）；扩展臂 seed_20260904 step 2,000+（epoch 1，MSE 0.718）；扩展臂 seed_20260905 数据加载→入训；polyA 两 seed 首 pass 训练中（心跳按设计停 pass 边界）。
 - **纪律**：protected TEST reads = 0；门槛/权重零改动；不杀他方进程（GPU5 上 rnajepa/lucaone 属同账号他项目作业，只读观察不干预）；产物 /mnt、脚本/文档 /home + push。
+- **范围澄清（同批次追加，append-only）**：本批次加固（setsid / 独立 log / attempts.jsonl / 发射后断言）**仅对后续发射生效**——当前在跑的 seed_20260905（pid 813901，19:27:32Z 发射，19:33:32Z 入训）由加固前的发射器启动，**无 attempts.jsonl**；其启动参数与数据面证据已由心跳（train_rows=977608）与 v1 逐位一致的控制台行固定，无信息缺口。三臂均健康：19:36Z 主臂 epoch 2（step ~14.5k）、seed_20260904 step 3,200、seed_20260905 step 400。
