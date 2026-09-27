@@ -2474,4 +2474,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **`m1_intervention_arm_amendment_v2_seed_extension_DRAFT.md` 落盘（草稿、未激活）**：仅在 M1 G1 方向为正时冻结激活；**发射前**消解 v1 "复用两枚" 歧义（固定条款：20260904/20260905；理由：20260903 是 v1 明示单 seed 参照点，保持不克隆）；激活清单五步 + 禁改条款（v1 读数为准，3-seed 为追加行）。
 - **draft v1.2 + R12 公平性段**（批次 122 已记）与本次 3-seed 工具共同将"两种结局"的全部执行路径备妥：G1 正 → 立即冻结 v2 + 发射两臂 + 3-seed 显著性；G1 负 → v2 归档未用，§5.6 直接以单 seed 方向负 + G2/G3/G4 语义如实回填。
 - **在途臂（09-28 03:05 CST）**：M1 epoch 2（step 10,500/45,828，MSE 0.637 收敛中）；polyA 两 seed 训练中。
-- **纪律**：protected TEST reads = 0；替身验证不写任何真实臂目录（输出 /tmp）；amendments 草稿未激活不改动任何在途产物；代码全部 push（见 commit）。
+- **纪律**：protected TEST reads = 0；替身验证不写任何真实臂目录（输出 /tmp）；amendments 草稿未激活不改动任何在途产物；代码全部 push（见 commit）。## 批次一百二十五（2026-09-28 · polyA 两 seed 首 pass 进行中（心跳设计澄清）+ M1 epoch 轨迹对照 + 状态巡检）
+
+- **polyA 两 seed 状态澄清（排除"卡死"误判）**：heartbeat 停留在 `INIT/pass_number=0` 属**设计行为**——该 runner 仅在 pass 边界写心跳（代码实查：write_heartbeat 仅 4 处 = INIT / pass 边界 / 终态 / FAILED）。实测证据：两进程 CPU 612%/786%、RSS 12GB、GPU 占用 **12,022 MiB / 11,796 MiB**、GPU 利用率 99-100% → **首 pass 训练中**（非卡死）；磁盘读已归零（`/proc/pid/io` 60s 窗口 read_bytes 增量 = 0），排除 NFS 读瓶颈。
+- **新证据（瓶颈归因）**：/mnt 为 **NFS**（10.179.129.209, nfs v3）挂载——冻结 bottom-six cache 的 `torch.load` 与全程数据读都走 NFS；两 seed 同卡竞争 + 外部用户共用（GPU3 总用 37.5GB/40GB、GPU4 27.5GB）→ 首 pass 预计显著慢于主行（主行 55,636s/8 pass 为低争用基准）。**不干预**（纪律：不得杀训练）；以 pass 边界心跳为准跟踪，监控 cron 每 2h 自动巡检。
+- **M1 epoch 轨迹对照（仅诊断，不做决策）**：M1 epoch1 = **0.2162**；V2 同配方 epoch1 谱 = 0.2705（seed03）/0.2626（seed04）→ M1 早期读数低于 V2 早期带（+44% 数据、混标），V2 末值谱 0.2873-0.3198、G1 方向门 = 0.3258。**判定纪律**：终态（FINAL-EPOCH-6-FIXED）出数为准；方向负 = 有效机制交付（amendment v1 §3.1 已预登记）。
+- **本批次无代码/产物改动**；监控快照 S3 已同步本地 `mRNAflow/mrna_week_monitor_202609.md`。
+- **纪律**：protected TEST reads = 0；不杀训练、不改配置；全部观察基于只读实查（ps/io/nvidia-smi/heartbeat）。
