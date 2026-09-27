@@ -2443,4 +2443,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **双层监控**：服务器 crontab 每 2h（`# MRNA_WEEK_MONITOR` → `check_and_harvest_week.sh`，含终态自动收割，日志 `/mnt/.../experiments/mrna_week_monitor.log`）+ 本地 `mRNAflow/mrna_week_monitor_202609.md`（人工汇总快照）。
 - **在途臂读数（09-28 02:30 CST）**：M1 epoch1 DONE（step 7,638/45,828，epoch-1 诊断 spearman **0.2162**，判定按 FINAL-EPOCH-6）；polyA 两 seed INIT 健康（pid 408624/455781）。
 - **纪律**：protected TEST reads = 0；无门槛/预注册/产物修改（append-only）；OOM 事故证据保全留档；代码/文档 push 见 commit 记录。
-- **下一步**：M1 终态自动四门收割（今日）→ §5.6 回填；polyA 双 seed 终态自动收割（今日傍晚）→ §8.1 脚注 + 榜新行；全文初稿审校 → 一周内可提交预印本初稿。
+- **下一步**：M1 终态自动四门收割（今日）→ §5.6 回填；polyA 双 seed 终态自动收割（今日傍晚）→ §8.1 脚注 + 榜新行；全文初稿审校 → 一周内可提交预印本初稿。## 批次一百二十一（2026-09-28 · draft v1.1：三处占位清零 + Figure 1 矩阵热图落盘 + 全文素材完备度收官）
+
+- **draft v1.1（commit 1ab5459d，已 push）**——在 v1（8,446 词 / 12 表）基础上定向补齐三处此前 TO FINALIZE 项：
+  1. **§10.4 预注册 commit 清单全量落实**（逐文件实查 `git log --diff-filter=A`）：delta_density (682b8c80) / oracle (a2a2919a) / first_order (8f80d7e6) / matrix_row+port_ledger (a14fb447) / m1_intervention (b2e141cd) / polya_3seed (73d47cdf) / density_sensitivity+first_order_alpha (60ff6999) / d16c (0809f5f6) / erk v2 (e343d4a3) / w_ladder (7303417c) / pivot (682b8c80) / comb_prereg (eb69e6bb，v8-stage1 worktree)。
+  2. **§10.5 LOSO-lite Table 5 补齐（协议 B 冻结拍板）**：九任务逐行——critic V5 in-domain（明示非 zero-shot）/ 外部同池行（仅 MRL/polyA/MPRAU/HL 有；TE/RNA/REF-ALT 声明无行）/ 内靶 / 天花板；代表行数字全部取自 `analysis_task11_loso_lite_20260909/table5_loso_lite_draft_v1.md` 逐位核对（MRL 0.1354/0.3132/0.2956/0.1107/内靶 0.1192/天花板 0.83；polyA 0.8219/0.7343/0.681/0.749/0.7308/0.9；MPRAU 0.0732/0.1205/0.0248/0.683；HL 0.0607/0.0456/0.0985/0.0；TE 0.0579/−0.0266；PLUMAGE 0.1953/0.1747 与 0.05/0.223；REF/ALT 0.0639/−0.0052）。
+  3. **§9.4 外部基准/模型对比段成文**：仅引用项目文档已核实的出处（Sample 2019 / Lim 2021 / Schuster 2023 / Su 2025 / Xue et al. / Castillo-Hair 2024 / Plassmeyer 2025 / GEMORNA Science 2025 / LAMAR bioRxiv 2024 / UTR-STCNet IEEE BIBM 2025），未引任何外部参考数字（保持逐数字可溯源纪律；完整参考文献表留投稿期）。
+- **Figure 1 落盘（矩阵热图，论文头条图）**：`experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_matrix_heatmap_v1.{png,pdf}` + manifest（65/65 格全部为存档 `task_macro_spearman`，零重算；产出脚本 `make_deltabench_figure1_matrix_v1.py` 入 W0 git）。**目视核验通过**（5 族 × 13 格/tie 分隔线/色标齐全）+ 抽查 7 格与 matrix_v2_results.json 逐位一致（STCNet MRL 0.814 / M1 0.067；GEMORNA MRL 0.220 / M1 0.089；HydraRNA MRL −0.016 等）。Figure 2（密度 held-out 散点，v1+v2 两版）与 Figure 3（一阶分解 vs 外部 vs 天花板）为既有落盘产物，draft 已建 Figures 段落并绑定 locator。
+- **素材完备度收官**：opening items 现仅剩两项训练依赖回填（§5.6 M1 四门 / §8.1 polyA 3-seed）+ 一项用户侧（rights review / availability）。全文进入「待两臂终态回填即可提交预印本」状态。
+- **在途臂（09-28 02:45 CST）**：M1 epoch 2 训练中（step ~8,500+）；polyA 两 seed 训练中（pid 408624/455781 健康）。
+- **纪律**：protected TEST reads = 0；全部新数字均有 locator；图产物 /mnt、脚本 /home + push；未触碰任何预注册/训练进程。
