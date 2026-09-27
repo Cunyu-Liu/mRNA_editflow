@@ -232,7 +232,8 @@ def adjudicate_g3(arm_dir: Path) -> dict:
     }
 
 
-def adjudicate_g2(model, tokenizer, device) -> dict:
+def polyA_reading(model, tokenizer, device) -> dict:
+    """Frozen-Δ polyA reading on GSE269595 VALIDATION (n=2,628)."""
     ids = manifest_ids("GSE269595", "VALIDATION")
     _require(len(ids) == 2628, f"GSE269595 VALIDATION id count {len(ids)} != 2628")
     records = load_canonical_records(CANONICAL_GSE269595, ids)
@@ -244,19 +245,44 @@ def adjudicate_g2(model, tokenizer, device) -> dict:
     preds = {rid: float(delta[i]) for i, rid in enumerate(eval_ids)}
     obs = ev.load_observations([CANONICAL_GSE269595], ids)
     metrics = ev.evaluate(obs, preds, K)
-    value = float(metrics["task_macro_spearman"])
-    drop = POLYA_MAIN - value
     return {
+        "value": float(metrics["task_macro_spearman"]),
+        "top_1": metrics["source_macro_top_1_accuracy"],
+        "ndcg_at_10": metrics["source_macro_ndcg_at_k"],
+    }
+
+
+def adjudicate_g2(arm_reading: dict, baseline_reading: dict | None) -> dict:
+    """Mechanical verdict vs the frozen main row (per amendment v1), plus a
+    report-only context row vs the Route A V2 baseline recompute (the arm
+    inherits V2's MRL-only training design, so the *frozen* comparison against
+    the V5 polyA main row is expected to reflect MRL-domain training drift —
+    the amendment's expectation note already anticipates this)."""
+    value = arm_reading["value"]
+    drop = POLYA_MAIN - value
+    out = {
         "gate": "G2_non_destruction",
         "metric": "polyA_VALIDATION_frozen_delta_task_macro_spearman",
         "value": value,
-        "top_1": metrics["source_macro_top_1_accuracy"],
-        "ndcg_at_10": metrics["source_macro_ndcg_at_k"],
+        "top_1": arm_reading["top_1"],
+        "ndcg_at_10": arm_reading["ndcg_at_10"],
         "frozen_polya_main_row": POLYA_MAIN,
         "drop_vs_main": drop,
         "drop_tolerance": POLYA_DROP_TOLERANCE,
         "pass": bool(drop <= POLYA_DROP_TOLERANCE),
+        "gate_semantics_note": (
+            "mechanical verdict compares against the V5 multi-task main row as frozen in the amendment; "
+            "the arm is a clone of the MRL-only Route A V2 design, so the informative non-destruction "
+            "signal is the context row below (arm vs V2 baseline recompute)"
+        ),
     }
+    if baseline_reading is not None:
+        out["baseline_v2_context"] = {
+            "v2_baseline_value": baseline_reading["value"],
+            "arm_minus_baseline": value - baseline_reading["value"],
+            "note": "report-only context row; not part of the frozen G2 verdict",
+        }
+    return out
 
 
 def load_m1_rows() -> list[dict]:
@@ -370,9 +396,18 @@ def main() -> int:
         # G2 runs regardless of G1 direction (non-destruction gate is unconditional)
         model.load_state_dict(load_state_dict(args.arm_dir / "fullft_epoch_6.pt"), strict=True)
         model.to(device)
-        result["G2"] = adjudicate_g2(model, tokenizer, device)
+        arm_polyA = polyA_reading(model, tokenizer, device)
+        baseline_polyA = None
+        if V2_CKPT.exists():
+            model.load_state_dict(load_state_dict(V2_CKPT), strict=True)
+            model.to(device)
+            baseline_polyA = polyA_reading(model, tokenizer, device)
+            model.load_state_dict(load_state_dict(args.arm_dir / "fullft_epoch_6.pt"), strict=True)
+            model.to(device)
+        result["G2"] = adjudicate_g2(arm_polyA, baseline_polyA)
         print(f"[G2] polyA value={result['G2']['value']:.6f} drop={result['G2']['drop_vs_main']:+.6f} "
-              f"pass={result['G2']['pass']}", flush=True)
+              f"pass={result['G2']['pass']}"
+              + (f" | v2_baseline_context={baseline_polyA['value']:.6f}" if baseline_polyA else ""), flush=True)
 
         if g1_positive:
             rows = load_m1_rows()

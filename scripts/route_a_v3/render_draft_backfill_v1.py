@@ -46,6 +46,17 @@ def render_m1(path: Path) -> str | None:
         f"- **G2 non-destruction** — polyA VALIDATION recompute = {fmt(g2.get('value'), 6)}; "
         f"drop vs frozen main row {fmt(g2.get('frozen_polya_main_row'), 4)} = {fmt(g2.get('drop_vs_main'), 6)}; "
         f"tolerance {g2.get('drop_tolerance')}; **pass = {g2.get('pass')}**.",
+    ]
+    ctx = g2.get("baseline_v2_context")
+    if ctx:
+        lines.append(
+            f"- G2 report-only context row (arm vs Route A V2 baseline recompute, same caliber): "
+            f"V2 baseline polyA = {fmt(ctx.get('v2_baseline_value'), 6)}; "
+            f"arm − baseline = {fmt(ctx.get('arm_minus_baseline'), 6)}. "
+            "Note for writing: the mechanical G2 compares against the V5 multi-task main row; the arm inherits "
+            "V2's MRL-only training design, so the meaningful non-destruction reading is this contrast row."
+        )
+    lines += [
         f"- **G3 efficiency (report only)** — wallclock {fmt(eff.get('wallclock_h'), 2)} h; "
         f"peak CUDA memory {fmt(eff.get('peak_cuda_memory_gb'), 2)} GB; steps {eff.get('steps_total')}; "
         f"train pool {g3.get('train_pool_total')} rows (of which M1 {g3.get('m1_rows')}).",

@@ -2459,4 +2459,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
   2. 勘误：§10.3 "UTTR-Insight" → "UTR-Insight"。
 - **回填渲染器 `render_draft_backfill_v1.py`（新，入 W0 git）**：从冻结收割 JSON（M1 四门 / polyA 3-seed）渲染 §5.6、§8.1 可直接粘贴的 markdown 块（含 triggered / not-triggered 两分支、数字只读拷贝、判定句模板）；**不修改 draft**（人工插入）。**功能测试通过**（`test_render_draft_backfill_v1.py`：合成数据断言 triggered 分支 13 项 + not-triggered 分支 + 数值渲染格式；真实产物零接触）。门行为验证：两 JSON 均不存在 → exit 3 NOT_READY（实机验证）。
 - **在途臂（09-28 02:45 CST）**：M1 epoch 2（step 9,000/45,828）正常推进；polyA 两 seed 训练中（pid 408624 / 455781 ALIVE）。
-- **纪律**：protected TEST reads = 0；新增段全部数字有 locator（LOSO 九任务数字逐位核对自 `table5_loso_lite_draft_v1.md`；预算段引用 matched-FT 三 seed 负结果与 APARENT 2.74M 语料均已入档）；产物 /mnt、脚本/文档 /home + push。
+- **纪律**：protected TEST reads = 0；新增段全部数字有 locator（LOSO 九任务数字逐位核对自 `table5_loso_lite_draft_v1.md`；预算段引用 matched-FT 三 seed 负结果与 APARENT 2.74M 语料均已入档）；产物 /mnt、脚本/文档 /home + push。## 批次一百二十三（2026-09-28 · 收割管线全链 dry-run 验证（V2 替身臂）+ G2 上下文行升级 + 全链证据）
+
+- **收割管线全链 dry-run（新，关键验证）**：以 Route A V2 arm（280k_fullft_v2_6ep_20260903）为替身（`--arm-dir` 参数化），在真实 checkpoint 上跑完整 M1 四门收割——**结果与预期逐位一致**：G1 = **0.319792**（= V2 seed 20260903 存档值 0.31979237401392574 逐位复现；方向 gain +0.003963 → direction_positive=False，符合"V2 自身对 ensemble 无 +0.01 增益"预期）；G2 = polyA 0.090315（drop 0.7316 → 机械判定 pass=False）；G4 未触发（G1 方向非正）。**结论：模型加载（bespoke 权重 schema）/双序列打分/frozen evaluator/四门判定/落盘全链无 bug**，M1 终态后可直接收割。
+- **重要科学上下文（dry-run 副产品）**：**MRL 域 full-FT（V2）的 polyA 读数 = 0.0903**——MRL-only 训练会把 polyA 从 0.8219 拉到 0.09 量级（域漂移），远大于 G2 的 0.02 容差。这解释了 M1 臂 G2 的**语义**：机械判定（vs V5 多任务主行 0.8219）对 MRL-only 血统的臂天然会 FAIL，**有信息量的判读是"臂 vs V2 baseline 同口径对比"**（加 M1 数据是否进一步劣化/改善 polyA）。已据此升级收割脚本：G2 新增 **report-only context row**（`baseline_v2_context`：V2 baseline polyA 值 + arm−baseline 差），机械判定与语义说明（`gate_semantics_note`）分列，**未改动任何冻结门限**。
+- **dry-run #2（升级后复核）**：G2 输出 `value=0.090315 | v2_baseline_context=0.090315`（替身臂=同 checkpoint → arm−baseline=0.0，逐位验证两条独立读数路径一致）；backfill 渲染器同步升级（上下文行进入 §5.6 回填块），py_compile + 功能测试 PASS。
+- **产物 locator**：`experiments/xeditcritic_m1_intervention/dryrun_v2_arm_v1/{dryrun.log,dryrun2.log,out/,out2/}`（append-only，与真实 M1 产物目录隔离）。
+- **在途臂**：M1 epoch 2 正常推进；polyA 两 seed 训练中。
+- **纪律**：protected TEST reads = 0；替身臂 dry-run 仅读 V2 存档产物、零写入原目录；G2 升级只增报告行、冻结门限零修改；代码 push 见 commit。
