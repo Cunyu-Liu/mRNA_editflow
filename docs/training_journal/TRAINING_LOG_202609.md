@@ -2452,4 +2452,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **Figure 1 落盘（矩阵热图，论文头条图）**：`experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_matrix_heatmap_v1.{png,pdf}` + manifest（65/65 格全部为存档 `task_macro_spearman`，零重算；产出脚本 `make_deltabench_figure1_matrix_v1.py` 入 W0 git）。**目视核验通过**（5 族 × 13 格/tie 分隔线/色标齐全）+ 抽查 7 格与 matrix_v2_results.json 逐位一致（STCNet MRL 0.814 / M1 0.067；GEMORNA MRL 0.220 / M1 0.089；HydraRNA MRL −0.016 等）。Figure 2（密度 held-out 散点，v1+v2 两版）与 Figure 3（一阶分解 vs 外部 vs 天花板）为既有落盘产物，draft 已建 Figures 段落并绑定 locator。
 - **素材完备度收官**：opening items 现仅剩两项训练依赖回填（§5.6 M1 四门 / §8.1 polyA 3-seed）+ 一项用户侧（rights review / availability）。全文进入「待两臂终态回填即可提交预印本」状态。
 - **在途臂（09-28 02:45 CST）**：M1 epoch 2 训练中（step ~8,500+）；polyA 两 seed 训练中（pid 408624/455781 健康）。
-- **纪律**：protected TEST reads = 0；全部新数字均有 locator；图产物 /mnt、脚本 /home + push；未触碰任何预注册/训练进程。
+- **纪律**：protected TEST reads = 0；全部新数字均有 locator；图产物 /mnt、脚本 /home + push；未触碰任何预注册/训练进程。## 批次一百二十二（2026-09-28 · R12 公平性段成文 + 回填渲染器（含功能测试）+ 在途臂推进）
+
+- **draft v1.2（本次 commit）**：
+  1. §2.4 新增 **Budget parity（fairness declaration）** 段（R12 收尾）：同一信息预算（VALIDATION-only / 单评估器实例 / 同记录集）、同 split 纪律、零调参预算（官方权重、无逐行 HPO、无输出后标定）；内部行超参/训练预算冻结于预注册文件、不逐任务重搜；外部族"调参不足"反驳由预注册 matched-FT 对照（MPRAU 三 seed 全负，R5 闭环）承担而非事后调参；真实存在的预算不对称（APARENT 的 2.74M 同 assay 语料）如实声明并归因到监督体制（§8.2）。
+  2. 勘误：§10.3 "UTTR-Insight" → "UTR-Insight"。
+- **回填渲染器 `render_draft_backfill_v1.py`（新，入 W0 git）**：从冻结收割 JSON（M1 四门 / polyA 3-seed）渲染 §5.6、§8.1 可直接粘贴的 markdown 块（含 triggered / not-triggered 两分支、数字只读拷贝、判定句模板）；**不修改 draft**（人工插入）。**功能测试通过**（`test_render_draft_backfill_v1.py`：合成数据断言 triggered 分支 13 项 + not-triggered 分支 + 数值渲染格式；真实产物零接触）。门行为验证：两 JSON 均不存在 → exit 3 NOT_READY（实机验证）。
+- **在途臂（09-28 02:45 CST）**：M1 epoch 2（step 9,000/45,828）正常推进；polyA 两 seed 训练中（pid 408624 / 455781 ALIVE）。
+- **纪律**：protected TEST reads = 0；新增段全部数字有 locator（LOSO 九任务数字逐位核对自 `table5_loso_lite_draft_v1.md`；预算段引用 matched-FT 三 seed 负结果与 APARENT 2.74M 语料均已入档）；产物 /mnt、脚本/文档 /home + push。

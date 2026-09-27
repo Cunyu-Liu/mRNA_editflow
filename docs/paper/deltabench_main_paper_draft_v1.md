@@ -93,6 +93,8 @@ Table 2 summarizes the four axes that distinguish DeltaBench from conventional a
 
 **Two-tier adjudication.** A tier-1 small-calibration set (e.g. polyA `calib100`) may raise a signal, but that signal must be re-checked on the tier-2 full set (891 sources) before it is credited; the discipline case is the Optimus calib100 signal being falsified by the 891-source full set.
 
+**Budget parity (fairness declaration).** All matrix rows are scored under the same information budget (VALIDATION-only reading, one frozen evaluator instance, identical record sets), the same split discipline (the frozen near-duplicate-component manifest), and the same tuning budget — zero tuning: official published weights, no per-row hyper-parameter search, no output post-calibration. For the project's own in-domain rows, hyper-parameters and training budgets are frozen in the pre-registration documents (§10.4) and are never re-searched per task; for the ported families, no matched fine-tuning was performed, and the "you under-tuned the external models" objection is answered by the pre-registered matched-FT control rather than by ad-hoc tuning (MPRAU matched-FT arms for UTR-LM / RNA-FM: three seeds, all negative, the R5 closure). Budget asymmetry is declared where it genuinely exists: APARENT's decision-caliber advantage on polyA traces to its 2.74M within-assay training corpus — a supervision-regime property reported openly in §8.2 — not to an evaluation-budget difference.
+
 **Ceiling normalization.** Each task has a label ICC ceiling: MRL 0.83, polyA 0.90, MPRAU 0.683, TE200304 0.586, HL5 0.0014, HL3 0.013 (and TE149487 −0.274, RNA149487 0.364, REFALT 0.21 in the full table). Rows whose ICC is ≈ 0 are assigned normalization **N/A**, so that negative denominators are never used to manufacture inflated readings. The unified source for these ICC values is the label-ICC table (`mechanism_results_v2.json → label_icc_reference`); the GSE149487/GSE200304 entries additionally have an independent recomputation cross-check.
 
 **Table 3. Label ICC ceilings.**
@@ -433,7 +435,7 @@ All evaluation uses the same Task-1 evaluator instance (`evaluate_route2_predict
 
 ### 10.3 External model porting
 
-The port ledger records 5 PORT_READY families plus the license disposition. Per-family port adaptations are declared in the matrix summary's verbatim blocks. The unit-test protocol verifies official example values and strict loading (UTTR-Insight official CSV alignment ρ = 0.96; RiboNN official predictions aligned to model-0 max diff 0.0034 and model-1 max diff 0.0012, reproducing the official Pearson 0.758). The HydraRNA MIG environment fix (Triton autotuner single-device visibility) is declared with zero numerical change.
+The port ledger records 5 PORT_READY families plus the license disposition. Per-family port adaptations are declared in the matrix summary's verbatim blocks. The unit-test protocol verifies official example values and strict loading (UTR-Insight official CSV alignment ρ = 0.96; RiboNN official predictions aligned to model-0 max diff 0.0034 and model-1 max diff 0.0012, reproducing the official Pearson 0.758). The HydraRNA MIG environment fix (Triton autotuner single-device visibility) is declared with zero numerical change.
 
 ### 10.4 Pre-registration document list
 
