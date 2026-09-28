@@ -95,15 +95,32 @@ def polyA_ids() -> tuple[set[str], dict[str, str]]:
     return ids, groups
 
 
+def _new_seed_predictions(name: str) -> Path | None:
+    """Resolve a new-seed prediction file, tolerating both directory spellings.
+
+    2026-09-28 finding: the runner wrote the three new seeds into `seed_20260921/`
+    (underscore) while this harvester looked for `seed20260921/` (no underscore), so the
+    gate reported NOT_TERMINAL forever even after both arms finished. Glob on the digit
+    suffix so a future spelling drift cannot silently disable the harvest again.
+    """
+    root = MNT / "experiments/xeditcritic_v5_polya_3seed"
+    digits = name.removeprefix("seed").removeprefix("_")
+    direct = root / f"seed_{digits}" / "final_validation_predictions.jsonl"
+    if direct.exists():
+        return direct
+    hits = sorted(root.glob(f"seed*{digits}/final_validation_predictions.jsonl"))
+    return hits[0] if hits else None
+
+
 def seed_predictions() -> dict[str, Path]:
     paths: dict[str, Path] = {}
     main_glob = glob.glob(str(MNT / "experiments/xeditcritic_v5/*/v5_full/final_validation_predictions.jsonl"))
     if main_glob:
         paths["seed20260907"] = Path(sorted(main_glob)[0])
     for name in SEEDS_NEW:
-        p = MNT / "experiments/xeditcritic_v5_polya_3seed" / name / "final_validation_predictions.jsonl"
-        if p.exists():
-            paths[name] = p
+        resolved = _new_seed_predictions(name)
+        if resolved is not None:
+            paths[name] = resolved
     return paths
 
 
