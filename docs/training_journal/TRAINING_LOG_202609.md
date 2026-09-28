@@ -2531,3 +2531,46 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **新模型接入设计冻结（**未点火**，遵用户 09-28 指令「显卡紧张，先设计不跑」）**：`docs/paper/benchmark_v2_generalist_rows_amendment_v2.md`（commit 71b0e6b7，**DESIGN FROZEN**，未下载/未占卡/未读 TEST）。要点：8 模型 × **先 3 头条任务**（MRL/polyA/MPRAU）；口径逐字复用既有行（冻结骨干 + 线性探针，α/epoch 由 VALIDATION source-group 加权 MSE 选择，frozen Task-1 evaluator，Δ = 探针(候选) − 探针(源)）；**端口验证硬前置**（新代码路径重跑 RNA-FM MRL 行，|Δ| ≤ 1e-5，沿 te-family 端口先例）；4 个批次（批 0 端口 / 批 1 已有权重 4 行 / 批 2 需获取 6 行 / 批 3 扩满 13 格）；资源规则（单卡 ≥12GB 自由即发射、多卡并行、**禁 CPU 降级**）；判定规则（只增行、3 格批次不得写成最终结论、不可得项记 NOT_AVAILABLE/RIGHTS_BLOCKED/PARADIGM_MISMATCH、规模变体全报禁 peak-picking）；风险回退表（license：CodonFM NVIDIA Open Model License / AIDO.RNA NOASSERTION / CaLM 未标 → 未明确前仅内部诊断；来源 Sanofi CDN/OPIG/FTP/Zenodo 需 sha256 指纹）。
   - 官方来源核实（联网）：mRNA-LM = `Sanofi-Public/mRNA-LM` + NAR gkaf044 + Zenodo 10.5281/zenodo.14606043；CodonFM = `NVIDIA-Digital-Bio/CodonFM` + HF `nvidia/NV-CodonFM-Encodon-{80M,600M,1B}`；Orthrus = `bowang-lab/Orthrus` + HF `antichronology/orthrus-*`（MIT，Mamba）；CaLM = `oxpig/CaLM`（OPIG 权重，未标 license）；AIDO.RNA = HF `genbio-ai/AIDO.RNA-1.6B`；LucaOne = `LucaOne/LucaOne` + HF `LucaGroup/lucaone` + Zenodo（Apache-2.0）。
 - **纪律**：protected TEST reads = 0；PPT 全部数字取自冻结产物并标注 locator；设计文档零计算、零下载；不改任何既有门槛/读数。
+## 批次一百三十（2026-09-28 · 收割双终态（M1 四门 + polyA 3-seed）+ 通用模型批 0/1 实测）
+
+### 一、M1 干预臂四门收割（负方向，如实交付）
+
+- **产物**：`experiments/xeditcritic_m1_intervention/adjudication_v1/m1_adjudication_v1.json`（02:05Z 自动收割，`harvest_run.log` 留证）。
+- **G1 方向门（判定读数）**：MRL VALIDATION frozen-Δ task-macro ρ = **0.273902**（run_summary 逐位复算 match=True）vs 冻结带 0.3158+0.01 = 0.3258 → gain **−0.041927** → **direction_positive = False**。
+  - 波动带对照：V2 单 seed 谱 0.3198 / 0.2873 / 0.3157——主臂低于谱下界；**3-seed CI 分支未进入**（预注册：方向负即终止）。
+- **G2 非破坏门（机械）**：polyA 复算 0.370996 vs V5 主行 0.8219，drop 0.450872 > 容差 0.02 → **pass = False**。**报告行（非门）**：臂 0.3710 vs Route A V2 baseline 0.0903 → **+0.2807**（同一口径对照：MRL-only 血统的臂在 polyA 上被 M1 语料抬升 0.09→0.37，说明加语料并非惰性）。
+- **G3 效率（report-only）**：wallclock 5.03h / 45,828 步 / 977,608 行/epoch（677,608 base + 300,000 M1）。**报告缺口**：`efficiency.peak_cuda_memory_gb = 0.0`（runner 未捕获峰值显存）——**不声称任何峰值显存数字**，已作为 runner 报告缺口登记（不改协议、不回填）。
+- **G4**：未触发（预注册：仅 G1 方向正时执行）。
+- **扩展臂（amendment v2 预提交算力）**：seed 20260904 终态 0.269729、seed 20260905 终态 0.243820，均 DONE/6ep；**因 G1 负，按 §4.2 归档为 trained-not-analyzed**——不入表、不入 draft、不参与任何稳健性叙述，**不得**用于替换或稀释 G1 判定（此处仅作算力台账留痕）。算力损耗：≈8.8 卡时（3.7h + 5.14h）。
+- **科学读法（入 draft §5.6）**：与 D16-C（合成增密被证伪）、ERK v2（参数侧半效应、bound-anchored）合读 → **数据侧监督量/密度不解决 MRL Δ**；与几何读数（MRL 每源 4.9 变体、可学部分≈一阶表 0.2069≈ERK 0.2015）自洽。
+
+### 二、polyA 3-seed 收割（A1 闭合，主行不动）
+
+- **事故与修复**：收割器 `seed_predictions()` 按 `seed20260921`（无下划线）找目录，而 runner 实际写入 `seed_20260921`（有下划线）→ 门永久 `NOT_TERMINAL`（cron 三次尝试全失败，`harvest_run.log` 留证）。修复 = 数字化后缀 glob 解析（兼容两种拼写），并加注释固化教训（**"门通过"的替身验证必须覆盖真实目录命名**）。
+- **复算交叉校验（逐位）**：收割器逐 seed 读数 = run_summary 的 polyA 任务行 → 0.8190734352477467 / 0.8177754803566595 **完全一致**。
+- **判定**：3-seed 均值 **0.819573**（range [0.817775, 0.821869]，宽度 0.0041 ≪ 0.03 预注册界）；主行 0.821869 **不替换**；新行 `polyA-V5-3seed-mean`；Δ vs APARENT（复算 0.734315）= **+0.085258，CI95 [+0.062098, +0.107759] 排零**（协议 seed 20260816 交叉：+0.085388 [+0.062160,+0.110269]）；Holm 方向重算 raw p=0.0005 → holm p=0.002 显著（冻结表行保持 0.001）。**→ A1 SEALED**（唯一剩余可补项闭合）。
+- **产物**：`experiments/xeditcritic_v5_polya_3seed/harvest_v1/polya_3seed_harvest_v1.json`。
+
+### 三、Draft v1.4（两处 PENDING 全部回填）
+
+- `docs/paper/deltabench_main_paper_draft_v1.md`（commit ebfc1e70）：§5.6 四门结果表 + 读法 + 声明（单 seed/禁挑峰/扩展臂归档/显存报告缺口）；§8.1 3-seed 结果表 + CI + Holm + 升级条款达成 + 主行不动；§5.6/§8.1 从 PENDING 清单移入 RESOLVED；§8.2 seed declaration 与 §9.3 limitation 同步改写；摘要补「跨库真实语料臂未过方向门」一句。**剩余 PENDING = 1（用户侧 rights，§10.6）**。
+
+### 四、通用模型行扩充：批 0 端口验证 + 批 1 实测（amendment v2 执行）
+
+- **批 0-a 骨干加载单测（PASS）**：server 端 4 个骨干全部可加载可前向、encoder 权重零缺失（仅 `pooler.dense.*` MISSING，本方法用 mean-pool 不触碰；`lm_head.*` UNEXPECTED）——
+  rinalmo_micro 33,482,412（hidden 480，峰值 0.135GB）/ rinalmo_mega 148,045,430（640，0.564GB）/ rinalmo_giga 650,878,731（1280，2.438GB）/ ernierna 85,669,728（768，0.339GB）。
+- **批 0-b 端口验证（PASS，硬门 §4.1）**：新脚本 `scripts/route_a_v3/run_route2_frozen_delta_generalist_v2.py` 重跑 **RNA-FM × MRL** = **0.13693569680260415** vs 入档 0.13693329073357266，**|Δ| = 2.41e-06 ≤ 1e-5**（与原 te-family 端口验证的 2.4e-6 同量级）→ 新代码路径端口干净。
+- **批 1 实测（4 模型 × 3 头条任务；GPU4/GPU2 双卡并行，~35min/1.2h）**：
+
+| 模型（参数） | MRL ρ | polyA ρ | MPRAU macro | MPRAU pair-mean [CI95] |
+|---|---|---|---|---|
+| rinalmo_micro（33.5M） | 0.129032 | **0.753101** | 0.028704 | 0.038016 [−0.006228, +0.081699] |
+| rinalmo_mega（148.0M） | 0.044185 | 0.679924 | 0.023101 | 0.032196 [−0.010913, +0.079114] |
+| rinalmo_giga（650.9M） | 0.115021 | 0.726728 | 0.033231 | 0.045095 [+0.002300, +0.089400] |
+| ernierna（85.7M） | 0.118254 | 0.732810 | 0.017302 | 0.033034 [−0.012300, +0.076700] |
+| **对照（既有行）** | RNA-FM 0.1369 / UTR-LM 0.1107 / **V5 0.1354** / Optimus-frozen 0.3132 | UTR-LM 0.7490 / RNA-FM 0.7114 / APARENT 0.7343 / **V5 0.8219** | — | V5 0.1025 / Saluki 0.1205 |
+
+- **读法（诚实、带边界）**：(1) 4 个现代骨干全部落在**既有通用 LM 带内、无一致增益**（MRL 0.044–0.129 vs RNA-FM 0.137；polyA 0.680–0.753 vs UTR-LM 0.749；MPRAU pair-mean 0.032–0.045 vs V5 0.103 / Saluki 0.121），**远低于同域监督行**（MRL ~0.316 / polyA 0.822）→ 支持"监督体制 × 数据几何"而非骨干容量。(2) **规模不买单**：RiNALMo 族内 mega(148M) 低于 micro(33.5M)（MRL 0.044 vs 0.129；polyA 0.680 vs 0.753），giga 居中——**照实报，不声称单调规模关系**；本口径下探针容量/轮数固定（阅读限制已声明）。(3) MPRAU 上 giga 的 pair-mean CI 下界 +0.0023 勉强排零，其余三枚跨零——**不作显著性强结论**（家族多重比较未做，属批 3 议题）。
+- **纪律**：仅 VALIDATION；frozen 骨干零梯度；探针/评测/统计代码逐字复用（新增面 = 一个 embedding 函数 + 两个任务 spec）；protected TEST reads = 0；只增行；GPU 硬门（`CUDA_VISIBLE_DEVICES` 重映射禁用 + is_available 断言）；两卡并行、每作业独立目录与日志。
+- **locator**：`experiments/analysis_generalist_rows_v2/{port_validation_rnafm_mrl_v1, batch1a_rinalmo_micro_mega_v1, batch1b_ernierna_giga_v1}/`（含 `frozen_delta_generalist_results.json`、逐任务 `predictions.jsonl` + `run_detail.json`）。
+- **待办（批 2）**：mRNA-LM / CodonFM / Orthrus / CaLM / AIDO.RNA / LucaOne —— 权重获取 + license 结论后再点火；批 3 = 扩满 13 格。
