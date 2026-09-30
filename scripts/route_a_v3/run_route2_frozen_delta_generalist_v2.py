@@ -74,6 +74,25 @@ te.TASKS["encsr854ruf_mprau"] = {
     "endpoint": "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE",
     "mode": "IN_STUDY_PROBE",
 }
+# batch 3: the remaining Development tasks, specs verbatim from
+# run_route2_frozen_delta_full_coverage_v1.py P1_TASKS (half-life rows); the four P0 rows
+# (gse200304_te / gse149487_te / gse149487_rna / gse186455) already live in te.TASKS.
+te.TASKS["half_life_5utr"] = {
+    "study": "GSE217518",
+    "region": "5UTR",
+    "endpoint": "RNA_HALF_LIFE_MINUTES",
+    "mode": "IN_STUDY_PROBE",
+}
+te.TASKS["half_life_3utr"] = {
+    "study": "GSE217518",
+    "region": "3UTR",
+    "endpoint": "RNA_HALF_LIFE_MINUTES",
+    "mode": "IN_STUDY_PROBE",
+}
+BATCH3_TASKS = (
+    "gse200304_te", "gse149487_te", "gse149487_rna", "gse186455",
+    "half_life_5utr", "half_life_3utr",
+)
 DEFAULT_TASKS = ("gse114002_mrl", "gse269595_polya", "encsr854ruf_mprau")
 
 # ---- new generalist backbones (weights already on disk; verified loadable 2026-09-28) --------
@@ -215,7 +234,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-gpu-index", required=True, type=int)
     parser.add_argument("--tasks", nargs="+", default=list(DEFAULT_TASKS),
-                        choices=sorted(te.TASKS))
+                        choices=sorted(te.TASKS))  # half-life rows injected above
     parser.add_argument("--models", nargs="+", default=["rinalmo_micro"],
                         choices=list(MODEL_CHOICES))
     parser.add_argument("--output-dir", type=Path, required=True)

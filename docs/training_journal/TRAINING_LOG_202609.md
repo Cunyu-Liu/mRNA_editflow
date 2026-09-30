@@ -2574,3 +2574,29 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **纪律**：仅 VALIDATION；frozen 骨干零梯度；探针/评测/统计代码逐字复用（新增面 = 一个 embedding 函数 + 两个任务 spec）；protected TEST reads = 0；只增行；GPU 硬门（`CUDA_VISIBLE_DEVICES` 重映射禁用 + is_available 断言）；两卡并行、每作业独立目录与日志。
 - **locator**：`experiments/analysis_generalist_rows_v2/{port_validation_rnafm_mrl_v1, batch1a_rinalmo_micro_mega_v1, batch1b_ernierna_giga_v1}/`（含 `frozen_delta_generalist_results.json`、逐任务 `predictions.jsonl` + `run_detail.json`）。
 - **待办（批 2）**：mRNA-LM / CodonFM / Orthrus / CaLM / AIDO.RNA / LucaOne —— 权重获取 + license 结论后再点火；批 3 = 扩满 13 格。
+## 批次一百三十一（2026-09-30 · 通用模型行批 3 完成：4 模型 × 9 任务全矩阵实测）
+
+- **任务面**：批 3 = 剩余 6 个 Development 任务（gse200304_te / gse149487_te / gse149487_rna / gse186455 / half_life_5utr / half_life_3utr，spec 逐字取自 `run_route2_frozen_delta_full_coverage_v1.py` P1_TASKS 与 te.TASKS）。加上批 1 的 3 个头条任务，**4 个新行已完成全部 9 个 Development 任务**（M1/M6/S1 三条 append-only 新行不在冻结探针协议的任务清单内，属于矩阵 v2 五新族口径——本批不涉及，如实声明）。
+- **执行**：GPU4+GPU2 双卡并行（jobA micro+mega / jobB ernierna+giga），embed 面 38,336 条唯一序列。**事故**：jobA 在 mega 嵌入阶段 OOM（GPU4 被外部用户进程挤压至 230MB 自由显存，多进程 12.36GB+13.15GB 挤入）→ micro 6 任务已完成并逐 run 落盘（run_detail.json 完整）；**mega 单独在 GPU0 重跑成功**（batch3a2 目录）。三目录最终产物：
+  - `batch3a_rinalmo_micro_mega_v1/`：micro 6 任务（per-run 目录完整；**无 summary JSON**——进程在写 summary 前死于 OOM，读数以 per-run run_detail.json 为准，逐位已在 journal 摘录）
+  - `batch3a2_rinalmo_mega_v1/`：mega 6 任务（完整 summary）
+  - `batch3b_ernierna_giga_v1/`：ernierna 6 任务 + giga 6 任务（完整 summary）
+- **全矩阵读数（task-macro Spearman，VALIDATION，冻结探针口径）**：
+
+| 任务 | micro(33.5M) | mega(148M) | giga(651M) | ERNIE(86M) | 对照（RNA-FM / UTR-LM 存档） |
+|---|---|---|---|---|---|
+| MRL (GSE114002) | 0.1290 | 0.0442 | 0.1150 | 0.1183 | 0.1369 / 0.1107 |
+| polyA (GSE269595) | **0.7531** | 0.6799 | 0.7267 | 0.7328 | 0.7114 / 0.7490 |
+| MPRAU macro | 0.0287 | 0.0231 | 0.0332 | 0.0173 | 0.018 / 0.0147 |
+| MPRAU pair-mean | 0.0380 | 0.0322 | 0.0451 | 0.0330 | V5 0.1025 / Saluki 0.1205 |
+| TE 3'UTR (GSE200304) | −0.0168 | −0.0071 | +0.0002 | 0.0193 | 0.0009 / 0.0113 |
+| PLUMAGE-TE (GSE149487) | −0.1167 | −0.0609 | **+0.1280** | −0.2480 | −0.0153 / −0.0277 |
+| PLUMAGE-RNA (GSE149487) | −0.2817 | −0.0214 | −0.2026 | −0.0846 | **0.2958** / 0.0433 |
+| REF/ALT (GSE186455) | +0.0464 | −0.0438 | +0.0413 | +0.0031 | 0.1043 / −0.1233 |
+| HL 5'UTR | −0.0111 | +0.0109 | −0.0652 | +0.0670 | 0.0271 / −0.0199 |
+| HL 3'UTR | −0.0107 | −0.0348 | −0.0202 | +0.0074 | 0.05 / −0.0986 |
+
+- **读法（诚实）**：(1) 六个「低密度 / LOSO / 物理不可学」任务上 4 个新模型**全部落在既有通用 LM 带内**（|ρ| 绝大多数 <0.05，正负号混杂——与 RNA-FM/UTR-LM 的同任务行为同型）。(2) 唯一「突出」格 = giga 在 PLUMAGE-TE +0.128（存档 RNA-FM 为 −0.015）——n=48 的 LOSO 任务，**单格不构成结论**（家族比较未做、n 极小，如实登记为 noteworthy single-cell，不做任何显著性表述）。(3) PLUMAGE-RNA 上 micro −0.28 / giga −0.20，存档 RNA-FM +0.296——**同任务同口径下符号翻转**，再次佐证该族任务上通用 LM 读数的 seed/骨干敏感性（与 MRL seed-伪信号的既有证据一致）。(4) HL 双行全带 ≈0，与 ICC≈0 的物理不可学登记一致。
+- **结论（与批 1 合读）**：4 个现代通用骨干（33.5M–651M）在 **9/9 任务**上无一致增益、无单调规模关系；polyA（唯一高密度同域任务）上仍低于同域监督行（APARENT 0.734 / V5 0.822 vs 新行 0.680–0.753）。**Δ 能力与骨干容量/代际无关、由监督体制 × 数据几何决定**的结论现在覆盖 9 任务全谱。
+- **纪律**：VALIDATION only；frozen 骨干零梯度；protected TEST reads = 0；只增行（batch3 三个新目录 append-only）；spec 逐字复用（未新开任务口径）；OOM 事故留证（log 逐字保留），mega 换单卡重跑不改任何协议参数。
+- **待办**：批 2（mRNA-LM / CodonFM / Orthrus / CaLM / AIDO.RNA / LucaOne）仍缺权重；矩阵 v2 的 M1/M6/S1 三新行如需补通用 LM 行，须先在 amendment 中冻结对应任务 spec（本批未动）。
