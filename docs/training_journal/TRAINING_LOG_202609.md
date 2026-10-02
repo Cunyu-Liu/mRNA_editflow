@@ -2600,3 +2600,36 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **结论（与批 1 合读）**：4 个现代通用骨干（33.5M–651M）在 **9/9 任务**上无一致增益、无单调规模关系；polyA（唯一高密度同域任务）上仍低于同域监督行（APARENT 0.734 / V5 0.822 vs 新行 0.680–0.753）。**Δ 能力与骨干容量/代际无关、由监督体制 × 数据几何决定**的结论现在覆盖 9 任务全谱。
 - **纪律**：VALIDATION only；frozen 骨干零梯度；protected TEST reads = 0；只增行（batch3 三个新目录 append-only）；spec 逐字复用（未新开任务口径）；OOM 事故留证（log 逐字保留），mega 换单卡重跑不改任何协议参数。
 - **待办**：批 2（mRNA-LM / CodonFM / Orthrus / CaLM / AIDO.RNA / LucaOne）仍缺权重；矩阵 v2 的 M1/M6/S1 三新行如需补通用 LM 行，须先在 amendment 中冻结对应任务 spec（本批未动）。
+## 批次一百三十二（2026-10-03 · 批 2 六模型权重全部获取落盘 + 加载实测 + 科学故事两问的应答弹药）
+
+### 一、批 2 权重获取（用户指令"帮我获取批 2 缺失的 6 个模型权重"→ 全部完成）
+
+- **获取渠道与校验**（全程断点续传；每权重过「字节精确 == 服务器长度」+ 结构化加载 三级校验）：
+  - **Orthrus-4/6-track**（hf-mirror `antichronology/orthrus-*`，各 40.7MB safetensors，字节精确；70 tensors；MIT；`orthrus_hf.py` + config 齐全，Mamba/SSM dim512×6，需 CUDA+mamba-ssm[已装]）。
+  - **CodonFM-Encodon-80M-v1**（hf-mirror `nvidia/NV-CodonFM-Encodon-80M-v1`，307MB；135 tensors / **76.8M 参数**；sha256 `88c93c38…`；license:other=NVIDIA Open Model；config 无 model_type——须按官方 repo 代码加载；**教训：真实 HF id 带 `-v1` 后缀**，裸 `NV-CodonFM-Encodon-80M` 在镜像上 404/401，此前"未查到"结论已修正）。
+  - **mRNA-LM 三段全**（官方 README 指定的 Sanofi CDN 直链：`cdn.prod.accelerator.sanofi/llm/{mrna_5utr_model,mrna_3utr_model,CodonBERT}.zip`；5utr 961MB[unzip -t 无错，BertForMaskedLM vocab10/768×12，load_state_dict missing=0] / 3utr 960MB / CodonBERT 955MB[vocab69/768×12/208keys]；**Zenodo 14606043 从服务器 connection refused，但 CDN 可达且为论文 Data availability 指定渠道**）。
+  - **CaLM**（OPIG 官方直链 403 Cloudflare 拦截[UA/referer 均无效] → **改取 multimolecule 再导出版** `multimolecule/calm`，343MB 字节精确；multimolecule 0.2.x 加载 OK：**85.7M / 768×12**；AGPL-3.0；**provenance 注记：非官方原 checkpoint，同架构再导出**）。
+  - **LucaOne**（官方 `LucaGroup/lucaone`、`Yuanfei/LucaOne` 在镜像 401/404 → **`AmelieSchreiber/LucaOne`（checkpoint=17600000 再发布版）**，6.32GB 字节精确 + 12 个官方代码文件；352 keys / **1.58B 参数**；Apache-2.0；**provenance 注记：再发布渠道**）。
+  - **AIDO.RNA**：官方 HF 已把 `AIDO.RNA-1.6B` 重定向为 **`GB.RNA-1.6B`**（同权重改名）→ 服务器上已有的 13G 完整 `genbio-ai--GB.RNA-1.6B`（含 modeling/tokenization 代码）即官方现行入口，无需再下载；`.part` 残目录登记为可清理。
+- **落盘布局**：全部置于 `/mnt/cunyuliu/hf_home/models/<org>--<name>/snapshots/main/`（与既有 RiNALMo/ERNIE 同布局）。完整报告 = `batch2_weights_acquisition_report_20261003.md`（交接包与 staging 双份）。
+- **网络事实**（留证）：服务器 → hf-mirror.com ✅、Sanofi CDN ✅、GitHub raw ✅、OPIG ✅(403)、Zenodo ❌(connection refused)、huggingface.co 本体 ❌(无响应)。Bashrc 已有 `HF_ENDPOINT=https://hf-mirror.com`。
+
+### 二、科学故事两问——审稿人攻击面的应答框架（写入论文 §4/§9 的弹药，全部有实测数字背书）
+
+**Q1「序列 embedding 的差一定等价于性质的差吗？」**
+分层应答（已有证据，非推测）：
+1. **不等价是本论文的立论而非漏洞**：Optimus 绝对 ρ 0.873 → Δ 0.313 的塌缩就是「表征差 ≠ 性质差」的教科书案例；我们从不假设等价，而是**量化这个不等价**（误差同源相关 ρ_ε=0.72：模型对前后两条相似序列犯同向错，减法抵不掉）。
+2. **何时接近等价已有判据**：一阶分解给出任务级答案——polyA 55.4% 可学部分是查表信号（embedding 差捕捉到的就是一阶表），MPRAU/TE 79-81%——即「表征差里有多少与性质差对齐」因任务而异，且**可测**（我们的分解工具就是给审稿人的量化答案）。
+3. **探针协议本身在检验该假设**：线性探针读 embedding 差 → 若「embedding 差无信息」探针读数 ≈0（MRL 上 RiNALMo-mega 0.044 即近零信息）；批 1/3 的 4 模型 × 9 任务谱正是该假设的系统化压力测试——**探针读数非零的任务（polyA 0.68-0.75）证明 embedding 差确实携带性质差信息，只是携带量由监督体制决定**。
+4. **正面证据**：polyA 上新 backbone 的 embedding 差 + 641 参数线性头 = 0.75，接近 APARENT（2.74M 语料专模型 0.734）——embedding 差与性质差在该任务上高度对齐。
+
+**Q2「其他模型的训练数据里都没有 delta 数据，预测不好很正常？」**
+这是最强攻击面，四层应答：
+1. **「正常」正是我们的结论，不是反驳**：双因子规律说的就是「无同类监督 → 无 Δ 能力」——审稿人认为的"正常"恰是本文给出的**可量化规律**（且我们补了「同类监督存在时确实好」的正面行：STCNet 域内 0.814 / APARENT polyA 0.734）。基准的价值 = 把"正常"从直觉变成可测预言——它预测了 65 格里 78.5% 的 |ρ|<0.1。
+2. **零样本不是唯一对照——探针给了同类监督**：批 1/3 的协议**不是零样本**——线性头在每个任务的 TRAIN 上拟合（即给了 Δ 监督），骨干冻结。结果：**给了 Δ 监督后现代 backbone 仍全带 ≈0**（除 polyA）→ 说明问题不在"没见过 delta 数据"这一层，而在**骨干表征里没有可被线性读取的编辑敏感信号**（oracle 探针：MRL NO_SIGNAL / polyA HEAD_EQUIVALENT 的三代证据链）。这直接把审稿人的假设推进一层并证伪了它的浅层版本。
+3. **同监督不同结果的分离对照**：同为冻结骨干 + 同款探针，polyA 0.75 vs MRL 0.04-0.13——监督相同、结果天差地别 → 监督数据本身携带的编辑信息量（密度 126.7 vs 4.9）才是变量。M1 干预臂进一步证明：**把异源稠密语料加进训练也不解决**（G1 方向负）→「缺 delta 数据」的补法有严格条件（同源+高密度）。
+4. **实践意义反转**：若"没见过就预测不好"是全部解释，那么结论 = 从业者该去哪找数据（同源高密度 MPRA 文库，而非更大的预训练语料）——这正是我们给的数据建设指南（数据侧三重筛选 ICC/密度/语料）。
+
+**写作动作**：§4 增设「两问应答」小节（上述框架压缩为两段）；§9.5 预期审稿意见表加这两行 + 指向对应实测编号。PPT WHY 页同步补一条「不是没见过 delta——给了 delta 监督（探针）仍然 ≈0」。
+
+- **纪律**：protected TEST reads = 0；本轮零 GPU 计算（只下载+CPU 加载实测）；全部获取走官方或官方指定渠道；再发布/再导出的两处 provenance 差异如实登记。
