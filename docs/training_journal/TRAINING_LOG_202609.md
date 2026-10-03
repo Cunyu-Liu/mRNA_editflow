@@ -2633,3 +2633,34 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 **写作动作**：§4 增设「两问应答」小节（上述框架压缩为两段）；§9.5 预期审稿意见表加这两行 + 指向对应实测编号。PPT WHY 页同步补一条「不是没见过 delta——给了 delta 监督（探针）仍然 ≈0」。
 
 - **纪律**：protected TEST reads = 0；本轮零 GPU 计算（只下载+CPU 加载实测）；全部获取走官方或官方指定渠道；再发布/再导出的两处 provenance 差异如实登记。
+## 批次一百三十三（2026-10-03 · LucaOne 官方 FTP checkpoint 获取 + 批 2 全部 7 个 bespoke adapter 落地冒烟全过）
+
+### 一、LucaOne 官方权重重试（用户给出官方 FTP 地址 → 成功）
+
+- **官方源**：`http://47.93.21.181/lucaone/TrainedCheckPoint/latest/models/lucaone/lucaone/checkpoint-step17600000/`（LucaOne 官方 README 指定的 trained checkpoint 分发服务器；另有 36M/56M/60M step 与 lucaone-gene/lucaone-mask/lucaone-prot/lucaone-separated 等变体目录）。
+- **获取（全部完成、字节精确校验）**：`pytorch.pth` **7,199,752,555 字节 == 服务器 Content-Length，逐位一致**；sha256 `373c1ce812fcd74aaf58a4aa3b0df8418095fa41750c0ec5437752a03f53a46b`；`config.json`（LucaOneGPLM 架构：hidden 2560 / 20 层 / 40 头 / vocab 39 / gene+prot 双 token-type）+ `tokenizer/alphabet.pkl` + `training_args.bin` 一并落盘；**官方 src 全树**（`/tmp/lucaone_src` git clone → 拷贝到 `hf_home/models/LucaOne-Official/src_official/`）随权重同目录存放。
+- **落盘**：`hf_home/models/LucaOne-Official/checkpoint-step17600000/` + `src_official/`（6.8G）。**此前批 2 报告里 LucaOne 的「再发布版 provenance 注记」就此消解**——现在是官方原版权重（AmelieSchreiber 镜像保留为备用）。
+- 下载执行 = 断点续传循环（首版期望大小写错 7.5G 已纠为服务器实际 7,199,752,555；~15MB/s 快链路，全程 ~8 分钟）。
+
+### 二、批 2 bespoke adapter（`scripts/route_a_v3/batch2_generalist_adapters_v1.py`，7 个 adapter 全部冒烟 PASS）
+
+- **统一接口**（与既有 generalist runner 的 embed 函数对齐）：`build(key, device) -> (embed_fn, meta)`；`embed_fn(list[str]) -> (N, D) fp32 CUDA 张量`；骨干全部冻结（eval + requires_grad_(False)）。**本文件只做基础设施——直接运行 = 冒烟测试（单序列前向），不触发任何 baseline 评测**（遵用户指令「先别启动」）。
+
+| Adapter | 官方代码来源 | 输入适配声明 | 冒烟结果 |
+|---|---|---|---|
+| `orthrus_4track` | 随包 `orthrus_hf.py`（Mamba/SSM） | ACGT one-hot（官方 `seq_to_oh`，U→T）；`representation(lengths)` 官方均值池化 | OK (2,512)，10.18M 参数 |
+| `orthrus_6track` | 同上 | 4 通道 one-hot + **官方 6-track 定义**（`orthrus/data.py encode_6_track`：CDS 框通道 + 剪接位点通道）——UTR-only 序列这两通道**全零**（官方对无转录本上下文序列的正确编码） | OK (2,512)，10.18M |
+| `codonfm_80m` | 官方 repo `src.models.components.encodon`（git clone） | 官方 3-mer 密码子 tokenizer（DNA）+ CLS/SEP；**声明式右填充至 8 的倍数**（官方 xformers TensorCore 断言） | OK (2,1024)，76.8M |
+| `mrnalm_5utr` | 官方 `OneModel.py` tokenizer 配方逐字复刻 | T→U，WordLevel 字符词表（A,U,G,C,N）+ BertProcessing 特殊符；BertForMaskedLM（missing=0） | OK (2,768)，86.1M |
+| `mrnalm_3utr` | 同上 | 同上（max_length 1024 vs 512） | OK (2,768)，86.4M |
+| `calm` | multimolecule 再导出版（provenance 已登记） | **codon tokenizer：截断到 3 的倍数（≤2 尾碱基，声明式）**；T→U | OK (2,768)，85.7M |
+| `lucaone` | **官方 src 树 + 官方 checkpoint-17600000** | gene 路径：`gene_seq_replace`（A→1,T→2,C→3,G→4,N→5）+ Alphabet tokenizer；`hidden_states`（B,L,E）非特殊符均值池化 | OK (2,2560)，**1.58B** 参数 |
+
+- **四个兼容性事故与修复（全部实测闭环，教训入档）**：
+  1. **mamba_ssm 包级 import 与 transformers 5.x 不兼容**（legacy generation 符号）→ 预注册包存根（用 `find_spec` 拿真实 `__path__`，不执行坏掉的 `__init__`），让 `mamba_ssm.modules.*` 直接可导。
+  2. **transformers 5.x `AutoModel.from_pretrained` 与 `orthrus_hf.py` 的 `all_tied_weights_keys` API 不兼容** → 绕过 AutoModel，**直接从官方文件 import 类 + `load_state_dict`（missing=0/unexpected=0 验证）**，加载路径语义与官方一致。
+  3. **CodonFM 官方 `mha.py` 硬依赖 xformers**（本机未装）→ SDPA 后端垫片（`torch.nn.functional.scaled_dot_product_attention` 数学等价，加性 bias 广播同形）；另垫片 `apply_chunking_to_forward`（4.x→5.x 移位）与 `EnCodonConfig` 关键字对齐（rotary 为默认内建）。
+  4. **LucaOne 官方代码链的三层坑**：`statsmodels`/`pynvml` 缺包（pip 补装）；transformers 4.26 的 `find_pruneable_heads_and_indices`/`prune_linear_layer` 已删（垫片官方 4.26 实现）；W0 worktree 自带 `models` 包遮蔽官方 `from models.x import`（sys.modules 显式别名 `models` / `src` / `src.models` → LucaOne src 树）。
+- **6-track 编码纠错（自侦察）**：初版我猜成 keto/amino 双通道（错），对照官方 `orthrus/data.py` `encode_6_track` 修正为 **CDS 帧 + 剪接位点**通道（UTR-only → 全零）。教训：**任何非官方文档写死的输入构造，必须对照官方源码实现逐行核实**。
+- **纪律**：protected TEST reads = 0（本文件不触数据）；全部冻结骨干零梯度；所有适配声明写进 meta（供将来 run 端落盘入档）；**未启动任何 baseline 评测**——通用 runner（`run_route2_frozen_delta_generalist_v2.py`）接入这些 adapter 需要一个小 glue（把 REGISTRY 挂进 MODELS 选项）+ RNA-FM 端口验证重跑，等用户点火。
+- **冒烟命令**：`python scripts/route_a_v3/batch2_generalist_adapters_v1.py --physical-gpu-index 3`（GPU3 实跑，7/7 ALL_PASS）。
