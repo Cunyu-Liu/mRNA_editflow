@@ -122,7 +122,16 @@ MODELS = {
         "expected_parameters": 85_669_728,
     },
 }
-MODEL_CHOICES = ("rnafm",) + tuple(MODELS)
+# batch-2 bespoke adapters (7 models; built and smoke-tested 2026-10-03, journal 133).
+# Their embed_fn(list[str]) -> (N, D) CUDA interface is bridged into this runner with the
+# same length-sorted batching + 1000-nt chunk policy as the RNA-FM frozen row.
+try:
+    from batch2_generalist_adapters_v1 import REGISTRY as BATCH2_ADAPTERS
+except ImportError:
+    BATCH2_ADAPTERS = {}
+BATCH2_CHOICES = tuple(BATCH2_ADAPTERS)
+MODEL_CHOICES = ("rnafm",) + tuple(MODELS) + BATCH2_CHOICES
+# batch-2 model_path is read from the adapter meta at build time (see main()).
 # archived MRL frozen rows used by the port-validation gate (te.REFERENCE holds rnafm/utrlm)
 MRL_ARCHIVED = {"rnafm": 0.13693329073357266}
 PORT_VALIDATION_TOLERANCE = 1e-5
@@ -230,6 +239,71 @@ def embed_multimolecule(
     torch.cuda.empty_cache()
 
 
+def embed_batch2(
+    sequences: list[str],
+    cache: dict[str, torch.Tensor],
+    device,
+    stats: dict,
+    model_key: str,
+) -> None:
+    """Bridge the batch-2 bespoke adapters into this runner.
+
+    Applies the same chunk policy as the RNA-FM frozen row (1000-nt chunks,
+    length-weighted mean) and the same length-sorted batching, then fills
+    cache[sequence] with the fp32 CUDA embedding tensor.
+    """
+    # adapters: REGISTRY[key](device) -> (embed_fn, meta)
+    embed_fn, meta = BATCH2_ADAPTERS[model_key](device)
+    stats["pretrained_parameter_count"] = meta.get("pretrained_parameter_count")
+    stats["input_adaptation"] = dict(meta)
+
+    pending = [s for s in sequences if s not in cache]
+    if not pending:
+        return
+    chunk_map: dict[str, list[str]] = {}
+    for seq in pending:
+        if len(seq) > CHUNK_NUCLEOTIDES:
+            chunk_map[seq] = [seq[i:i + CHUNK_NUCLEOTIDES] for i in range(0, len(seq), CHUNK_NUCLEOTIDES)]
+    flat = [c for chunks in chunk_map.values() for c in chunks]
+    singles = [s for s in pending if s not in chunk_map]
+    ordered = sorted(set(flat + singles), key=len, reverse=True)
+    batch_count = 0
+    i = 0
+    while i < len(ordered):
+        j = min(i + MULTIMOLECULE_MAX_SEQUENCES_PER_BATCH, len(ordered))
+        while j > i + 1 and sum(len(s) for s in ordered[i:j]) > MULTIMOLECULE_BATCH_TOKEN_BUDGET:
+            j -= 1
+        batch = ordered[i:j]
+        i = j
+        batch_count += 1
+        emb = embed_fn(batch)
+        _require(
+            emb.shape[0] == len(batch) and emb.is_cuda and bool(torch.isfinite(emb).all()),
+            f"{model_key} embedding left CUDA or became nonfinite",
+        )
+        emb = emb.float()
+        for sequence, embedding in zip(batch, emb):
+            if sequence not in chunk_map:
+                cache[sequence] = embedding.detach()
+        if batch_count % 25 == 0:
+            print(f"[{model_key}] embedding batches: {batch_count}", flush=True)
+    # resolve chunked sequences by length-weighted mean of their cached chunk embeddings
+    for seq, chunks in chunk_map.items():
+        total_weight = sum(len(c) for c in chunks)
+        acc = None
+        for c in chunks:
+            e = cache.get(c)
+            if e is None:
+                e = embed_fn([c])[0]
+            if acc is None:
+                acc = e.detach().clone() * len(c)
+            else:
+                acc += e.detach() * len(c)
+        cache[seq] = (acc / total_weight).float()
+        for c in chunks:
+            cache.pop(c, None)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--physical-gpu-index", required=True, type=int)
@@ -287,8 +361,16 @@ def main() -> int:
                 all_sequences.add(record.candidate)
         ordered_sequences = sorted(all_sequences)
         lengths = [len(sequence) for sequence in ordered_sequences]
+        _b2_path = None
+        if model_key in BATCH2_ADAPTERS:
+            _b2_result = BATCH2_ADAPTERS[model_key](device)
+            _b2_path = _b2_result[1].get("model_path") if isinstance(_b2_result, tuple) else None
+            del _b2_result
         stats: dict = {
-            "model_path": str(te.RNAFM_MODEL_PATH if model_key == "rnafm" else MODELS[model_key]["dir"]),
+            "model_path": str(
+                te.RNAFM_MODEL_PATH if model_key == "rnafm"
+                else (_b2_path if _b2_path is not None else MODELS[model_key]["dir"])
+            ),
             "unique_sequence_count": len(ordered_sequences),
             "sequence_length_min_median_max": [
                 min(lengths), sorted(lengths)[len(lengths) // 2], max(lengths)
@@ -299,6 +381,8 @@ def main() -> int:
         if model_key == "rnafm":
             te.embed_rnafm(ordered_sequences, embeddings, device, stats)
             stats["input_adaptation"] = dict(ADAPTATION_TEMPLATE)
+        elif model_key in BATCH2_ADAPTERS:
+            embed_batch2(ordered_sequences, embeddings, device, stats, model_key)
         else:
             embed_multimolecule(ordered_sequences, embeddings, device, stats, model_key)
             stats["input_adaptation"] = dict(ADAPTATION_TEMPLATE)

@@ -288,8 +288,11 @@ def build_mrnalm(region: str, device):
     max_length = 512 if region == "5utr" else 1024
 
     def embed(sequences: list[str]) -> torch.Tensor:
-        # official encode_string: T->U then whitespace-split char tokens, CLS/SEP specials
-        enc = tokenizer([s.replace("T", "U") for s in sequences], truncation=True,
+        # official encode_string: T->U then whitespace-split char tokens, CLS/SEP specials.
+        # WordLevel vocab + Whitespace pre-tokenizer requires space-joined characters,
+        # otherwise the whole sequence maps to a single [UNK] token.
+        joined = [" ".join(s.replace("T", "U")) for s in sequences]
+        enc = tokenizer(joined, truncation=True,
                         padding=True, max_length=max_length, return_tensors="pt")
         input_ids = enc["input_ids"].to(device)
         attention = enc["attention_mask"].to(device)

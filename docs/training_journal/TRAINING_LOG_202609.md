@@ -2664,3 +2664,43 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **6-track 编码纠错（自侦察）**：初版我猜成 keto/amino 双通道（错），对照官方 `orthrus/data.py` `encode_6_track` 修正为 **CDS 帧 + 剪接位点**通道（UTR-only → 全零）。教训：**任何非官方文档写死的输入构造，必须对照官方源码实现逐行核实**。
 - **纪律**：protected TEST reads = 0（本文件不触数据）；全部冻结骨干零梯度；所有适配声明写进 meta（供将来 run 端落盘入档）；**未启动任何 baseline 评测**——通用 runner（`run_route2_frozen_delta_generalist_v2.py`）接入这些 adapter 需要一个小 glue（把 REGISTRY 挂进 MODELS 选项）+ RNA-FM 端口验证重跑，等用户点火。
 - **冒烟命令**：`python scripts/route_a_v3/batch2_generalist_adapters_v1.py --physical-gpu-index 3`（GPU3 实跑，7/7 ALL_PASS）。
+## 批次一百三十四（2026-10-05 · 批 2 baseline 评测：mrnalm tokenizer bug 修复 + 4 jobs 全部完成 + 7 模型 × 9 任务矩阵落地）
+
+### 一、通用 runner 接入批 2 adapter（glue，端口验证 PASS）
+
+- **改动**（`run_route2_frozen_delta_generalist_v2.py`）：`BATCH2_ADAPTERS = REGISTRY` 挂入 `MODEL_CHOICES`；`embed_batch2` 桥函数（1000-nt 分块 + 长度排序批 ≤32 序列，与 RNA-FM 路径同款 chunk 策略）；批 2 模型的 `model_path` 在 main() 统计块**惰性解析**（从 adapter meta 读，不再 import 时建 dict——那版有 NameError）。
+- **端口验证**：RNA-FM MRL 行复现，|Δ| = 2.4e-06 ≤ 1e-5 → glue 无回归（`portval_batch2_glue_v1`）。
+
+### 二、启动事故与修复（4 起闭环）
+
+1. **KeyError MODELS[model_key]["dir"]**：批 2 模型不在旧 MODELS dict → 惰性 `_b2_path` 解析（见上）。
+2. **NameError 'meta'**：import 时 dict comprehension 引用未定义 meta → 整体删除，路径改运行时读。
+3. **FrozenDeltaError "output already exists"**：失败启动留空目录 → rmdir 后重启。
+4. **LucaOne OOM GPU4**（外部 13.29GB 进程 + job B 共享）→ 换 GPU1 + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`。
+5. **Job B 崩溃（TypeError: NoneType.__format__）**：`mrnalm_5utr` MRL `spearman=None`、`prediction_std=0.0` → **退化嵌入**。诊断：直连 embed 测试 pairwise 距离全 0；tokenizer 检查发现 `input_ids: tensor([[2, 1, 3], ...])` —— CLS=[UNK]SEP。**根因：WordLevel 词表 + Whitespace 预分词器不切无空格字符串，整条序列坍缩成单个 [UNK] token**。修复：按官方 OneModel.py `encode_string` 语义，tokenization 前 `" ".join(s.replace("T", "U"))`（`batch2_generalist_adapters_v1.py` 第 294 行）。修复后直测：pairwise 距离 18.05-28.17、per-dim std 0.548 → 非退化。**教训：冒烟测试只验证「能跑通」，不验证「输入语义正确」——冒烟序列也要设计成能暴露 tokenizer 退化（如两条不同序列 embed 是否可分）**。
+
+### 三、批 2 baseline 全部完成（4 jobs，63 行）
+
+| Job | 模型 | GPU | 输出目录 | 状态 |
+|---|---|---|---|---|
+| A | orthrus_4track + 6track | 2 | `batch2a_orthrus_v1` | ✅ 18 行（汇总 JSON 写出） |
+| B | codonfm_80m（9 任务完成后 job 崩溃于 mrnalm 阶段，per-run JSON 完好）| 4→(崩) | `batch2b_codonmrna_v1` | ✅ codonfm 9 行 |
+| B2 | mrnalm_5utr + 3utr（重启，修 bug 后）| 6 | `batch2b2_mrnalm_v1` | ✅ 18 行（汇总 JSON 写出） |
+| C | calm | 3 | `batch2c_calm_v1` | ✅ 9 行（汇总 JSON 写出） |
+| D | lucaone | 4 OOM→1 | `batch2d_lucaone_v1` | ✅ 9 行（汇总 JSON 写出） |
+
+- **汇总产物**（reporting-only，非新实验行）：`batch2_matrix_v1.md` + `.json` —— 7 模型 × 9 任务 Spearman 矩阵（数字逐字拷贝自源 run，append-only 源行不动）。
+- **诚实读数**（不许挑峰值）：
+  - **polyA（gse269595）全员高分** +0.467~+0.788（orthrus_6track +0.773 / mrnalm_3utr +0.788 / lucaone +0.770 / codonfm +0.695 / calm +0.682 / mrnalm_5utr +0.752 / orthrus_4track +0.467）——高天花板高语料密度任务，7/7 backbone 的 embedding 差线性可读。
+  - **half-life 两个任务 14/14 格全 ≈0**（|ρ|≤0.055）——frozen 表征不携带编辑敏感的半衰期信号（与批 1/3 一致：无同类监督 → 无 Δ 能力）。
+  - **gse149487 LOSO 符号翻转再现**：mrnalm_5utr rna −0.361 / te +0.150；mrnalm_3utr rna −0.001 / te −0.102；calm rna −0.184；orthrus_4track rna −0.253 vs 6track +0.052——n=48 上的 LOSO 不稳定是系统模式（批 3 giga +0.128 同款），不做显著性声明。
+  - **模型间均值**（仅 9 格均值，非排行榜）：lucaone +0.120 > mrnalm_3utr +0.096 > orthrus_6track +0.094 > codonfm +0.105 > mrnalm_5utr +0.074 > calm +0.054 > orthrus_4track +0.015。最大参数模型（lucaone 1.58B）没有跑出与参数量相称的优势——除 polyA 外全带 ≈0。
+  - **架构读数**：4track→6track（+0.467→+0.773 polyA）说明剪接/CDS 帧通道携带 polyA 相关信号；但 MRL 上 6track +0.203 vs 其他模型 ≈0.03-0.17，是批 2 里 MRL 唯一明显抬升的行。
+  - **APARENT 参照**：polyA 上 APARENT（2.74M 语料专模型）0.734 vs 批 2 最好 0.788（mrnalm_3utr）——**通用 backbone 的 frozen Δ 探针在本轮 7 模型里没有一个达到 APARENT 水平的 polyA 读数下界**（除 mrnalm_3utr 0.788 与 orthrus_6track 0.770 略超 0.734，且这是 VALIDATION 读数与 APARENT TEST 不可直接比较——如实登记）。
+- **纪律**：protected TEST reads = 0（全部 VALIDATION/LOSO-VAL 读数）；preregistered 阈值未动；无峰值挑取；append-only 源行不动（矩阵是 reporting 产物）；CUDA provenance 每个汇总 JSON 落盘（GPU UUID + 型号）。
+
+### 四、下一步（未执行，等用户指令）
+
+- 矩阵 → PPT 模型页 + 草稿 leaderboard 行（append-only per amendment v2）。
+- 草稿 §4「两问应答」小节 + §9.5 审稿意见表补两行（批 132 框架落地成文）。
+- 用户侧待办：论文 rights review owner 指派。
