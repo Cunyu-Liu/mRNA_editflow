@@ -38,9 +38,18 @@ We make four contributions.
 
 **C4 — The polyA positive result pushed to 91.3% of ceiling.** On the single task (of 13) whose label ICC is 0.90, V5 reaches 0.8219, i.e. 91.3% ceiling completion, closing more than half (0.0876/0.1657 = 52.9%) of the remaining learnable space, with Holm p = 0.004 as the only family-wise significant win, and with the decision-caliber result reported honestly as mixed (attributed to supervision regime). Mechanism attribution (first-order 55.4% plus combined signal plus a multi-task isolation causal chain) and two application outlets (generation-line guidance and committee routing with a CI excluding zero) complete a full positive-result chapter.
 
-### 1.4 Structure of the paper
+### 1.4 Structure of the paper — a single reading line, six linked moves
 
-Section 2 defines the benchmark (canonical record, 13 tasks, four-axis differentiation, evaluation protocol, new-row discipline). Section 3 presents the matrix and its two key readings (in-domain strong / cross-library weak; new rows collectively near zero). Section 4 explains why absolute scores do not transfer (Ring 0 differential validity). Section 5 develops the two-factor regularity and the intervention triangle. Section 6 gives the first-order/structural decomposition. Section 7 presents the failure taxonomy. Section 8 is the polyA positive-result chapter. Section 9 discusses model selection and limitations. Section 10 details the methods.
+The paper is organized as one causal chain; each section ends by opening the question the next section answers:
+
+1. **The phenomenon (§2–3):** a benchmark formalizing the source-relative Δ task and the 14-family × 13-cell matrix. The matrix's two readings — in-domain strong (0.814) / cross-library collapsed (0.067), new rows collectively near zero — raise the paper's driving question: *why does absolute ability not transfer to delta ability, and what does?*
+2. **The first mechanism ring (§4):** differential validity. The 0.873 → 0.313 decoupling and the five error sources show the failure is structural, not incidental — and §4.5 answers the two strongest a-priori objections (embedding difference ≠ property difference; no-delta-training) with the probe/oracle evidence before the reader can raise them.
+3. **The second ring (§5):** the two-factor regularity. The near-zero band is not uniform noise: supervision regime × data geometry groups it, the single-factor density hypothesis fails its held-out test (honestly downgraded), and the intervention triangle closes the loop — same-source dense supervision works, heterogeneous corpus does not.
+4. **The third ring (§6):** signal decomposition. *Where the learnable part lives* — first-order table vs structural signal — determines whether more data or more model is the right investment (polyA 55% structural; MPRAU/TE 79–81% table).
+5. **The positive branch (§7–8):** failure taxonomy turns the rings into a selection guide; polyA is the boundary case carried to 91.3% of the label ceiling with two working application outlets — proof that the regularity is actionable, not merely descriptive.
+6. **The deliverables (§9–10):** model-selection guide, data-side triple screening, and the pre-registration / re-check apparatus that makes every number in the chain auditable.
+
+A reader who takes only one line away: *absolute leaderboards do not measure the quantity edit pipelines consume; we measure it, explain what governs it (regime × geometry, proven by intervention), and show when it can be pushed to the measurement ceiling (polyA) — with the decision rules for which case you are in.*
 
 ---
 
@@ -172,6 +181,8 @@ Readings, with the same discipline as the batch-0/1/3 rows (no peak-picking, no 
 
 Sources (append-only, numbers copied verbatim from frozen artifacts): `analysis_generalist_rows_v2/{batch2a_orthrus_v1, batch2b_codonmrna_v1, batch2b2_mrnalm_v1, batch2c_calm_v1, batch2d_lucaone_v1}/` and the reporting-only aggregation `batch2_matrix_v1.json`. One incident is disclosed for reproducibility: the initial mRNA-LM runs produced degenerate embeddings (a WordLevel tokenizer with whitespace pre-tokenization collapsed each unspaced sequence into a single `[UNK]` token, Spearman = None with zero prediction variance); the fix — space-joined character input per the official recipe — was verified by a non-degeneracy test (pairwise embedding distances 18.05–28.17) before the clean rerun. The failed run's artifacts were removed; the matrix above is the post-fix rerun.
 
+Why does absolute ability not transfer — is the failure structural or incidental? §4 opens with the mathematical answer and ends with two objections answered (§4.5); what remains unexplained by error structure alone — why the zero band is *organized* rather than uniform — is §5's question.
+
 ---
 
 ## §4 Why absolute scores do not transfer (Ring 0: differential validity)
@@ -215,6 +226,16 @@ The existing frozen-Δ LM rows are implemented *as* a Δh → Δy regression, wh
 ### 4.4 Operational boundaries
 
 We summarize five valid conditions, five failure modes, and three operational criteria: (i) use the within-source caliber and inspect the ρ_ε triple first; (ii) declare ICC and context match before modeling; (iii) a high absolute score must not be extrapolated into delta usability.
+
+---
+
+### 4.5 Two anticipated reviewer questions, answered with the project's own evidence
+
+**Q1 — "Is a difference in embeddings necessarily a difference in properties?"** No — and that non-identity is precisely this paper's subject matter, not an objection to it. Three layers of evidence: (i) *the decoupling itself*: a frozen Optimus reads absolute MRL ranking at ρ_abs = 0.873 while its Δ ranking sits at ρ_delta = 0.313 with cross-arm error correlation 0.720 — embedding-level accuracy coexists with near-collapse at the delta level, so the two are empirically separable competencies. (ii) *the task-level condition*: the first-order decomposition (§6) quantifies when alignment is high — the learnable component on polyA is 55% first-order table signal, and the 7/7 batch-2 backbones reach +0.75 on polyA with a 641-parameter linear head (approaching APARENT's 0.734 in-domain), while on MPRAU/TE 79–81% of the learnable part is the table and external backbones stay ≈ 0. Alignment between embedding difference and property difference is therefore *measurable per task*, not assumed. (iii) *the probe protocol is itself the hypothesis test*: if embedding differences carried no delta-relevant information, the frozen probe would read ≈ 0 everywhere; it reads 0.75–0.79 on polyA and ≈ 0 on 8 of 9 tasks for 11 consecutive backbones (batches 0–3 + batch 2) — a systematic stress test of exactly this objection, with a positive and a negative branch both present.
+
+**Q2 — "None of these backbones was trained on delta data, so of course they fail — isn't that expected?"** Expected is our result, stated quantitatively — but the shallow version of this explanation is falsified by three controls inside the benchmark. (i) *The probe arm supplies delta supervision*: the linear head is fit on each task's TRAIN split, so "never saw delta data" does not hold — supervision is present at read-out; the backbones still read ≈ 0 on 8/9 tasks, which locates the deficit in the frozen representation (no linearly accessible edit-sensitive signal), not in the absence of supervision. The oracle arm makes this decisive: MRL NO_SIGNAL (three-seed 0.0869 mean, seed-sensitive pseudo-signal shown in full) versus polyA HEAD/EQUIVALENT — same probe, two different verdicts, so the protocol discriminates rather than uniformly failing. (ii) *Same supervision, different outcome*: polyA 0.75 vs MRL 0.04–0.13 under identical probe supervision — the variable is the supervision regime × data geometry (corpus density 126.7 vs 4.9), which is the two-factor regularity of §5, a quantitative prediction that held on a second architecture cohort (§3.5: 7/7 backbones reproduce the band). (iii) *The intervention triangle closes the loop*: adding heterogeneous dense corpus (G1 synthetic, direction gate negative) does not fix it; only same-source dense supervision does (the W-ladder 0.1987 → 0.3158 run). So the practitioner-facing answer is inverted: the missing ingredient is not "more pretraining" but *same-source high-density paired libraries* — which is the data-side triple screening we deliver in §9. In short: "no delta in training" predicts the zero band, but the benchmark turns that expectation into a measurable regularity with regime contrast rows (UTR-STCNet 0.814 in-domain vs 0.067 cross-library) and falsifies its shallow reading.
+
+Error structure explains the decoupling but not the pattern of which cells survive (polyA) and which collapse (MRL). §5 shows the band is governed by supervision regime × data geometry, with intervention-level evidence.
 
 ---
 
@@ -289,6 +310,8 @@ Three successive generations — D15-2 polyA V5 → D16-C probe → ERK v2 — e
 
 The evidentiary grades are stated explicitly: the single-factor density claim is **downgraded** (held-out FAIL, honestly reported); the two-factor claim is supported by three lines — observation, the intervention triangle, and the held-out deviation pattern — and is labeled EXPLORATORY.
 
+The regularity says *whether* a task's delta is learnable in principle; the next question is *where the learnable signal lives* — table or structure — because that decides data vs model investment. §6 decomposes it.
+
 ---
 
 ## §6 Signal decomposition (first-order / structural)
@@ -326,6 +349,8 @@ The decomposition narrative does not transfer across tasks. On polyA the first-o
 
 A = |ρ₁ − band median| ≤ 0.05; B = dense-row − ρ₁ > 0.05. polyA is partially satisfied (✗A 0.2747 / ✓B 0.2788); MPRAU is not established (first-order exceeds the band by 0.0661); TE is partial (B not applicable). The task-level gap is polyA 0.2747 versus MPRAU increment 0.0200 and TE increment 0.0121.
 
+The decomposition + regularity jointly predict which failure mode each task is in; §7 turns that into the four-class taxonomy and the practical selection guide, and §8 takes the one boundary case (polyA) to its positive endpoint.
+
 ---
 
 ## §7 A taxonomy of failure
@@ -357,6 +382,8 @@ The same general LM that reads 0.71–0.75 on polyA (density 126.7, 2.74M corpus
 ### 7.5 Practical implications (toward a model-selection guide)
 
 C2 → align input granularity; C3 → within-source dense candidate supervision with pair-mean/within-source caliber; C4 → run a low-cost oracle probe first (NO_SIGNAL ≤ 0.10 is a stop-loss) before committing, or await corpus, or use end-to-end FT (with the caveat that MPRAU matched-FT is negative across all three seeds, pair-mean −0.075 to −0.107: FT does not rescue it); C5 → find the corpus before discussing architecture.
+
+The taxonomy equips the practitioner to classify any new task before modeling; §8 demonstrates the full pipeline on the sole task that passes all gates — from ceiling ruler to 91.3% completion and two application outlets.
 
 ---
 
@@ -442,6 +469,8 @@ The three-seed mean is 0.819573 with range width 0.0041 — far inside the pre-r
 | Committee routing | constructive zero-peek | +0.0362 | [+0.0090, +0.0632] | 446 | excludes zero |
 | Committee routing | dev-routed | +0.0045 | [0.0000, +0.0112] | 446 | crosses zero |
 
+polyA closes the positive branch; §9 assembles the general guide (C1–C5, triple screening), confronts limitations honestly, and §10 supplies the reproduction apparatus behind every number cited in the chain.
+
 ---
 
 ## §9 Discussion
@@ -469,6 +498,18 @@ Between-source composition inflates overall scores (polyA overall 0.71–0.75 vs
 ### 9.4 Relation to existing benchmarks and models
 
 The four-axis differentiation (Table 2) positions DeltaBench against conventional absolute-endpoint benchmarks along source-relative formalization, dual-task reporting, ceiling normalization, and two-tier adjudication. Concretely, the underlying assays of several benchmark studies publish rich measured libraries without a source-relative formalization — the 280K random 5′UTR library (Sample et al. 2019), the PLUMAGE screens (Lim et al. 2021), the prostate 3′UTR reporter library (Schuster et al. 2023), the HGMD/ClinVar UTR stability panel (Su et al. 2025) and the MPRAu allelic panel (Xue et al.) are re-used here as canonical records with Δ labels rather than as absolute endpoints. Published UTR predictors are scored on identical VALIDATION records in one frozen-Δ caliber (UTR-LM; RNA-FM; APARENT; APARENT2; Saluki; Optimus; FramePool; RiboNN), so the absolute-vs-delta decoupling of §4 is read on the same records instead of across incompatible reportings. Recently released UTR predictors are ported with fully declared input adaptations and unit-tested against official outputs (GEMORNA, Science 2025; LAMAR, bioRxiv 2024; UTR-STCNet, IEEE BIBM 2025; UTR-Insight; HydraRNA), and their matrix rows (Table 4) locate the in-domain / cross-library boundary quantitatively. Ceiling-normalized learnability accounting (Table 3) and the two-tier adjudication discipline (§2.4) are not standard in prior UTR model reporting, and the three append-only evaluation rows (Castillo-Hair 2024; Plassmeyer 2025; Su et al. 2025) provide fresh surfaces that were frozen before any model was scored on them. The full reference list (including the model papers for the ported baselines and the right/permission statements) is assembled at the submission stage; no external reference numbers are re-cited here, to keep every reported quantity traceable to this project's frozen artifacts.
+
+---
+
+### 9.5 Anticipated reviewer objections and where the evidence answers them
+
+| # | Objection | Answer (evidence locus) |
+|---|---|---|
+| O1 | "Embedding difference does not imply property difference — the probe premise is untested." | The premise is the paper's measured subject: the 0.873→0.313 decoupling with ρ_ε = 0.720 (§4.1); the first-order condition per task (§6.2); and the probe itself as a two-branch test — polyA HEAD/EQUIVALENT vs MRL NO_SIGNAL oracle verdicts under the same protocol (§4.4). See §4.5 Q1 for the full chain. |
+| O2 | "The ported backbones never saw delta data — near-zero is expected and uninteresting." | The probe arm *supplies* delta supervision at read-out and still reads ≈0 on 8/9 tasks, locating the deficit in the frozen representation; same-supervision contrast (polyA 0.75 vs MRL 0.04–0.13) makes the supervision regime × geometry the operative variable; the M1/G1 intervention arms close the loop (heterogeneous corpus fails, same-source dense supervision works). Full chain in §4.5 Q2. |
+| O3 | "In-domain 0.814 may be corpus memorization." | 730/730 evaluation sequences are empirically contained in UTR-STCNet's training corpus; the cross-library M1 row collapses to 0.067 (§3.3); a same-library weak-supervision control (UTR-Insight 0.2739) separates density from domain membership. |
+| O4 | "Single-seed probes make the near-zero band unreliable." | Registered as a limitation (§9.3); the MRL seed-sensitive pseudo-signal (0.1369/0.0640/0.0597) is itself shown in full; the LOSO sign flips are registered as noteworthy cells without significance claims; polyA's key claim is closed by the three-seed supplement (mean 0.8196, range 0.0041). |
+| O5 | "The batch-2 adapters may mis-port the backbones." | Port discipline: 7/7 adapters unit-referenced to official code paths, strict loading (missing = 0), port-validated runner (|Δ| = 2.4×10⁻⁶ vs the archived RNA-FM row); the one incident (WordLevel tokenizer collapse to [UNK]) was caught, fixed per the official recipe, and disclosed in §3.5 with a non-degeneracy verification. |
 
 ---
 
