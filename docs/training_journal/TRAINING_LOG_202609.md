@@ -2765,3 +2765,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **判定（reporting-only，不入门）**：**「换库塌缩」在第三组模型群体（11 个探针骨干）上完整再现**——M1 行 11/11 骨干全部近零；M6 行同带。发现二（监督体制 × 数据几何）外推证据从 5 个移植族 + 7 个批 2 骨干（9 任务）扩展到 11 骨干 × 新行表面。
 - **监控**：`# BATCH4_NEWROWS` cron 已完成使命并移除（终态即删，不留空转任务）。
 - 后续：矩阵行可按 append-only 补入论文 §3.5 附表（等写作期，与批 2 表同段；不改动任何冻结行）。
+
+## 批次 138（2026-10-06 深夜 · rights review 完成 + Gate P 拍板落档）
+
+- **用户两项拍板**：① rights review owner = agent（本会话）；② Gate P 揭盲 = 全文 v2 完成后。
+- **执行**：15 研究逐行回源审计（GEO disclaimer 2024-07 版 / ENCODE TOS / EBI terms / NC 论文 data availability，全部 2026-10-06 现行版本复核）；发现并修复范围缺口（M1=GSE232927 原不在 14 行表内，已补为第 15 行）；评审 CSV 人工栏全填；Data Availability 投稿草稿成文。
+- **判定**：15/15 analysis&publication 允许；15/15 payload 再分发保守 NOT_AUTHORIZED（E-MTAB-10902 HOLD 待 BioStudies license 字段，提交前用 API 确认）。
+- **产物**：docs/paper/data_rights_audit_v1.md（2d7abc5d）+ route2_v332_study_rights_accountable_human_review_v1_reviewed_20261006.csv（c2cb7355）+ gate_p_precheck_v1.md v1.2（785c08f6）。
+- **Gate P 就绪度更新**：第 3 项 PASS（全部臂终态）；第 7 项 = 证据层完成（发布决策待用户）。唯一硬前置 = W2 全文 v2。
+- 下一步（W2）：参考文献汇编 + 图表统一 + 摘要打磨 + E-MTAB license 字段确认 → 全文 v2 → W3 揭盲。
