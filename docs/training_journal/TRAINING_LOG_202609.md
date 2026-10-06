@@ -2898,3 +2898,16 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **v6 实现**：① 删除全部跟点标注；② 图例（5 族 marker + hollow=出带）外置 axes 右侧偏上；③ 其下方同一空白区加「key cells」小注（4 行：族名+格位+obs 值，数值仍从 cells JSON 动态取）；④ 图内零文字装饰，数据区完全干净。
 - key cells 注内容（动态取值打印核对）：UTR-STCNet MRL +0.814 / STCNet M1 (cross-library) +0.067 / LAMAR PLUMAGE-RNA −0.373 / HydraRNA polyA −0.372。
 - v5 vs v6 对照 sheet + v6 大图已打开。
+
+## 批次 148（2026-10-07 · 图 round-5：B 回退 v5 + 六图全览交付）
+
+- **用户决定**：B 图改回 v5（跟点标注版——信息就地可读优先于图面极简）；v6 方案存档不采用。
+- **六图全览已打开**（Preview 7 个文件 + 1 张七联 contact sheet `sheet_six_full_set.png`）：
+  - Fig1 矩阵热图（保留/统一样式版）
+  - Fig2a = 候选 A v4（密度观察，图例外置+安静文本块）
+  - Fig2b = 候选 B **v5**（held-out，五族标记+空心出带+四锚点跟点标注+图例外置）
+  - Fig3 一阶分解（保留）
+  - Fig4 完成度（保留）
+  - Fig5 = 候选 C（干预三角，新增）
+  - Fig6 = 候选 D（信号分解小多图，新增）
+- 等用户看完全集后给整体判定（单图改 or 全定稿 → 落 producer）。
