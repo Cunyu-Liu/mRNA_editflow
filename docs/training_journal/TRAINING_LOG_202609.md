@@ -2774,3 +2774,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **产物**：docs/paper/data_rights_audit_v1.md（2d7abc5d）+ route2_v332_study_rights_accountable_human_review_v1_reviewed_20261006.csv（c2cb7355）+ gate_p_precheck_v1.md v1.2（785c08f6）。
 - **Gate P 就绪度更新**：第 3 项 PASS（全部臂终态）；第 7 项 = 证据层完成（发布决策待用户）。唯一硬前置 = W2 全文 v2。
 - 下一步（W2）：参考文献汇编 + 图表统一 + 摘要打磨 + E-MTAB license 字段确认 → 全文 v2 → W3 揭盲。
+
+## 批次 139（2026-10-07 凌晨 · W2 全文 v2 第一遍完成 + E-MTAB license 查证）
+
+- **E-MTAB-10902 逐研究 license 字段查证（用户指令）**：BioStudies REST API JSON（37,638 字符全量扫描）+ MAGE-TAB IDF 全文 → **该研究无逐研究 license 字段**（0 hits for license/terms/access/copyright/CC）；ArrayExpress 迁移记录（AttachTo=ArrayExpress）+ EBI 整体条款（学术/临床/商业自由可用 + 引用要求）适用。**判定升级：HOLD → 确定性结论（字段不存在而非未获取）**→ 维持保守 payload 不再分发；该行在审计报告中的表述已由「待查」升级为「已确认无字段」。IDF 顺带核到：提交者 = von Kügelgen / Chekulaeva / Mendonsa（MDC-Berlin），ReleaseDate 2022-12-02，secondary accession ERP133202——参考文献 [15] 的作者字段以此为准。
+- **参考文献源数据回源核实（PubMed E-utilities 批量 + ENCODE REST API + HF 模型卡）**：15 研究（14 篇 PubMed 含 DOI 全字段 + E-MTAB）+ 模型引用（APARENT Cell 2019 / Griesemer Cell 2021 / Saluki=Agarwal&Kelley Genome Biol 2022 / RNA-FM arXiv 2204.00300 / UTR-LM Nat Mach Intell 2024 / mRNABERT Nat Commun 2025 / RiNALMo Nat Commun 2025 / ERNIE-RNA Nat Commun 2025 / HydraRNA Genome Biol 2025 / Orthrus Nat Methods 2026 / mRNA-LM NAR 2025）全部核实。
+- **draft v2 W2 pass 落盘（commit bdfe484a）**：摘要加「一句话读法」收束句；Data availability + Code availability 两节灌入（逐字取自 rights 审计 §2）；References 全列表 40 条（15 研究 + 20 模型/方法 + 5 基础设施）；Open items 三行更新（rights RESOLVED / refs ASSEMBLED / 剩余 = 引用接线 + 图表统一样式）。**结果数字零改动**；v1 备份 = deltabench_main_paper_draft_v1.md.v1backup。
+- **图表 vector 化核查**：4 主图 PDF 全部已在服务器（matrix_heatmap / ceiling_completion / delta_vs_density v1+v2 / first_order，各带 producer manifest）——「vector 化」实质已完成，剩统一样式。
+- **W3 触发条件现状**：唯一剩余 = ①正文引用接线（ref 编号挂到正文）②4 图统一样式。完成后即满足用户拍板的揭盲时点（全文 v2 完成后）。
