@@ -2959,3 +2959,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - 六轮编辑：破折号 149→104（成对插入语 23→2，保留术语/数值/预注册标记）；清除 Crucially/stands as/not merely/outlets—proof 句式；C1-C5 定义改冒号；abstract 两处成对破折号改逗号/括号。
 - 纪律：robust ×7 中 4 处为预注册术语（three-seed robust reading 等）保留；landscape 为参考文献标题保留；PROVENANCE_UNRESOLVED 标记保留。
 - 验证：20 个关键数字（0.8733/0.8219/0.8205/0.3158/91.3% 等）逐值未动；PDF 重建 36 页 7 图注同页；本地两目录+服务器同步。
+
+## 批次 155（2026-10-08 · 三项用户指令执行：数据集叙事强化 / 仓库整理 / 表格转图）
+
+- **用户指令**：① benchmark 数据集制作贡献强调（从稀缺性→收集过程→制作过程阐述，参照顶刊 benchmark 论文写法）② GitHub 仓库代码整理 ③ 图太少表格太多。
+- **① 数据集叙事（表达层，零新数字）**：新增 §2.0「Why this dataset had to be built, and how」（稀缺性论证 + curation 概述 + 复用资产声明）；§10.1 扩为 Dataset construction 三段式（Why scarce / Collection / Construction，ProteinGym 式）；摘要句式改为「No public resource measures the delta quantity... we therefore curate one」+ 释放叙事；C1 贡献句改为「curated, reusable benchmark resource...the largest source-relative collection of its kind」；cover letter 与 Data availability 同步强化（converter-based release 可重建 126,165 records）。
+- **③ 表格转图（journal 155 图包扩展）**：新增 （只读扩展 producer，复用 figure_style_v1，输出同目录）：Figure 7 误差三元组（T5 表删除，数字并入正文与图注）、Figure 8 失败分类 task×class 点阵（T9 表删除）、Figure 3 extended render 加 MRL 参照对轨道（T8 表删除）；T6 表删除（Figure 2a/2b 已覆盖，数字并入 §5.1/§5.2 正文）。图包 8 主图 + S1，value locks 26→41 全过。正文图引用与文末 Figures 块、checklist 同步更新。
+- **② 仓库整理（文档层）**：README.md 重写为 DeltaBench 对外入口（旧版归档 archive/README_pre_deltabench_20261008.md）；新增 DELTABENCH_RELEASE.md（组成/布局/复现入口/权利边界/纪律条款）。目录结构不动。
+- **本地工作产物**：manuscript_v2_3.md（本地重写合并版，含本轮叙事强化+表格转图）已同步服务器；评审报告 peer_review_manuscript_v2_2_v1.md + CHANGELOG_v2_2_to_v2_3.md 落本地项目论文目录。
+- **纪律自检**：零数字改动（新图全部 value-lock 断言既有冻结值；叙事强化仅用已登记数字 126,165/15/89,580/18,293/18,292）；八条款措辞未触碰；删除的表格数字全部保留在正文或图注。
