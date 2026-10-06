@@ -2862,3 +2862,17 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **主图审计与修复**：4 主图 PNG 检查发现 Figure3（first-order）仍 200 dpi（样式 pass 漏网——producer 脚本内写死 dpi=200 覆盖了 rcParams）→ 修复 producer 并重渲染（4950×1680 @300dpi）；数值锁仍有效（值全部直读冻结 JSON）。**终态：5 个 PDF（Fig1/2a/2b/3/4）全部 vector + 统一样式 + 300dpi PNG + fonttype 42。**
 - **bioRxiv 提交包**：`docs/paper/biorxiv_submission_v1/` = manuscript_v2_2.md + figures/（5 PDF）+ supplementary_v1.md（S1 预注册清单含 amendment v3+揭盲 prereg、S2 复现入口、S3 图谱系、S4 揭盲 receipt 摘要、S5 数据可用性细节）。supplementary 初版有 shell 转义损伤 → 已修复重写。
 - **用户侧剩余**：① title 终选（T1′/T2′/T3′）② 作者/单位/通讯邮箱 ③ 提交表单点发。
+
+## 批次 144（2026-10-07 · 图重设计：plot-is-all-you-need skill 安装 + 新旧对照候选图交付）
+
+- **skill 安装**：用户指定 gitee.com/liouhai/plot-is-all-you-need → clone → ~/.trae-cn/skills/plot-is-all-you-need（19 张已鉴赏图库 + 4 阶段流程）。按其 Resonance 流程走「数据在手直接摆草图」路径。
+- **图例遮挡修复（用户指出的 2a/2b 问题）**：
+  - 新 A（density 观察）：图例整体移出坐标区（bbox_to_anchor=(1.02, 0.5) 图右侧外）——**构造性零遮挡**；数据直标注（polyA cluster / near-zero band 引线）替代部分图例功能。
+  - 新 B（held-out 核对）：数据分区探测（65 点四角计数 UL=1/UR=0/LL=42/LR=1）→ 图例放 UR 空白角（0 点区域）。
+- **顶刊风重绘（学图库气质：clean spines（去 top/right）、outward ticks、direct annotation、soft palette、figsuptitle 粗体、verdict 色字）**，4 张全部真实冻结数据：
+  - A Fig2 v3（25 行 density 散点 + 拟合带）
+  - B Fig2b v3（65 点 held-out，带内/带外双色 + 容差带）
+  - **C 新 Fig5（干预三角）**：3 面板柱图（合成 FALSIFIED 红 / 参数 BOUND-ANCHORED 橙 / 数据 EFFECTIVE 蓝）+ verdict 色字 —— 论文此前缺的「干预证据」主图
+  - **D 新 Fig6（一阶分解小多图）**：4 任务堆叠条（first-order/structural/ceiling room 占 ICC 天花板比例）——论文此前缺的「信号住在哪」主图
+- **数量问题回应**：原 4 主图 → 新方案 6 主图（A/B 替换 2a/2b + C/D 新增 5/6 + Fig1 矩阵 + Fig4 完成度保留），覆盖六环叙事的关键环（现象→规律→干预→分解→正结果）。
+- 候选图 + 新旧对照 contact sheet 已在本地打开供用户挑选；选定后落服务器 producer（数值锁）+ 替换提交包。
