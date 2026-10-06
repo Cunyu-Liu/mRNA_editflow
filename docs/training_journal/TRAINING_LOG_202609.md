@@ -2950,5 +2950,5 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ## 批次 153（2026-10-07 · 标题定稿 + 论文全套同步用户本地）
 
 - **用户决策**：标题定稿 **T1′**（DeltaBench: A Source-Relative Benchmark Reveals Why Absolute-Score Models Fail to Predict mRNA Edit Effects）；T2′/T3′ 备选退役。manuscript 标题注记改为 FINAL (user decision)；W4 checklist Title 项更新。
-- 全套论文文件（docs/paper 全目录 66 项 / 86 文件 / 3.3MB：提交包、主稿、预注册 13 件、修正案、权利审计、揭盲 prereg、v332 归档表）同步至用户本地 ，manuscript 用标题定稿版。
+- 全套论文文件（docs/paper 全目录 66 项 / 86 文件 / 3.3MB：提交包、主稿、预注册 13 件、修正案、权利审计、揭盲 prereg、v332 归档表）同步至用户本地 `论文/DeltaBench_论文全套_20261007/`，manuscript 用标题定稿版。
 - 用户侧仅剩：作者/单位/邮箱、bioRxiv 实际提交。
