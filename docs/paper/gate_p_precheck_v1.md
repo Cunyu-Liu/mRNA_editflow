@@ -34,3 +34,8 @@ M1 四门收割（今日） → polyA 3-seed 收割（今日） → 全文初稿
 - 本核验**不含**任何 TEST 统计信息（分布摘要亦未读取）。
 - 若用户决定提前揭盲，前置第 3/7 项即为风险点（冻结证据面不完整 + 权利状态未清）。
 - 后续状态变化（M1/3-seed 终态）由 `check_and_harvest_week.sh` 与定时巡检自动记录，本文件在每项状态变化后按 append-only 方式更新（v1 → v1.x）。
+## 6. v1.2 增补（2026-10-06 · 用户拍板两项落档）
+
+- **【用户拍板 2026-10-06】Gate P 揭盲时点 = 全文 v2 完成后**（对应冲刺计划 W3 = 10-20~10-26；执行顺序不变：全文 v2（W2 参考文献/图表/摘要）完成 → 一次性揭盲 18,292 行 → 主结果终稿回填）。protected TEST reads 在揭盲前保持 = 0（本日复核 matrix_v2_results.json 仍为 0）。
+- **【用户拍板 2026-10-06】rights review owner = TRAE 执行侧 agent（证据层）**。当日完成 15 研究回源审计（`data_rights_audit_v1.md`，commit 2d7abc5d）+ 评审 CSV 填写（`..._reviewed_20261006.csv`，commit c2cb7355）：15/15 analysis&publication 允许；15/15 payload 再分发保守 NOT_AUTHORIZED（E-MTAB-10902 HOLD 待 BioStudies license 字段）；Data Availability 投稿草稿成文（§2）。**第 7 项状态更新：REVIEWED（证据层完成）——最终发布决策仍归用户/PI**；第 3 项（在途臂）已于 09-29 全部终态，本项 PASS。
+- **当前 Gate P 就绪度**：第 1/2/4/5/8 项 PASS；第 3 项 PASS（全部臂终态）；第 6 项 R12 写作期收尾（W1-W2）；第 7 项 = 证据层完成（发布决策待用户）。**唯一硬前置 = 全文 v2（W2 里程碑）**。
