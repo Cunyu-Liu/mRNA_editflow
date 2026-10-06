@@ -2790,3 +2790,37 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **图表样式统一（figure_style_v1）**：共享样式模块（DejaVu Sans base 9 / axes.linewidth 0.8 / dpi 300 / 统一 tick 字号 / fonttype 42 可嵌入）应用于全部 5 个主图渲染；**数值锁全部验证**：fig1 65/65 格 vs matrix_v2_results.json（render 时断言）、fig4 frozen-vs-figure |Δ|<5e-5（render 时断言）、density v1 r=0.9388 与 v2 FAIL 33/65=50.77% 复算=入档、first_order 数值全部来自冻结 JSON。样式 manifest = analysis_benchmark_v2_matrix_figure_v1/figure_style_manifest_v1.json。
 - **commit 87aaa1f0**。**W3 揭盲前置状态：全绿**——全文 v2（含 availability + references + 接线）✓、样式 ✓、protected reads=0 维持 ✓、揭盲时点 = 用户已拍板（全文 v2 完成后 = 现在）。
 - **下一步（W3，等用户一句话点火）**：TEST 18,292 行一次性揭盲（receipt + append-only schema）→ 主结果终稿回填。
+
+## 批次 141（2026-10-07 · W3 Gate P 揭盲执行完毕：3/4 一致性确认，1 项如实报告偏离）
+
+### 揭盲执行（prereg gate_p_unblinding_prereg_v1.md，f82fa71b 冻结后执行）
+
+- **一次性行为合规**：manifest TEST ids 先读（0 标签接触）→ TEST 序列 bottom-six 在线编码 10,342 条（outcome-free，618s）→ cache 组装 18,292 记录 → V5 冻结 checkpoint 重建（170,481,957 参数，strict load）→ BF16/A100 推理 18,292 行 → **标签一次性读取+评测**（读取事件 = 1）→ receipt 落盘。
+- **Receipt**：executed_utc 2026-10-06T09:18:29Z（服务器 UTC）；checkpoint_sha256 a4caa4ba…；test_record_id_set_sha256 + manifest_sha256 全落盘；prior_test_reads=0；A100-PCIE-40GB + bf16 留证。
+
+### 揭盲读数（V5 冻结主行 × TEST 18,292 行）
+
+| 任务 | VALIDATION | TEST | Δ |
+|---|---|---|---|
+| **polyA** | **0.8219** | **0.8205** | **−0.0014** |
+| MRL | 0.1354 | 0.1820 | +0.0466 |
+| MPRAU | 0.1025 | 0.0794 | −0.0231 |
+| TE200304 | 0.0579 | 0.0231 | −0.0348 |
+| PLUMAGE-TE | 0.1953 | −0.0467 | −0.2420（n=48） |
+| PLUMAGE-RNA | 0.0500 | 0.0691 | +0.0191（n=48） |
+| REFALT | 0.0639 | −0.0768 | −0.1407（n=274） |
+| HL（53合并） | ≈0 | 0.0836 | +0.0836（VAL 基准取 0，两 HL 任务均值） |
+| **macro** | **0.167** | **0.1353** | **−0.0317** |
+
+### 一致性核对（prereg §3 冻结规则，零裁量）
+
+- **C1 polyA 带（主结果）：CONFIRMED** —— TEST 0.8205 vs VAL 0.8219，Δ −0.0014 ≪ 0.05 容差。**polyA 91.3% 完成度主张获双集确认（TEST-confirmed）**。
+- **C2 polyA 最强任务：CONFIRMED** —— TEST 上 polyA 0.8205 仍远超最强非 polyA 任务（MRL 0.1820），家族排序主张成立。
+- **C3 低密度带结构：DEVIATION_REPORTED（如实报告）** —— 7 个非 polyA 任务中 4 个 |Δ|≤0.08（MRL/MPRAU/TE200304/PLUMAGE-RNA），3 个超差：PLUMAGE-TE（n=48，VAL 侧本就是符号翻转敏感行）、REFALT（n=274，低功效行）、HL（VAL≈0 而 TEST 0.0836——绝对值仍≈0 级）。**判定：带结构在量级上保持（全部非 polyA 任务 |ρ|≤0.18，无一逃离近零带），但小样本行的符号级稳定性不成立——这与 §9.3 已登记的「LOSO/小样本行符号翻转」limitation 一致，无需改写主张，作为 TEST 层新证据补入该 limitation**。
+- **C4 macro：CONFIRMED** —— 0.1353 vs 0.167，Δ −0.0317 ≤ 0.05。
+- **总判**：**3/4 CONFIRMED + 1 如实偏离报告**。论文主张面（polyA 主结果、家族排序、宏观水平）全部 TEST-确认；偏离仅在小样本行的符号稳定性（已有 limitation 声明的范围）。
+
+### 论文回填（随后 commit）
+
+- §8.1/§8.2 polyA 主行加 TEST-confirmed 注记（0.8205，Δ −0.0014）；§9.3 limitation 补 TEST 证据（PLUMAGE-TE/REFALT 符号翻转在 TEST 复现）。
+- 产物：gate_p_unblinding_v1/{test_predictions.jsonl, unblinding_metrics_v1.json, unblinding_receipt_v1.json, consistency_check_v1.json}。
