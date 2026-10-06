@@ -2924,3 +2924,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **数值锁**：Fig1 65/65 格断言；Fig3 三个 ρ₁ 逐值断言（0.45554942/0.08253518/0.04577197）；Fig4 ours 0.8219/0.3217 断言；外部对照值改为**显式 EXT_MAP**（与论文 §8/§9.4 同源冻结档案值：Optimus 0.3132/APARENT 0.7343/Saluki 0.1205/RNA-FM 0.2958/0.1043/Saluki-HL 0.0985/带~0 行）——bottomline JSON 的 spearman 字段为空（值藏在 method 文本），如实改用显式映射并断言。
 - **本地提交包已更新**：figures/ 六张全替换为新风格 PDF（新增 Figure5/Figure6）；旧版存 _old_style_v1/ 备份。**未提交**（用户指令）。
 - 七联终版 contact sheet + 三张新图已打开。
+
+## 批次 150（2026-10-07 · Fig3 v4：标注→图例，学 Fig4 设计）
+
+- **用户反馈**：Fig3 棒旁数值标注文字重叠 → 改用 Fig4 式图例。
+- **v4 实现**：① 删除全部跟棒文字（ρ₁/ours/ICC/external 四组标签）；② 右下角 4 项图例（external band 色 patch / ρ₁ 蓝点 / ours 橙点 / ICC 竖线）；③ 每任务只留**一个**数字——ρ₁ 占 ours 百分比，放右缘安静列（列头 ρ₁/ours）：polyA 55% / MPRAU 81% / TE 79%（数值锁后动态计算打印）。
+- 本地提交包 Figure3_first_order.pdf 已替换为 v4；未提交。
