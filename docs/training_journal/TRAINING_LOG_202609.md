@@ -2952,3 +2952,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **用户决策**：标题定稿 **T1′**（DeltaBench: A Source-Relative Benchmark Reveals Why Absolute-Score Models Fail to Predict mRNA Edit Effects）；T2′/T3′ 备选退役。manuscript 标题注记改为 FINAL (user decision)；W4 checklist Title 项更新。
 - 全套论文文件（docs/paper 全目录 66 项 / 86 文件 / 3.3MB：提交包、主稿、预注册 13 件、修正案、权利审计、揭盲 prereg、v332 归档表）同步至用户本地 `论文/DeltaBench_论文全套_20261007/`，manuscript 用标题定稿版。
 - 用户侧仅剩：作者/单位/邮箱、bioRxiv 实际提交。
+
+## 批次 154（2026-10-07 · humanizer 去AI味 pass）
+
+- 加载 humanizer-zh skill，按 Wikipedia Signs of AI writing 模式清单全文扫描 manuscript v2.2。
+- 六轮编辑：破折号 149→104（成对插入语 23→2，保留术语/数值/预注册标记）；清除 Crucially/stands as/not merely/outlets—proof 句式；C1-C5 定义改冒号；abstract 两处成对破折号改逗号/括号。
+- 纪律：robust ×7 中 4 处为预注册术语（three-seed robust reading 等）保留；landscape 为参考文献标题保留；PROVENANCE_UNRESOLVED 标记保留。
+- 验证：20 个关键数字（0.8733/0.8219/0.8205/0.3158/91.3% 等）逐值未动；PDF 重建 36 页 7 图注同页；本地两目录+服务器同步。
