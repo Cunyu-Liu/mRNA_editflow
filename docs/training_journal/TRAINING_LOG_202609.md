@@ -2782,3 +2782,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **draft v2 W2 pass 落盘（commit bdfe484a）**：摘要加「一句话读法」收束句；Data availability + Code availability 两节灌入（逐字取自 rights 审计 §2）；References 全列表 40 条（15 研究 + 20 模型/方法 + 5 基础设施）；Open items 三行更新（rights RESOLVED / refs ASSEMBLED / 剩余 = 引用接线 + 图表统一样式）。**结果数字零改动**；v1 备份 = deltabench_main_paper_draft_v1.md.v1backup。
 - **图表 vector 化核查**：4 主图 PDF 全部已在服务器（matrix_heatmap / ceiling_completion / delta_vs_density v1+v2 / first_order，各带 producer manifest）——「vector 化」实质已完成，剩统一样式。
 - **W3 触发条件现状**：唯一剩余 = ①正文引用接线（ref 编号挂到正文）②4 图统一样式。完成后即满足用户拍板的揭盲时点（全文 v2 完成后）。
+
+## 批次 140（2026-10-07 · W2 收口：接线 + 样式统一完成，W3 前置全绿）
+
+- **引用接线（18 处，全断言）**：§1.1/1.2/2.2（7 个任务行+3 新行）/2.4（端口声明）/4.5（两问）/8.1（天花板）/9.4（预测器与 assays）全部挂上 [n] 引用编号；内部实验引用（D16-C/ERK/W 阶梯 = 本项目自身产物）不挂外部 ref。
+- **参考文献诚实性修正 3 处**：[9] Plassmeyer DOI 修正为 10.1101/2023.11.02.23297961（medRxiv 原文核实）；[15] N-zip 研究升级引用**正式发表版**（Mendonsa & von Kügelgen et al., Nat Neurosci 26:394-405, 2023，PMC9991926——E-MTAB-10902 即该研究的数据存档）；[28] LAMAR 削减为 port ledger 登记事实 + 明示 submission-stage 补全标记（不猜引用）。
+- **图表样式统一（figure_style_v1）**：共享样式模块（DejaVu Sans base 9 / axes.linewidth 0.8 / dpi 300 / 统一 tick 字号 / fonttype 42 可嵌入）应用于全部 5 个主图渲染；**数值锁全部验证**：fig1 65/65 格 vs matrix_v2_results.json（render 时断言）、fig4 frozen-vs-figure |Δ|<5e-5（render 时断言）、density v1 r=0.9388 与 v2 FAIL 33/65=50.77% 复算=入档、first_order 数值全部来自冻结 JSON。样式 manifest = analysis_benchmark_v2_matrix_figure_v1/figure_style_manifest_v1.json。
+- **commit 87aaa1f0**。**W3 揭盲前置状态：全绿**——全文 v2（含 availability + references + 接线）✓、样式 ✓、protected reads=0 维持 ✓、揭盲时点 = 用户已拍板（全文 v2 完成后 = 现在）。
+- **下一步（W3，等用户一句话点火）**：TEST 18,292 行一次性揭盲（receipt + append-only schema）→ 主结果终稿回填。
