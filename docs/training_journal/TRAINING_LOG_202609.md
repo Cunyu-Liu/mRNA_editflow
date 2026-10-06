@@ -2946,3 +2946,9 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **收尾 C（正文图注）**：manuscript Figures 区块重写（6 主图 + FigureS1 完整图注，每图标注值锁来源）；正文 9 处 in-text 接线（Figure 2a/2b/3/5/6/S1）；W4 checklist 两项勾选；supplementary S3 更新为合并 producer 口径 + FigureS1 段。
 - **收尾 D（同步）**：服务器提交包 figures/ 换为 v2 渲染集（16 文件 + manifest）；本地提交包同步为服务器渲染版（一致）；主草稿 deltabench_main_paper_draft_v1.md 与提交包 manuscript 同步。
 - 用户侧待办：title 三选一（T1'/T2'/T3'）、作者/单位/邮箱、bioRxiv 实际提交。
+
+## 批次 153（2026-10-07 · 标题定稿 + 论文全套同步用户本地）
+
+- **用户决策**：标题定稿 **T1′**（DeltaBench: A Source-Relative Benchmark Reveals Why Absolute-Score Models Fail to Predict mRNA Edit Effects）；T2′/T3′ 备选退役。manuscript 标题注记改为 FINAL (user decision)；W4 checklist Title 项更新。
+- 全套论文文件（docs/paper 全目录 66 项 / 86 文件 / 3.3MB：提交包、主稿、预注册 13 件、修正案、权利审计、揭盲 prereg、v332 归档表）同步至用户本地 ，manuscript 用标题定稿版。
+- 用户侧仅剩：作者/单位/邮箱、bioRxiv 实际提交。

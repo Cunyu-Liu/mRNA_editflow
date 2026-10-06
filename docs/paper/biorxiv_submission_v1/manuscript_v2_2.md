@@ -4,7 +4,7 @@
 
 > **Title note (2026-10-07 revision).** The earlier "14 Model Families × 13 Tasks" phrasing was retired: benchmark-paper conventions (ProteinGym; quantization-survey papers; ENDIVE) put scale words or plain nouns in titles and leave counts to the abstract — a bare "N × M" reads as a math expression. The draft now carries **T1′**:
 > **T1′** — *DeltaBench: A Source-Relative Benchmark Reveals Why Absolute-Score Models Fail to Predict mRNA Edit Effects* (recommended: benchmark name + method contribution + mechanism hook in one declarative sentence).
-> Alternatives: **T2′** — *DeltaBench: mRNA Edit-Effect Prediction Is Governed by Supervision Regime and Data Geometry, Not Model Scale* (mechanism-first, states the regularity as a claim; stronger for NC/NMI but asserts the EXPLORATORY finding in the title); **T3′** — *The Delta Gap: Benchmarking mRNA Edit-Effect Prediction Across Fourteen Model Families and Thirteen Tasks* (closest to the old T2 with counts spelled out in prose; acceptable if the PI prefers visible scope). Final selection deferred to the PI; counts remain in the abstract either way.
+> Alternatives: **T2′** — *DeltaBench: mRNA Edit-Effect Prediction Is Governed by Supervision Regime and Data Geometry, Not Model Scale* (mechanism-first, states the regularity as a claim; stronger for NC/NMI but asserts the EXPLORATORY finding in the title); **T3′** — *The Delta Gap: Benchmarking mRNA Edit-Effect Prediction Across Fourteen Model Families and Thirteen Tasks* (closest to the old T2 with counts spelled out in prose; acceptable if the PI prefers visible scope). **FINAL (user decision, 2026-10-07): T1′ adopted; the T2′/T3′ alternates are retired.** Counts remain in the abstract.
 
 > **Scope and discipline statement.** Every number in this manuscript is drawn from frozen, pre-registered experiments. All matrix and mechanism readouts are computed on **VALIDATION splits** under the frozen-Δ (zero-fine-tuning) caliber, with verdicts following decision rules frozen before computation. The protected TEST split (18,292 rows) was read **exactly once** — after the full draft was complete, per the frozen unblinding prereg (§9.3 and the receipt referenced there); headline claims carry their TEST-confirmed status inline. No tuning, selection, or wording decision was made after that read. Where a number is registered but not yet finalized, a PENDING marker is used and no number is invented.
 
@@ -610,7 +610,7 @@ The Authors
 ## bioRxiv submission checklist (W4)
 
 - [x] Manuscript (this draft, v2.2 post-unblinding; abstract ~250 words)
-- [x] Title (T1′ carried; T2′/T3′ alternates documented above — PI final call)
+- [x] Title — **T1′ FINAL** (user decision 2026-10-07; T2′/T3′ alternates retired)
 - [x] Six main figures + FigureS1 as vector PDFs (consolidated producer make_biorxiv_figures_v2.py; 26 value locks, all OK; FigureS1 = 14-family supplement view)
 - [x] Data availability + Code availability statements (payload-not-redistributed route)
 - [x] Full source-verified reference list (40 entries) with in-text wiring
