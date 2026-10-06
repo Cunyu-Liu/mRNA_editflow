@@ -74,7 +74,7 @@ def main():
                  fontsize=12.5)
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     for ext in ("png", "pdf"):
-        fig.savefig(OUT / f"first_order_vs_external_vs_ceiling.{ext}", dpi=200)
+        fig.savefig(OUT / f"first_order_vs_external_vs_ceiling.{ext}", dpi=300)
     print("figure saved:", OUT / "first_order_vs_external_vs_ceiling.{png,pdf}")
 
     md = build_summary(RES)

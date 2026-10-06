@@ -53,6 +53,16 @@ def _load_module(name: str, path: Path):
 
 
 te = _load_module("route2_te_lib_newrows", TE_PATH)
+# half-life task specs are injected by the generalist runner (same-endpoint
+# probe surfaces for S1 arms); mirror them here so te.TASKS is complete.
+te.TASKS["half_life_5utr"] = {
+    "study": "GSE217518", "region": "5UTR",
+    "endpoint": "RNA_HALF_LIFE_MINUTES", "mode": "IN_STUDY_PROBE",
+}
+te.TASKS["half_life_3utr"] = {
+    "study": "GSE217518", "region": "3UTR",
+    "endpoint": "RNA_HALF_LIFE_MINUTES", "mode": "IN_STUDY_PROBE",
+}
 gen = _load_module("route2_gen_lib_newrows", GEN_PATH)
 ev = _load_module("route2_ev_lib_newrows", EVALUATOR_PATH)
 
