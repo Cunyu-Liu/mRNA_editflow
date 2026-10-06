@@ -2853,3 +2853,12 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 ### W4 准备清单（已盘点，待执行）
 
 1. title 终版（PI 拍板，默认 T2）② abstract 终版（当前 8,446 词 → 需压到 ~250 词 bioRxiv 规范）③ author/affiliation 填写（用户侧）④ Figure 文件（4 主图 PDF vector + 样式 v1 已统一）⑤ supplement（预注册清单+复现指南）⑥ Data/Code availability（已成文）⑦ cover letter。payload 边界执行=打包转换脚本+manifest+汇总统计（原始数据不发布）。
+
+## 批次 143（2026-10-07 · W4 打包 pass 1 完成）
+
+- **title 重设计（用户质疑「14×13 不正式」——正确）**：调研同行惯例（ProteinGym 用 scale 词不用 N×M；量化 LLM 评测论文数字只进摘要；ENDIVE 平实名词）→ **旧 T2 退役**。新推荐 **T1′**：*DeltaBench: A Source-Relative Benchmark Reveals Why Absolute-Score Models Fail to Predict mRNA Edit Effects*（陈述句式：基准名+方法贡献+机制钩子）；备选 T2′（机制主张前置，适合 NC/NMI 但 title 里 assert EXPLORATORY 发现有风险）、T3′（保留量感但数字拼写进散文式表述）。数字（14 族/13 任务/65 格）按惯例全部留在摘要。
+- **摘要压缩**：~400 词 → **231 词**（bioRxiv 规范内），保留全部关键数字与 TEST-confirmed。
+- **cover letter 草稿 + bioRxiv 提交 checklist** 已入 draft 尾部。
+- **主图审计与修复**：4 主图 PNG 检查发现 Figure3（first-order）仍 200 dpi（样式 pass 漏网——producer 脚本内写死 dpi=200 覆盖了 rcParams）→ 修复 producer 并重渲染（4950×1680 @300dpi）；数值锁仍有效（值全部直读冻结 JSON）。**终态：5 个 PDF（Fig1/2a/2b/3/4）全部 vector + 统一样式 + 300dpi PNG + fonttype 42。**
+- **bioRxiv 提交包**：`docs/paper/biorxiv_submission_v1/` = manuscript_v2_2.md + figures/（5 PDF）+ supplementary_v1.md（S1 预注册清单含 amendment v3+揭盲 prereg、S2 复现入口、S3 图谱系、S4 揭盲 receipt 摘要、S5 数据可用性细节）。supplementary 初版有 shell 转义损伤 → 已修复重写。
+- **用户侧剩余**：① title 终选（T1′/T2′/T3′）② 作者/单位/通讯邮箱 ③ 提交表单点发。
