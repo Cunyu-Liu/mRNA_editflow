@@ -2824,3 +2824,32 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 
 - §8.1/§8.2 polyA 主行加 TEST-confirmed 注记（0.8205，Δ −0.0014）；§9.3 limitation 补 TEST 证据（PLUMAGE-TE/REFALT 符号翻转在 TEST 复现）。
 - 产物：gate_p_unblinding_v1/{test_predictions.jsonl, unblinding_metrics_v1.json, unblinding_receipt_v1.json, consistency_check_v1.json}。
+
+## 批次 142（2026-10-07 · 叙事审计 + 修复 + title 建议 + W4 准备）
+
+### 叙事审计（用户指令：检查主线是否清晰连贯）
+
+**方法**：重读全文 648 行，逐节核对六环阅读地图（§1.4）承诺的因果链 vs 实际承接。
+
+**结构判定：主线连贯 ✅**
+- 六环链完整：§2→§3（现象+承接句已补）→§4（误差结构+两问+末句开 §5 之问）→§5（规律+干预三角+末句开 §6 之问）→§6（分解+末句开 §7/§8）→§7（分类+末句开 §8）→§8（正结果+末句开 §9/§10）→§9/§10（交付）。
+- 摘要的一句话读法与正文结尾主张一致（TEST-confirmed 已同步）。
+- 每个机制主张（双因子/分解/分类）都有「承接句明确说它回答上一节留下的问题」。
+
+**发现 4 处揭盲遗留不一致（全部已修复，5a093178）**：
+1. scope 声明仍写「VALIDATION only; TEST reads = 0」——与摘要 TEST-confirmed 矛盾 → 改为「TEST 读取恰一次（冻结 prereg 后）；读取后零调参零选型」。
+2. Figure 1 caption 用现在时写「TEST reads = 0」→ 改为历史事实+揭盲说明。
+3. title note 与实际携带 title（T2）的表述对齐。
+4. 版本头仍是「W2 pass」→ 升 v2.2 post-unblinding。
+5. （顺带补上）§2.5→§3 缺承接句——全文唯一结构性 seam 缺口 → 已补（「instrument 定义完毕 → 下一节报告冻结模型在其上的实际读数」）。
+
+### Title 三选一建议（W4 启动件）
+
+- **推荐 T2（现稿已携带）**：DeltaBench: 14 Model Families × 13 Tasks for mRNA Edit-Effect Deltas — and Why Absolute Scores Do Not Transfer
+  - 理由：①一行同时含「量（14×13）」与「钩子（为什么绝对分数不迁移）」②与摘要首句读法同构（审稿人扫读 title+abstract 决定送审）③benchmark 检索友好（DeltaBench 打头）。
+- T1（平铺 benchmark 名）：适合数据/资源型期刊（GB/Databases）；损失机制钩子。
+- T3（机制轨道「The Limits of Delta」）：适合 NC/NMI 的方法-机制叙事；风险是听起来像纯负结果论文，而我们 polyA 是强正结果。
+
+### W4 准备清单（已盘点，待执行）
+
+1. title 终版（PI 拍板，默认 T2）② abstract 终版（当前 8,446 词 → 需压到 ~250 词 bioRxiv 规范）③ author/affiliation 填写（用户侧）④ Figure 文件（4 主图 PDF vector + 样式 v1 已统一）⑤ supplement（预注册清单+复现指南）⑥ Data/Code availability（已成文）⑦ cover letter。payload 边界执行=打包转换脚本+manifest+汇总统计（原始数据不发布）。
