@@ -2936,3 +2936,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **问题解答（诚实）**：Fig1 原版只画冻结矩阵的 65 格 = **5 个新移植族 × 13 任务**；9 个既有参照族（Optimus/APARENT/RNA-FM/UTR-LM/FramePool/Saluki/RiboNN/mRNABERT/APARENT2）的读数是另一套 archived ALREADY_DONE 体系（bottomline/LOSO），**没有 13 任务全谱**（盘点：RNA-FM 9/13 最多，多数族 1-2/13；合计 33 格有数）。矩阵 prereg 范围 = 5×13（14 族=5 新+9 存档）。原版图注其实写了，但视觉上确实只看到 5 族——用户的困惑合理。
 - **Fig1 v4（全 14 族版）**：上半块 = 冻结 5×13 矩阵（65/65 锁）；分隔线 + 侧注；下半块 = 9 参照族 + V5（33 格档案值，逐格数值锁断言：0.8219/0.3132/0.7343/0.1369/0.1205 等），无读数格 = 灰色斜纹 NA（STRUCTURED_NA 语义：范式不匹配或该口径未测）——如实呈现稀疏性而非留白误导。
 - 本地提交包 Figure1 已替换为 v4；已打开。
+
+## 批次 152（2026-10-07 · 图收尾：producer 落服务器 + 26 数值锁全过 + 提交包定稿）
+
+- **用户决策**：Fig1 回退 v3（5×13 矩阵）；14 族全图转为补充图 FigureS1；开始收尾。
+- **收尾 A（producer 落地）**：新增 scripts/route_a_v3/make_biorxiv_figures_v2.py——8 张图（Fig1/2a/2b/3/4/5/6/S1）的合并只读 producer，输出 /mnt/.../analysis_biorxiv_figure_pack_v2/。所有数值取自冻结 JSON（matrix/density/cells/first-order/bottomline/W-ladder/ERK/D16-C/3seed）或论文冻结归档值，附 manifest（figure_pack_v2_manifest.json）。
+- **收尾 B（重渲染验证）**：editflow 环境一次跑通；26 个数值锁全部通过。5 个冻结 JSON 本地/服务器 md5 逐字节一致。像素级比对：除 Fig5（有意修正）外与本地批准版差异 <2%（字体抗锯齿级）；Fig1/2a 仅 1px bbox 舍入差。
+- **Fig5 标签错误修正（发现于值锁溯源）**：本地版把 0.2555 误标为 LoRA。溯源冻结件后按论文 §7 改为 5 档：W0 0.1987（w_ladder results）→ LoRA 0.2470（280k_prefinetune_20260903/frozen_delta_results.json）→ full-FT 2ep 0.2555（280k_fullft_ablation_20260903/frozen_delta_results.json）→ 3-seed 0.3158（ensemble_3seed_vs_optimus.json）≈ frozen-Optimus 0.3132（同件）。V5 gap 0.7943 / D16-C 0.8235（gap_backtest_d16c.json）；ERK 0.2015（erk_adjudication_v1.json G1 rho_val）；E7 0.2069（§6.1 归档值，Fig6 MRL 面板同源）。
+- **收尾 C（正文图注）**：manuscript Figures 区块重写（6 主图 + FigureS1 完整图注，每图标注值锁来源）；正文 9 处 in-text 接线（Figure 2a/2b/3/5/6/S1）；W4 checklist 两项勾选；supplementary S3 更新为合并 producer 口径 + FigureS1 段。
+- **收尾 D（同步）**：服务器提交包 figures/ 换为 v2 渲染集（16 文件 + manifest）；本地提交包同步为服务器渲染版（一致）；主草稿 deltabench_main_paper_draft_v1.md 与提交包 manuscript 同步。
+- 用户侧待办：title 三选一（T1'/T2'/T3'）、作者/单位/邮箱、bioRxiv 实际提交。

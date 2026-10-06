@@ -1,0 +1,214 @@
+{
+ "date": "2026-10-07",
+ "figures": [
+  "Figure1_matrix_heatmap",
+  "Figure2a_density_v1",
+  "Figure2b_density_v2_heldout",
+  "Figure3_first_order",
+  "Figure4_ceiling_completion",
+  "Figure5_intervention_triangle",
+  "Figure6_first_order_multiples",
+  "FigureS1_all_families_supplement"
+ ],
+ "note": "read-only producers; every plotted value read from frozen JSONs or declared verbatim from the paper's frozen archives; no recomputation",
+ "schema_version": "biorxiv_figure_pack_v2",
+ "sources": {
+  "bottomline": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_task8_bottomline_20260909/bottomline_adjudication_v1.json",
+  "cells": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_delta_vs_density_v2/delta_vs_density_v2_cells.json",
+  "d16_gap": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_d16c/probe_mrl_v1_gpu5/gap_backtest_d16c.json",
+  "density": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_delta_vs_density_20260915/delta_vs_density_data.json",
+  "ens_3seed": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_fullft_v2_adjudication_20260903/ensemble_3seed_vs_optimus.json",
+  "erk_adj": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_erk_v2/erk_train_seed2026091901/erk_adjudication_v1.json",
+  "first_order": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_first_order_decomposition_v1/results_first_order.json",
+  "fullft_2ep": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/280k_fullft_ablation_20260903/frozen_delta_results.json",
+  "lora_280k": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_route_a/280k_prefinetune_20260903/frozen_delta_results.json",
+  "matrix": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/benchmark_v2/leaderboard_matrix_v2/matrix_v2_results.json",
+  "w_ladder": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_w_ladder_adjudication_20260903/results.json"
+ },
+ "style": "DejaVu Sans 9 / 300 dpi / pdf.fonttype 42 / no top-right spines / outward ticks",
+ "value_lock_count": 26,
+ "value_locks": [
+  {
+   "got": 65.0,
+   "name": "fig1.total_cells",
+   "ok": true,
+   "tol": 0.0,
+   "want": 65.0
+  },
+  {
+   "got": 0.814430506981109,
+   "name": "fig1.stcnet_mrl",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.814430506981109
+  },
+  {
+   "got": 25.0,
+   "name": "fig2a.n_rows",
+   "ok": true,
+   "tol": 0.0,
+   "want": 25.0
+  },
+  {
+   "got": 65.0,
+   "name": "fig2b.n_cells",
+   "ok": true,
+   "tol": 0.0,
+   "want": 65.0
+  },
+  {
+   "got": 33.0,
+   "name": "fig2b.in_band",
+   "ok": true,
+   "tol": 0.0,
+   "want": 33.0
+  },
+  {
+   "got": 0.45554942055906655,
+   "name": "fig3.rho1_polyA",
+   "ok": true,
+   "tol": 1e-06,
+   "want": 0.45554942
+  },
+  {
+   "got": 0.08253518190864256,
+   "name": "fig3.rho1_MPRAU",
+   "ok": true,
+   "tol": 1e-06,
+   "want": 0.08253518
+  },
+  {
+   "got": 0.045771970425483255,
+   "name": "fig3.rho1_TE",
+   "ok": true,
+   "tol": 1e-06,
+   "want": 0.04577197
+  },
+  {
+   "got": 0.8219,
+   "name": "fig4.ours_polyA",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.8219
+  },
+  {
+   "got": 0.3217,
+   "name": "fig4.ours_MRL",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.3217
+  },
+  {
+   "got": 0.7943,
+   "name": "fig5.v5_gap",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.7943
+  },
+  {
+   "got": 0.8234526549932015,
+   "name": "fig5.d16_gap",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.8235
+  },
+  {
+   "got": 0.20146024842584034,
+   "name": "fig5.erk_val",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.2015
+  },
+  {
+   "got": 0.19868886432413382,
+   "name": "fig5.w0",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.1987
+  },
+  {
+   "got": 0.24700111835111568,
+   "name": "fig5.lora",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.247
+  },
+  {
+   "got": 0.25548936394195265,
+   "name": "fig5.fullft_2ep",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.2555
+  },
+  {
+   "got": 0.3158289984824722,
+   "name": "fig5.ens3",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.3158
+  },
+  {
+   "got": 0.31317602731628674,
+   "name": "fig5.optimus",
+   "ok": true,
+   "tol": 0.0005,
+   "want": 0.3132
+  },
+  {
+   "got": 0.45554942055906655,
+   "name": "fig6.rho1_polyA",
+   "ok": true,
+   "tol": 1e-06,
+   "want": 0.45554942
+  },
+  {
+   "got": 65.0,
+   "name": "figs1.total_cells",
+   "ok": true,
+   "tol": 0.0,
+   "want": 65.0
+  },
+  {
+   "got": 0.8219,
+   "name": "figs1.v5_polyA",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.8219
+  },
+  {
+   "got": 0.1354,
+   "name": "figs1.v5_mrl",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.1354
+  },
+  {
+   "got": 0.3132,
+   "name": "figs1.optimus_mrl",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.3132
+  },
+  {
+   "got": 0.7343,
+   "name": "figs1.aparent_polyA",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.7343
+  },
+  {
+   "got": 0.1369,
+   "name": "figs1.rnafm_mrl",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.1369
+  },
+  {
+   "got": 0.1205,
+   "name": "figs1.saluki_mprau",
+   "ok": true,
+   "tol": 0.0,
+   "want": 0.1205
+  }
+ ]
+}

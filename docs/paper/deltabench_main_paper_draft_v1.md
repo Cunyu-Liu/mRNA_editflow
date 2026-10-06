@@ -149,7 +149,7 @@ By family, UTR-STCNet lands 4/13 cells in-band (with extreme deviations in both 
 
 ### 3.2 Re-check declaration
 
-An independent re-check script, which does **not** read the archived metric values, recomputes each of the 65 cells directly from `predictions.jsonl` (137,350 rows). All 65/65 cells pass, with a whole-matrix max |Δ| = 0.0 (floating-point-exact), including the extreme STCNet MRL cell (0.814430506981109). This establishes that the reported metrics are exactly reproducible from the archived predictions.
+An independent re-check script, which does **not** read the archived metric values, recomputes each of the 65 cells directly from `predictions.jsonl` (137,350 rows). All 65/65 cells pass, with a whole-matrix max |Δ| = 0.0 (floating-point-exact), including the extreme STCNet MRL cell (0.814430506981109). This establishes that the reported metrics are exactly reproducible from the archived predictions. The same 65 cells are rendered in Figure 1 (five ported families) and, together with the archived reference rows, in Figure S1 (all 14 families).
 
 ### 3.3 Key reading I: strong in-domain, weak cross-library
 
@@ -247,11 +247,11 @@ Error structure explains the decoupling but not the pattern of which cells survi
 
 ### 5.1 Observation
 
-Across 25 external rows × 9 task families, log10(density) versus ρ_delta yields a Pearson r = 0.9388 (p = 3.9e-12, n = 25), with a scatter of 25 points and a frozen fit line. The reading is stratified: the five rows with ρ ≥ 0.68 all lie on polyA (density 126.7, a lone order-of-magnitude outlier), while the twenty rows with density ≤ 6.1 all read ≤ 0.32. The correlation is between-strata, not within.
+Across 25 external rows × 9 task families, log10(density) versus ρ_delta yields a Pearson r = 0.9388 (p = 3.9e-12, n = 25), with a scatter of 25 points and a frozen fit line (Figure 2a). The reading is stratified: the five rows with ρ ≥ 0.68 all lie on polyA (density 126.7, a lone order-of-magnitude outlier), while the twenty rows with density ≤ 6.1 all read ≤ 0.32. The correlation is between-strata, not within.
 
 ### 5.2 Held-out test (honest downgrade)
 
-Under the frozen pre-registered framework (tolerance band |Δρ| ≤ 0.10; PASS gate ≥ 70%; no row-picking, append-only, no band changes), all 65 new cells are predicted without back-feeding. The result is in-band 33/65 = **50.77% < 70% → verdict FAIL**, and the downgrade clause triggers: the "single-factor density regularity" is downgraded to a **task-specific phenomenon**, the phrase "cross-task universal regularity" is thereafter prohibited, and the only upgrade path is append-only plus re-evaluation at the next decision point. The frozen fit parameters are slope 0.3663 per decade and intercept −0.0857. This subsection is an honest negative result and the disciplining anchor of §5. A dual-caliber sensitivity recomputation (training-pair density caliber) raises the in-band rate from 50.77% to 60.00% (+9.2 pp, six flipped cells all on the new rows); the FAIL verdict is robust to the caliber choice.
+Under the frozen pre-registered framework (tolerance band |Δρ| ≤ 0.10; PASS gate ≥ 70%; no row-picking, append-only, no band changes), all 65 new cells are predicted without back-feeding. The result is in-band 33/65 = **50.77% < 70% → verdict FAIL** (Figure 2b), and the downgrade clause triggers: the "single-factor density regularity" is downgraded to a **task-specific phenomenon**, the phrase "cross-task universal regularity" is thereafter prohibited, and the only upgrade path is append-only plus re-evaluation at the next decision point. The frozen fit parameters are slope 0.3663 per decade and intercept −0.0857. This subsection is an honest negative result and the disciplining anchor of §5. A dual-caliber sensitivity recomputation (training-pair density caliber) raises the in-band rate from 50.77% to 60.00% (+9.2 pp, six flipped cells all on the new rows); the FAIL verdict is robust to the caliber choice.
 
 **Table 6. Density–learnability: observation and held-out test.**
 
@@ -269,11 +269,11 @@ Grouping by whether the evaluation endpoint domain lies *inside* the model's tra
 
 ### 5.4 The intervention chain (observation–intervention triangle)
 
-**Synthetic side (falsification).** D16-C synthetically increases density: G1 FAIL (gap 0.8235 ≥ baseline 0.7943); G2 PASS (polyA 0.81338, non-destructive); G4 sc-hit1 = 0 (81/81 support, 0 hits). This falsifies the "increase density and it is fixed" phrasing.
+**Synthetic side (falsification).** D16-C synthetically increases density: G1 FAIL (gap 0.8235 ≥ baseline 0.7943; Figure 5, synthetic panel); G2 PASS (polyA 0.81338, non-destructive); G4 sc-hit1 = 0 (81/81 support, 0 hits). This falsifies the "increase density and it is fixed" phrasing.
 
-**Parameter side (half-effect).** ERK v2 — the parameter-side upper-bound row, a **1,177-parameter** model — supplies an explicit first-order prior: the gap halves from 0.7943 to 0.3815, and validation reaches 0.2015 — the historical MRL best, sitting at the closed-form first-order + context bound E7 = 0.2069 (a bound-anchored result: the gain is explained by a first-order prior, i.e. source-residual shrinkage rather than new discriminative signal); G4 = 0 (231/231 support, exact match 1); G3 not triggered (partial path). This bound-anchored reading, together with the E7 anchor (0.207) and the three-generation G4 zeros, leaves **no claim of remaining model-side headroom**.
+**Parameter side (half-effect).** ERK v2 — the parameter-side upper-bound row, a **1,177-parameter** model, Figure 5 parameter panel — supplies an explicit first-order prior: the gap halves from 0.7943 to 0.3815, and validation reaches 0.2015 — the historical MRL best, sitting at the closed-form first-order + context bound E7 = 0.2069 (a bound-anchored result: the gain is explained by a first-order prior, i.e. source-residual shrinkage rather than new discriminative signal); G4 = 0 (231/231 support, exact match 1); G3 not triggered (partial path). This bound-anchored reading, together with the E7 anchor (0.207) and the three-generation G4 zeros, leaves **no claim of remaining model-side headroom**.
 
-**Real-data side (fully effective).** The W ladder is 0.1987 → 0.2470 (LoRA) → 0.2555 (full-FT, 2 epochs) → 0.3158 (3-seed ensemble) ≈ frozen-Optimus 0.3132. The endpoint is a statistical tie, Δ+0.0027 CI [−0.045, +0.048], crossing zero; this is a statistical tie with a point estimate ahead, and — given the 730-record power — we do not claim a significant surpass (we do not write "no difference").
+**Real-data side (fully effective).** The W ladder is 0.1987 → 0.2470 (LoRA) → 0.2555 (full-FT, 2 epochs) → 0.3158 (3-seed ensemble) ≈ frozen-Optimus 0.3132 (Figure 5, real-data panel). The endpoint is a statistical tie, Δ+0.0027 CI [−0.045, +0.048], crossing zero; this is a statistical tie with a point estimate ahead, and — given the 730-record power — we do not claim a significant surpass (we do not write "no difference").
 
 **Triangle.** The causal carrier of the density correlation is the geometric coverage of real supervision data (H-geometry); H-density is excluded by the synthetic falsification; H-selection is retained as a boundary condition (polyA mechanism locality).
 
@@ -326,11 +326,11 @@ We replicate E7: a position-block × 64-context design matrix plus a per-source 
 
 ### 6.2 Per-task results
 
-**polyA.** First-order additive table reads 0.4555 = 55.4% of V5's 0.8219. Comparison rows: the externally supervised band 0.71–0.75; APARENT 0.7343; V5 0.8219; ICC 0.90.
+**polyA.** First-order additive table reads 0.4555 = 55.4% of V5's 0.8219 (Figure 3, polyA track; Figure 6, polyA panel). Comparison rows: the externally supervised band 0.71–0.75; APARENT 0.7343; V5 0.8219; ICC 0.90.
 
-**MPRAU.** First-order reads 0.0825 (pair-mean; record-level 0.0630) = 80.5% of V5's 0.1025. The external band is ≈ 0.016 with a CI crossing zero (0.0164); Saluki weak-control 0.1205; ICC 0.683.
+**MPRAU.** First-order reads 0.0825 (pair-mean; record-level 0.0630) = 80.5% of V5's 0.1025 (Figure 3, MPRAU track; Figure 6, MPRAU panel). The external band is ≈ 0.016 with a CI crossing zero (0.0164); Saluki weak-control 0.1205; ICC 0.683.
 
-**TE.** First-order reads 0.0458 = 79.1% of V5's 0.0579; the external band is 0.0009–0.0113 (0.0061).
+**TE.** First-order reads 0.0458 = 79.1% of V5's 0.0579 (Figure 3, TE track; Figure 6, TE panel); the external band is 0.0009–0.0113 (0.0061).
 
 **Table 8. First-order decomposition by task.**
 
@@ -611,12 +611,12 @@ The Authors
 
 - [x] Manuscript (this draft, v2.2 post-unblinding; abstract ~250 words)
 - [x] Title (T1′ carried; T2′/T3′ alternates documented above — PI final call)
-- [x] Four main figures as vector PDFs (unified style; value-locked renders)
+- [x] Six main figures + FigureS1 as vector PDFs (consolidated producer make_biorxiv_figures_v2.py; 26 value locks, all OK; FigureS1 = 14-family supplement view)
 - [x] Data availability + Code availability statements (payload-not-redistributed route)
 - [x] Full source-verified reference list (40 entries) with in-text wiring
 - [ ] Author list / affiliations / corresponding email — **USER-SIDE**
 - [ ] Supplement file assembly (prereg list §10.4 + reproduction entry points §10.5 as standalone PDF) — ready to export
-- [ ] final figure upload (Fig1 heatmap / Fig2 density v1+v2 / Fig3 first-order / Fig4 ceiling) from server paths
+- [x] final figure upload set: experiments/analysis_biorxiv_figure_pack_v2/ (Fig1/2a/2b/3/4/5/6 + FigureS1, all .png+.pdf, server-rendered and value-locked)
 
 **Evaluated models.**
 
@@ -653,15 +653,23 @@ The Authors
 
 ## Figures
 
-**Figure 1. DeltaBench frozen-Δ matrix: five newly ported families × 13 task cells** (task-macro Spearman, VALIDATION only; at rendering time TEST reads were 0 — the split was subsequently read once, per the frozen unblinding prereg, and the matrix itself was not recomputed). Every cell is the archived value from `benchmark_v2/leaderboard_matrix_v2/matrix_v2_results.json`; the append-only rows (M1/M6/S1) were frozen before any model was scored on them; the dashed separator marks the new-row block. Rendered artifact: `experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_matrix_heatmap_v1.{png,pdf}` (producer `make_deltabench_figure1_matrix_v1.py`, 65/65 cells; manifest archived). Headline reading: strong in-domain (UTR-STCNet MRL 0.814) versus weak cross-library (same family on M1 0.067), and the new-row block collectively near zero.
+The submission carries six main figures plus one supplement figure, all re-rendered from the frozen artifacts by the consolidated producer `scripts/route_a_v3/make_biorxiv_figures_v2.py` (output `experiments/analysis_biorxiv_figure_pack_v2/`, manifest `figure_pack_v2_manifest.json` with 26 value-lock assertions, all passing at render time; unified style: DejaVu Sans 9, 300 dpi, vector PDF, fonttype 42, no top/right spines). Every plotted number is either read live from a frozen JSON (matrix, density, cells, first-order, bottomline, W-ladder, ERK, D16-C, 3-seed-ensemble files) or declared verbatim from the same frozen archives the paper text cites; nothing is recomputed.
 
-**Figure 2. Density–learnability observation and its held-out test** — 25 external frozen-Δ rows, r = 0.9388 (p = 3.9e-12), with the held-out cell-level test (33/65 = 50.77% in-band → FAIL, honest downgrade per the pre-registered clause). Archived artifacts: `experiments/analysis_delta_vs_density_20260915/delta_vs_density_scatter.{png,pdf}` and `experiments/analysis_delta_vs_density_v2/delta_vs_density_v2_scatter.{png,pdf}`.
+**Figure 1. DeltaBench frozen-Δ matrix: five newly ported families × 13 task cells** (task-macro Spearman, VALIDATION only; TEST reads = 0 at matrix build, the split subsequently read exactly once per the frozen unblinding prereg and the matrix not recomputed). Every cell is the archived value from `benchmark_v2/leaderboard_matrix_v2/matrix_v2_results.json` (65/65 asserted); the separator marks the append-only new-row block (M1/M6/S1, frozen before any model was scored on them). Headline reading: strong in-domain (UTR-STCNet MRL 0.814) versus weak cross-library (same family on M1 0.067), new rows collectively near zero. Heatmap with in-cell values and soft diverging colormap.
 
-**Figure 3. First-order decomposition vs external rows vs ceiling, by task** — polyA (ρ₁ = 0.4555) shows the largest above-first-order structure headroom; MPRAU and TE are close to their first-order readings. Archived artifact: `experiments/analysis_first_order_decomposition_v1/first_order_vs_external_vs_ceiling.{png,pdf}`.
+**Figure 2. Density–learnability observation (panel a) and its held-out test (panel b).** (a) 25 external frozen-Δ rows against candidates-per-source (log x): r = 0.9388 (p = 3.9e-12); polyA (density 126.7) is the only high-density task — the observation. (b) The pre-registered held-out cell-level check: 65 matrix cells, predicted ρ (single-factor fit) vs observed ρ with a ±0.10 band; 33/65 = 50.77% in-band → **FAIL** against the 70% gate, the honest downgrade per the frozen clause. Source JSONs: `analysis_delta_vs_density_20260915/delta_vs_density_data.json` (25 rows asserted) and `analysis_delta_vs_density_v2/delta_vs_density_v2_cells.json` (65 cells, in-band count 33 asserted); the four direct labels sit at the true cell coordinates.
 
-**Figure 4. Ceiling-normalized learnability map (label-ceiling completion by task)** — best in-house row vs the label ICC ceiling (VALIDATION): polyA 91.3% (0.8219 / 0.90) is the only high-completion task; MRL 38.8% (0.3217 / 0.83); REF/ALT 30.4% (0.0639 / 0.21); MPRAU 19.8% (0.1351 / 0.683); PLUMAGE-RNA 13.7% (0.0500 / 0.364); TE 9.9% (0.0579 / 0.586); HALF_LIFE and PLUMAGE-TE carry **no normalization** (ICC ≈ 0 or negative). Archived artifact: `experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_ceiling_completion_v1.{png,pdf}` (producer `make_deltabench_figure4_ceiling_v1.py`, which asserts every plotted value against `bottomline_adjudication_v1.json` and the label-ICC table at render time).
+**Figure 3. First-order decomposition vs external band vs ours vs ceiling, by task** (lollipop form; polyA / MPRAU / TE). ρ₁ values are read from `analysis_first_order_decomposition_v1/results_first_order.json` and asserted at render time (polyA 0.45554942, MPRAU 0.08253518, TE 0.04577197); the external unsupervised band, our best in-house row, and the ICC label ceiling complete each track; the right margin reports ρ₁ as a share of ours (polyA 55%, MPRAU 80%, TE 79%). polyA shows the largest above-first-order structural headroom; MPRAU and TE sit close to their first-order readings.
 
-- Submission-stage figure work: unified styling, vector-only panels, alt-text, and per-figure manifests (the existing products above already carry their producer scripts and data manifests).
+**Figure 4. Ceiling-normalized learnability map (dumbbell: best external → ours → ICC ceiling, per task).** Our rows are asserted against `analysis_task8_bottomline_20260909/bottomline_adjudication_v1.json` (polyA 0.8219, MRL 0.3217 exact); external anchors are the paper-§8 frozen values (frozen-Optimus 0.3132, APARENT 0.7343, Saluki 0.1205, RNA-FM 0.2958 / 0.1043, LLR-family 0.0). Completion: polyA 91.3% (0.8219 / 0.90) is the only high-completion task; MRL 38.8% (0.3217 / 0.83); REF/ALT 30.4% (0.0639 / 0.21); MPRAU 19.8% (0.1351 / 0.683); PLUMAGE-RNA 13.7% (0.0500 / 0.364); TE 9.9% (0.0579 / 0.586); HALF_LIFE and PLUMAGE-TE carry **no normalization** (ICC ≈ 0 or negative).
+
+**Figure 5. Intervention triangle: synthetic / parameter / real-data arms (MRL Δ).** Ten values, each locked to a named frozen artifact at render time. Synthetic panel — V5 gap 0.7943 and D16-C gap 0.8235 (`xeditcritic_d16c/probe_mrl_v1_gpu5/gap_backtest_d16c.json`; FALSIFIED). Parameter panel — ERK v2 val 0.2015 (`xeditcritic_erk_v2/erk_train_seed2026091901/erk_adjudication_v1.json`) vs the E7 closed-form first-order bound 0.2069 (§6.1 archive; BOUND-ANCHORED). Real-data panel — the W ladder W0 0.1987 → LoRA 0.2470 (`280k_prefinetune_20260903/frozen_delta_results.json`) → full-FT 2 ep 0.2555 (`280k_fullft_ablation_20260903/frozen_delta_results.json`) → 3-seed ensemble 0.3158 ≈ frozen-Optimus 0.3132 (`analysis_fullft_v2_adjudication_20260903/ensemble_3seed_vs_optimus.json`; statistical tie, Δ CI crossing zero; EFFECTIVE). The panel encodes the full §7 ladder exactly as the text states it, with the separate LoRA and full-FT rungs.
+
+**Figure 6. Where the learnable signal lives: first-order table vs structural component (four panels, ceiling-normalized).** For polyA / MPRAU / TE, ρ₁ is the frozen first-order reading (asserted at render time); for MRL, ρ₁ is the §6.1 E7 archive bound 0.2069. Each panel decomposes the ICC ceiling into the first-order share, the structural share (ours − ρ₁), and the label-noise room; per-task first-order share of best: polyA 55%, MPRAU 80%, TE 79%, MRL 64%.
+
+**Figure S1 (supplement). DeltaBench across all 14 model families.** Top block: the frozen 5 × 13 matrix (65/65 re-checked cells, same values as Figure 1). Bottom block: the 9 existing reference families + V5 (ours), cells drawn where archived `ALREADY_DONE`/LOSO/bottomline readings exist (33 cells); grey hatched cells = no reading in this caliber (structured NA — paradigm mismatch or not measured), not zero. This is the full-family view behind the abstract's "51 of 65 cells read |ρ| < 0.1".
+
+- Submission-stage figure work: unified styling, vector-only panels, alt-text, and the consolidated producer manifest (26 value locks, all OK).
 
 ---
 

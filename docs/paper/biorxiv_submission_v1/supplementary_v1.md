@@ -10,12 +10,9 @@ Row-construction scripts (`build_{m1,m6,s1}_*_v1.py`, with construction seeds ar
 
 ## S3. Figure provenance
 
-All four main figures are rendered from producer scripts with archived manifests and value locks:
-- Figure 1: `make_deltabench_figure1_matrix_v1.py` (65/65 cells asserted vs matrix_v2_results.json)
-- Figure 2a/2b: `analysis_delta_vs_density_v1.py` / `run_delta_vs_density_v2.py` (r=0.9388 recomputed=archived; verdict FAIL 33/65 identical)
-- Figure 3: `make_first_order_decomposition_figures_v1.py` (values from frozen results_first_order.json)
-- Figure 4: `make_deltabench_ceiling_v1.py` (frozen-vs-figure |Δ|<5e-5 assertions)
-Unified style: `figure_style_v1.py` (DejaVu Sans base 9, dpi 300, fonttype 42).
+The submission figure set (six main + Figure S1) is rendered by the consolidated read-only producer `scripts/route_a_v3/make_biorxiv_figures_v2.py` (2026-10-07), output `experiments/analysis_biorxiv_figure_pack_v2/` with manifest `figure_pack_v2_manifest.json` — **26 value-lock assertions, all passing at render time**. Every plotted number is read live from the frozen JSONs (matrix / density / cells / first-order / bottomline / W-ladder / ERK / D16-C / 3-seed-ensemble) or declared verbatim from the same frozen archives the paper text cites; nothing is recomputed. Earlier per-figure producers remain archived: Figure 1 `make_deltabench_figure1_matrix_v1.py` (65/65 cells asserted vs matrix_v2_results.json); Figure 2a/2b `analysis_delta_vs_density_v1.py` / `run_delta_vs_density_v2.py` (r = 0.9388 recomputed = archived; verdict FAIL 33/65 identical); Figure 3 `make_first_order_decomposition_figures_v1.py`; Figure 4 `make_deltabench_ceiling_v1.py` (frozen-vs-figure |Δ| < 5e-5 assertions). Unified style: `figure_style_v1.py` (DejaVu Sans base 9, dpi 300, fonttype 42).
+
+**Figure S1 (14-family supplement).** Top block = the frozen 5 × 13 matrix (65/65 re-checked); bottom block = 9 existing reference families + V5 (ours), 33 archived `ALREADY_DONE`/LOSO/bottomline cells; grey hatched = structured NA (no reading in this caliber), not zero. Rendered by the same consolidated producer with the same value locks.
 
 ## S4. Gate P unblinding receipt summary
 
