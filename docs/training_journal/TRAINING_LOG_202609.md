@@ -2891,3 +2891,10 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **v5 修复**：① 4 个叙事锚点（STCNet MRL/M1、LAMAR RNA、HydraRNA polyA）**全部从本图自己的 cells JSON 动态取坐标与数值**（find() + 真坐标 + 真值），标签不再可能错位；② 6 行图例**整体外移到 axes 右侧外**（与 A 图同一设计语言）——构造性零遮挡，不再依赖四角探测。
 - 锚点真值复核输出：STCNet MRL (+0.167, +0.814) / STCNet M1 (−0.085, +0.067) / LAMAR RNA (−0.086, −0.373) / HydraRNA polyA (+0.685, −0.372)。
 - v4 vs v5 对照 sheet + v5 大图已打开供用户复核。
+
+## 批次 147（2026-10-07 · 图 round-4：B 图按用户设计定稿 v6）
+
+- **用户设计决策**：4 个叙事锚点「不放点上」——信息并入图例区；图例整体放 y 轴右侧空白。
+- **v6 实现**：① 删除全部跟点标注；② 图例（5 族 marker + hollow=出带）外置 axes 右侧偏上；③ 其下方同一空白区加「key cells」小注（4 行：族名+格位+obs 值，数值仍从 cells JSON 动态取）；④ 图内零文字装饰，数据区完全干净。
+- key cells 注内容（动态取值打印核对）：UTR-STCNet MRL +0.814 / STCNet M1 (cross-library) +0.067 / LAMAR PLUMAGE-RNA −0.373 / HydraRNA polyA −0.372。
+- v5 vs v6 对照 sheet + v6 大图已打开。
