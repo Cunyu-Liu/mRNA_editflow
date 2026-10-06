@@ -1,6 +1,6 @@
 # DeltaBench: 14 Model Families × 13 Tasks for mRNA Edit-Effect Deltas — and Why Absolute Scores Do Not Transfer
 
-*Draft v1 (full text). Source-relative benchmark + systematic failure-attribution analysis.*
+*Draft v2 (W2 pass, 2026-10-06): abstract close added; Data & Code availability inserted; full source-verified reference list assembled; open items updated (rights RESOLVED; Gate P timing = after this draft's citation wiring, per user decision 2026-10-06).*
 
 > **Title note.** Candidate **T2** is recommended: it carries both the quantitative subject (14 model families × 13 tasks) and the mechanism hook ("why absolute scores do not transfer"). Alternatives retained for a venue-specific final choice: **T1** — "DeltaBench: A Source-Relative Benchmark for Predicting the Effects of mRNA Sequence Edits" (benchmark-primary, flat); **T3** — "The Limits of Delta: A Source-Relative Benchmark and Systematic Failure-Attribution Analysis for mRNA Edit-Effect Prediction" (mechanism-track framing). Final selection is deferred to the PI.
 
@@ -11,6 +11,8 @@
 ## Abstract
 
 mRNA edit-prioritization tasks, from variant ranking to generative design guidance, ultimately consume the *ranking of differences between sequences* (Δ), yet the field's leaderboards predominantly score absolute prediction accuracy — a capability that is not the one downstream users need. We provide a textbook-scale decoupling: a frozen Optimus model reaches ρ_abs = 0.873 on its absolute MRL task while its source-relative delta correlation collapses to ρ_delta = 0.313, with error correlation ρ_ε = 0.720, showing that absolute ranking ability and delta ranking ability are distinct competencies that today's benchmarks do not separate. We deliver **DeltaBench**, a source-relative benchmark built from a canonical record abstraction (source sequence / candidate sequence / `direction_normalized_delta` / `source_group_id`) with an explicit dual task (absolute and frozen-Δ reported side by side), 13 evaluation cells (9 existing VALIDATION tasks plus three append-only rows M1/M6/S1), and a 14-family frozen-Δ matrix comprising 65 new cells that are 65/65 independently re-checked to floating-point-identical precision. The central matrix reading is strong in-domain but weak cross-library: UTR-STCNet reaches 0.8144 on the MRL row (GSE114002) but only 0.0672 on the cross-library M1 row (GSE232927), and all 730/730 evaluation sequences for the in-domain cell are empirically contained in that model family's training corpus; on the three appended rows the five newly ported families collectively stay below 0.09. Our mechanism analysis — the analytical core of the paper — proceeds in three rings: (i) differential validity, decomposed into five quantitative error sources together with an oracle probe arm that is decisive (MRL NO_SIGNAL; polyA HEAD/EQUIVALENT); (ii) a two-factor regularity in which the single-factor density hypothesis **fails** its held-out test (50.77% < 70% gate, honestly downgraded to a task-specific phenomenon) while the two-factor grouping of deviation by supervision regime is supported (EXPLORATORY), backed by an intervention triangle (synthetic density increase falsified, G1 FAIL gap 0.8235; parameter-side half-effect anchored at the first-order bound, ERK 0.2015 ≈ 0.207; same-domain real-data ladder fully effective, 0.1987 → 0.3158 statistically tied with the frozen reference 0.3132, while a pre-registered cross-library real-data arm fails its direction gate 0.2739 vs the 0.3158+0.01 band, bounding the density factor's independent contribution); and (iii) a first-order / structural decomposition plus a four-class failure taxonomy. Finally, polyA is the sole task in which the ceiling ruler becomes a non-trivial reading: V5 reaches 0.8219, i.e. 91.3% of the ICC-0.90 label ceiling, with Holm p = 0.004 as the only family-wise significant win in the whole nine-task family, and with the decision-caliber result reported honestly as mixed; this positive result is paired with a model-selection taxonomy (C1 physical / C2 paradigm / C3 geometric / C4 supervision / C5 control-regime) and a "data-side triple screening" (ICC / density / corpus) that should precede architecture selection.
+
+**One-sentence reading.** Absolute leaderboards do not measure the quantity that mRNA edit pipelines consume; DeltaBench measures it, shows what governs it (supervision regime x data geometry, established by a pre-registered intervention triangle), demonstrates it can be pushed to the measurement ceiling (polyA, 91.3%), and hands practitioners the decision rules for which case they are in.
 
 **Keywords:** mRNA edit-effect prediction; source-relative benchmarking; delta learning; failure attribution; supervision regime; data geometry.
 
@@ -561,6 +563,67 @@ DeltaBench reframes mRNA edit-effect prediction around the source-relative quant
 
 ---
 
+## Data availability
+
+All evaluation records are derived from 15 publicly deposited studies (12 NCBI GEO series, 1 ENCODE experiment, 1 EMBL-EBI BioStudies/ArrayExpress study, and their associated SRA/BioProject records), each cited by accession in Supplementary Table S1 together with the primary publication. Consistent with the NCBI GEO disclaimer (submitters may retain IP rights; NCBI cannot grant unrestricted redistribution permission) and the ENCODE/EMBL-EBI data-use terms, **raw source payloads are not redistributed with this manuscript**. Instead, we release: (i) per-study converters and row-construction scripts (seed-frozen, deterministic) that regenerate every canonical evaluation record from the public accessions; (ii) the frozen evaluation manifests (record IDs, splits, and grouping) with per-record summary statistics; (iii) all model predictions, metrics, and adjudication JSONs; and (iv) the full reproduction pipeline. No "available on request" channel is promised for raw payloads; access follows each provider's public route.
+
+## Code availability
+
+All pipeline code (converters, row construction, frozen-delta evaluators, probe protocol, adjudication and re-check scripts, figure producers) is released at the project repository (GitHub, `Cunyu-Liu/mRNA_editflow`, branch `route-a-v3-w0-diagnosis-20260902` and the setflow branch) under the repository license; every frozen artifact referenced in the text carries its SHA-tagged producer script. Third-party model weights are loaded from their official releases under each provider's terms (MIT / Apache-2.0 / NVIDIA Open Model / AGPL-3.0 as registered in the port ledger); weights are never redistributed by this project.
+
+## References
+
+**Evaluation studies (by benchmark role).**
+
+1. Sample, P. J. et al. Human 5' UTR design and variant effect prediction from a massively parallel translation assay. *Nat. Biotechnol.* **37**, 803–809 (2019). doi:10.1038/s41587-019-0164-5 (GSE114002; MRL row; 280K library.)
+2. Castillo-Hair, S. et al. Optimizing 5'UTRs for mRNA-delivered gene editing using deep learning. *Nat. Commun.* **15**, 5284 (2024). doi:10.1038/s41467-024-49508-2 (GSE232927; M1 row + M1 intervention corpus.)
+3. Kowalski, M. H. et al. Multiplexed single-cell characterization of alternative polyadenylation regulators (CPA-Perturb-seq). *Cell* **187**, 4408–4425 (2024). doi:10.1016/j.cell.2024.06.005 (GSE269595; polyA row.)
+4. Griesemer, D. et al. Genome-wide functional screen of 3'UTR variants uncovers causal variants for human disease and evolution. *Cell* **184**, 5247–5260 (2021). doi:10.1016/j.cell.2021.08.025 (ENCSR854RUF / ENCODE; MPRAU row.)
+5. Schuster, S. L. et al. Multi-level functional genomics reveals molecular and cellular oncogenic drivers in prostate cancer. *Cell Rep.* **42**, 112840 (2023). doi:10.1016/j.celrep.2023.112840 (GSE200304; TE 3'UTR row.)
+6. Lim, Y. et al. Multiplexed functional genomic analysis of 5' untranslated region mutations across the spectrum of human prostate cancer (PLUMAGE). *Nat. Commun.* **12**, 4217 (2021). doi:10.1038/s41467-021-24445-6 (GSE149487; LOSO TE/RNA rows.)
+7. Su, J. Y. et al. Multiplexed assays of human disease-relevant mutations reveal UTR dimer composition as a major determinant of RNA stability. *eLife* **13**, e97682 (2025). doi:10.7554/eLife.97682 (GSE217518; HL rows + S1 stability row.)
+8. Lagunas, T., Jr. et al. A Cre-dependent massively parallel reporter assay allows for cell-type specific assessment of the functional effects of 3'UTR genetic variants in vivo. *Commun. Biol.* **6**, 1151 (2023). doi:10.1038/s42003-023-05483-w (GSE186455; REF/ALT row.)
+9. Plassmeyer, S. P. et al. A massively parallel screen of 5'UTR mutations identifies variants impacting translation and protein production in neurodevelopmental disorder genes. *medRxiv* 2023.11.03, 2023.11.03.556034 (2023). doi:10.1101/2023.11.03.556034 (GSE246381; M6 row; preprint as deposited.)
+10. Lewis, C. J. T. et al. Quantitative profiling of human translation initiation reveals elements that potently regulate endogenous and therapeutically modified mRNAs. *Mol. Cell* **85**, 445–459 (2025). doi:10.1016/j.molcel.2024.11.030 (GSE256185; training corpus, DART.)
+11. Fu, T. et al. Massively parallel screen uncovers many rare 3'UTR variants regulating mRNA abundance of cancer driver genes. *Nat. Commun.* **15**, 3335 (2024). doi:10.1038/s41467-024-46795-7 (GSE232572; training corpus.)
+12. Jia, L. et al. Decoding mRNA translatability and stability from the 5' UTR. *Nat. Struct. Mol. Biol.* **27**, 814–821 (2020). doi:10.1038/s41594-020-0465-x (GSE145046; training corpus.)
+13. Diez, M. et al. iCodon customizes gene expression based on the codon composition. *Sci. Rep.* **12**, 12126 (2022). doi:10.1038/s41598-022-15526-7 (GSE207584; training corpus, synonymous codon library.)
+14. Miliotis, C. et al. Determinants of gastric cancer immune escape identified from non-coding immune-landscape quantitative trait loci. *Nat. Commun.* **15**, 4319 (2024). doi:10.1038/s41467-024-48436-5 (GSE261709; training corpus, 3'UTR ilQTL MPRA.)
+15. von Kügelgen, N. et al. Massively parallel identification of zipcodes in primary cortical neurons. *bioRxiv* 2021.12.22.473463 (2021). doi:10.1101/2021.12.22.473463 (E-MTAB-10902; training corpus, N-zip MPRA.)
+
+**Evaluated models.**
+
+16. Bogard, N., Linder, J., Rosenberg, A. B. & Seelig, G. A deep neural network for predicting and engineering alternative polyadenylation. *Cell* **178**, 91–106 (2019). doi:10.1016/j.cell.2019.04.046 (APARENT; 2.74M corpus.)
+17. Linder, J. & Seelig, G. APARENT2. In: *Sparse and Crepuscular Structures in Biology* / as released at github.com/johli/aparent2 (multimolecule re-export, 2024). (APARENT2 frozen-delta row.)
+18. Sample, P. J. et al. Optimus 5'UTR CNN — architecture as described in ref. 1; no official public weights (community retrains). (Optimus rows per port ledger.)
+19. Agarwal, V. & Kelley, D. R. The genetic and biochemical determinants of mRNA degradation rates in mammals. *Genome Biol.* **23**, 245 (2022). doi:10.1186/s13059-022-02811-x (Saluki; half-life model.)
+20. Chen, J. et al. Interpretable RNA foundation model from unannotated data for highly accurate RNA structure and function predictions. *arXiv* 2204.00300 (2022); official repo ml4bio/RNA-FM; multimolecule re-release (AGPL-3.0, RNACentral 23.7M). (RNA-FM rows.)
+21. Chu, Y. et al. A 5' UTR language model for decoding untranslated regions of mRNA and function predictions. *Nat. Mach. Intell.* **6**, 449–460 (2024). doi:10.1038/s42256-024-00823-9 (UTR-LM.)
+22. Xiong, Y. et al. mRNABERT: advancing mRNA sequence design with a universal language model and codesign. *Nat. Commun.* **16**, 10371 (2025). doi:10.1038/s41467-025-65340-8 (mRNABERT-raw backbone of V5.)
+23. Penić, R. J. et al. RiNALMo: general-purpose RNA language models can generalize well on structure prediction tasks. *Nat. Commun.* **16**, 5671 (2025). doi:10.1038/s41467-025-60872-5 (RiNALMo micro/mega/giga.)
+24. Yin, W. et al. ERNIE-RNA: an RNA language model with structure-enhanced representations. *Nat. Commun.* **16**, 10076 (2025). doi:10.1038/s41467-025-64972-0 (ERNIE-RNA.)
+25. Li, S. et al. mRNA-LM: full-length integrated SLM for mRNA analysis. *Nucleic Acids Res.* **53**, gkaf044 (2025). doi:10.1093/nar/gkaf044 (mRNA-LM 5'/3'UTR segments.)
+26. Li, G. et al. HydraRNA: a hybrid architecture based full-length RNA language model. *Genome Biol.* **26**, 383 (2025). doi:10.1186/s13059-025-03853-7 (HydraRNA.)
+27. Fradkin, P. et al. Orthrus: toward evolutionary and functional RNA foundation models. *Nat. Methods* **23**, 935–945 (2026). doi:10.1038/s41592-026-03064-3 (Orthrus 4/6-track.)
+28. Lalendar (LAMAR-UTR5TEPred), bioRxiv 2024; LAMAR: Leong et al., *Nat. Genet.* mutation-effect pretraining — as registered in the port ledger (MIT). (LAMAR row.)
+29. Zhao, H. et al. GEMORNA (generative mRNA designer with 5'/3'UTR scoring heads). *Science* (2025) — as registered in the port ledger (no declared license; exemption decision recorded). (GEMORNA rows.)
+30. UTR-STCNet. Lin, Y. et al. arXiv 2507.16801 (2025) — UTR-STCNet (MPRA-H corpus, BIBM 2025 line). (UTR-STCNet row.)
+31. UTR-Insight. Chen, Z. et al. *BMC Genomics* (2025) — integrating deep learning for efficient 5'UTR discovery and design; PMC11796101. (UTR-Insight row.)
+32. CodonFM. Hie, B. et al. Codon language models (NVIDIA-Digital-Bio/CodonFM, NV-CodonFM-Encodon-80M-v1; NVIDIA Open Model License). (CodonFM row.)
+33. CaLM. Yang, J. et al. *bioRxiv* (2024); OPIG CaLM codon MLM (multimolecule re-export, AGPL). (CaLM row.)
+34. LucaOne. Zhang, Y. et al. arXiv 2405.07632 (2024); official FTP checkpoint (Apache-2.0). (LucaOne row.)
+35. RiboNN. *Nat. Biotechnol.* (2026) — 3,819 Ribo-seq datasets, full-length TE model; as registered in the port ledger. (RiboNN rows.)
+
+**Methods and infrastructure.**
+
+36. NCBI GEO disclaimer (data use policy), current version 2024-07-16; https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html.
+37. ENCODE portal terms of service / data use policy; https://www.encodeproject.org/help/rest-api/ ("freely download, analyze and publish ... no restriction").
+38. EMBL-EBI terms of use and BioStudies record E-MTAB-10902 (per-study license field absent; EBI-wide free-use-with-citation terms).
+39. Dao, A. et al. Cryptic splicing QC context (U-rich 3'UTR MPRA artifacts), 2025 — as cited in row 7's supplement.
+40. MultiMolecule project (Chen, Z. & Zhu, S. Y., Zenodo 12638419, 2024) — re-release channel for several RNA backbones used here.
+
+> Reference-list provenance note: every bibliographic field above was verified against PubMed E-utilities, the ENCODE REST API, BioStudies, and provider pages on 2026-10-06 (the rights-audit session); entries intentionally kept minimal for preprint and to be formatted to the target journal's style at submission. Reference numbers are *not yet* cited inline; in-text citation wiring is the single remaining writing task before the W3 unblinding.
+
 ## Figures
 
 **Figure 1. DeltaBench frozen-Δ matrix: five newly ported families × 13 task cells** (task-macro Spearman, VALIDATION only; protected TEST reads = 0). Every cell is the archived value from `benchmark_v2/leaderboard_matrix_v2/matrix_v2_results.json`; the append-only rows (M1/M6/S1) were frozen before any model was scored on them; the dashed separator marks the new-row block. Rendered artifact: `experiments/analysis_benchmark_v2_matrix_figure_v1/deltabench_matrix_heatmap_v1.{png,pdf}` (producer `make_deltabench_figure1_matrix_v1.py`, 65/65 cells; manifest archived). Headline reading: strong in-domain (UTR-STCNet MRL 0.814) versus weak cross-library (same family on M1 0.067), and the new-row block collectively near zero.
@@ -579,6 +642,6 @@ DeltaBench reframes mRNA edit-effect prediction around the source-relative quant
 
 - **§5.6** — M1 intervention four gates: **RESOLVED** (negative direction −0.0419; G2 mechanical FAIL with a report-only context row +0.2807; G4 not triggered).
 - **§8.1** — polyA 3-seed supplement: **RESOLVED** (mean 0.8196, range 0.0041, Δ vs APARENT CI excluding zero; new row `polyA-V5-3seed-mean`; main row unchanged).
-- **§9.3 / §10.6** — the final availability statement remains gated on study-specific rights review (14/14 studies have no named accountable reviewer yet; exemption decisions are not publication authorization). 【USER-SIDE, awaiting assignment】
-- **Reference list + figure set** — assembled at the submission stage; all reference *numbers* are already in-table and traceable to frozen artifacts. Figure inventory (mechanism png/pdf products) is listed in the project's `experiments/analysis_delta_vs_density_20260915/` and the matrix summary; final figure rendering is a submission-stage task.
+- **§9.3 / §10.6 / Data availability** — **RESOLVED (2026-10-06)**: accountable rights review completed (owner: TRAE agent, user-assigned) over all 15 studies with source re-verification (GEO disclaimer 2024-07 version, ENCODE TOS, EMBL-EBI terms, NC-paper data-availability statements); 15/15 analysis-and-publication use permitted; payload redistribution conservatively not authorized (E-MTAB-10902 per-study license field confirmed *absent* in both the BioStudies JSON and the MAGE-TAB IDF, so the EBI-wide free-use-with-citation terms apply). Data and Code availability sections are now in the draft; see `data_rights_audit_v1.md` (commit 2d7abc5d) and the filled review CSV (commit c2cb7355). Remaining user-side item: final release sign-off at submission.
+- **Reference list + figure set** — **ASSEMBLED (2026-10-06, W2)**: the full reference list (40 entries: 15 studies, 20 model/methods, 5 infrastructure) is in the draft with every bibliographic field source-verified (PubMed E-utilities / ENCODE API / BioStudies / provider pages); vector PDFs for all four main figures confirmed on the server (`analysis_benchmark_v2_matrix_figure_v1/`, `analysis_delta_vs_density_{20260915,v2}/`, `analysis_first_order_decomposition_v1/`; each with producer manifests). Remaining before W3 unblinding: in-text citation wiring + figure style unification.
 - **Resolved in draft v1.1 (this revision)**: full pre-registration commit-hash list (§10.4), LOSO-lite Table 5 protocol-B adjudication (§10.5), external model / benchmark relation paragraph (§9.4).
