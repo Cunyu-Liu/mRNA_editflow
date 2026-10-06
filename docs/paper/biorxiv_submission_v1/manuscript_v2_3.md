@@ -205,7 +205,7 @@ Under a bounded linear read-out, Δŷ = w·Δh, and hence Δŷ − Δy = ε_c �
 
 **(2) Overall vs within-source divergence.** For polyA the overall caliber is 0.71–0.75 while the within-source caliber is only 0.19–0.23 (UTR-LM 0.7490 → 0.1934; RNA-FM 0.7114 → 0.2335 over 78 groups). The overall figure is inflated by between-source composition, whereas edit prioritization needs the within-source caliber.
 
-**(3) "Broad and shallow" probe geometry.** Cosine alignment is 0.79/0.81 while RNA-FM's participation ratio is 258.7, top-10 share is 0.0955, and the per-dimension gain is 0.0189 — the representation is broad but shallow (SNR proxy under an isotropy assumption; the 16 rows of unarchived probe weights are registered but not enumerated).
+**(3) "Broad and shallow" probe geometry.** Cosine alignment is 0.79/0.81 (0.8102) while RNA-FM's participation ratio is 258.7, top-10 share is 0.0955, and the per-dimension gain is 0.0189 — the representation is broad but shallow (SNR proxy under an isotropy assumption; the 16 rows of unarchived probe weights are registered but not enumerated).
 
 **(4) Oracle arm (decisive).** On MRL the oracle probe is NO_SIGNAL: RNA-FM three-seed mean 0.0869 (per-seed 0.1369 / 0.0640 / 0.0597, the seed-sensitive pseudo-signal shown in full) and UTR-LM 0.0700 — the representation does not contain delta signal, and changing the supervision form does not help. On polyA the probe is HEAD/EQUIVALENT (RNA-FM +0.0070, UTR-LM −0.0054): the signal genuinely exists in the representation and is already delivered.
 
