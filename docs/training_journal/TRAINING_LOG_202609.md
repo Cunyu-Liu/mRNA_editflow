@@ -2757,3 +2757,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **冒烟 PASS**：orthrus_4track × m1_mrl 前 50 行，GPU2 A100，rho=0.0137（与「换库塌缩」预期一致量级），CUDA provenance 落盘。
 - **发射**：Job A1（GPU2：orthrus 4/6-track + codonfm + mrnalm_5utr）、Job A2（GPU4：mrnalm_3utr + calm + lucaone），各 4 列，nohup + flock 防同卡竞争；监控 cron `# BATCH4_NEWROWS` 每 50 分钟（check_batch4_newrows_v1.sh，终态自动汇总 batch4_newrows_matrix_v1.json）。
 - **批 0/1 四骨干（rinalmo×3 + ernierna）× 4 列**：随 A1/A2 完成与显存窗口续发（批 B，同 amendment 范围）。
+
+## 批次 137（2026-10-06 深夜 · 批 4 终态：44/44 完成）
+
+- **矩阵**：11 骨干 × 4 新行列（M1 / M6 / S1 双臂），三卡并行（GPU1/2/4，nohup+flock），全部 CUDA 留证。汇总 = `analysis_generalist_rows_v2/batch4_newrows_matrix_v1.json`（reporting-only，append-only）。
+- **诚实读数**：均值 ρ = 0.0164；均值 |ρ| = 0.0195；**44 格中 41 格 < 0.05**；仅 3 格 > 0.05 且全部在 M6 行（ernierna 0.0935 / orthrus_6track 0.0956 / mrnalm_3utr 0.0683），无格 > 0.1——与 5 个移植族的新行带（<0.09 为主）同一量级。
+- **判定（reporting-only，不入门）**：**「换库塌缩」在第三组模型群体（11 个探针骨干）上完整再现**——M1 行 11/11 骨干全部近零；M6 行同带。发现二（监督体制 × 数据几何）外推证据从 5 个移植族 + 7 个批 2 骨干（9 任务）扩展到 11 骨干 × 新行表面。
+- **监控**：`# BATCH4_NEWROWS` cron 已完成使命并移除（终态即删，不留空转任务）。
+- 后续：矩阵行可按 append-only 补入论文 §3.5 附表（等写作期，与批 2 表同段；不改动任何冻结行）。
