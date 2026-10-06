@@ -2730,3 +2730,30 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - SPECS_BASELINE tasks v10 / spec v8、CRITIC tasks v6、SETFLOW V5 v4 / V6 v6、README v1.4、REFLECTION、周监控 S11 全部落盘（本地交接包）。
 - W1-W4 倒排：W1 文档收尾 + rights owner（用户侧）→ W2 全文 v2 + 参考文献 + 图表 → W3 Gate P 揭盲（用户拍板）→ W4 bioRxiv。
 - commit c27c45f7（本批次）。
+
+## 批次 136（2026-10-06 晚 · 收敛审计 + amendment v3 发射）
+
+### 一、全部判定臂收敛审计（用户指令「检查当前所有判定臂训练是否都收敛」）
+
+**审计方法**：逐臂调 run_summary / per-epoch(per-pass) 指标曲线 / 损失曲线，核对三个层面——①协议完整性（跑到预注册终点）；②损失是否仍在系统性下降（训练侧收敛）；③终态读数 vs 曲线位置（无挑峰）。结论：
+
+| 臂 | 协议终点 | 损失曲线（单调下降→平台） | 终态读数 vs 曲线 | 判定 |
+|---|---|---|---|---|
+| M1 主臂 seed 20260920 | 6/6 epochs FINAL-EPOCH-6-FIXED ✓ | epoch 均值 MSE 0.7195→0.6369→0.6098→0.5987→0.5903→0.5839（单调降，末两轮 Δ<0.007 平台） | 终值 0.2739 = epoch-6 实测（primary=True），非峰（峰在 ep5=0.2929，禁挑峰纪律如实执行） | **收敛 + 合规** |
+| M1 扩展臂 seed 20260904 | 6/6 ✓ | 0.7158→0.6230→0.6048→0.5963→0.5889→0.5831（同型） | 0.2697 = ep6 | **收敛 + 合规**（trained-not-analyzed 归档） |
+| M1 扩展臂 seed 20260905 | 6/6 ✓ | 0.6973→0.6203→0.6048→0.5953→0.5869→0.5807（同型） | 0.2438 = ep6 | **收敛 + 合规**（同上） |
+| polyA seed 20260921 | 8/8 passes（V5 复刻协议）✓ | huber 1.0495→…→0.7249 单调降，末两 pass Δ=0.017 平台 | 0.8191 = pass-8 终态 | **收敛 + 合规** |
+| polyA seed 20260922 | 8/8 ✓ | 1.0588→…→0.7209（同型） | 0.8178 = pass-8 终态 | **收敛 + 合规** |
+| V5 主行 seed 20260907（历史冻结 0.8219） | 8/8 passes ✓ | huber 1.0597→0.9737→0.8912→0.8391→0.7877→0.7540→0.7426→0.7184 单调降、未回升 | 0.8219 = pass-8 终态（final_pass_8_checkpoint） | **收敛 + 合规**（历史行复核通过） |
+| CUDA 证据 | 全臂 cpu_fallback=false、A100-40GB 留证（run_summary） | — | — | ✓ |
+
+**总判**：全部 6 个训练臂均跑满预注册终点、损失单调下降至平台（收敛）、终态读数=协议指定终点值（无挑峰）。**没有未收敛或半途而废的臂。**
+注：D16-C / ERK / W 阶梯 / COMB 等更早判定的臂，其终态当时已按预注册收割入档（见 journal 批次 1-134），本轮不重复审计（无证据表明异常）。
+
+### 二、amendment v3 冻结 + 批 4（新行扩展）发射（用户 10-06 指令）
+
+- **amendment v3**（commit 6f8ef6d1，发射前冻结）：7+4 个探针骨干 × M1/M6/S1 三新行（4 列）；探针 = 同终点任务 TRAIN 拟合（M1/M6←MRL TRAIN；S1←HL 对应臂 TRAIN）；评测 = NEW_EVAL_ROW 全量；reporting-only append-only，不入任何门。
+- **runner**：`run_route2_frozen_delta_generalist_newrows_v1.py`（commit 421d3aec）；修两个启动 bug（te.PairRecord 字段契约 / half-life task spec 注入）。
+- **冒烟 PASS**：orthrus_4track × m1_mrl 前 50 行，GPU2 A100，rho=0.0137（与「换库塌缩」预期一致量级），CUDA provenance 落盘。
+- **发射**：Job A1（GPU2：orthrus 4/6-track + codonfm + mrnalm_5utr）、Job A2（GPU4：mrnalm_3utr + calm + lucaone），各 4 列，nohup + flock 防同卡竞争；监控 cron `# BATCH4_NEWROWS` 每 50 分钟（check_batch4_newrows_v1.sh，终态自动汇总 batch4_newrows_matrix_v1.json）。
+- **批 0/1 四骨干（rinalmo×3 + ernierna）× 4 列**：随 A1/A2 完成与显存窗口续发（批 B，同 amendment 范围）。
