@@ -107,6 +107,18 @@ def main():
 
     rows = load_task_rows(args.task)
     b_max = TASKS[args.task]["b_max"]
+    ckpt = out_dir / f"checkpoint_{args.family}_{args.task}_v1.jsonl"
+    done_records = []
+    done_ids = set()
+    if ckpt.exists():
+        with open(ckpt) as f:
+            for line in f:
+                rec = json.loads(line)
+                done_records.append(rec)
+                done_ids.add(rec["canonical_record_id"])
+        print(f"[resume] {len(done_records)} finished records from {ckpt}", flush=True)
+    rows_todo = [r for r in rows if str(r["canonical_record_id"]) not in done_ids]
+    print(f"[resume] {len(rows)} total, {len(rows_todo)} to run", flush=True)
 
     obj, meta = build_scorer(args.family, device)
     region = "5UTR" if args.task == "mrl" else "3UTR"
@@ -129,12 +141,12 @@ def main():
     # wave state
     idx = 0
     active = []  # each: dict(row, cur, cur_score, src_score, target, step)
-    # preload wave
+    base_offset = len(rows) - len(rows_todo)
     def admit(n):
         nonlocal idx
-        while len(active) < n and idx < len(rows):
-            r = rows[idx]
-            active.append({"i": idx, "row": r, "cur": r["source_sequence"], "cur_score": None,
+        while len(active) < n and idx < len(rows_todo):
+            r = rows_todo[idx]
+            active.append({"i": base_offset + idx, "row": r, "cur": r["source_sequence"], "cur_score": None,
                            "src_score": None, "target": float(r["direction_normalized_delta"]),
                            "step": 0, "done": False, "fail": False, "reached": 0.0})
             idx += 1
@@ -148,15 +160,23 @@ def main():
         a["src_score"] = float(s)
         a["cur_score"] = float(s)
 
+    n_since_ckpt = 0
     while active:
         # drop finished
         still = []
         for a in active:
             if a["done"]:
-                records.append(_finish(a, b_max))
+                rec = _finish(a, b_max)
+                records.append(rec)
+                with open(ckpt, "a") as f:
+                    f.write(json.dumps({k: v for k, v in rec.items() if not k.startswith("_")}) + "\n")
+                n_since_ckpt += 1
             else:
                 still.append(a)
         active = still
+        if n_since_ckpt >= 500:
+            n_since_ckpt = 0
+            print(f"[ckpt] {len(done_records) + len(records)}/{len(rows)} flushed", flush=True)
 
         # check pass-at-step-0 / termination for those at cur == source
         if active:
@@ -193,23 +213,24 @@ def main():
                     a["fail"] = True
             # refill wave
             admit(args.wave)
-            if active and idx < len(rows):
-                new = [a for a in active if a["src_score"] is None]
-                if new:
-                    ss = _batch_score(scorer, [a["cur"] for a in new], args.forward_batch)
-                    for a, s in zip(new, ss):
-                        a["src_score"] = float(s)
-                        a["cur_score"] = float(s)
-                        # step-0 pass check
-                        if a["cur_score"] - a["src_score"] >= a["target"]:
-                            a["done"] = True; a["fail"] = False
-        n_done = len(records)
+            new = [a for a in active if a["src_score"] is None]
+            if new:
+                ss = _batch_score(scorer, [a["cur"] for a in new], args.forward_batch)
+                for a, s in zip(new, ss):
+                    a["src_score"] = float(s)
+                    a["cur_score"] = float(s)
+                    # step-0 pass check
+                    if a["cur_score"] - a["src_score"] >= a["target"]:
+                        a["done"] = True; a["fail"] = False
+        n_done = len(done_records) + len(records)
         if n_done % 100 < args.wave:
             el = time.time() - t0
             print(f"[prog] {n_done}/{len(rows)} elapsed={el:.0f}s rate={n_done/max(el,1e-9):.2f} rec/s "
                   f"eta={(len(rows)-n_done)/max(n_done/max(el,1e-9),1e-9):.0f}s active={len(active)}", flush=True)
 
-    records.sort(key=lambda r: r["_i"])
+    all_records = done_records + [{k: v for k, v in r.items()} for r in records]
+    all_records.sort(key=lambda r: r["canonical_record_id"])
+    records = all_records
     for r in records:
         if not r["fail"]:
             n_pass += 1
