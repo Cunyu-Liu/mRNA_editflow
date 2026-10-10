@@ -2992,3 +2992,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **诚实 ETA（实测速率外推）**：insight v1（GPU6）~3.5h 收尾；stcnet v2（GPU5，与外部作业共享）~20-30h；lamar v2（GPU6，insight 完成后独占）~20h；hydrarna v2（GPU7）~24h。预计 10-11 晚间全量 10/10。总前向量 ≈ 17.8M 序列/族（协议代价如实入档）。
 - **科学预读（不作结论）**：LAMAR polyA 弱打分器 + 贪心 = 高 FAIL 预期（与冻结矩阵 polyA ρ=0.148 一致）；该现象本身是「贪心引导不足以在预算内达标」降级条款 1 的直接证据。
 - 监控：crontab #MEF_MONITOR 每 10 分钟（monitor.log）；GPU5/6/7 三卡并行、每卡 ≤2 作业纪律维持。
+
+---
+
+## 批次一百五十九（2026-10-10 晚 · MEF 调度根因修复：CUDA/MIG 枚举错位）
+
+- **根因发现（逐进程比对 gpu_uuid 实证）**：CUDA 设备枚举中 cuda:6/cuda:7 实为 **MIG 1g.5gb 切片（4.8GB）** 而非整卡（torch 枚举实证：8 设备中 0-5 为整卡、6-7 为 MIG 切片；nvidia-smi GPU6 UUID 上多个我方进程共存印证）。此前所有「GPU6/GPU7」调度实际跑在小切片上——解释了全部 OOM（4.75GiB 报错）与 12-25 倍速率惩罚。
+- **修复动作**：lamar v2 → CUDA0（整卡，57% util）；hydrarna v2 → CUDA3（整卡）；stcnet v2 留 CUDA5（本就在整卡）；insight v1 留 MIG 切片（已 50% 进度、kill 即丢进程内状态，权衡后不动）。
+- **速率对比（同作业前后）**：lamar 0.01 → **0.12 rec/s（12×）**；eta 从 70h → 6h。当前四作业 eta：insight ~3h / stcnet ~6h / lamar ~6h / hydrarna ~12.5h。**预计 10-11 全量 10/10。**
+- v1 残留进程清理（hydrarna/stcnet 旧 v1 未死与新 v2 并行写同文件的风险，kill 前核对 pid）。
+- 教训入档：MIG 混合拓扑下 CUDA_VISIBLE_DEVICES 与 nvidia-smi index 不对应——必须以 torch 枚举 + [gate] 行设备名为准（本轮 [gate] 行 MIG 1g.5gb 标记即证据，早在首跑时已打印但未被当作调度信号，此为经验主义失误的对照案例）。
