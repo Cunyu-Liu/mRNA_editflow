@@ -2982,3 +2982,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **在途**：insight_polya（GPU6）、lamar+hydrarna polyA（GPU7）、stcnet_polya（GPU5 刚发射）；监控 crontab #MEF_MONITOR 每 10 分钟（/tmp/mef_monitor.sh → monitor.log）。
 - **工程事件入档**：GPU6 MIG 时代误判（实际整卡 40GB 可用）；5 进程挤同一卡导致 transformer 族速率掉 4-25 倍 → 调度为每卡 ≤2 作业 + setsid 脱离会话（flock 子进程 nohup 曾随父 shell 退出被杀，已改 setsid+disown）；两次 OOM（stcnet 4.75GB MIG 切片 / insight 批量并发）均留证并重调度。
 - 产物：/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_edit_budget_v1/（逐记录 JSON + logs + monitor.log）。
+
+---
+
+## 批次一百五十八（2026-10-10 晚 · MEF v2 波批调度 + 计算量实测）
+
+- **速率问题实测定位**：polyA 上 1,059/2,628（40.3%）target≤0 记录在 step-0 即过门；正 target 记录中弱打分器（LAMAR round-1 best delta 恒 0.152）大多数走满 B_max=23 轮 → 单记录最坏 23×492=11.3k 前向；v1 逐记录执行在重型族上不可行（LAMAR 单记录 84s，全量 21 天）。
+- **v2 波批 runner**（本 commit）：跨记录批式推进——同一 super-round 内把 wave 个活跃记录的候选集合并成大批量前向（冻结 scorer 无状态，批式不改变任何计算值，属计算顺序优化而非协议修改）；wave=32-48、forward-batch=192-256。
+- **诚实 ETA（实测速率外推）**：insight v1（GPU6）~3.5h 收尾；stcnet v2（GPU5，与外部作业共享）~20-30h；lamar v2（GPU6，insight 完成后独占）~20h；hydrarna v2（GPU7）~24h。预计 10-11 晚间全量 10/10。总前向量 ≈ 17.8M 序列/族（协议代价如实入档）。
+- **科学预读（不作结论）**：LAMAR polyA 弱打分器 + 贪心 = 高 FAIL 预期（与冻结矩阵 polyA ρ=0.148 一致）；该现象本身是「贪心引导不足以在预算内达标」降级条款 1 的直接证据。
+- 监控：crontab #MEF_MONITOR 每 10 分钟（monitor.log）；GPU5/6/7 三卡并行、每卡 ≤2 作业纪律维持。
