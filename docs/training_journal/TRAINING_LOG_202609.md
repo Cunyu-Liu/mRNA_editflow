@@ -3002,3 +3002,13 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **速率对比（同作业前后）**：lamar 0.01 → **0.12 rec/s（12×）**；eta 从 70h → 6h。当前四作业 eta：insight ~3h / stcnet ~6h / lamar ~6h / hydrarna ~12.5h。**预计 10-11 全量 10/10。**
 - v1 残留进程清理（hydrarna/stcnet 旧 v1 未死与新 v2 并行写同文件的风险，kill 前核对 pid）。
 - 教训入档：MIG 混合拓扑下 CUDA_VISIBLE_DEVICES 与 nvidia-smi index 不对应——必须以 torch 枚举 + [gate] 行设备名为准（本轮 [gate] 行 MIG 1g.5gb 标记即证据，早在首跑时已打印但未被当作调度信号，此为经验主义失误的对照案例）。
+
+---
+
+## 批次一百六十（2026-10-11 晨 · MEF v2 尾部 bug 修复 + 断点保护 + 三作业重启）
+
+- **事故**：stcnet polyA 在 2,554/2,628（97%）处崩溃——v2 尾部 bug：当全部记录已 admit（idx==len(rows)）时，新 admit 记录的 src_score 初始化分支被  条件跳过 → cur_score=None → 减法 TypeError。hydrarna（2,557）与 lamar（1,756）在途进程用的是内存中的旧代码，同样会在尾部崩溃。
+- **修复 v2.1**（commit ）：① 尾部 bug——新记录评分改为无条件执行；② **断点续跑**——每完成一条记录即 append 到 checkpoint jsonl，重启时加载已完成记录并跳过（杜绝再次 8h 进度损失；append-only 审计友好）。
+- **代价与决策**：三作业（stcnet/hydrarna/lamar）从零重启（旧进程无中间落盘，损失 ~10h 已算时间——如实入档；这正是「不得偷懒不得大意」的反面教材：v2 首版没有 checkpoint 是设计失误）。insight polyA 已在崩溃前完整落盘（终态 7/10 验收通过：n=2,628 / pass 2,211 / fail 0.1587 / median steps 1 / ratio 0.1，记录级一致性断言过）。
+- **重启调度**（v2.1 + checkpoint 保护）：stcnet CUDA1 / hydrarna CUDA3 / lamar CUDA0；#MEF_HARVEST crontab 每 15 分钟自动收割 10/10。
+- ETA（重启后）：stcnet ~7h、hydrarna ~9h、lamar ~14h（外部作业白天增多会更慢；checkpoint 已保证不会再丢）。
