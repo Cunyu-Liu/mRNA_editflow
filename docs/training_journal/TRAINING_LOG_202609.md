@@ -2968,3 +2968,17 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **② 仓库整理（文档层）**：README.md 重写为 DeltaBench 对外入口（旧版归档 archive/README_pre_deltabench_20261008.md）；新增 DELTABENCH_RELEASE.md（组成/布局/复现入口/权利边界/纪律条款）。目录结构不动。
 - **本地工作产物**：manuscript_v2_3.md（本地重写合并版，含本轮叙事强化+表格转图）已同步服务器；评审报告 peer_review_manuscript_v2_2_v1.md + CHANGELOG_v2_2_to_v2_3.md 落本地项目论文目录。
 - **纪律自检**：零数字改动（新图全部 value-lock 断言既有冻结值；叙事强化仅用已登记数字 126,165/15/89,580/18,293/18,292）；八条款措辞未触碰；删除的表格数字全部保留在正文或图注。
+
+---
+
+## 批次一百五十七（2026-10-10 · MEF 编辑预算测试发射：prereg 冻结 + 首波终态 6/10）
+
+- **mini-prereg 冻结**：docs/paper/edit_budget_mini_prereg_v1.md（commit e26ac88a，计算前落盘）——D1-D9 用户拍板照搬；B_max 实测冻结 polyA=23 / MRL=3（p95+1）；数据可行性全部实地复核（polyA 2,628 行 median k_true 7 / MRL 730 行 median 1；canonical T 字母表）。
+- **口径修正（发射前发现）**：MEF 交接文档指向 projections validation.jsonl（U 字母表），但 3/5 适配器字母表为 DNA（UTR-Insight KeyError UUUU 实证）→ 改用 canonical records + manifest VALIDATION 过滤（与矩阵 runner load_task_records 完全同口径、同表面）；此修正在 prereg 落盘后、全量计算前完成（第一波 MRL 用旧口径 sanity 只验管线，全量全部用 canonical 口径重跑）。
+- **runner**：scripts/route_a_v3/run_edit_budget_v1.py（commit 3cc4db5d）——复用 benchmark_v2_matrix/family_adapters_v1.build_scorer（GEMORNA region-dispatch）；贪心全枚举 4L-1；tie-break 字典序；断点续跑（append-only 跳过已完成）。
+- **首波终态（6/10 全量）**：
+  - MRL 5/5 族：fail_budget = gemorna 0.1507 / insight 0.0466 / stcnet 0.0603 / lamar 0.1918 / hydrarna 0.3534；median steps（pass 集）= 0.5/1/1/0/0
+  - polyA gemorna：n=2,628 pass=2,618（fail 0.0038），median steps=1（vs k_true median 7），budget ratio median 0.125
+- **在途**：insight_polya（GPU6）、lamar+hydrarna polyA（GPU7）、stcnet_polya（GPU5 刚发射）；监控 crontab #MEF_MONITOR 每 10 分钟（/tmp/mef_monitor.sh → monitor.log）。
+- **工程事件入档**：GPU6 MIG 时代误判（实际整卡 40GB 可用）；5 进程挤同一卡导致 transformer 族速率掉 4-25 倍 → 调度为每卡 ≤2 作业 + setsid 脱离会话（flock 子进程 nohup 曾随父 shell 退出被杀，已改 setsid+disown）；两次 OOM（stcnet 4.75GB MIG 切片 / insight 批量并发）均留证并重调度。
+- 产物：/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/analysis_edit_budget_v1/（逐记录 JSON + logs + monitor.log）。
