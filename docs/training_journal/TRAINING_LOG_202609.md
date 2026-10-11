@@ -3024,3 +3024,11 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **论文 §8.5 已成文**（commit ，数字 = 判定表逐字拷贝）。
 - 本地交接包回填：MEF_results_20261011/（判定表 CSV/JSON + Figure 9 PNG/PDF + manifest）；MEF 文档状态改「已执行」。
 - 产物：experiments/analysis_edit_budget_v1/（10 个逐记录 JSON + checkpoint 审计链 + logs + monitor/harvest 日志 + Figure 9 + manifest）。
+
+---
+
+## 批次一百六十二（2026-10-11 深夜 · MEF 机理互文图 + deck 逻辑链终页）
+
+- **Figure 9b**（）：矩阵判别力 ρ（polyA frozen-Δ）vs MEF 预算达标率（polyA）散点，5 移植族同排序（Insight 0.31/84% > GEMORNA 0.22/99.6% > STCNet −0.02/78% > LAMAR 0.15/65% > HydraRNA −0.37/56%）；n=5 描述性一致（如实标注不做显著性声明）；双源 value-lock（matrix_v2 + adjudication CSV）。
+- **Deck 终版（37 页）**：S35 MEF 页升级为双图版（Figure 9 + 9b + 机理互文读法行）；新增 S37「SUMMARY · 全文逻辑链」= 论文 §1.4 六环地图的幻灯版（现象→机理→规律→干预→正结果→交付，27 个关键数字全回源）。
+- 服务器产物：Figure9b PNG + manifest 已落 analysis_edit_budget_v1/ 并同步本地 MEF_results_20261011/。
