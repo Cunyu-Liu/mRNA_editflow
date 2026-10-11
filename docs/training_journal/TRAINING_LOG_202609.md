@@ -3012,3 +3012,15 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **代价与决策**：三作业（stcnet/hydrarna/lamar）从零重启（旧进程无中间落盘，损失 ~10h 已算时间——如实入档；这正是「不得偷懒不得大意」的反面教材：v2 首版没有 checkpoint 是设计失误）。insight polyA 已在崩溃前完整落盘（终态 7/10 验收通过：n=2,628 / pass 2,211 / fail 0.1587 / median steps 1 / ratio 0.1，记录级一致性断言过）。
 - **重启调度**（v2.1 + checkpoint 保护）：stcnet CUDA1 / hydrarna CUDA3 / lamar CUDA0；#MEF_HARVEST crontab 每 15 分钟自动收割 10/10。
 - ETA（重启后）：stcnet ~7h、hydrarna ~9h、lamar ~14h（外部作业白天增多会更慢；checkpoint 已保证不会再丢）。
+
+---
+
+## 批次一百六十一（2026-10-11 夜 · MEF 编辑预算测试全量终态 10/10 + 判定 + §8.5）
+
+- **全量 10/10 终态**（#MEF_HARVEST crontab 自动收割）：lamar polyA 最后一臂落盘（n=2,628 pass=1,716 fail=0.347）。
+- **判定表**（edit_budget_adjudication_v1.csv/json）+ **Figure 9**（双面板：FAIL 率 + budget ratio，value-lock manifest 10 条）自动产出。
+- **三遍独立复核全部通过**（独立脚本 /tmp/mef_verify3.py）：① 从逐记录 JSON 重算全部汇总指标 vs CSV——逐项一致；② 存储的 summary 块 vs CSV——一致；③ n=2,628/730 与 B_max=23/3 与 prereg 一致；CUDA 硬门 cpu_fallback_used=false 全 10 运行干净。
+- **科学结论（预注册框架内）**：达标率按族分层与监督体制一致（GEMORNA 99.6% vs HydraRNA 56.5%，polyA）；达标记录的贪心步数中位普遍小于实验步数（ratio ≤ 0.5）——按降级条款 2 如实注明「模型预测器自判达标，偏乐观的预测可缩短表观预算」；弱打分器走满 B_max 是计算代价来源（单族 ~17.8M 前向）——「贪心引导不足以在预算内达标」的证据与 Δ 可学性互洽。
+- **论文 §8.5 已成文**（commit ，数字 = 判定表逐字拷贝）。
+- 本地交接包回填：MEF_results_20261011/（判定表 CSV/JSON + Figure 9 PNG/PDF + manifest）；MEF 文档状态改「已执行」。
+- 产物：experiments/analysis_edit_budget_v1/（10 个逐记录 JSON + checkpoint 审计链 + logs + monitor/harvest 日志 + Figure 9 + manifest）。
