@@ -684,3 +684,22 @@ The submission carries six main figures plus one supplement figure, all re-rende
 - **Reference list + figure set** — **ASSEMBLED (2026-10-06, W2)**: the full reference list (40 entries: 15 studies, 20 model/methods, 5 infrastructure) is in the draft with every bibliographic field source-verified (PubMed E-utilities / ENCODE API / BioStudies / provider pages); vector PDFs for all four main figures confirmed on the server (`analysis_benchmark_v2_matrix_figure_v1/`, `analysis_delta_vs_density_{20260915,v2}/`, `analysis_first_order_decomposition_v1/`; each with producer manifests). Remaining before W3 unblinding: in-text citation wiring + figure style unification.
 - **W3 unblinding preconditions (2026-10-07, W2 pass 2)** — citation wiring DONE (20 in-text anchor sites wired to the reference list, all asserted); figure styling DONE (shared style module `figure_style_v1` applied to the four vector PDFs; per-figure value assertions locked the numbers); reference integrity fixes applied ([9] Plassmeyer DOI verified 10.1101/2023.11.02.23297961; [15] upgraded to the published Nat. Neurosci. 2023 version of the N-zip study; [28] reduced to port-ledger-registered facts with an explicit submission-stage completion flag). All W2 milestones complete; the only remaining act before the TEST split is unsealed is the unblinding execution itself (user-approved timing: after this draft).
 - **Resolved in draft v1.1 (this revision)**: full pre-registration commit-hash list (§10.4), LOSO-lite Table 5 protocol-B adjudication (§10.5), external model / benchmark relation paragraph (§9.4).
+---
+
+## §8.5 The edit-budget test (MEF): decision-face efficiency, prereg e26ac88a
+
+**Design (frozen before computation).** The preceding sections measure the discriminative face (given an edit, is Δ predicted accurately). This test measures the *decision/generative* face: starting from the source sequence, how many greedy edit steps does a frozen scorer need to reach the measured candidate target (its `direction_normalized_delta`)? Protocol: full-enumeration greedy (4L−1 single-nt mutants per step, frozen scorer, argmax with lexicographic tie-break, zero tuning), budget cap B_max = dataset 95th-percentile k_true + 1 (polyA 23; MRL 3), five ported matrix families × {polyA (n=2,628), MRL (n=730)} on the canonical VALIDATION surface (identical records to the matrix). Metrics: median steps (passing records), FAIL_budget rate, budget ratio k_model/k_true (median + IQR).
+
+**Results (Table 13; Figure 9; adjudication three-pass verified).**
+
+| Family | polyA FAIL | polyA med. steps | polyA ratio | MRL FAIL | MRL med. steps | MRL ratio |
+|---|---|---|---|---|---|---|
+| GEMORNA | 0.0038 | 1 | 0.125 [0, 0.25] | 0.1507 | 0.5 | 0.167 [0, 1.0] |
+| LAMAR | 0.347 | 0 | 0.0 [0, 0.5] | 0.1918 | 0 | 0.0 [0, 1.0] |
+| UTR-Insight | 0.1587 | 1 | 0.1 [0, 0.286] | 0.0466 | 1.0 | 0.5 [0, 1.0] |
+| UTR-STCNet | 0.218 | 0 | 0.0 [0, 0.167] | 0.0603 | 1.0 | 0.5 [0, 1.0] |
+| HydraRNA | 0.4353 | 0 | 0.0 [0, 0.286] | 0.3534 | 0 | 0.0 [0, 1.0] |
+
+**Reading (honest, pre-registered frame).** (i) A substantial fraction of records is reachable within budget for three of five families on polyA (GEMORNA 99.6%, Insight 84%, STCNet 78%), while the weak scorers (LAMAR, HydraRNA — the same two with polyA ρ ≤ 0.15 in the matrix) fail 35–44%; MRL failure rates are lower for all families. (ii) Where records pass, the greedy budget is *shorter than the experiment* (median ratio ≤ 0.5 everywhere; polyA ratio 0.125 for GEMORNA vs k_true median 7) — per the prereg downgrade clause this must be reported with the caveat that the model's own predictor defines "reached", so optimistic predictor bias can shorten apparent budgets (the reached pred-deltas frequently overshoot the target). (iii) The test is a *demonstration of the mechanism conclusions* (supervision regime again separates families), not a SOTA claim: greedy-with-weak-scorer is compute-heavy precisely because weak scorers walk records to the B_max cap (per-family ~17.8M forward sequences on polyA).
+
+Reproducibility: runner (v2.1 wave-batched, protocol-identical compute order), per-record JSONs, adjudication CSV/JSON, Figure 9 + value-lock manifest in `experiments/analysis_edit_budget_v1/`; commits e26ac88a (prereg) → 814d5855 (v2.1) → this batch. CUDA hard gate clean on all ten runs (cpu_fallback_used=false).
