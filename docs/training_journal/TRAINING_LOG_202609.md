@@ -3076,3 +3076,7 @@ PPT：新增 S36 METHODS·MEF 方法详解页（38 页版）；S35 补 MRL 比�
 - 布局终修：L4/臂4 文本压缩至面板容量内（L-panel est 1.31in < box 1.66in）；面板加高 2.22→2.42；footnote 上移至 6.92 底 7.34（原溢出 7.75 修复）；S36 全形状溢出审计 CLEAN。
 - 交接包 MEF_v2 文档同步为 L1-L4 结构（§2 新增 L4 小节，与 PPT/S36 一字对应）。
 - 复验：deck_table_verify_v2 115/115 全过。
+
+## 批次 166（2026-10-12 晚）：S35 第 7 列（MRL 比率）格式修复
+
+用户反馈「MRL 比率列没看到」。诊断：PowerPoint 覆盖保存把 XML 克隆生成的第 7 列文本、填充、边框全部清空（表头白字写在透明底上=隐形）。修复：文本（裁决 JSON 回源重写：GEMORNA 0.167[0,1.0] / LAMAR 0.0 / Insight 0.5 / STCNet 0.5 / HydraRNA 0.0）、表头深蓝底 1F4E78、正文字白底、hairline 边框 D1D5DB（与 deck 常量一致）、字号 8.5pt 对齐 polyA 比率列。复验 115/115 全过。教训：XML 克隆的表格列在 PowerPoint 重存时不可靠——克隆后必须显式重设 fill/border/text，或整表重建。
