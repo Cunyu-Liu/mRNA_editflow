@@ -3052,3 +3052,19 @@ PPT 修订（mRNA_editflow-DeltaBench转向-20261008.pptx，37 页，仅动 S16/
 终验：143/143 断言全过（37 页完整性/页码/溢出/图片 blob/数值回源 adjudication JSON+manifest/其余 33 页与备份逐字 diff=0）。
 
 commit: 本批次（make_mef_mechanism_link_v2.py + figure9b_manifest_v2.json 新增）。
+
+## 批次 164（2026-10-12 晚）：MEF 反思——负方向自动达标发现 + v2 修复臂设计 + polyA 优化设计（均未执行）
+
+用户质疑「步数 0 不对」「模型步数 < 真实步数合理吗」→ 逐记录 JSON 复盘坐实三项协议限制：
+
+**L1 负方向自动达标（最严重）**：判定 reached ≥ target 在 target<0 时起点即满足。polyA 1,059/2,628（40.3%）、MRL 310/730（42.5%）记录 0 步自动达标。pass@0 占各自达标数：GEMORNA 40.5%/50.0%、LAMAR 60.8%/52.5%、Insight 47.9%/44.5%、STCNet 51.0%/45.2%、HydraRNA 70.4%/65.7%。步数/比率/达标率全部混入 0 步子集；「比率≤0.5」表观优势部分来自该子集。
+**L2 方向对称假设未声明**：greedy 只追 max 增量，负方向记录的正确贪心应为 max |Δ| 或最负增量——prereg 疏漏。
+**L3 自判达标无外部 oracle**：到达点从未经外部验证器复核，偏差幅度未量化。
+
+处置：v1 结论不撤回（prereg 自判口径本就含降级声明）；v2 修复臂设计冻结（交接包 MEF_v2 文档）：臂 1 target>0 重裁（0 成本）→ 臂 3 外部验证（~2 GPU-h，反哺 polyA 可达空间估计）→ 臂 2 负向对称臂（~20 GPU-h）→ 臂 4 判定加严（可选）。均未执行。
+
+生成式模型调研（web）：GEMORNA 生成器开源（RainaBio/GEMORNA）本可接入 MEF 而 v1 只测了打分头 → 列为 v3 候选（~4 GPU-h）；mRNA-GPT 无权重（PAPER_ONLY 不变）；UTRGAN/UTRGen 输出全新序列与 source-relative 协议正交；UTailoR/mRNAdesigner web-only 不可冻结。
+
+polyA 优化设计（交接包 polyA优化实验设计_v1_未执行.md）：缺口 8.7% 归因四源（S1 标签噪声硬上限/S2 结构/S3 位置/S4 容量），三臂单变量设计（A 结构注入 6+18h 高优先/B 位置编码 2+6h/C 单任务头 4h 预期证伪），诚实天花板 ICC 0.90 → 完成度上限 ~95-96%。未执行。
+
+PPT：新增 S36 METHODS·MEF 方法详解页（38 页版）；S35 补 MRL 比率列（7 列）+ 步数 0 根源披露 + 生成式调研结论注释；全表复核 115/115 断言过（S35 逐格 vs 裁决 JSON、S7/S12/S13/S34/S37/S38 关键值回源）。journal 本批即记录。
