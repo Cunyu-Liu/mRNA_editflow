@@ -3068,3 +3068,11 @@ commit: 本批次（make_mef_mechanism_link_v2.py + figure9b_manifest_v2.json �
 polyA 优化设计（交接包 polyA优化实验设计_v1_未执行.md）：缺口 8.7% 归因四源（S1 标签噪声硬上限/S2 结构/S3 位置/S4 容量），三臂单变量设计（A 结构注入 6+18h 高优先/B 位置编码 2+6h/C 单任务头 4h 预期证伪），诚实天花板 ICC 0.90 → 完成度上限 ~95-96%。未执行。
 
 PPT：新增 S36 METHODS·MEF 方法详解页（38 页版）；S35 补 MRL 比率列（7 列）+ 步数 0 根源披露 + 生成式调研结论注释；全表复核 115/115 断言过（S35 逐格 vs 裁决 JSON、S7/S12/S13/S34/S37/S38 关键值回源）。journal 本批即记录。
+
+## 批次 165（2026-10-12 晚）：PPT S36 补 L4 生成式缺位 + 布局终修
+
+- S36 限制面板 3→4 条：新增 L4 生成式缺位（仅 GEMORNA 生成器开源可接入=v1 漏测列 v3 臂；mRNA-GPT 无权重；UTRGAN/UTRGen 范式正交；UTailoR/mRNAdesigner web-only）；修复臂面板末条改写为「v2 修正 + v3 生成式臂均为追加层」。
+- S35 注释面板交叉引用修正（原指向不存在的「模型调研页」→ 指向 S36 L4）。
+- 布局终修：L4/臂4 文本压缩至面板容量内（L-panel est 1.31in < box 1.66in）；面板加高 2.22→2.42；footnote 上移至 6.92 底 7.34（原溢出 7.75 修复）；S36 全形状溢出审计 CLEAN。
+- 交接包 MEF_v2 文档同步为 L1-L4 结构（§2 新增 L4 小节，与 PPT/S36 一字对应）。
+- 复验：deck_table_verify_v2 115/115 全过。
