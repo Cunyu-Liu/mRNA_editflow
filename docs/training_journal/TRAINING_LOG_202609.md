@@ -3032,3 +3032,23 @@ frozen：LM ≈0.01 / Saluki 0.1205（弱对照）；matched-FT：mRNABERT −0.
 - **Figure 9b**（）：矩阵判别力 ρ（polyA frozen-Δ）vs MEF 预算达标率（polyA）散点，5 移植族同排序（Insight 0.31/84% > GEMORNA 0.22/99.6% > STCNet −0.02/78% > LAMAR 0.15/65% > HydraRNA −0.37/56%）；n=5 描述性一致（如实标注不做显著性声明）；双源 value-lock（matrix_v2 + adjudication CSV）。
 - **Deck 终版（37 页）**：S35 MEF 页升级为双图版（Figure 9 + 9b + 机理互文读法行）；新增 S37「SUMMARY · 全文逻辑链」= 论文 §1.4 六环地图的幻灯版（现象→机理→规律→干预→正结果→交付，27 个关键数字全回源）。
 - 服务器产物：Figure9b PNG + manifest 已落 analysis_edit_budget_v1/ 并同步本地 MEF_results_20261011/。
+
+## 批次 163（2026-10-12）：PPT 汇报四问修订（Q1-Q4）+ Figure9b v2
+
+背景：导师汇报前 PPT 复核，用户四问（S35 MEF 模型类型/mRNA-GPT/fig9b 缺族假象/比率定义；S37 逻辑链 MEF 位置；S17 误差三元组可读性；S16 图表总览未更新）。
+
+事实核查（全部回源）：
+- 5 族 paradigm 逐族核实（family_adapters_v1.py）：GEMORNA 打分头（源自生成式设计器）/LAMAR、UTR-Insight、UTR-STCNet 打分头/HydraRNA 冻结嵌入标量读出——5 族均以打分模型接入 MEF。
+- mRNA-GPT：PAPER_ONLY_TASK_MISMATCH（docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md:288；p3 存档：adapter 不可执行、无权重）——不在 14 族、不在 MEF。
+- budget_ratio = k_model/k_true（adjudicate_edit_budget_v1.py:82）。
+- Figure9b v1 并不缺族（5 点全在；LAMAR 0.15/STCNet −0.02 贴 x=0 线、标签小易看漏）——生成 v2：每点加 ρ/达标率数值标签，同 value-lock 断言（figure9b_manifest_v2.json，5ρ+5pass 全锁）。
+
+PPT 修订（mRNA_editflow-DeltaBench转向-20261008.pptx，37 页，仅动 S16/S17/S35/S37，其余 33 页逐字未动）：
+- S35：表格族名两行化（名称+类型）；新增注释面板（打分接入说明/mRNA-GPT 缺席/比率定义）；Figure9b v2 换图（字节级校验 MD5 a278fea8b5eb576cb3f537d412b20cbb）；读法框改两段并写明5 点 = 全部 5 族、无缺族；pan2 补弱打分器 0 步=起点自判达标；locator 增 v2。
+- S37：环⑤扩写（判别面终点+MEF 决策面演示=正结果闭环），标题加MEF 99.6% 预算内达标。
+- S17：读法改三元组通俗解释（ρ_abs/ρ_Δ/ρ_ε 三定义+两臂误差相消机制+Optimus 0.873/0.313/0.720 串讲+LAMAR 盲行反例 0.021/0.044/0.686 与 −0.091/0.018/0.443）。
+- S16：总览表 10→12 行（Figure 9/9b 入册）；头部改9 张主图+2 张补充图：五张本轮新增；value-lock 行改 41+10+5×2；locator 与新图定位行同步。
+
+终验：143/143 断言全过（37 页完整性/页码/溢出/图片 blob/数值回源 adjudication JSON+manifest/其余 33 页与备份逐字 diff=0）。
+
+commit: 本批次（make_mef_mechanism_link_v2.py + figure9b_manifest_v2.json 新增）。
