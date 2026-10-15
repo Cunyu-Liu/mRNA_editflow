@@ -1,0 +1,48 @@
+{
+  "canonical_preregistration_semantic_sha256": "a9000a21f831c685dd2f718fff31ad45187461a280cd9b78fdce168ad80c1c0b",
+  "canonical_preregistration_sha256": "bed85f1662998b6abdd6ac3e8502c9d7f2b801dcf20795b2607aad556efb73ac",
+  "checks": {
+    "canonical_contract_id": true,
+    "canonical_preregistration_id": true,
+    "canonical_preregistration_semantics": true,
+    "canonical_preregistration_sha256": true,
+    "evaluator_callable": true,
+    "evaluator_contract_version_matches": true,
+    "evaluator_implementation_ready": false,
+    "explicit_sealed_authorization": false,
+    "formal_evaluator_command_matches_runner": false,
+    "one_shot_confirmation_matches": false,
+    "ordinary_internal_go_commitment_valid": false,
+    "preregistration_frozen": true,
+    "preregistration_id_confirmed": false,
+    "preregistration_sha256_confirmed": false,
+    "preregistration_valid": true,
+    "synthetic_ordinary_fixture_sha256_bound": false
+  },
+  "evaluator_contract_version": "E0X_AGGREGATE_ONLY_V1",
+  "evaluator_fixture": {
+    "actual_sha256": null,
+    "declared_sha256": null,
+    "error": null
+  },
+  "ordinary_go_commitment": {
+    "error": "ordinary GO commitment path/hash confirmation missing",
+    "read": false,
+    "sha256": null,
+    "valid": false
+  },
+  "phase": "E0-X",
+  "preregistration_id": "E0X_PREREG_20260807",
+  "ready_for_one_shot_reservation": false,
+  "safety": {
+    "access_log_read": false,
+    "access_log_written": false,
+    "ordinary_evaluator_fixture_read": false,
+    "ordinary_go_commitment_read": false,
+    "output_artifact_written": false,
+    "reservation_written": false,
+    "restricted_store_read": false,
+    "sealed_member_data_read": false
+  },
+  "status": "BLOCKED"
+}
