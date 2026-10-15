@@ -74,7 +74,8 @@ def select_device(cfg, override):
 def load_model(ckpt_path, device, expected_vocab=None):
     from scripts.m4_sparse.model import SparseEditFormer
     assert_ordinary_path(ckpt_path, purpose="checkpoint input")
-    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab)
+    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab,
+                         require_rank=True)
     cfg = sd["cfg"]
     model = SparseEditFormer(cfg).to(device)
     model.load_state_dict(sd["state_dict"])

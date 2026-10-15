@@ -8,8 +8,10 @@ Components implemented:
   * explicit edit encoder   : MLP over 12-dim edit features (op/pos/token).
   * endpoint/context heads  : study / endpoint / benchmark conditioning.
   * mean/variance head      : heteroscedastic regression (mean + log-var).
-  * sign/beneficial head    : binary classification of sign(delta).
-  * pairwise/listwise rank  : scalar score for ranking candidates.
+  * sign probability       : derived from predicted delta mean / sigma; no
+                              independent sign head can disagree with effect.
+  * pairwise rank           : directly constrains predicted delta mean; no
+                              independent randomly initialized rank head.
   * inverse consistency     : f(src,cand) + f(cand,src) ~ 0 (regularizer in
                               train.py).
 """
@@ -17,6 +19,31 @@ from __future__ import annotations
 
 import torch
 import torch.nn as nn
+
+
+def standardized_delta_logit(delta_mean: torch.Tensor,
+                              logvar: torch.Tensor) -> torch.Tensor:
+    """Return the heteroscedastic Gaussian z-score ``mu/sigma``.
+
+    The bounded log-variance mirrors the heteroscedastic training objective and
+    keeps the score finite.  Because sigma is strictly positive, this score has
+    exactly the same hard sign as ``delta_mean``.
+    """
+    bounded_logvar = logvar.clamp(min=-10.0, max=10.0)
+    return delta_mean * torch.exp(-0.5 * bounded_logvar)
+
+
+def calibrated_sign_probability(delta_mean: torch.Tensor,
+                                logvar: torch.Tensor,
+                                temperature: float) -> torch.Tensor:
+    """Return ``Phi((mu/sigma)/T)``; positive T cannot flip hard sign."""
+    temperature = float(temperature)
+    if not (temperature > 0.0):
+        raise ValueError("sign temperature must be positive")
+    z = standardized_delta_logit(delta_mean, logvar) / temperature
+    probability = 0.5 * (1.0 + torch.erf(z / (2.0 ** 0.5)))
+    eps = torch.finfo(probability.dtype).eps
+    return probability.clamp(min=eps, max=1.0 - eps)
 
 
 class SparseEditFormer(nn.Module):
@@ -62,11 +89,10 @@ class SparseEditFormer(nn.Module):
         self.endpoint_emb = nn.Embedding(max(cfg.N_ENDPOINTS, 1), d)
         self.bench_emb = nn.Embedding(max(cfg.N_BENCHMARKS, 1), d)
 
-        # mean / variance, sign, ranking heads
+        # Mean and variance are the only effect heads.  R3-P0 deliberately has
+        # no independent sign/rank heads: sign is mu/sigma and rank is delta mu.
         self.mean_head = nn.Linear(d, 1)
         self.logvar_head = nn.Linear(d, 1)
-        self.sign_head = nn.Linear(d, 1)
-        self.rank_head = nn.Linear(d, 1)
 
     @staticmethod
     def _infer_trailing_padding_mask(x):
@@ -130,8 +156,8 @@ class SparseEditFormer(nn.Module):
                               cand_pad_mask=cand_pad_mask)
         mean = self.mean_head(z).squeeze(-1)
         logvar = self.logvar_head(z).squeeze(-1)
-        sign = self.sign_head(z).squeeze(-1)
-        rank = self.rank_head(z).squeeze(-1)
+        sign = standardized_delta_logit(mean, logvar)
+        rank = mean
         return {"mean": mean, "logvar": logvar, "sign": sign, "rank": rank}
 
     def predict_delta(self, src, cand, edit_feat, study_id, endpoint_id, bench_id,
@@ -148,4 +174,5 @@ class SparseEditFormer(nn.Module):
         delta = out["mean"]
         if anchor is not None:
             delta = delta - anchor
-        return delta, out["sign"], out["rank"]
+        sign = standardized_delta_logit(delta, out["logvar"])
+        return delta, sign, delta

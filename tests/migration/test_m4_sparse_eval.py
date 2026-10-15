@@ -68,6 +68,21 @@ def test_signed_top10pct_gain_is_order_monotone_for_negative_domain():
     assert perfect["top10pct_enrichment"] is None
 
 
+def test_fixed_top10_signed_ratio_is_held_and_safe_diagnostic_is_monotone_negative_domain():
+    true = -np.arange(1.0, 21.0)
+    perfect = context_metrics(true, true)
+    reversed_ = context_metrics(true, true[::-1])
+    assert perfect["top10_enrichment"] is None
+    assert reversed_["top10_enrichment"] is None
+    assert perfect["top10_enrichment_status"].startswith("HOLD_")
+    assert perfect["top10_oracle_normalized_excess_gain"] == pytest.approx(1.0)
+    assert (perfect["top10_oracle_normalized_excess_gain"]
+            > reversed_["top10_oracle_normalized_excess_gain"])
+    # This is the exact backwards behavior that disqualifies the old ratio.
+    assert (reversed_["top10_enrichment_legacy_signed_oracle_ratio"]
+            > perfect["top10_enrichment_legacy_signed_oracle_ratio"])
+
+
 def test_context_metrics_small_context_spearman_none():
     m = context_metrics(np.array([1.0, 2.0]), np.array([1.0, 2.0]))  # n<3
     assert m["delta_spearman"] is None
@@ -182,7 +197,7 @@ def test_predict_model_routes_s4_study_to_trained_unknown_and_passes_masks():
     cfg.N_ENDPOINTS = len(vocab["endpoint"])
     cfg.N_BENCHMARKS = len(vocab["benchmark"])
     cfg.SIGN_TEMPERATURE = 1.0
-    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
+    cfg.SIGN_DECISION_RULE = C.SIGN_DECISION_RULE
 
     class CaptureModel(torch.nn.Module):
         def __init__(self):
@@ -206,7 +221,7 @@ def test_predict_model_routes_s4_study_to_trained_unknown_and_passes_masks():
     assert model.masks[1].dtype == torch.bool
 
 
-def test_reported_model_sign_accuracy_uses_sign_head_not_mean_head():
+def test_reported_model_sign_accuracy_is_derived_from_delta_mean_not_independent_head():
     rows = [_rec(1.0, study="held", source_id="positive"),
             _rec(-1.0, study="held", source_id="negative")]
     vocab = build_vocab(rows)
@@ -215,15 +230,15 @@ def test_reported_model_sign_accuracy_uses_sign_head_not_mean_head():
     cfg.N_ENDPOINTS = len(vocab["endpoint"])
     cfg.N_BENCHMARKS = len(vocab["benchmark"])
     cfg.SIGN_TEMPERATURE = 2.0
-    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
+    cfg.SIGN_DECISION_RULE = C.SIGN_DECISION_RULE
 
     class OpposedHeads(torch.nn.Module):
         def forward(self, src, cand, edit, study, endpoint, bench,
                     src_pad_mask=None, cand_pad_mask=None):
-            # The regression mean gets both signs wrong.  The prospectively
-            # frozen sign head gets both right.
-            mean = torch.tensor([-1.0, 1.0], device=src.device)[:src.size(0)]
-            sign = torch.tensor([10.0, -10.0], device=src.device)[:src.size(0)]
+            # The predicted delta mean gets both signs right.  A contradictory
+            # legacy sign output must be ignored by the R3-P0 evaluator.
+            mean = torch.tensor([1.0, -1.0], device=src.device)[:src.size(0)]
+            sign = torch.tensor([-10.0, 10.0], device=src.device)[:src.size(0)]
             zero = mean * 0.0
             return {"mean": mean, "logvar": zero, "sign": sign, "rank": zero}
 
@@ -233,7 +248,35 @@ def test_reported_model_sign_accuracy_uses_sign_head_not_mean_head():
     reported = context_metrics(
         true, outputs["delta"], sign_prediction=outputs["sign_decision"],
         sign_rule=outputs["sign_decision_rule"])
-    legacy_mean = context_metrics(true, outputs["delta"])
     assert reported["sign_accuracy"] == 1.0
-    assert legacy_mean["sign_accuracy"] == 0.0
     assert reported["sign_decision_rule"] == cfg.SIGN_DECISION_RULE
+
+
+def test_positive_temperature_changes_probability_not_hard_sign():
+    rows = [_rec(1.0, study="held", source_id="positive"),
+            _rec(-1.0, study="held", source_id="negative")]
+    vocab = build_vocab(rows)
+
+    class FixedMean(torch.nn.Module):
+        def forward(self, src, cand, edit, study, endpoint, bench,
+                    src_pad_mask=None, cand_pad_mask=None):
+            mean = torch.tensor([2.0, -1.0], device=src.device)[:src.size(0)]
+            zero = mean * 0.0
+            return {"mean": mean, "logvar": zero,
+                    "sign": -mean, "rank": -mean}
+
+    cfg = C.get_config()
+    cfg.N_STUDIES = len(vocab["study"])
+    cfg.N_ENDPOINTS = len(vocab["endpoint"])
+    cfg.N_BENCHMARKS = len(vocab["benchmark"])
+    cfg.SIGN_DECISION_RULE = C.SIGN_DECISION_RULE
+    cfg.SIGN_TEMPERATURE = 1.0
+    cold = predict_model_outputs(
+        FixedMean(), rows, vocab, cfg, torch.device("cpu"))
+    cfg.SIGN_TEMPERATURE = 7.0
+    warm = predict_model_outputs(
+        FixedMean(), rows, vocab, cfg, torch.device("cpu"))
+    assert np.array_equal(cold["sign_decision"], warm["sign_decision"])
+    assert np.array_equal(cold["sign_logit"], warm["sign_logit"])
+    assert not np.allclose(cold["sign_probability"],
+                           warm["sign_probability"])

@@ -237,6 +237,25 @@ def test_rate_cfg_and_latent_cfg_return_dict_contract():
         assert len(info["guided_logits"]) == len(acts)
 
 
+@pytest.mark.parametrize("builder", [
+    rate_cfg_step_policy, latent_cfg_step_policy, dgm_learned_step_policy,
+])
+def test_critic_driven_g1_policy_rejects_zero_rank_supervision(builder):
+    critic = _DummyCritic()
+    critic.rank_supervision = {
+        "status": "NOT_RUN_ZERO_QUALIFIED_PAIRS",
+        "qualified_rank_pair_count": 0,
+    }
+    kwargs = dict(vocab=_r2_vocab(), beta=1.0, device=None,
+                  ctx={"study": None, "endpoint": None, "bench": "5U-A1",
+                       "source_value": 1.0})
+    with pytest.raises(RuntimeError, match="effect-only and fail closed"):
+        if builder is dgm_learned_step_policy:
+            builder(critic, **kwargs)
+        else:
+            builder(_DummyNet(), critic, **kwargs)
+
+
 def test_dgm_learned_has_no_base_logits():
     st = _state("ACGU")
     acts = enumerate_legal_actions(st)
@@ -427,6 +446,11 @@ def test_gtr_builder_unknown_context_uses_reserved_embedding():
     from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT
 
     class CaptureCritic:
+        rank_supervision = {
+            "status": "QUALIFIED",
+            "qualified_rank_pair_count": 1,
+        }
+
         def __init__(self):
             self.context_ids = []
 
@@ -495,6 +519,11 @@ class _DummyNet:
 
 class _DummyCritic:
     """Minimal stand-in for the frozen SparseEditFormer critic."""
+
+    rank_supervision = {
+        "status": "QUALIFIED",
+        "qualified_rank_pair_count": 1,
+    }
 
     def __call__(self, src, cand, ef, sid, eid, bid, **kwargs):
         B = src.shape[0]

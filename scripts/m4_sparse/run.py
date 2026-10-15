@@ -131,6 +131,13 @@ def main():
                 model_cfg = sd["cfg"]
                 model = SparseEditFormer(model_cfg).to(device)
                 model.load_state_dict(sd["state_dict"])
+                model.rank_supervision = {
+                    "status": sd["rank_supervision_status"],
+                    "qualified_rank_pair_count": sd["qualified_rank_pair_count"],
+                    "eligible_rank_group_count": sd["eligible_rank_group_count"],
+                    "pair_definition": sd["rank_pair_definition"],
+                    "score_definition": sd["rank_score_definition"],
+                }
                 print("[" + benchmark + "/" + fold["held_out_study"] + "] loaded checkpoint")
             else:
                 model = train_fold(fold, fold_cfg, fold_vocab, device, out_path=ckpt)
@@ -143,7 +150,19 @@ def main():
             fe["vocab_sha256"] = vocab_sha256(fold_vocab)
             pred_test = predict_model(
                 model, fold["test"], fold_vocab, model_cfg, device)
-            fe["rerank"] = rerank_sources(fold["test"], pred_test)
+            rank_meta = getattr(model, "rank_supervision", {})
+            if (rank_meta.get("status") == "QUALIFIED"
+                    and int(rank_meta.get("qualified_rank_pair_count", 0)) > 0):
+                fe["rerank"] = rerank_sources(fold["test"], pred_test)
+                fe["rerank"]["status"] = "QUALIFIED"
+            else:
+                fe["rerank"] = {
+                    "status": "HOLD_ZERO_OR_UNKNOWN_QUALIFIED_RANK_PAIRS",
+                    "n_sources": 0,
+                    "n_singleton_sources": 0,
+                    "macro_ndcg_at_10": None,
+                    "macro_top_decile_recall": None,
+                }
             fold_evals.append(fe)
 
         bench_res = {

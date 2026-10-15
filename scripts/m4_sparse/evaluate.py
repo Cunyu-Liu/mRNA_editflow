@@ -2,9 +2,9 @@
 plus the abs_candidate reference baseline on the SAME S4 test folds.
 
 Metrics are macro-averaged over metric-contexts (study|endpoint) across S4
-folds, matching the B0-X convention.  top10_enrichment (fixed top-10) is kept
-for horizontal comparison with B0-X; top10pct_enrichment (top-10% of context)
-is the pre-registered gate enrichment metric.
+folds, matching the B0-X convention.  Both historical signed-ratio enrichment
+headlines are held after the R3-P0 monotonicity audit; oracle-normalized excess
+gain is retained only as a diagnostic with no post-hoc threshold.
 """
 from __future__ import annotations
 
@@ -19,7 +19,8 @@ from scipy.stats import spearmanr
 from torch.utils.data import DataLoader
 
 from .dataset import EffectDataset
-from .config import NUC_ORDER, NUC_TO_IDX
+from .config import NUC_ORDER, NUC_TO_IDX, SIGN_DECISION_RULE
+from .model import calibrated_sign_probability, standardized_delta_logit
 
 
 def metric_context(r: dict) -> str:
@@ -57,16 +58,34 @@ def context_metrics(true_delta, pred, sign_prediction=None,
             sign_rule or "mean_delta_sign_legacy_or_baseline")
     else:
         m["sign_accuracy"] = None
-    # Fixed top-10 oracle-normalized selection is undefined when k covers the
-    # entire context; returning 1 there would be an uninformative pseudo-pass.
+    # The historical fixed-top10 signed oracle ratio is unsafe: if all effects
+    # are negative, a worse selected mean divided by a negative oracle mean can
+    # exceed 1.  Preserve it only under an explicit legacy name and HOLD the
+    # publication/gate headline.  A monotone excess-gain diagnostic is reported
+    # without introducing any result-dependent threshold.
     k = min(10, len(true_delta))
     if 1 <= k < len(true_delta):
         pred_top = np.argsort(pred)[-k:][::-1]
         true_top = np.argsort(true_delta)[-k:][::-1]
-        denom = float(np.mean(true_delta[true_top]))
-        m["top10_enrichment"] = float(np.mean(true_delta[pred_top]) / denom) if denom != 0 else None
+        fixed_pred_mean = float(np.mean(true_delta[pred_top]))
+        fixed_oracle_mean = float(np.mean(true_delta[true_top]))
+        fixed_overall = float(np.mean(true_delta))
+        m["top10_enrichment_legacy_signed_oracle_ratio"] = (
+            fixed_pred_mean / fixed_oracle_mean
+            if abs(fixed_oracle_mean) > 1e-12 else None
+        )
+        fixed_excess_denom = fixed_oracle_mean - fixed_overall
+        m["top10_oracle_normalized_excess_gain"] = (
+            (fixed_pred_mean - fixed_overall) / fixed_excess_denom
+            if fixed_excess_denom > 1e-12 else None
+        )
     else:
-        m["top10_enrichment"] = None
+        m["top10_enrichment_legacy_signed_oracle_ratio"] = None
+        m["top10_oracle_normalized_excess_gain"] = None
+    m["top10_enrichment"] = None
+    m["top10_enrichment_status"] = (
+        "HOLD_SIGNED_ORACLE_RATIO_NON_MONOTONE_ON_NEGATIVE_EFFECTS"
+    )
     # Preserve the historical signed-mean ratio only as an explicitly unsafe
     # diagnostic.  With negative or near-zero overall means it reverses order or
     # explodes, so it cannot satisfy the frozen threshold after R1 audit.
@@ -85,7 +104,7 @@ def context_metrics(true_delta, pred, sign_prediction=None,
     m["top10pct_enrichment"] = None
     m["top10pct_enrichment_status"] = (
         "HOLD_REQUIRES_PREREGISTERED_STABLE_SIGNED_GAIN_DEFINITION")
-    m["metric_contract_version"] = "m4_effect_r1_signed_gain_audit_v1"
+    m["metric_contract_version"] = "m4_effect_r3_p0_signed_gain_audit_v1"
     return m
 
 
@@ -97,6 +116,10 @@ def macro_metrics(cms: List[dict]) -> dict:
         "macro_delta_spearman": _avg("delta_spearman"),
         "macro_sign_accuracy": _avg("sign_accuracy"),
         "macro_top10_enrichment": _avg("top10_enrichment"),
+        "macro_top10_oracle_normalized_excess_gain": _avg(
+            "top10_oracle_normalized_excess_gain"),
+        "legacy_macro_top10_signed_oracle_ratio": _avg(
+            "top10_enrichment_legacy_signed_oracle_ratio"),
         "macro_top10pct_enrichment": _avg("top10pct_enrichment"),
         "macro_top10pct_oracle_normalized_excess_gain": _avg(
             "top10pct_oracle_normalized_excess_gain"),
@@ -104,6 +127,8 @@ def macro_metrics(cms: List[dict]) -> dict:
             "top10pct_enrichment_legacy_signed_mean_ratio"),
         "top10pct_enrichment_gate_status": (
             "HOLD_REQUIRES_PREREGISTERED_STABLE_SIGNED_GAIN_DEFINITION"),
+        "top10_enrichment_gate_status": (
+            "HOLD_SIGNED_ORACLE_RATIO_NON_MONOTONE_ON_NEGATIVE_EFFECTS"),
         "n_contexts": len(cms),
         "n_records": int(sum(c.get("n", 0) for c in cms)),
     }
@@ -125,9 +150,9 @@ def predict_model_outputs(model, test_rows, vocab, cfg, device,
     allocated globally but never updated by that fold's training data.
     """
     sign_rule = getattr(cfg, "SIGN_DECISION_RULE", None)
-    if sign_rule != "sign_head_logit_ge_0_r2_prospective_v1":
+    if sign_rule != SIGN_DECISION_RULE:
         raise ValueError(
-            "R2 evaluation requires the frozen prospective sign-head rule"
+            "R3-P0 evaluation requires the frozen predicted-delta sign rule"
         )
     temperature = getattr(cfg, "SIGN_TEMPERATURE", None)
     if (not isinstance(temperature, (int, float))
@@ -138,23 +163,32 @@ def predict_model_outputs(model, test_rows, vocab, cfg, device,
     ds = EffectDataset(test_rows, vocab, target=cfg.TARGET,
                        force_unk_study=force_unk_study)
     loader = DataLoader(ds, batch_size=cfg.BATCH_SIZE, shuffle=False, num_workers=0)
-    preds, sign_logits = [], []
+    preds, sign_logits, sign_probabilities = [], [], []
     for b in loader:
         bb = {k: v.to(device) for k, v in b.items()}
         out = model(bb["src"], bb["cand"], bb["edit"], bb["study"],
                     bb["endpoint"], bb["bench"],
                     src_pad_mask=bb.get("src_pad_mask"),
                     cand_pad_mask=bb.get("cand_pad_mask"))
-        delta = out["mean"].cpu().numpy()
+        delta = out["mean"]
         if cfg.TARGET == "candidate_value" and cfg.ANCHOR_AT_TEST:
-            anchor = bb["source_value"].cpu().numpy()
+            anchor = bb["source_value"]
             delta = delta - anchor
-        preds.append(delta)
-        sign_logits.append((out["sign"] / temperature).cpu().numpy())
+        raw_sign_logit = standardized_delta_logit(delta, out["logvar"])
+        preds.append(delta.cpu().numpy())
+        sign_logits.append(raw_sign_logit.cpu().numpy())
+        sign_probabilities.append(
+            calibrated_sign_probability(
+                delta, out["logvar"], temperature).cpu().numpy()
+        )
+    raw = np.concatenate(sign_logits)
     return {
         "delta": np.concatenate(preds),
-        "sign_logit": np.concatenate(sign_logits),
-        "sign_decision": np.where(np.concatenate(sign_logits) >= 0.0, 1.0, -1.0),
+        "sign_logit": raw,
+        "sign_probability": np.concatenate(sign_probabilities),
+        # Hard sign is computed before probability-only positive-temperature
+        # calibration, so temperature can never change this decision.
+        "sign_decision": np.where(raw >= 0.0, 1.0, -1.0),
         "sign_decision_rule": sign_rule,
     }
 
@@ -265,6 +299,10 @@ def macro_over_folds(fold_evals: List[Dict], key: str) -> dict:
         "macro_delta_spearman": _study_avg("macro_delta_spearman"),
         "macro_sign_accuracy": _study_avg("macro_sign_accuracy"),
         "macro_top10_enrichment": _study_avg("macro_top10_enrichment"),
+        "macro_top10_oracle_normalized_excess_gain": _study_avg(
+            "macro_top10_oracle_normalized_excess_gain"),
+        "legacy_macro_top10_signed_oracle_ratio": _study_avg(
+            "legacy_macro_top10_signed_oracle_ratio"),
         "macro_top10pct_enrichment": _study_avg("macro_top10pct_enrichment"),
         "macro_top10pct_oracle_normalized_excess_gain": _study_avg(
             "macro_top10pct_oracle_normalized_excess_gain"),
@@ -272,6 +310,8 @@ def macro_over_folds(fold_evals: List[Dict], key: str) -> dict:
             "legacy_macro_top10pct_signed_mean_ratio"),
         "top10pct_enrichment_gate_status": (
             "HOLD_REQUIRES_PREREGISTERED_STABLE_SIGNED_GAIN_DEFINITION"),
+        "top10_enrichment_gate_status": (
+            "HOLD_SIGNED_ORACLE_RATIO_NON_MONOTONE_ON_NEGATIVE_EFFECTS"),
         "n_studies": len(per_study),
         "n_contexts": sum(len(fe[key]) for fe in fold_evals),
         "n_records": int(sum(cm.get("n", 0) for fe in fold_evals for cm in fe[key])),

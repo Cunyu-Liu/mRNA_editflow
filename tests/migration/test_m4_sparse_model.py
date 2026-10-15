@@ -19,11 +19,11 @@ from scripts.m4_sparse.dataset import (  # noqa: E402
 from scripts.m4_sparse.model import SparseEditFormer  # noqa: E402
 from scripts.m4_sparse.checkpoint import (  # noqa: E402
     IncompatibleCheckpointError, build_checkpoint_payload, load_checkpoint,
-    validate_checkpoint_payload, vocab_sha256,
+    RankSupervisionUnavailableError, validate_checkpoint_payload, vocab_sha256,
 )
 from scripts.m4_sparse.train import (  # noqa: E402
     GroupBatchSampler, _pairwise_rank_loss, build_folds, compute_loss,
-    grouped_train_dev_split,
+    grouped_train_dev_split, select_dev_checkpoint,
 )
 
 
@@ -291,9 +291,10 @@ def test_candidate_value_loss_uses_delta_sign_and_disables_inverse():
 
         def forward(self, src, cand, edit, study, endpoint, bench, **kwargs):
             self.calls += 1
-            z = src[:, 0, 0] * 0.0
-            logits = torch.tensor([10.0, -10.0], device=src.device)[:src.size(0)]
-            return {"mean": z, "logvar": z, "sign": logits, "rank": z}
+            mean = torch.tensor([3.0, 1.0], device=src.device)[:src.size(0)]
+            logvar = torch.full_like(mean, -10.0)
+            return {"mean": mean, "logvar": logvar,
+                    "sign": mean, "rank": mean}
 
     from torch.utils.data import DataLoader
     batch = next(iter(DataLoader(EffectDataset(rows, vocab,
@@ -304,6 +305,46 @@ def test_candidate_value_loss_uses_delta_sign_and_disables_inverse():
     assert losses["bce"].item() < 1e-3
     assert losses["consis"].item() == 0.0
     assert model.calls == 1
+
+
+def test_rank_loss_backpropagates_through_predicted_delta_mean_not_rank_head():
+    rows = [_rec(-1.0, source_id="shared"), _rec(1.0, source_id="shared")]
+    rows[1]["candidate_sequence"] = (
+        rows[1]["source_sequence"][:11] + "A"
+        + rows[1]["source_sequence"][12:]
+    )
+    rows[1]["edit_list"] = [{"op": "SUB", "pos": 11, "token": "A"}]
+    cfg, vocab = _cfg(rows)
+    cfg.TARGET = "candidate_value"
+    cfg.CONTEXT_DROPOUT = 0.0
+    cfg.LAMBDA_MEAN = 0.0
+    cfg.LAMBDA_VAR = 0.0
+    cfg.LAMBDA_SIGN = 0.0
+    cfg.LAMBDA_CONSISTENCY = 0.0
+    cfg.LAMBDA_RANK = 1.0
+
+    class MeanOnlyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mean = torch.nn.Parameter(torch.zeros(2))
+
+        def forward(self, src, cand, edit, study, endpoint, bench, **kwargs):
+            mean = self.mean[:src.size(0)]
+            zero = mean * 0.0
+            # A detached fake rank score must be ignored by compute_loss.
+            return {"mean": mean, "logvar": zero,
+                    "sign": zero, "rank": torch.zeros_like(mean).detach()}
+
+    from torch.utils.data import DataLoader
+    batch = next(iter(DataLoader(
+        EffectDataset(rows, vocab, target="candidate_value"), batch_size=2)))
+    model = MeanOnlyModel()
+    losses = compute_loss(model, batch, cfg, torch.device("cpu"))
+    losses["loss"].backward()
+    assert losses["rank"].item() > 0.0
+    assert model.mean.grad is not None
+    assert model.mean.grad[0].item() > 0.0
+    assert model.mean.grad[1].item() < 0.0
 
 
 def test_variance_nll_does_not_duplicate_mean_huber_gradient():
@@ -402,34 +443,88 @@ def test_group_batch_sampler_never_splits_oversized_rank_group():
         assert expected <= containing[0]
 
 
+def _dev_metrics(epoch, sign=0.70, spearman=0.20, nll=0.50,
+                 coverage=1.0):
+    return {
+        "epoch": epoch,
+        "study_macro_sign_accuracy": sign,
+        "study_macro_delta_spearman": spearman,
+        "study_macro_gaussian_nll": nll,
+        "study_coverage": coverage,
+    }
+
+
+def test_study_balanced_selection_is_lexicographic_order_independent_and_tie_stable():
+    # Sign dominates Spearman/NLL; an exact tie resolves to the earlier epoch.
+    records = [
+        _dev_metrics(3, sign=0.70, spearman=0.99, nll=0.01),
+        _dev_metrics(2, sign=0.71, spearman=0.10, nll=2.00),
+        _dev_metrics(1, sign=0.71, spearman=0.10, nll=2.00),
+    ]
+    assert select_dev_checkpoint(records)["epoch"] == 1
+    assert select_dev_checkpoint(list(reversed(records)))["epoch"] == 1
+
+
+def test_study_balanced_selection_fails_closed_on_missing_metrics_or_sign_gate():
+    missing = _dev_metrics(0)
+    missing["study_macro_delta_spearman"] = None
+    with pytest.raises(RuntimeError, match="missing/non-finite"):
+        select_dev_checkpoint([missing])
+    with pytest.raises(RuntimeError, match="sign accuracy >= 0.60"):
+        select_dev_checkpoint([_dev_metrics(0, sign=0.599999)])
+
+
 # ---- versioned checkpoint boundary ----
-def _r2_checkpoint_payload():
+def _r3_checkpoint_payload(rank_pairs=1):
     rows = [_rec(1.0)]
     cfg, vocab = _cfg(rows)
-    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
     cfg.SIGN_TEMPERATURE = 1.25
-    cfg.SIGN_CALIBRATION_METHOD = "temperature_scaling_grouped_dev_v1"
     model = SparseEditFormer(cfg)
+    rank_supervision = {
+        "status": ("QUALIFIED" if rank_pairs else
+                   "NOT_RUN_ZERO_QUALIFIED_PAIRS"),
+        "qualified_rank_pair_count": int(rank_pairs),
+        "eligible_rank_group_count": int(bool(rank_pairs)),
+        "pair_definition": C.RANK_PAIR_DEFINITION,
+        "score_definition": C.RANK_SCORE_DEFINITION,
+    }
+    selected = _dev_metrics(0)
+    dev_selection = {
+        "policy": C.CHECKPOINT_SELECTION_POLICY,
+        "sign_accuracy_gate": C.DEV_SIGN_ACCURACY_GATE,
+        "selected_epoch": 0,
+        "selected_metrics": selected,
+        "history": [selected],
+    }
     payload = build_checkpoint_payload(
-        model.state_dict(), cfg, held_out_study="held", vocab=vocab)
+        model.state_dict(), cfg, held_out_study="held", vocab=vocab,
+        rank_supervision=rank_supervision, dev_selection=dev_selection)
     return payload, vocab
 
 
-def test_r2_checkpoint_roundtrip_binds_schema_and_vocab_hash(tmp_path):
-    payload, vocab = _r2_checkpoint_payload()
+def test_r3_checkpoint_roundtrip_binds_schema_vocab_and_rank_evidence(tmp_path):
+    payload, vocab = _r3_checkpoint_payload()
     assert payload["vocab_sha256"] == vocab_sha256(vocab)
-    path = tmp_path / "r2.pt"
+    path = tmp_path / "r3.pt"
     torch.save(payload, path)
-    loaded = load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab)
+    loaded = load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab,
+                             require_rank=True)
     assert loaded["checkpoint_schema_version"] == C.CHECKPOINT_SCHEMA_VERSION
     assert loaded["input_schema_version"] == C.INPUT_SCHEMA_VERSION
+    assert loaded["qualified_rank_pair_count"] == 1
+    assert not any("rank_head" in key or "sign_head" in key
+                   for key in loaded["state_dict"])
 
 
 def test_legacy_checkpoint_and_schema_drift_are_rejected():
-    payload, _ = _r2_checkpoint_payload()
-    with pytest.raises(IncompatibleCheckpointError, match="legacy checkpoint"):
+    payload, _ = _r3_checkpoint_payload()
+    with pytest.raises(IncompatibleCheckpointError, match="checkpoint schema"):
         validate_checkpoint_payload({"state_dict": payload["state_dict"],
                                      "cfg": payload["cfg"]})
+    legacy_r2 = copy.deepcopy(payload)
+    legacy_r2["checkpoint_schema_version"] = "m4_sparse_r2_v1"
+    with pytest.raises(IncompatibleCheckpointError, match="checkpoint schema"):
+        validate_checkpoint_payload(legacy_r2)
     drift = copy.deepcopy(payload)
     drift["input_schema_version"] = "legacy_prefix_window"
     with pytest.raises(IncompatibleCheckpointError, match="input schema"):
@@ -437,7 +532,7 @@ def test_legacy_checkpoint_and_schema_drift_are_rejected():
 
 
 def test_checkpoint_rejects_vocab_hash_tampering_and_runtime_vocab_drift():
-    payload, vocab = _r2_checkpoint_payload()
+    payload, vocab = _r3_checkpoint_payload()
     tampered = copy.deepcopy(payload)
     tampered["vocab"]["study"]["injected"] = len(tampered["vocab"]["study"])
     with pytest.raises(IncompatibleCheckpointError, match="vocabulary hash"):
@@ -447,6 +542,19 @@ def test_checkpoint_rejects_vocab_hash_tampering_and_runtime_vocab_drift():
     runtime_vocab["study"] = {"different": 0, UNKNOWN_CONTEXT: 1}
     with pytest.raises(IncompatibleCheckpointError, match="runtime M4 vocabulary"):
         validate_checkpoint_payload(payload, expected_vocab=runtime_vocab)
+
+
+def test_zero_rank_checkpoint_is_valid_effect_only_but_rank_consumer_rejects(tmp_path):
+    payload, vocab = _r3_checkpoint_payload(rank_pairs=0)
+    assert validate_checkpoint_payload(payload)["rank_supervision_status"] == (
+        "NOT_RUN_ZERO_QUALIFIED_PAIRS"
+    )
+    path = tmp_path / "effect_only.pt"
+    torch.save(payload, path)
+    with pytest.raises(RankSupervisionUnavailableError,
+                       match="effect-only with zero qualified pairs"):
+        load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab,
+                        require_rank=True)
 
 
 # ---- inverse consistency helper ----
