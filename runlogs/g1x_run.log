@@ -1,0 +1,38 @@
+loaded 103199 delta-defined records
+using device cuda:3
+[g1x] frozen base flow loaded: artifacts/f0x/f0x_base_flow_5U-A1.pt
+[g1x] fold GSE114002: trained guidance head on 4937 rows
+[g1x] fold GSE217518: trained guidance head on 36155 rows
+
+=== 5U-A1 ===
+no_guidance            ndcg=0.8118 tdr=0.4901 regret=0.5099
+first_order            ndcg=0.8118 tdr=0.4901 regret=0.5099
+rate_cfg               ndcg=0.8118 tdr=0.4901 regret=0.5099
+latent_cfg             ndcg=0.8118 tdr=0.4901 regret=0.5099
+dgm_learned            ndcg=0.8326 tdr=0.5465 regret=0.4535
+generate_then_rerank   ndcg=0.8326 tdr=0.5465 regret=0.4535
+--- generation quality (budget=3, n=200) ---
+no_guidance            mean_delta=0.1840 frac_beneficial=0.1650
+first_order            mean_delta=0.2140 frac_beneficial=0.1550
+rate_cfg               mean_delta=3.3287 frac_beneficial=0.8100
+latent_cfg             mean_delta=0.2079 frac_beneficial=0.1600
+dgm_learned            mean_delta=1.1164 frac_beneficial=0.4800
+generate_then_rerank   mean_delta=0.1840 frac_beneficial=0.1650
+[g1x] fold ENCSR854RUF: trained guidance head on 15742 rows
+[g1x] fold GSE186455: trained guidance head on 25778 rows
+[g1x] fold GSE200304: trained guidance head on 20208 rows
+[g1x] fold GSE232571: trained guidance head on 26328 rows
+[g1x] fold GSE232572: trained guidance head on 17256 rows
+[g1x] fold GSE261709: trained guidance head on 26328 rows
+[g1x] fold GSE298114: trained guidance head on 26328 rows
+
+=== 3U-A1 ===
+--- generation quality (budget=3, n=200) ---
+no_guidance            mean_delta=-0.2610 frac_beneficial=0.0050
+first_order            mean_delta=-0.2531 frac_beneficial=0.0100
+rate_cfg               mean_delta=-0.2522 frac_beneficial=0.0150
+latent_cfg             mean_delta=-0.2508 frac_beneficial=0.0150
+dgm_learned            mean_delta=-0.2813 frac_beneficial=0.0100
+generate_then_rerank   mean_delta=-0.2610 frac_beneficial=0.0050
+wrote artifacts/g1x/g1x_results.json
+DONE

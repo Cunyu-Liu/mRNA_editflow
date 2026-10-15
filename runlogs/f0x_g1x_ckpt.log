@@ -1,0 +1,6 @@
+[f0x] device=cuda:3 benchmark=5U-A1
+[f0x] filtered train rows (with SUB edit): 8000
+[f0x] trained base flow: steps=1500 loss_first=632.4487 loss_last=16.4828
+[f0x] saved frozen base-flow checkpoint -> artifacts/f0x/f0x_base_flow_5U-A1.pt
+[f0x] k=1: uniform legality=100.0% length=100.0% budget_viol=0 repro=100.0%
+[f0x] k=3: uniform legality=100.0% length=100.0% budget_viol=0 repro=100.0%
